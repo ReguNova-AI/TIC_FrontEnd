@@ -203,9 +203,11 @@ const Listing = () => {
 
   const handleModalClose = () => {
     setIsModalVisible(false);
+    fetchData();
   };
   const handleClose = () => {
     setIsModalVisible(false);
+    fetchData();
   };
 
   // Table columns

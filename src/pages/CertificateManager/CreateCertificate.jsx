@@ -13,7 +13,7 @@ import {
   STATUS,
 } from "shared/constants";
 
-const CreateCertificate = () => {
+const CreateCertificate = ({onHandleClose}) => {
   const navigate = useNavigate();
   const { RangePicker } = DatePicker;
   const [snackData, setSnackData] = useState({
@@ -106,9 +106,8 @@ const CreateCertificate = () => {
           message: response.message,
           type: "success",
         });
-        navigate("/projectView", {
-          state: { projectName: formData.certificate_name }, // Pass props here
-        });
+        console.log
+        onHandleClose(true);
       })
       .catch((errResponse) => {
         setSnackData({
