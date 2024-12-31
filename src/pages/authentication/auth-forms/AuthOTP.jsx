@@ -31,7 +31,6 @@ export default function AuthOTP() {
   const [timer, setTimer] = useState(120); // 2 minutes timer
   const [isResendDisabled, setIsResendDisabled] = useState(true);
 
- 
   // Function to handle the OTP submission
   const handleSubmitForm = (values) => {
     const payload = values;
@@ -68,29 +67,29 @@ export default function AuthOTP() {
   // Function to handle OTP resend
   const handleResendOtp = () => {
     let payload = {
-      email:sessionStorage.getItem('email'),
+      email: sessionStorage.getItem("email"),
     };
     AuthApiService.forgotPassword(payload)
       .then((response) => {
-       
-          setSnackData({
-            show: true,
-            message: response?.message || API_SUCCESS_MESSAGE.OTP_SENT,
-            type: "success",
-          });
+        setSnackData({
+          show: true,
+          message: response?.message || API_SUCCESS_MESSAGE.OTP_SENT,
+          type: "success",
+        });
+        // Disable the resend button for 2 minutes
+        setIsResendDisabled(true);
+
+        // Start a new 2-minute timer
+        setTimer(120);
       })
       .catch((errResponse) => {
         setSnackData({
           show: true,
-          message: errResponse?.error?.message || API_ERROR_MESSAGE.INCORRECT_EMAIL,
+          message:
+            errResponse?.error?.message || API_ERROR_MESSAGE.INCORRECT_EMAIL,
           type: "error",
         });
       });
-    // Disable the resend button for 2 minutes
-    setIsResendDisabled(true);
-
-    // Start a new 2-minute timer
-    setTimer(120);
   };
 
   // Use Effect to update the timer every second
@@ -194,7 +193,9 @@ export default function AuthOTP() {
                   disabled={isResendDisabled} // Disable resend OTP button when timer is active
                   onClick={handleResendOtp}
                 >
-                  {isResendDisabled ? `Resend OTP in ${Math.floor(timer / 60)}:${String(timer % 60).padStart(2, '0')}` : "Resend OTP"}
+                  {isResendDisabled
+                    ? `Resend OTP in ${Math.floor(timer / 60)}:${String(timer % 60).padStart(2, "0")}`
+                    : "Resend OTP"}
                 </Button>
               </Grid>
             </Grid>
