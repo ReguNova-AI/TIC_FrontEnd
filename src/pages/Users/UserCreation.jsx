@@ -160,9 +160,11 @@ export default function UserCreation({ onHandleClose }) {
           message: response?.message || API_SUCCESS_MESSAGE.USER_CREATED,
           type: "success",
         });
+        const url = response?.data?.details?.[0];
+
         setFormData({
           ...formData,
-          user_profile: "", // URL for avatar upload
+          user_profile: url, // URL for avatar upload
         });
       })
       .catch((errResponse) => {
@@ -244,6 +246,8 @@ export default function UserCreation({ onHandleClose }) {
           ...formData,
           emailError: "",
         });
+
+        checkEmailAvailablity(value);
         
       }
     }
@@ -285,6 +289,13 @@ export default function UserCreation({ onHandleClose }) {
     console.log(data);
     setUpoadedFileData(data);
   };
+
+  useEffect(()=>{
+    setFormData({
+      ...formData,
+      user_profile: uploadedFileData, // URL for avatar upload
+    });
+  },[uploadedFileData])
 
   const handleReset = () => {
     setActiveStep(0);
@@ -367,14 +378,28 @@ export default function UserCreation({ onHandleClose }) {
       });
   };
 
-  const checkEmailAvailablity = ()=>{
-    UserApiService.userEmailCheck(formData.user_email)
+  const checkEmailAvailablity = (value)=>{
+    UserApiService.userEmailCheck(value)
     .then((response) => {
-      setErrorValue({
-        ...errorValue,
-        emailError: "Email Id already exists. Please add another email id",
-      });
-      return false;
+      
+
+      if(response?.data?.message === "User exist")
+      {
+        setErrorValue({
+          ...errorValue,
+          emailError: "Email Id already exists. Please add another email id",
+        });
+        return false;
+      }
+      else
+      {
+        setErrorValue({
+          ...errorValue,
+          emailError: "",
+        });
+        return true;
+      }
+     
     })
     .catch((errResponse) => {
       setSnackData({
@@ -384,6 +409,11 @@ export default function UserCreation({ onHandleClose }) {
           API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
         type: "error",
       });
+    });
+
+    setErrorValue({
+      ...errorValue,
+      emailError: "",
     });
     return true;
   }
@@ -521,7 +551,7 @@ export default function UserCreation({ onHandleClose }) {
                 <TextField
                   label={FORM_LABEL.PHONE}
                   variant="outlined"
-                  fullWidth
+                  fullWidth     
                   name="user_phone_no"
                   value={formData.user_phone_no}
                   onChange={handleInputChange}

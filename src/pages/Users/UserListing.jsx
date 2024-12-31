@@ -9,6 +9,7 @@ import {
   Button,
   Spin,Modal,
   Form,
+  Avatar,
 } from "antd";
 import { Chip } from "@mui/material";
 import FormControl from "@mui/material/FormControl";
@@ -26,6 +27,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { UserApiService } from "services/api/UserAPIService";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
+import { UserOutlined } from '@ant-design/icons';
+
 // import CardView from "./CardView";
 // import ToggleButtons from "./ToggleButton";
 import {
@@ -231,6 +234,22 @@ const UserListing = () => {
 
   // Table columns
   const columns = [
+    {
+      title: "",
+      key: "profile_url",
+      render: (value, record) => {
+        // Ensure that 'value' is a string before processing
+        let avatarSrc = null;
+          avatarSrc = value;
+        
+    
+        return (
+          <Avatar icon={<UserOutlined />}>
+            {avatarSrc && <img src={avatarSrc} />} {/* Fallback text */}
+          </Avatar>
+        );
+      },
+    },        
     {
       title: LISTING_PAGE.NAME,
       dataIndex: "first_name",
