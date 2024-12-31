@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 // Material-UI imports
@@ -23,27 +23,31 @@ import { API_ERROR_MESSAGE, API_SUCCESS_MESSAGE } from "shared/constants";
 
 export default function AuthOTP() {
   const navigate = useNavigate();
-  const [snackData, setSnackData] = React.useState({
+  const [snackData, setSnackData] = useState({
     show: false,
     message: "",
     type: "error",
   });
+  const [timer, setTimer] = useState(120); // 2 minutes timer
+  const [isResendDisabled, setIsResendDisabled] = useState(true);
 
+ 
+  // Function to handle the OTP submission
   const handleSubmitForm = (values) => {
     const payload = values;
 
     // Example: Send OTP to server for verification
     AuthApiService.verifyOtp(payload)
       .then((response) => {
-        if (response.statusCode == 200) {
+        if (response.statusCode === 200) {
           setSnackData({
             show: true,
             message: API_SUCCESS_MESSAGE.OTP_VERIFY,
             type: "success",
           });
 
-          // Perform further actions, like redirecting to the dashboard or login page
-          navigate("/passwordReset",{state:{showPage:true}});
+          // Perform further actions, like redirecting to the password reset page
+          navigate("/passwordReset", { state: { showPage: true } });
         } else {
           setSnackData({
             show: true,
@@ -55,24 +59,68 @@ export default function AuthOTP() {
       .catch((errResponse) => {
         setSnackData({
           show: true,
-          message:
-            errResponse.error.message || API_ERROR_MESSAGE.VERIFY_OTP,
+          message: errResponse.error.message || API_ERROR_MESSAGE.VERIFY_OTP,
           type: "error",
         });
-        setSubmitting(false); // This will reset isSubmitting in Formik
       });
   };
+
+  // Function to handle OTP resend
+  const handleResendOtp = () => {
+    let payload = {
+      email:sessionStorage.getItem('email'),
+    };
+    AuthApiService.forgotPassword(payload)
+      .then((response) => {
+       
+          setSnackData({
+            show: true,
+            message: response?.message || API_SUCCESS_MESSAGE.OTP_SENT,
+            type: "success",
+          });
+      })
+      .catch((errResponse) => {
+        setSnackData({
+          show: true,
+          message: errResponse?.error?.message || API_ERROR_MESSAGE.INCORRECT_EMAIL,
+          type: "error",
+        });
+      });
+    // Disable the resend button for 2 minutes
+    setIsResendDisabled(true);
+
+    // Start a new 2-minute timer
+    setTimer(120);
+  };
+
+  // Use Effect to update the timer every second
+  useEffect(() => {
+    let countdown;
+
+    if (isResendDisabled && timer > 0) {
+      countdown = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+    } else if (timer === 0) {
+      // Enable resend button after 2 minutes
+      setIsResendDisabled(false);
+      clearInterval(countdown);
+    }
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(countdown);
+  }, [isResendDisabled, timer]);
 
   return (
     <>
       <Formik
-        initialValues={{ 
+        initialValues={{
           email: sessionStorage.getItem("email"),
           otp: "", // Managed by Formik
         }}
         validationSchema={Yup.object().shape({
           otp: Yup.string()
-            .length(6, "OTP must be exactly 5 digits")
+            .length(6, "OTP must be exactly 6 digits")
             .required("OTP is required")
             .matches(/^\d+$/, "OTP must only contain digits"),
         })}
@@ -135,6 +183,19 @@ export default function AuthOTP() {
                     Verify OTP
                   </Button>
                 </AnimateButton>
+              </Grid>
+
+              <Grid item xs={12}>
+                <Button
+                  fullWidth
+                  size="large"
+                  variant="outlined"
+                  color="secondary"
+                  disabled={isResendDisabled} // Disable resend OTP button when timer is active
+                  onClick={handleResendOtp}
+                >
+                  {isResendDisabled ? `Resend OTP in ${Math.floor(timer / 60)}:${String(timer % 60).padStart(2, '0')}` : "Resend OTP"}
+                </Button>
               </Grid>
             </Grid>
           </form>
