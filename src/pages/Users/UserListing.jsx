@@ -206,9 +206,11 @@ const UserListing = () => {
 
   const handleModalClose = () => {
     setIsModalVisible(false);
+    fetchData();
   };
   const handleClose = () => {
     setIsModalVisible(false);
+    fetchData();
   };
 
   
