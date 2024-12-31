@@ -247,10 +247,10 @@ const Listing = () => {
       title: LISTING_PAGE.INDUSTRY,
       dataIndex: "industry",
       key: "industry",
-      filters: [
-        { text: "Manufacturing", value: "Manufacturing" },
-        { text: "Tech", value: "Tech" },
-      ],
+      // filters: [
+      //   { text: "Manufacturing", value: "Manufacturing" },
+      //   { text: "Tech", value: "Tech" },
+      // ],
       onFilter: (value, record) => record.industry.includes(value),
     },
     {
@@ -306,12 +306,12 @@ const Listing = () => {
           </>
         );
       },
-      filters: [
-        { text: "In Progress", value: "In Progress" },
-        { text: "Active", value: "Active" },
-        { text: "Success", value: "Success" },
-        { text: "Failed", value: "Failed" },
-      ],
+      // filters: [
+      //   { text: "In Progress", value: "In Progress" },
+      //   { text: "Active", value: "Active" },
+      //   { text: "Success", value: "Success" },
+      //   { text: "Failed", value: "Failed" },
+      // ],
       onFilter: (value, record) => {
         // Modify the filter logic if status is an array or single value
         const statusArray = Array.isArray(record.status)
