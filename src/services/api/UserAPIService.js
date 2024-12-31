@@ -28,6 +28,11 @@ const _userDetails = (id) => {
   return BaseApiService.get(`/api/v1/users/${id}`, null, null);
 };
 
+
+const _roleDetails = () => {
+  return BaseApiService.get(`/api/v1/roles`, null, null);
+};
+
 export const UserApiService = {
   userCreate: _userCreate,
   userListing: _userListing,
@@ -36,6 +41,7 @@ export const UserApiService = {
   sectorDetails: _sectorDetails,
   industryDetails: _industryDetails,
   userEmailCheck: _userEmailCheck,
+  roleDetails:_roleDetails,
 
 
 };

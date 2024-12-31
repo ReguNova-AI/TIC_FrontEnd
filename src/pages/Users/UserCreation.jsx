@@ -39,6 +39,7 @@ export default function UserCreation({ onHandleClose }) {
   const [skipped, setSkipped] = useState(new Set());
   const [orgData, setOrgData] = useState([]);
   const [industryData, setIndustryData] = useState([]);
+  const [roleData, setRoleData] = useState([]);
   const [sectorData, setSectorData] = useState([]);
   const [selectedOrg, setSelectedOrg] = useState("");
   const [filteredIndustries, setFilteredIndustries] = useState([]);
@@ -125,7 +126,7 @@ export default function UserCreation({ onHandleClose }) {
   const setValuetoNull = ()=>{
     setFormData({
       ...formData,
-      role_id: 4,
+      role_id: null,
       user_first_name: "",
       user_last_name: "",
       user_profile: "", // URL for avatar upload
@@ -306,6 +307,7 @@ export default function UserCreation({ onHandleClose }) {
     fetchOrgDetails();
     fetchSectorDetails();
     fetchIndustryDetails();
+    fetchRole();
   }, []);
 
   const fetchOrgDetails = () => {
@@ -366,6 +368,28 @@ export default function UserCreation({ onHandleClose }) {
         // setFilteredSectors(
         //   sectors.sort((a, b) => a.sector_name.localeCompare(b.sector_name))
         // ); // Sort sectors alphabetically
+      })
+      .catch((errResponse) => {
+        setSnackData({
+          show: true,
+          message:
+            errResponse?.error?.message ||
+            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          type: "error",
+        });
+      });
+  };
+
+  const fetchRole= () => {
+    UserApiService.roleDetails()
+      .then((response) => {
+        setSnackData({
+          show: true,
+          message:
+            response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+          type: "success",
+        });
+        setRoleData(response?.data?.details || []); // Use an empty array as fallback
       })
       .catch((errResponse) => {
         setSnackData({
@@ -476,6 +500,14 @@ export default function UserCreation({ onHandleClose }) {
       ...formData,
       industry_id: selectedIndustry?.industry_id || "",
       industry_name: selectedIndustry?.industry_name || "",
+    });
+  };
+
+  const handleRoleChange = (event) => {
+    const roleId = event.target.value;
+    setFormData({
+      ...formData,
+      role_id: roleId,
     });
   };
 
@@ -676,15 +708,29 @@ export default function UserCreation({ onHandleClose }) {
                 </FormControl>
               </Grid>
               <Grid item xs={12} sm={6}>
-                <TextField
-                  label={FORM_LABEL.ROLE}
-                  variant="outlined"
-                  fullWidth
-                  name="rolename"
-                  value={formData.rolename}
-                  onChange={handleInputChange}
-                  required
-                />
+                <FormControl fullWidth>
+                  <InputLabel>
+                    {FORM_LABEL.ROLE}
+                    <span>*</span>
+                  </InputLabel>
+                  <Select
+                    value={formData.role_id}
+                    onChange={handleRoleChange}
+                    disabled={roleData.length === 0}
+                  >
+                    {/* <MenuItem value="">
+                      <em>None</em>
+                    </MenuItem> */}
+                    {roleData.map((role) => (
+                      <MenuItem
+                        key={role.role_id}
+                        value={role.role_id}
+                      >
+                        {role.role_name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Grid>
             </Grid>
           ) : null}
