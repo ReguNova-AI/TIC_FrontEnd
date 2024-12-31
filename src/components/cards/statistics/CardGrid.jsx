@@ -16,6 +16,7 @@ const CardGrid = ({
   easeSpeed,
   easeFunction,
   avatar,
+  data,
   ...props
 }) => {
   const gridClasses = wide ? "grid grid--wide" : "grid";
@@ -30,7 +31,7 @@ const CardGrid = ({
           {...card}
           easeSpeed={easeSpeed}
           easeFunction={easeFunction}
-          
+          data={data}
         />
       ))}
       

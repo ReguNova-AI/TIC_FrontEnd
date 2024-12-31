@@ -485,11 +485,9 @@ const Card = ({
     >
       <div className={`card__content${loading ? " loading" : ""}`}>
        
-        {counter && (
           <Type5 className="card__counter">
             {counter} 
           </Type5>
-        )}
         
         <div className="card__logo-wrapper">
           <span className="card__logo">{logo}</span>

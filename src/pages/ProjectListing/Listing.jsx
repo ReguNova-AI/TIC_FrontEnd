@@ -66,12 +66,12 @@ const Listing = () => {
   }, []);
 
   // Use effect for initializing the status filter based on location state
-  // useEffect(() => {
-  //   if (filterStatusValue && filterStatusValue != "Total Project") {
-  //     setStatusFilter([filterStatusValue]); // Set the statusFilter if status is passed
-  //   }
-  //   filterData();
-  // }, [filterStatusValue]);
+  useEffect(() => {
+    if (filterStatusValue && filterStatusValue != "Total Project") {
+      setStatusFilter([filterStatusValue]); // Set the statusFilter if status is passed
+    }
+    setFilteredData(filterData());
+  }, [filterStatusValue]);
 
   
 
@@ -152,6 +152,7 @@ const Listing = () => {
 
   // Centralized filtering logic
   const filterData = () => {
+    console.log("data",filteredData)
     return data.filter((item) => {
       console.log("statusFilter",statusFilter,filterStatusValue)
       const matchesStatus =
