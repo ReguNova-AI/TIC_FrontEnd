@@ -1,0 +1,23 @@
+.ant-steps-item-finish .ant-steps-item-icon {
+    background-color: green !important;  /* Green background for the icon */
+    border-color: green !important;      /* Green border for the icon */
+    color: white !important;             /* Set icon color to white */
+  }
+  
+  /* Optional: Change the color of the icon for the active (in-progress) step */
+  .ant-steps-item-process .ant-steps-item-icon {
+    background-color: #1890ff !important;  /* Blue background for the active step */
+    border-color: #1890ff !important;      /* Blue border for the active step */
+    color: white !important;               /* Set icon color to white */
+  }
+  
+  /* Optional: Override the icon for the wait status (inactive steps) */
+  .ant-steps-item-wait .ant-steps-item-icon {
+    background-color: #e8e8e8 !important; /* Grey background for inactive steps */
+    border-color: #e8e8e8 !important;    /* Grey border */
+    color: #bfbfbf !important;            /* Light grey color for icon */
+  }
+
+  .anticon {
+    color:white !important;
+}
