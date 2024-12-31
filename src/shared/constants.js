@@ -11,12 +11,18 @@ export const LOGIN_PAGE = {
   FORGOT_PASSWORD: "Forgot Password?",
   SEND_REQUEST: "Send Request",
   OTP_DESC:"Please enter the OTP (One Time Password) sent to your register email id to complete your verification",
+  NEW_PASSWORD:"New Password",
+  CONFIRM_PASSWORD:"Confirm Password"
 };
 
 export const API_SUCCESS_MESSAGE = {
   FETCHED_SUCCESSFULLY: "Data fetched successfully",
   USER_CREATED: "User created successfully",
   LOGGED_OUT: "Logged out successfully",
+  OTP_SENT:"OTP sent successfully",
+  PASSWORD_RESET:"Password reset successfully",
+  OTP_VERIFY:"OTP verified successfully"
+  
 };
 
 export const API_ERROR_MESSAGE = {
@@ -25,6 +31,10 @@ export const API_ERROR_MESSAGE = {
   FILE_SIZE_200MB: "Total file size should not exceed 200MB.",
   PLEASE_SELECT_DOC_TYPE: "Please select a document type.",
   NO_FILE_SELECTED: "No file selected",
+  INCORRECT_EMAIL:"Email Id is not valid",
+  INVALID_OTP:"Invalid OTP",
+  VERIFY_OTP:"Error occurred while verifying OTP."
+
 };
 
 export const STORAGE_KEYS = {
@@ -186,7 +196,7 @@ export const FORM_LABEL = Object.freeze({
   SECONDARY_CONTACT:"Secondary Contact Details",
   SECTOR_NAME:"Sector Name",
   INDUSTRY_NAME: "Industry Name",
-  ROLE_NAME:"Role"
+  ROLE_NAME:"Role",
 
 });
 export const STEPPER_LABEL = Object.freeze({

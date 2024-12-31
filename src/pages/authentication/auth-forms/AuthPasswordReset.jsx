@@ -24,7 +24,7 @@ import { Formik } from "formik";
 // Project imports
 import AnimateButton from "components/@extended/AnimateButton";
 import { AuthApiService } from "services/api/AuthApiService";
-import { LOGIN_PAGE, API_ERROR_MESSAGE } from "shared/constants";
+import { LOGIN_PAGE, API_ERROR_MESSAGE, API_SUCCESS_MESSAGE } from "shared/constants";
 
 // ============================|| PASSWORD RESET ||============================ //
 
@@ -53,7 +53,7 @@ export default function AuthPasswordReset() {
       .then((response) => {
         setSnackData({
           show: true,
-          message: response?.message || "Password reset successfully.",
+          message: response?.message || API_SUCCESS_MESSAGE.PASSWORD_RESET,
           type: "success",
         });
         navigate("/login"); // Redirect to login page after successful reset
@@ -61,9 +61,10 @@ export default function AuthPasswordReset() {
       .catch((errResponse) => {
         setSnackData({
           show: true,
-          message: errResponse?.error?.message || API_ERROR_MESSAGE,
+          message: errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
+        setSubmitting(false); // This will reset isSubmitting in Formik
       });
   };
 
@@ -104,7 +105,7 @@ export default function AuthPasswordReset() {
               <Grid item xs={12}>
                 <Stack spacing={1}>
                   <InputLabel htmlFor="password-reset">
-                    New Password
+                    {LOGIN_PAGE.NEW_PASSWORD}
                   </InputLabel>
                   <OutlinedInput
                     fullWidth
@@ -149,7 +150,7 @@ export default function AuthPasswordReset() {
               <Grid item xs={12}>
                 <Stack spacing={1}>
                   <InputLabel htmlFor="confirm-password-reset">
-                    Confirm Password
+                  {LOGIN_PAGE.CONFIRM_PASSWORD}
                   </InputLabel>
                   <OutlinedInput
                     fullWidth

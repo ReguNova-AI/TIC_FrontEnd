@@ -20,7 +20,7 @@ import { Formik } from "formik";
 // Project imports
 import AnimateButton from "components/@extended/AnimateButton";
 import { AuthApiService } from "services/api/AuthApiService";
-import { LOGIN_PAGE, API_ERROR_MESSAGE } from "shared/constants";
+import { LOGIN_PAGE, API_ERROR_MESSAGE, API_SUCCESS_MESSAGE } from "shared/constants";
 
 // ============================|| FORGOT PASSWORD||============================ //
 
@@ -32,7 +32,7 @@ export default function AuthForgotPassword() {
     type: "error",
   });
 
-  const handleSubmitForm = (values) => {
+  const handleSubmitForm = (values,{ setSubmitting }) => {
     
     let payload = values;
     AuthApiService.forgotPassword(payload)
@@ -40,7 +40,7 @@ export default function AuthForgotPassword() {
        
           setSnackData({
             show: true,
-            message: response?.message || "success",
+            message: response?.message || API_SUCCESS_MESSAGE.OTP_SENT,
             type: "success",
           });
           sessionStorage.setItem("email",values.email);
@@ -51,9 +51,10 @@ export default function AuthForgotPassword() {
       .catch((errResponse) => {
         setSnackData({
           show: true,
-          message: errResponse?.error?.message || "error",
+          message: errResponse?.error?.message || API_ERROR_MESSAGE.INCORRECT_EMAIL,
           type: "error",
         });
+        setSubmitting(false); // This will reset isSubmitting in Formik
       });
   };
 

@@ -50,7 +50,7 @@ export default function AuthLogin() {
 
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
-  };
+  }; 
 
   const handleSubmitForm = (values, { setSubmitting }) => {
     let payload = values;
@@ -79,7 +79,7 @@ export default function AuthLogin() {
         // On failure, reset the button to enable again
         setSnackData({
           show: true,
-          message: errResponse?.error?.message || "Internal server error",
+          message: errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
 

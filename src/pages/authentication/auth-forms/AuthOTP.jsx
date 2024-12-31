@@ -17,6 +17,7 @@ import { Formik } from "formik";
 // Project imports
 import AnimateButton from "components/@extended/AnimateButton";
 import { AuthApiService } from "services/api/AuthApiService";
+import { API_ERROR_MESSAGE, API_SUCCESS_MESSAGE } from "shared/constants";
 
 // ============================|| OTP - VALIDATION ||============================ //
 
@@ -37,7 +38,7 @@ export default function AuthOTP() {
         if (response.statusCode == 200) {
           setSnackData({
             show: true,
-            message: "OTP verified successfully!",
+            message: API_SUCCESS_MESSAGE.OTP_VERIFY,
             type: "success",
           });
 
@@ -46,7 +47,7 @@ export default function AuthOTP() {
         } else {
           setSnackData({
             show: true,
-            message: response.message || "Invalid OTP",
+            message: response.message || API_ERROR_MESSAGE.INVALID_OTP,
             type: "error",
           });
         }
@@ -55,9 +56,10 @@ export default function AuthOTP() {
         setSnackData({
           show: true,
           message:
-            errResponse.error.message || "Error occurred while verifying OTP.",
+            errResponse.error.message || API_ERROR_MESSAGE.VERIFY_OTP,
           type: "error",
         });
+        setSubmitting(false); // This will reset isSubmitting in Formik
       });
   };
 
