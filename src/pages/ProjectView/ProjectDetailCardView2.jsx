@@ -18,11 +18,17 @@ const AvatarSection = ({ userData }) => (
     {userData?.map((user) => {
       return (
         <Tooltip key={user?.user_id} title={user?.user_name} arrow>
+          {user?.user_profile ?
+            <img src={user?.user_profile} alt={user?.user_name} style={{borderRadius: '50%',width:"40px",height:"40px",border:"1px solid grey" }} />
+          :
           <Avatar
-            alt={user?.user_name}
-            src={avatar1}
-            sx={{ width: 40, height: 40 }}
-          />
+          alt={user?.user_name}
+          src={avatar1}
+          sx={{ width: 40, height: 40 }}
+        />
+          }
+
+         
         </Tooltip>
       );
     })}

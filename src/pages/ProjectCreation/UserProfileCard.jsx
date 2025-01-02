@@ -20,7 +20,11 @@ const UserProfileCard = (props) => {
       <Card variant="outlined" sx={{ display: 'flex', alignItems: 'center',borderRadius:"10px" }}>
         {/* Profile Image */}
         <Box sx={{ padding: '0px 16px' }}>
-          <Avatar alt={props.name} src={profileImage} sx={{ width: 45, height: 45 }} />
+          {props.profile ?
+            <img src={props.profile} alt={props.name} style={{borderRadius: '50%',width:"45px",height:"45px",border:"1px solid grey" }} />
+          :
+            <Avatar alt={props.name} src={profileImage} sx={{ width: 45, height: 45 }} />
+          }
         </Box>
 
         {/* Profile Details */}

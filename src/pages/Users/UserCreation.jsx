@@ -153,30 +153,30 @@ export default function UserCreation({ onHandleClose }) {
       return; // Stop if validation fails
     }
 
-    let filepayload = { documents: [uploadedFileData], type: "jpg" };
-    FileUploadApiService.fileUpload(filepayload)
-      .then((response) => {
-        setSnackData({
-          show: true,
-          message: response?.message || API_SUCCESS_MESSAGE.USER_CREATED,
-          type: "success",
-        });
-        const url = response?.data?.details?.[0];
+    // let filepayload = { documents: [uploadedFileData], type: "jpg" };
+    // FileUploadApiService.fileUpload(filepayload)
+    //   .then((response) => {
+    //     setSnackData({
+    //       show: true,
+    //       message: response?.message || API_SUCCESS_MESSAGE.USER_CREATED,
+    //       type: "success",
+    //     });
+    //     const url = response?.data?.details?.[0];
 
-        setFormData({
-          ...formData,
-          user_profile: url, // URL for avatar upload
-        });
-      })
-      .catch((errResponse) => {
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
-      });
+    //     setFormData({
+    //       ...formData,
+    //       user_profile: url, // URL for avatar upload
+    //     });
+    //   })
+    //   .catch((errResponse) => {
+    //     setSnackData({
+    //       show: true,
+    //       message:
+    //         errResponse?.error?.message ||
+    //         API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+    //       type: "error",
+    //     });
+    //   });
 
     let payload = formData;
     UserApiService.userCreate(payload)

@@ -98,7 +98,7 @@ const MyForm = () => {
   const handleMultiple = (selectedIds)=>{
     const selectedMembers = selectedIds.map((userId) => {
       const member = userData.find((user) => user.user_id === userId);
-      return member ? { user_id: member.user_id, user_name: `${member.user_first_name} ${member.user_last_name}`, user_email: member.user_email } : null;
+      return member ? { user_id: member.user_id, user_name: `${member.user_first_name} ${member.user_last_name}`, user_email: member.user_email, user_profile: member.user_profile } : null;
     }).filter(Boolean);      
     setFormData({
       ...formData,
@@ -309,6 +309,7 @@ const MyForm = () => {
                       id={member.user_id}
                       name={member.user_first_name}
                       role={member.user_email}
+                      profile={member.user_profile}
                       onDelete={handleProfileDelete}
                     />
                   ) : null;
