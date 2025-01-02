@@ -94,7 +94,10 @@ const _makeRequest = async (
             error.response.data && error.response.data.error
               ? error.response.data.error.code
               : '';
-
+          if(status === 401)
+          {
+            _signOutUser();
+          }
           if (status === 404 && errCode === 'BE-304') {
             // const navigation = SessionService.getNavigationInstance();
             // if (navigation && navigation.navigate) {
@@ -115,8 +118,10 @@ const _makeRequest = async (
 };
 
 const _signOutUser = () => {
-  //   SessionService.clear();
-  //   DispatcherService.dispatchAction(actions.invalidateSession());
+    SessionService.clear();
+    sessionStorage.clear();
+    localStorage.clear();
+ 
 };
 
 
