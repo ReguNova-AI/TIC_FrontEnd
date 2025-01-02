@@ -237,13 +237,20 @@ const UserListing = () => {
       key: "profile_url",
       render: (value, record) => {
         // Ensure that 'value' is a string before processing
-        let avatarSrc = null;
-          avatarSrc = value;
-        
-    
+        let avatarSrc = value.profile_url || "";
+  
         return (
-          <Avatar icon={<UserOutlined />}>
-            {avatarSrc && <img src={avatarSrc} />} {/* Fallback text */}
+          
+          <Avatar
+            key={value.user_id}
+            sx={{ width: 40, height: 40 }}
+            alt={value.user_first_name}
+          >
+            {avatarSrc ? (
+              <img src={avatarSrc} alt={value.user_first_name} style={{borderRadius: '50%' }} />
+            ) : (
+              <UserOutlined /> // Fallback to icon if no image
+            )}
           </Avatar>
         );
       },
