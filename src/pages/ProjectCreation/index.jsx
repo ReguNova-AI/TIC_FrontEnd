@@ -133,10 +133,14 @@ const MyForm = () => {
       no_of_runs: 0,
       success_count: 0,
       fail_count: 0,
-      last_run: submissionStatus === 'Draft' ? '' : formatDateToCustomFormat(new Date()),
+      // last_run: submissionStatus === 'Draft' ? null : formatDateToCustomFormat(new Date()),
       mapping_standards: "#erfg5674",
       summary_report: {},
     };
+    if (submissionStatus !== 'Draft') {
+      payload.last_run = formatDateToCustomFormat(new Date());
+    }
+
 
     ProjectApiService.projectCreate(payload)
       .then((response) => {

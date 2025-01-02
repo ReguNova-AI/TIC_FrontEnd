@@ -79,10 +79,20 @@ const Listing = () => {
     sector_name,
     updated_at
   ) => {
+
+    const today = new Date();
+  today.setHours(0, 0, 0, 0); // Set time to midnight to only compare date
+
+  // Check if the expiry date is greater than today
+  const expiryDate = new Date(date_of_expiry);
+  
+  // If the expiry date is in the past, set status to 'Expired'
+  const finalStatus = expiryDate < today ? 'Expired' : certificate_status;
+
     return {
       index,
       certificate_name,
-      certificate_status,
+      certificate_status:finalStatus,
       certificate_subject,
       created_at,
       created_by_id,
@@ -261,8 +271,6 @@ const Listing = () => {
         const statusArray = Array.isArray(certificate_status)
           ? certificate_status
           : [certificate_status];
-
-        console.log("statusArray", statusArray);
 
         // Return the mapped JSX elements
         return (

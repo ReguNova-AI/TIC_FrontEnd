@@ -188,7 +188,7 @@ export default function ProjectTable() {
           );
         });
 
-        const limitedData = newData.slice(-6);
+        const limitedData = newData.slice(0, 6);
 
         setData(limitedData);
         setFilteredData(limitedData);

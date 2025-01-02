@@ -65,6 +65,11 @@ export const getStatusChipProps = (status) => {
       borderColor = 'error';
       title = 'Failed';
       break;
+    case 'Expired':
+        color = '#fff1f0';
+        borderColor = 'error';
+        title = 'Expired';
+        break;
     default:
       color = '#e6f7ff';
       borderColor = 'primary';
