@@ -11,6 +11,7 @@ import IndustriesListing from './IndustryListing';
 import RoleListing from './RoleListing';
 import SectorCreation from './SectorCreation';
 import IndustryCreation from './IndustryCreation';
+import { BUTTON_LABEL } from 'shared/constants';
 
 const { Text } = Typography;
 
@@ -23,21 +24,29 @@ const AdminConfig = () => {
       title: 'Sectors',
       icon: <AppstoreAddOutlined />,
       description: 'Manage different business sectors.',
+      listing:'true',
+      creation:'true',
     },
     {
       title: 'Industries',
       icon: <DatabaseOutlined />,
       description: 'Handle industry-specific configurations.',
+      listing:'true',
+      creation:'true',
     },
     {
       title: 'Roles',
       icon: <UsergroupAddOutlined />,
       description: 'Manage user roles and access permissions.',
+      listing:'true',
+      creation:'true',
     },
     {
       title: 'Permissions',
       icon: <LockOutlined />,
       description: 'Configure permissions for different roles.',
+      listing:'true',
+      creation:'false',
     },
   ];
 
@@ -76,21 +85,26 @@ const AdminConfig = () => {
 
               {/* Buttons Side by Side */}
               <Space style={{ width: '100%' }} size="middle">
+                {tab.listing === "true" &&
                 <Button
                  type="default"
                   onClick={() => handleButtonClick('List', tab)}
                   
                 >
-                  List View
+                   {BUTTON_LABEL.LIST_VIEW}
                 </Button>
+                }
+                {tab.creation === "true" &&
                 <Button
                 type="primary"
+                style={{ background: "#003a8c", color: "#ffffff" }}
                   
                   onClick={() => handleButtonClick('Create', tab)}
                   
                 >
-                  Create
+                  {BUTTON_LABEL.ADD_NEW}
                 </Button>
+                }
               </Space>
             </Card>
           </Col>

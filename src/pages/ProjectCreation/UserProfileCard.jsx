@@ -30,7 +30,7 @@ const UserProfileCard = (props) => {
               {props.name}
             </Typography>
             <Typography variant="body2" className="ellipsis-text" sx={{ color: 'text.secondary' }}>
-              {props.role} {props.id}
+              {props.role}
             </Typography>
           </CardContent>
 

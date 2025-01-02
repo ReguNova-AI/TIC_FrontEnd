@@ -143,7 +143,9 @@ export const BUTTON_LABEL = Object.freeze({
   SKIP: "Skip",
   NEXT: "Next",
   FINISH: "Finish",
-  CREATE_ORGANIZATION:"Create Organization"
+  CREATE_ORGANIZATION:"Create Organization",
+  LIST_VIEW:"List View",
+  ADD_NEW:"Add New"
 });
 
 export const GENERIC_DATA_LABEL = Object.freeze({

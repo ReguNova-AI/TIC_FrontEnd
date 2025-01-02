@@ -48,9 +48,9 @@ const RoleCreation = () => {
           message: response.message,
           type: "success",
         });
-        navigate("/projectView", {
-          state: { projectName: formData.certificate_name }, // Pass props here
-        });
+        // navigate("/projectView", {
+        //   state: { projectName: formData.certificate_name }, // Pass props here
+        // });
       })
       .catch((errResponse) => {
         setSnackData({

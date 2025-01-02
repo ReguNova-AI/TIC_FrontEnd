@@ -133,7 +133,7 @@ export default function Profile() {
         <Stack direction="row" spacing={1.25} alignItems="center" sx={{ p: 0.5 }}>
           <Avatar alt="profile user" src={avatar1} size="sm" />
           <Typography variant="subtitle1" sx={{ textTransform: 'capitalize' }}>
-            John Doe
+            {userdetails[0]?.user_first_name} {userdetails[0]?.user_last_name}
           </Typography>
         </Stack>
       </ButtonBase>
@@ -166,9 +166,9 @@ export default function Profile() {
                         <Stack direction="row" spacing={1.25} alignItems="center">
                           <Avatar alt="profile user" src={avatar1} sx={{ width: 32, height: 32 }} />
                           <Stack>
-                            <Typography variant="h6">John Doe</Typography>
+                            <Typography variant="h6"> {userdetails[0]?.user_first_name} {userdetails[0]?.user_last_name}</Typography>
                             <Typography variant="body2" color="text.secondary">
-                              UI/UX Designer
+                            {userdetails[0]?.user_email}
                             </Typography>
                           </Stack>
                         </Stack>

@@ -5,7 +5,18 @@ const _userCreate = (payload) => {
 };
 
 const _userListing = () => {
-  return BaseApiService.get(`/api/v1/users`, null, null);
+  const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
+  const id = userdetails[0]?.user_id;
+  const role = userdetails[0]?.role_name;
+ 
+  if(role === "Super Admin")
+  {
+    return BaseApiService.get(`/api/v1/users`, null, null);
+  }
+  else {
+  return BaseApiService.get(`/api/v1/org/users?industry_id=`, null, null);
+  }
+ 
 };
 
 const _orgDetails = () => {

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   TextField,
   Button,
@@ -21,18 +21,18 @@ import { Link as RouterLink, useNavigate } from "react-router-dom";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import { formatDateToCustomFormat } from "shared/utility";
-import { API_ERROR_MESSAGE, BUTTON_LABEL, FORM_LABEL, HEADING } from "shared/constants";
-
+import { API_ERROR_MESSAGE, API_SUCCESS_MESSAGE, BUTTON_LABEL, FORM_LABEL, HEADING } from "shared/constants";
+import { UserApiService } from "services/api/UserAPIService";
 
 const MyForm = () => {
   const [submissionStatus, setSubmissionStatus] = useState("");
   const navigate = useNavigate();
+  const [userData, setUserData] = useState([]); // Initially, set userData as an empty array
   const [snackData, setSnackData] = useState({
     show: false,
     message: "",
     type: "error",
   });
-
 
   const [formData, setFormData] = useState({
     projectName: "",
@@ -40,9 +40,37 @@ const MyForm = () => {
     projectDesc: "",
     teamMembers: [], // Array to hold selected team members
     regulatory: "",
+    invite_Users:[],
     document: {},
     status: "",
   });
+
+  // Fetch the user data when the component mounts
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
+  const fetchUserData = () => {
+    UserApiService.userListing()
+      .then((response) => {
+        if (response && response?.data) {
+          setUserData(response?.data?.details); // Assuming response.data contains the user list
+          setSnackData({
+            show: true,
+            message: response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+            type: "success",
+          });
+        }
+      })
+      .catch((errResponse) => {
+        setSnackData({
+          show: true,
+          message:
+            errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          type: "error",
+        });
+      });
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -67,18 +95,31 @@ const MyForm = () => {
     });
   };
 
+  const handleMultiple = (selectedIds)=>{
+    const selectedMembers = selectedIds.map((userId) => {
+      const member = userData.find((user) => user.user_id === userId);
+      return member ? { user_id: member.user_id, user_name: `${member.user_first_name} ${member.user_last_name}`, user_email: member.user_email } : null;
+    }).filter(Boolean);      
+    setFormData({
+      ...formData,
+      invite_Users: selectedMembers,
+    });
+    return selectedMembers;
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
     const updatedStatus = submissionStatus === 'Draft' ? 'Draft' : 'In Progress';
+    const selectedUserData=handleMultiple(formData.teamMembers);
 
     const payload = {
       project_name: formData.projectName,
       project_no: formData.projectNo,
       project_description: formData.projectDesc,
       regulatory_standard: formData.regulatory,
-      invite_members: formData.teamMembers,
-      documents: formData.document,
+      invite_members: selectedUserData,
+      documents: formData.document, 
       org_id: userdetails[0]?.org_id,
       org_name: userdetails[0]?.org_name,
       created_by_id: userdetails[0]?.user_id,
@@ -97,31 +138,23 @@ const MyForm = () => {
       summary_report: {},
     };
 
-    console.log("payload",payload);
-
     ProjectApiService.projectCreate(payload)
       .then((response) => {
-        // On success, you can add any additional logic here
-        
-          setSnackData({
-            show: true,
-            message: response.message,
-            type: "success",
-          });
-          navigate("/projectView" , {
-            state: {projectName: formData.projectName }, // Pass props here
-          });
-        
+        setSnackData({
+          show: true,
+          message: response.message,
+          type: "success",
+        });
+        const projectId= response?.data?.details?.[0].project_id
+        navigate(`/projectView/${projectId}`, { state: { projectId:projectId,projectName: formData.projectName } });
       })
       .catch((errResponse) => {
-        
         setSnackData({
           show: true,
           message: errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
       });
-    
   };
 
   const handleProfileDelete = (id) => {
@@ -130,14 +163,6 @@ const MyForm = () => {
       teamMembers: formData.teamMembers.filter((memberId) => memberId !== id),
     });
   };
-
-  // Predefined list of users to be selected
-  const teamMembersList = [
-    { id: 1, name: "Murtaza Salumber", role: "Software Developer" },
-    { id: 2, name: "Ali Khan", role: "Project Manager" },
-    { id: 3, name: "Sara Ahmed", role: "UI/UX Designer" },
-    { id: 4, name: "John Doe", role: "Backend Developer" },
-  ];
 
   return (
     <>
@@ -195,11 +220,11 @@ const MyForm = () => {
                 helperText={`${formData.projectDesc.length}/200`}
                 FormHelperTextProps={{
                   sx: {
-                    textAlign: "right", // Float the text to the right
-                    width: "100%", // Make sure it spans the full width
-                    position: "absolute", // Position it inside the box
-                    bottom: "8px", // Adjust bottom margin to place it within the box
-                    right: "10px", // Adjust to your preference for the right padding
+                    textAlign: "right",
+                    width: "100%",
+                    position: "absolute",
+                    bottom: "8px",
+                    right: "10px",
                     color:
                       formData.projectDesc.length > 180
                         ? "red"
@@ -207,7 +232,7 @@ const MyForm = () => {
                   },
                 }}
                 sx={{
-                  position: "relative", // Make the parent position relative for absolute positioning of the helper text
+                  position: "relative",
                 }}
               />
             </Grid>
@@ -234,7 +259,7 @@ const MyForm = () => {
               </FormControl>
             </Grid>
 
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={8}>
               <FormControl fullWidth>
                 <InputLabel id="teamMembers-label">
                   {FORM_LABEL.INVITE_MEMBERS}
@@ -248,13 +273,13 @@ const MyForm = () => {
                   renderValue={(selected) => (
                     <Box sx={{ display: "flex", flexWrap: "wrap" }}>
                       {selected.map((value) => {
-                        const member = teamMembersList.find(
-                          (member) => member.id === value
+                        const member = userData.find(
+                          (member) => member.user_id === value
                         );
                         return (
                           <Chip
                             key={value}
-                            label={member.name}
+                            label={member.user_email}
                             sx={{ margin: 0.5 }}
                           />
                         );
@@ -262,28 +287,28 @@ const MyForm = () => {
                     </Box>
                   )}
                 >
-                  {teamMembersList.map((member) => (
-                    <MenuItem key={member.id} value={member.id}>
-                      {member.name} - {member.role}
+                  {userData.map((member) => (
+                    <MenuItem key={member.user_id} value={member.user_id}>
+                      {member.user_first_name} {member.user_last_name} - {member.user_email}
                     </MenuItem>
                   ))}
                 </Select>
               </FormControl>
             </Grid>
 
-            {/* Render Profile Cards for Selected Team Members (after the Invite Dropdown) */}
+            {/* Render Profile Cards for Selected Team Members */}
             <Grid item xs={12} sm={12}>
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
                 {formData.teamMembers.map((selectedId) => {
-                  const member = teamMembersList.find(
-                    (user) => user.id === selectedId
+                  const member = userData.find(
+                    (user) => user.user_id === selectedId
                   );
                   return member ? (
                     <UserProfileCard
-                      key={member.id}
-                      id={member.id}
-                      name={member.name}
-                      role={member.role}
+                      key={member.user_id}
+                      id={member.user_id}
+                      name={member.user_first_name}
+                      role={member.user_email}
                       onDelete={handleProfileDelete}
                     />
                   ) : null;
@@ -295,16 +320,13 @@ const MyForm = () => {
             <Grid item xs={12} sm={8}>
               <DropZoneFileUpload label={FORM_LABEL.DOCUMENT_UPLOAD} typeSelect={true} handleSubmitDocument={handleFileChange} maxFile={0}/>
             </Grid>
-            {/* <Grid item xs={12} sm={6}>
-            <DropZoneFileUpload label="Custom Regulatory Upload" />
-          </Grid> */}
 
             <Grid item xs={12} sm={12}>
               <Button
                 type="submit"
                 variant="contained"
                 onClick={() => {
-                  setSubmissionStatus("In Progress"); // Set status to in progress
+                  setSubmissionStatus("In Progress");
                 }}
                 style={{
                   background: "#003a8c",
@@ -318,7 +340,7 @@ const MyForm = () => {
                 type="submit"
                 variant="outlined"
                 onClick={() => {
-                  setSubmissionStatus("Draft"); // Set status to in progress
+                  setSubmissionStatus("Draft");
                 }}
                 style={{
                   float: "right",

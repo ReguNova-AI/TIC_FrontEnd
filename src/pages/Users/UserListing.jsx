@@ -102,10 +102,6 @@ const UserListing = () => {
     };
   };
 
- 
-
-
-
   const fetchData = () => {
     UserApiService.userListing()
       .then((response) => {

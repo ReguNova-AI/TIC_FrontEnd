@@ -13,21 +13,22 @@ const StyledSimpleCard = styled.div`
   cursor: pointer;
   color: #001738;
   border: 1px solid ${({ iconColor }) => iconColor};
-  border-radius:16px;
+  border-radius: 16px;
   background-color: ${({ cardColor }) => cardColor};
-  transition: height ${({ easeSpeed }) => easeSpeed}s
-    ${({ easeFunction }) => easeFunction}, transform ${({ easeSpeed }) =>
-  2 * easeSpeed}s
-    ${({ easeFunction }) => easeFunction} 0.5s, opacity ${({ easeSpeed }) =>
-  2 * easeSpeed}s
-    ${({ easeFunction }) => easeFunction} 0.5s;
+  transition:
+    height ${({ easeSpeed }) => easeSpeed}s
+      ${({ easeFunction }) => easeFunction},
+    transform ${({ easeSpeed }) => 2 * easeSpeed}s
+      ${({ easeFunction }) => easeFunction} 0.5s,
+    opacity ${({ easeSpeed }) => 2 * easeSpeed}s
+      ${({ easeFunction }) => easeFunction} 0.5s;
   text-align: center;
   opacity: 0;
   transform: translateY(8px);
 
   &.fade-in {
-      transform: translateY(0);
-      opacity: 1;
+    transform: translateY(0);
+    opacity: 1;
   }
 
   ::before {
@@ -37,14 +38,14 @@ const StyledSimpleCard = styled.div`
     left: 0;
     width: 100%;
     height: 100%;
-   
+
     box-sizing: border-box;
-    
+
     border-radius: 12px;
     /* box-shadow: 0 4px 6px -10px ${({ shadowColor }) =>
       transparentize(0.875, darken(0.125, shadowColor))},
       0 2px 12px -14px ${({ shadowColor }) =>
-        transparentize(0.625, darken(0.125, shadowColor))}; */
+      transparentize(0.625, darken(0.125, shadowColor))}; */
     transition: all ${({ easeSpeed }) => easeSpeed}s
       ${({ easeFunction }) => easeFunction};
   }
@@ -60,7 +61,7 @@ const StyledSimpleCard = styled.div`
 
     .card__title {
       margin: 0 auto;
-      font-size:"16px";
+      font-size: "16px";
     }
 
     p {
@@ -117,7 +118,6 @@ const StyledSimpleCard = styled.div`
     width: 56px;
     height: 56px;
     display: block;
-    
 
     .card__logo {
       position: absolute;
@@ -147,7 +147,7 @@ const StyledSimpleCard = styled.div`
   .card__counter {
     position: absolute;
     transition: color ${({ easeSpeed }) => easeSpeed}s
-        ${({ easeFunction }) => easeFunction};
+      ${({ easeFunction }) => easeFunction};
     color: ${({ iconColor }) => iconColor};
     bottom: 12px;
     width: 100%;
@@ -174,12 +174,12 @@ const StyledSimpleCard = styled.div`
       transform: scale(1.05, 1.0375);
       border-color: ${({ iconColor }) => iconColor};
       background-color: ${({ cardColor }) => cardColor};
-      
+
       /* box-shadow: 0 4px 6px -2px ${({ shadowColor }) =>
         transparentize(0.875, darken(0.125, shadowColor))},
         0 2px 12px 0
           ${({ shadowColor }) =>
-            transparentize(0.625, darken(0.125, shadowColor))}; */
+        transparentize(0.625, darken(0.125, shadowColor))}; */
     }
 
     .avatar--zoom {
@@ -264,7 +264,6 @@ const StyledSimpleCard = styled.div`
   &:hover {
     &.card--wide::before {
       transform: scale(1.0225, 1.0625);
-      
     }
   }
 
@@ -376,26 +375,25 @@ const Card = ({
   easeFunction = "linear",
   simpleCard,
   addPipe = false,
-  children
+  children,
 }) => {
   const cardClasses = wide
     ? "card card--wide"
     : addPipe
-    ? "card add-pipe"
-    : "card";
+      ? "card add-pipe"
+      : "card";
   const pluralFormat = counter === 1 ? "card" : "cards";
   const [star, toggleStar] = useState(favorited);
   const [loading, setToLoading] = useState(false);
   const navigate = useNavigate();
-  
 
   const handleClick = (title) => {
     // e.stopPropagation();
-    setToLoading(true)
-    navigate("/projects",{state:{filterStatusValue:title}});
+    setToLoading(true);
+    navigate("/projects", { state: { filterStatusValue: title } });
   };
 
-  const handleOptions = e => {
+  const handleOptions = (e) => {
     e.stopPropagation();
   };
 
@@ -404,7 +402,6 @@ const Card = ({
   useEffect(() => {
     updateCardVisibility(true);
   }, []);
-
 
   if (simpleCard) {
     return (
@@ -427,7 +424,7 @@ const Card = ({
           <Type4
             className="card__title"
             // style={{ width: "104px", margin: "0 auto" }}
-            style={{fontSize:"16px", margin:"0 auto"}}
+            style={{ fontSize: "16px", margin: "0 auto" }}
           >
             {title}
           </Type4>
@@ -460,11 +457,7 @@ const Card = ({
           </div>
           <div className="card__title">
             <Type4>{title}</Type4>
-            {counter && (
-              <Type5 className="card__counter">
-                {counter} 
-              </Type5>
-            )}
+            <Type5 className="card__counter">{counter || 0}</Type5>
           </div>
         </div>
       </StyledSimpleCard>
@@ -484,11 +477,8 @@ const Card = ({
       onClick={() => handleClick(title)}
     >
       <div className={`card__content${loading ? " loading" : ""}`}>
-       
-          <Type5 className="card__counter">
-            {counter} 
-          </Type5>
-        
+        <Type5 className="card__counter">{counter || 0}</Type5>
+
         <div className="card__logo-wrapper">
           <span className="card__logo">{logo}</span>
 
@@ -499,8 +489,7 @@ const Card = ({
         <Type4
           className="card__title"
           // style={{ width: "104px", margin: "0 auto" }}
-          style={{fontSize:"16px", margin:"0 auto"}}
-
+          style={{ fontSize: "16px", margin: "0 auto" }}
         >
           {title}
         </Type4>
