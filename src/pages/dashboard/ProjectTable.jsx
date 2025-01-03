@@ -214,7 +214,7 @@ export default function ProjectTable() {
   };
 
   return (
-    <Box style={{padding:"10px 20px"}}>
+    <Box style={{padding:"10px 20px", minHeight:"428px",alignContent: data.length > 0 ? "normal" :"space-around"}}>
       {data.length > 0 &&
       <Box style={{float:"right"}}>
       <ToggleButtons onViewModeChange={handleViewModeChange} viewSelected="card" />

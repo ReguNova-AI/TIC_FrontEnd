@@ -141,7 +141,6 @@ const OrganizationListing = () => {
   // Centralized filtering logic
   const filterData = () => {
     return data.filter((item) => {
-      console.log("statusFilter",statusFilter,filterStatusValue)
       const matchesStatus =
         statusFilter.length === 0 ||
         statusFilter.includes(filterStatusValue);
@@ -166,8 +165,8 @@ const OrganizationListing = () => {
   };
 
   // Handle project navigation
-  const handleNavigateToProject = (org_id) => {
-    navigate(`/projectView/${org_id}`, { state: { org_id } });
+  const handleNavigateToOrganization = (org_id) => {
+    // navigate(`/projectView/${org_id}`, { state: { org_id } });
   };
 
   // Handle pagination change
@@ -188,9 +187,11 @@ const OrganizationListing = () => {
 
   const handleModalClose = () => {
     setIsModalVisible(false);
+    fetchData();
   };
   const handleClose = () => {
     setIsModalVisible(false);
+    fetchData();
   };
 
 
@@ -203,7 +204,7 @@ const OrganizationListing = () => {
       key: "org_name",
       render: (text, record) => (
         <a
-          onClick={() => handleNavigateToProject(record.index)}
+          onClick={() => handleNavigateToOrganization(record.index)}
           style={{ color: "#1890ff", cursor: "pointer" }}
         >
           {text}

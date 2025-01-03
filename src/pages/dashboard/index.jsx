@@ -97,7 +97,7 @@ export default function DashboardDefault() {
           </Grid>
           <Grid item />
         </Grid>
-        <MainCard sx={{ mt: 2 }} content={false} style={{boxShadow:"6px 12px 20px #e4e4e4",minHeight:"428px",alignContent:"space-evenly"}}>
+        <MainCard sx={{ mt: 2 }} content={false} style={{boxShadow:"6px 12px 20px #e4e4e4",minHeight:"428px"}}>
           <ProjectTable />
         </MainCard>
       </Grid>

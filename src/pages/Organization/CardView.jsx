@@ -23,6 +23,7 @@ import {
   GENERIC_DATA_LABEL,
 } from "shared/constants";
 import { getStatusChipProps } from "shared/utility";
+import { useLocation, useNavigate } from "react-router-dom";
 
 // Function to generate the status chip for each status
 const getStatusChip = (status) => {
@@ -54,6 +55,11 @@ const AvatarSection = () => (
 );
 
 const CardView = ({ data,gridValue }) => {
+  const navigate = useNavigate();
+  const handleNavigateToProject = (org_id) => {
+    navigate(`/projectView/${org_id}`, { state: { org_id } });
+  };
+
   return (
     <Grid container spacing={3} style={{ marginTop: "20px" }}>
       {data.map((item) => (

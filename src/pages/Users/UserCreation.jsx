@@ -448,11 +448,15 @@ export default function UserCreation({ onHandleClose }) {
 
     // Find the selected organization
     const selectedOrganization = orgData.find((org) => org.org_id === orgId);
-    const industryIds = JSON.parse(selectedOrganization?.industries || "[]");
+    let industryIds = JSON.parse(selectedOrganization?.industries || "[]");
 
     const sectors = Array.isArray(selectedOrganization?.sector_id)
       ? selectedOrganization.sector_id
       : [];
+
+      if (!Array.isArray(industryIds)) {
+        industryIds = [industryIds]; // Wrap in an array if it's not already an array
+    }
 
     // Filter industries based on the organization's available industries
     const availableIndustries = industryData.filter((industry) =>
