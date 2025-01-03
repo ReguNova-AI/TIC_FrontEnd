@@ -10,6 +10,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
+import { Empty } from 'antd';
 
 // third-party
 import { NumericFormat } from 'react-number-format';
@@ -191,7 +192,6 @@ export default function ProjectTable() {
         const limitedData = newData.slice(0, 6);
 
         setData(limitedData);
-        setFilteredData(limitedData);
         setLoading(false);
       })
       .catch((errResponse) => {
@@ -202,6 +202,7 @@ export default function ProjectTable() {
             API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
+        setSnackData({
       });
   };
 
@@ -211,10 +212,13 @@ export default function ProjectTable() {
 
   return (
     <Box style={{padding:"10px 20px"}}>
+      {data.length > 0 &&
       <Box style={{float:"right"}}>
       <ToggleButtons onViewModeChange={handleViewModeChange} viewSelected="card" />
       </Box>
-      {viewMode === "list"? 
+      }
+      {data.length > 0 ?
+      viewMode === "list"? 
       <TableContainer
         sx={{
           width: '100%',
@@ -257,7 +261,7 @@ export default function ProjectTable() {
       </TableContainer>
       :
       <CardView data={data} gridValue="2"/>
-          }
+      : <Empty />}
     </Box>
   );
 }

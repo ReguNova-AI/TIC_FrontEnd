@@ -160,6 +160,7 @@ const Listing = () => {
             API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
+        setLoading(false);
       });
   };
 
