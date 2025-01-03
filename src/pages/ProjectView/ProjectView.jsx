@@ -61,8 +61,7 @@ const ProjectView = () => {
       });
   };
 
-  const UpdateProjectDetails = () => { 
-    let payload = projectData;
+  const UpdateProjectDetails = (payload) => { 
     ProjectApiService.projectUpdate(payload)
       .then((response) => {
         setSnackData({
@@ -96,13 +95,10 @@ const ProjectView = () => {
       ...updatedResponse.documents,
       ...uploadedDocument
     ];
-
-    console.log("updatedResponse",updatedResponse)
-
     SetProjectData(updatedResponse);
     setOpenModal(false); // Close the modal after upload
     setLoading(true);
-    UpdateProjectDetails();
+    UpdateProjectDetails(updatedResponse);
   };
 
 
