@@ -57,7 +57,7 @@ const CountView = () => {
       .then((response) => {
         setData(response.data.details);
         // Update the cards with the new counts from API response
-        const updatedCards = updateCardCounts([...content.cards1], response.data.details);
+        const updatedCards = updateCardCounts([...content.cards1], response?.data?.details);
         setUpdatedCards(updatedCards); // Update the state with new card data
       })
       .catch((errResponse) => {
@@ -66,6 +66,7 @@ const CountView = () => {
           message: errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
+        setUpdatedCards([...content.cards1])
       });
   };
 
