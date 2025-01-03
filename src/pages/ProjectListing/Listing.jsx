@@ -375,7 +375,9 @@ const Listing = () => {
 
             {/* Search Input and Popover Filter */}
             <Space>
-              <ToggleButtons onViewModeChange={handleViewModeChange} />
+              {paginatedData.length > 0 &&
+                <ToggleButtons onViewModeChange={handleViewModeChange} />
+              }
               <FormControl fullWidth>
                 <InputLabel htmlFor="outlined-adornment-search">
                   {FORM_LABEL.SEARCH}
