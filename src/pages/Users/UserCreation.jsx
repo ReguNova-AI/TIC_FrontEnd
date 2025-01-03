@@ -57,7 +57,7 @@ export default function UserCreation({ onHandleClose }) {
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
   // Updated formData structure to match the desired format
   const [formData, setFormData] = React.useState({
-    role_id: 4,
+    role_id: "",
     user_first_name: "",
     user_last_name: "",
     user_profile: "", // URL for avatar upload

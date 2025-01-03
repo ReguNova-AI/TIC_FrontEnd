@@ -7,7 +7,8 @@ import {
   Input,
   Popover,
   Button,
-  Spin,Modal,
+  Spin,
+  Modal,
 } from "antd";
 import { Chip } from "@mui/material";
 import FormControl from "@mui/material/FormControl";
@@ -85,7 +86,7 @@ const OrganizationListing = () => {
       org_url,
       org_address,
       sector,
-      industry
+      industry,
     };
   };
 
@@ -101,13 +102,22 @@ const OrganizationListing = () => {
         });
 
         const newData = response?.data?.details.map((org, index) => {
+          const addressParts = [];
+          if (org.org_address?.city) addressParts.push(org.org_address?.city);
+          if (org.org_address?.state) addressParts.push(org.org_address?.state);
+          if (org.org_address?.street) addressParts.push(org.org_address?.street);
+          if (org.org_address?.country) addressParts.push(org.org_address?.country);
+
+          // Join the address parts with a comma
+          const address = addressParts.join(", ");
+
           return createData(
             org.org_id, // index
-            org.org_email, 
-            org.org_logo, 
-            org.org_name, 
-            org.org_url, 
-            org.org_address.city +", "+ org.org_address.state +", "+ org.org_address.country,
+            org.org_email,
+            org.org_logo,
+            org.org_name,
+            org.org_url,
+            address,
             org.sector_name,
             org.industry_names
           );
@@ -142,8 +152,7 @@ const OrganizationListing = () => {
   const filterData = () => {
     return data.filter((item) => {
       const matchesStatus =
-        statusFilter.length === 0 ||
-        statusFilter.includes(filterStatusValue);
+        statusFilter.length === 0 || statusFilter.includes(filterStatusValue);
       const matchesIndustry =
         industryFilter.length === 0 || industryFilter.includes(item.industry);
       const matchesSearchText =
@@ -194,8 +203,6 @@ const OrganizationListing = () => {
     fetchData();
   };
 
-
-
   // Table columns
   const columns = [
     {
@@ -241,7 +248,6 @@ const OrganizationListing = () => {
       dataIndex: "industry",
       key: "industry",
     },
-    
   ];
 
   return (
@@ -336,8 +342,14 @@ const OrganizationListing = () => {
             <CardView data={paginatedData} />
           )}
         </Space>
-        <Modal title={HEADING.CREATE_USER} visible={isModalVisible} onCancel={handleModalClose} footer={null} width={800}>
-          <OrgCreation onHandleClose={(e)=>handleClose()}/>
+        <Modal
+          title={HEADING.CREATE_USER}
+          visible={isModalVisible}
+          onCancel={handleModalClose}
+          footer={null}
+          width={800}
+        >
+          <OrgCreation onHandleClose={(e) => handleClose()} />
         </Modal>
         <Snackbar
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
