@@ -78,7 +78,7 @@ const ProjectDetailsCardView = ({ data,handleClick }) => {
 
               {/* Render Chips for each status, floated to the right */}
               <div style={{ display: "flex", flexWrap: "wrap" }}>
-                {statusChip(status)}
+                {statusChip(data.status)}
               </div>
             </Box>
 
