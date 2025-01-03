@@ -328,10 +328,12 @@ const Listing = () => {
     {
       title: LISTING_PAGE.ACTION,
       key: "action",
-      render: (_, record) => (
+      dataIndex: "status",
+      render: (_,  { status }) => (
         <Button
           variant="contained"
-          style={{ background: "#003a8c", color: "#ffffff" }}
+          style={{ background: status === "In Progress" ? "#dcdfdf" :"#003a8c", color:status === "In Progress" ? "#959191" : "#ffffff" }}
+          disabled={status === "In Progress" ? true : false}
         >
           {BUTTON_LABEL.RUN_PROJECT}
         </Button>
