@@ -352,7 +352,7 @@ const StyledCard = styled(StyledSimpleCard)`
     }
 
     .card__counter {
-      color: ${transparentize(0.5, "#fff")};
+      color: ${transparentize(0, "#fff")};
     }
 
     .card__favorited path {
