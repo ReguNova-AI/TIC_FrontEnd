@@ -61,7 +61,7 @@ const StyledSimpleCard = styled.div`
 
     .card__title {
       margin: 0 auto;
-      font-size: "16px";
+      font-size: "17px";
     }
 
     p {
@@ -424,7 +424,7 @@ const Card = ({
           <Type4
             className="card__title"
             // style={{ width: "104px", margin: "0 auto" }}
-            style={{ fontSize: "16px", margin: "0 auto" }}
+            style={{ fontSize: "17px", margin: "0 auto" }}
           >
             {title}
           </Type4>
@@ -489,7 +489,7 @@ const Card = ({
         <Type4
           className="card__title"
           // style={{ width: "104px", margin: "0 auto" }}
-          style={{ fontSize: "16px", margin: "0 auto" }}
+          style={{ fontSize: "17px", margin: "0 auto" }}
         >
           {title}
         </Type4>
