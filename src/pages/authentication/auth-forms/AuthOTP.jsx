@@ -38,7 +38,7 @@ export default function AuthOTP() {
     // Example: Send OTP to server for verification
     AuthApiService.verifyOtp(payload)
       .then((response) => {
-        if (response.statusCode === 200) {
+        if (response.statusCode === 200 && response.message !== "Invalid OTP") {
           setSnackData({
             show: true,
             message: API_SUCCESS_MESSAGE.OTP_VERIFY,

@@ -97,6 +97,8 @@ const ProjectView = () => {
       ...uploadedDocument
     ];
 
+    console.log("updatedResponse",updatedResponse)
+
     SetProjectData(updatedResponse);
     setOpenModal(false); // Close the modal after upload
     setLoading(true);

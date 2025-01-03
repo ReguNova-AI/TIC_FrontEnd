@@ -95,7 +95,7 @@ const CardView = ({ data,gridValue }) => {
                   </Grid>
                   <Grid item xs={5}>
                     <Typography variant="body2" color="text.primary">
-                      <b>{LISTING_PAGE.MAPPING_STANDARDS}: </b>
+                      <b>{LISTING_PAGE.REGULATORY_SANTARDS}: </b>
                     </Typography>
                   </Grid>
                   <Grid item xs={4}>
@@ -112,7 +112,7 @@ const CardView = ({ data,gridValue }) => {
                   </Grid>
                   <Grid item xs={5}>
                     <Typography variant="body2" color="text.secondary">
-                      {item.mapping_no}
+                      {item.regulatory_standard}
                     </Typography>
                   </Grid>
                   <Grid item xs={4}>

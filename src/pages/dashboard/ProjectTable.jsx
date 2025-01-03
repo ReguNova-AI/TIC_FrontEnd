@@ -152,6 +152,7 @@ export default function ProjectTable() {
     runs,
     industry,
     mapping_no,
+    regulatory_standard,
     start_date,
     last_run,
     status
@@ -163,6 +164,7 @@ export default function ProjectTable() {
       runs,
       industry,
       mapping_no,
+      regulatory_standard,
       start_date,
       last_run,
       status,
@@ -183,6 +185,7 @@ export default function ProjectTable() {
             project.no_of_runs, // runs
             project.industry_name, // industry
             project.mapping_standards, // mapping_no
+            project.regulatory_standard,
             formatDate(project.created_at), // start_date
             formatDate(project.last_run), // last_run
             project.status // status

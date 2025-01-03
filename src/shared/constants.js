@@ -78,6 +78,7 @@ export const LISTING_PAGE = Object.freeze({
   NO_OF_RUNS: "No. of runs",
   INDUSTRY: "Industry",
   MAPPING_STANDARDS: "Mapping Standards",
+  REGULATORY_SANTARDS: "Regulatory",
   START_DATE: "Created Date",
   LAST_RUN: "Last Run",
   STATUS: "Status",

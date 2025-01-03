@@ -82,6 +82,7 @@ const Listing = () => {
     runs,
     industry,
     mapping_no,
+    regulatory_standard,
     start_date,
     last_run,
     status
@@ -93,6 +94,7 @@ const Listing = () => {
       runs,
       industry,
       mapping_no,
+      regulatory_standard,
       start_date,
       last_run,
       status,
@@ -120,6 +122,7 @@ const Listing = () => {
             project.no_of_runs, // runs
             project.industry_name, // industry
             project.mapping_standards, // mapping_no
+            project.regulatory_standard,
             formatDate(project.created_at), // start_date
             formatDate(project.last_run), // last_run
             project.status // status
@@ -256,9 +259,9 @@ const Listing = () => {
       onFilter: (value, record) => record.industry.includes(value),
     },
     {
-      title: LISTING_PAGE.MAPPING_STANDARDS,
-      dataIndex: "mapping_no",
-      key: "mapping_no",
+      title: LISTING_PAGE.REGULATORY_SANTARDS,
+      dataIndex: "regulatory_standard",
+      key: "regulatory_standard",
     },
     {
       title: LISTING_PAGE.START_DATE,

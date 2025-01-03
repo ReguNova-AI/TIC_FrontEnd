@@ -10,7 +10,7 @@ const _projectCreate = (payload) => {
 };
 
 const _projectUpdate = (payload) => {
-  return BaseApiService.post(`/api/v1/project/update`, null, payload);
+  return BaseApiService.put(`/api/v1/project/update`, null, payload);
 };
 
 const _projectListing = () => {
