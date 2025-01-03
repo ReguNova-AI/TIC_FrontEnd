@@ -186,8 +186,8 @@ export default function ProjectTable() {
             project.industry_name, // industry
             project.mapping_standards, // mapping_no
             project.regulatory_standard,
-            formatDate(project.created_at), // start_date
-            formatDate(project.last_run), // last_run
+            project.created_at !== "null" && project.created_at !== "" ? formatDate(project.created_at) : "", // start_date
+            project.last_run !== "null" && project.last_run !== "" ? formatDate(project.last_run) : "", // last_run
             project.status // status
           );
         });

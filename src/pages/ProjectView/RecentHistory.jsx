@@ -13,12 +13,12 @@ const RecentHistory = ({data}) => (
     items={[
       {
         title: <span style={{ fontSize: '12px',fontWeight:"600" }}>{STEPPER_LABEL.PROJECT_CREATION}</span>,
-        description:<span style={{ fontSize: '11px' }}>Created on {formatDate(data.created_at)}</span>,
+        description:<span style={{ fontSize: '11px' }}>Created on {data.created_at ? formatDate(data.created_at) : ""}</span>,
         status: `${STEPPER_LABEL.FINISH_STATUS}`, 
       },
       {
         title: <span style={{ fontSize: '12px',fontWeight:"600" }}>{STEPPER_LABEL.IN_PROGRESS}</span>,
-        description: <span style={{ fontSize: '11px' }}>last run on {formatDate(data.last_run)}</span>,
+        description: <span style={{ fontSize: '11px' }}>last run on {data.last_run ?formatDate(data.last_run): ""}</span>,
         status: `${STEPPER_LABEL.FINISH_STATUS}`, 
       },
       {
