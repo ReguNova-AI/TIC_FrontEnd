@@ -35,7 +35,7 @@ const AvatarSection = ({ userData }) => (
   </AvatarGroup>
 );
 
-const ProjectDetailsCardView = ({ data }) => {
+const ProjectDetailsCardView = ({ data,handleClick }) => {
   const statusChip = (status) => {
     const { title, color, borderColor } = getStatusChipProps(status);
     return (
@@ -125,6 +125,7 @@ const ProjectDetailsCardView = ({ data }) => {
               <Button
                 variant="contained"
                 style={{ float: "right", margin: "10px  0px" }}
+                onClick={(e)=>handleClick("Edit")}
               >
                 Edit
               </Button>
@@ -154,6 +155,7 @@ const ProjectDetailsCardView = ({ data }) => {
               <AvatarSection userData={data?.invite_members} />
               <Button
                 variant="contained"
+                onClick={(e)=>handleClick("Invite")}
                 style={{ float: "right", margin: "10px  0px" }}
               >
                 Invite

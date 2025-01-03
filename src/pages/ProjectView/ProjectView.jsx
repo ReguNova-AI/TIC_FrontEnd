@@ -10,13 +10,14 @@ import RecentHistory from "./RecentHistory";
 import ProgressBarView from "./ProgressBarView";
 import chatAI from "../../assets/images/chatAI.png";
 import FileCard from "./FileCard";
+import EditProject from "./EditProject";
 import HistoryDetails from "./HistoryDetails";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { ProjectApiService } from "services/api/ProjectAPIService";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
-import { Spin } from "antd";
-import { API_ERROR_MESSAGE, API_SUCCESS_MESSAGE, STATUS, BUTTON_LABEL, TAB_LABEL, COUNT_CARD_LABELS, PROJECT_DETAIL_PAGE } from "shared/constants";
+import { Spin,Modal, } from "antd";
+import { API_ERROR_MESSAGE, API_SUCCESS_MESSAGE, STATUS, BUTTON_LABEL, TAB_LABEL, COUNT_CARD_LABELS, PROJECT_DETAIL_PAGE, HEADING } from "shared/constants";
 import DropZoneFileUpload from "pages/ProjectCreation/DropZoneFileUpload";
 
 const ProjectView = () => {
@@ -28,12 +29,14 @@ const ProjectView = () => {
   const [loading, setLoading] = useState(true);
   const [projectData, SetProjectData] = useState([]);
   const [uploadedDocument,setUploadedDocument] = useState([]);
+  const [isModalVisible, setIsModalVisible] = useState(false); // To control modal visibility
+  
   const [snackData, setSnackData] = useState({
     show: false,
     message: "",
     type: "error",
   });
-  
+  const [modalType,setModalType] = useState("");
   const [openModal, setOpenModal] = useState(false); // State to control modal visibility
   const [fileName, setFileName] = useState(""); // State to store the uploaded file name
   
@@ -122,6 +125,32 @@ const ProjectView = () => {
     );
   }
 
+  const handleModalOpen = (type) => {
+    setModalType(type)
+    setIsModalVisible(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalVisible(false);
+    // fetchData();
+  };
+  const handleClose = () => {
+    setIsModalVisible(false);
+    // fetchData();
+  };
+
+  const updateDetails = (data) =>{
+  
+    const updatedResponse = { ...projectData };
+    updatedResponse.project_name = data.projectName;
+    updatedResponse.project_description = data.projectDesc;
+    updatedResponse.project_no = data.projectNo;
+
+    setLoading(true);
+    UpdateProjectDetails(updatedResponse);
+  }
+
+
   CustomTabPanel.propTypes = {
     children: PropTypes.node,
     index: PropTypes.number.isRequired,
@@ -150,7 +179,7 @@ const ProjectView = () => {
         >
           <Grid container rowSpacing={4.5} columnSpacing={2.75}>
             <Grid item xs={3} sm={3} md={3} lg={3}>
-              <ProjectDetailsCardView data={projectData} />
+              <ProjectDetailsCardView data={projectData} handleClick={(e)=>handleModalOpen(e)}/>
             </Grid>
 
             <Grid item xs={9} sm={9} md={9} lg={9}>
@@ -320,6 +349,11 @@ const ProjectView = () => {
             </Button>
           </DialogActions>
         </Dialog>
+
+        <Modal title={HEADING.EDIT_PROJECT} visible={isModalVisible} onCancel={handleModalClose} footer={null} width={800}>
+          {/* <UserCreation onHandleClose={(e)=>handleClose()}/> */}
+          <EditProject data={projectData} onHandleClose={(e)=>handleClose()} editDetails={(e)=>updateDetails(e)} type={modalType}/>
+        </Modal>
 
         {/* Snackbar */}
         <Snackbar

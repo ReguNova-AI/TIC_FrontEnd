@@ -147,7 +147,9 @@ export const BUTTON_LABEL = Object.freeze({
   FINISH: "Finish",
   CREATE_ORGANIZATION:"Create Organization",
   LIST_VIEW:"List View",
-  ADD_NEW:"Add New"
+  ADD_NEW:"Add New",
+  CLOSE:"Close",
+  UPDATE:"Update",
 });
 
 export const GENERIC_DATA_LABEL = Object.freeze({
@@ -233,6 +235,7 @@ export const FILE_TYPE = Object.freeze({
 export const HEADING = Object.freeze({
   CREATE_NEW_PROJECT: "Create a New Project",
   CREATE_USER: "Create User",
+  EDIT_PROJECT:"Edit Project Details"
 });
 
 export const CLOSE_ALERT_DESCRIPTION =
