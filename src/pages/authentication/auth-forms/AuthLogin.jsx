@@ -79,7 +79,7 @@ export default function AuthLogin() {
         // On failure, reset the button to enable again
         setSnackData({
           show: true,
-          message: errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          message: errResponse?.response?.data?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
 

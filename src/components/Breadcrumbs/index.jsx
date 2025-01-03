@@ -36,7 +36,7 @@ export default function BreadcrumbsView(props) {
           color="inherit"
           aria-current="page"
         >
-         <span style={{color:"black",fontWeight:600}}>Create Project</span>
+         <span style={{color:"black",fontWeight:600}}>{props.currentPage}</span>
         </Link>
       
       </Breadcrumbs>

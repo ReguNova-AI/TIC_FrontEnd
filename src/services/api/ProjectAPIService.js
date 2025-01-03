@@ -1,6 +1,5 @@
 import BaseApiService from "./BaseApiService";
 
-
 const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
 const user_id = userdetails[0]?.user_id;
 const role = userdetails[0]?.role_name;
@@ -8,6 +7,10 @@ const industry_id = userdetails[0]?.industry_id;
 
 const _projectCreate = (payload) => {
   return BaseApiService.post(`/api/v1/project/create`, null, payload);
+};
+
+const _projectUpdate = (payload) => {
+  return BaseApiService.post(`/api/v1/project/update`, null, payload);
 };
 
 const _projectListing = () => {
@@ -38,6 +41,6 @@ export const ProjectApiService = {
   projectListing: _projectListing,
   projectDetails: _projectDetails,
   projectCounts:_projectCounts,
-
+  projectUpdate:_projectUpdate,
 
 };

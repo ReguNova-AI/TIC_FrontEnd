@@ -61,28 +61,51 @@ const ProjectView = () => {
       });
   };
 
+  const UpdateProjectDetails = () => { 
+    let payload = projectData;
+    ProjectApiService.projectUpdate(payload)
+      .then((response) => {
+        setSnackData({
+          show: true,
+          message: response?.message || API_SUCCESS_MESSAGE.UPDATED_SUCCESSFULLY,
+          type: "success",
+        });
+        SetProjectData(response?.data?.details[0]);
+        setLoading(false);
+      })
+      .catch((errResponse) => {
+        setSnackData({
+          show: true,
+          message: errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          type: "error",
+        });
+      });
+
+  }
+
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
 
   const handleFileUpload = () => {
     // Handle the file upload logic here
-    console.log("Uploading file:", uploadedDocument);
-    SetProjectData(...projectData , projectData.documents={...projectData.documents ,...fileName})
+    const updatedResponse = { ...projectData };
 
-    console.log("projectData",projectData)
+    // Append the new documents to the existing documents array
+    updatedResponse.documents = [
+      ...updatedResponse.documents,
+      ...uploadedDocument
+    ];
 
+    SetProjectData(updatedResponse);
     setOpenModal(false); // Close the modal after upload
+    setLoading(true);
+    UpdateProjectDetails();
   };
 
 
   const handleFileChange = (file) => {
-    // setFormData({
-    //   ...formData,
-    //   document: file,
-    // });
     setUploadedDocument(file)
-    console.log("upload ",file)
   };
 
   function CustomTabPanel(props) {
@@ -116,7 +139,7 @@ const ProjectView = () => {
 
   return (
     <>
-      <BreadcrumbsView previousLink="/projects" previousPage="My Projects" />
+      <BreadcrumbsView previousLink="/projects" previousPage="My Projects" currentPage={projectData?.project_name}/>
       <Spin spinning={loading}>
         <Box
           sx={{

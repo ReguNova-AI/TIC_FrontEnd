@@ -27,7 +27,7 @@ const CountView = () => {
   });
 
   const titleToKeyMap = {
-    "Total Project": "total_projects_count",
+    "Total Projects": "total_projects_count",
     "Draft": "draft_count",
     "In Progress": "in_progress_count",
     "Success": "success_count",

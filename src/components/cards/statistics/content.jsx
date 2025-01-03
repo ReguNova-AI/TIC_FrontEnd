@@ -195,7 +195,7 @@ const cards1 = [
     cardColor: colors["blueA"][100],
     borderColor: colors["blueA"][400],
     iconColor: colors["blueA"][1000],
-    counter: 13
+    counter: 0
   },
   {
     logo: (
@@ -217,7 +217,7 @@ const cards1 = [
     cardColor: colors["pink"][100],
     borderColor: colors["pink"][400],
     iconColor: colors["pink"][1000],
-    counter: 18
+    counter: 0
   },
   
   {
@@ -243,7 +243,7 @@ const cards1 = [
     cardColor: colors["orange"][100],
     borderColor: colors["orange"][400],
     iconColor: colors["orange"][1000],
-    counter: 37,
+    counter: 0,
   },
   {
     logo: (
@@ -265,7 +265,7 @@ const cards1 = [
     cardColor: colors["greenA"][100],
     borderColor: colors["greenA"][400],
     iconColor: colors["greenA"][1000],
-    counter: 926
+    counter: 0
   },
   {
     logo: (
@@ -287,7 +287,7 @@ const cards1 = [
     cardColor: colors["red"][100],
     borderColor: colors["red"][400],
     iconColor: colors["red"][1000],
-    counter: 321
+    counter: 0
   },
  
   // {

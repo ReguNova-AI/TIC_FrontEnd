@@ -21,7 +21,8 @@ export const API_SUCCESS_MESSAGE = {
   LOGGED_OUT: "Logged out successfully",
   OTP_SENT:"OTP sent successfully",
   PASSWORD_RESET:"Password reset successfully",
-  OTP_VERIFY:"OTP verified successfully"
+  OTP_VERIFY:"OTP verified successfully",
+  UPDATED_SUCCESSFULLY: "Data updated successfully",
   
 };
 
