@@ -191,7 +191,7 @@ const cards1 = [
       </svg>
     ),
     
-    title: "Total Project",
+    title: "Total Projects",
     cardColor: colors["blueA"][100],
     borderColor: colors["blueA"][400],
     iconColor: colors["blueA"][1000],

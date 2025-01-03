@@ -127,14 +127,14 @@ const MyForm = () => {
         userdetails[0]?.user_first_name + " " + userdetails[0]?.user_last_name,
       sector_id:  userdetails[0]?.sector_id,
       sector_name: userdetails[0]?.sector_name,
-      industry_id: 3,
-      industry_name: "Pharmaceuticals",
+      industry_id: userdetails[0]?.industry_id,
+      industry_name: userdetails[0]?.industry_name,
       status: updatedStatus,
       no_of_runs: 0,
       success_count: 0,
       fail_count: 0,
       // last_run: submissionStatus === 'Draft' ? null : formatDateToCustomFormat(new Date()),
-      mapping_standards: "#erfg5674",
+      mapping_standards: "",
       summary_report: {},
     };
     if (submissionStatus !== 'Draft') {

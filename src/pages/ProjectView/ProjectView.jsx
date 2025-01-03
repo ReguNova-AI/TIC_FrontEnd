@@ -27,6 +27,7 @@ const ProjectView = () => {
   const { id } = useParams();
   const [loading, setLoading] = useState(true);
   const [projectData, SetProjectData] = useState([]);
+  const [uploadedDocument,setUploadedDocument] = useState([]);
   const [snackData, setSnackData] = useState({
     show: false,
     message: "",
@@ -66,7 +67,11 @@ const ProjectView = () => {
 
   const handleFileUpload = () => {
     // Handle the file upload logic here
-    console.log("Uploading file:", fileName);
+    console.log("Uploading file:", uploadedDocument);
+    SetProjectData(...projectData , projectData.documents={...projectData.documents ,...fileName})
+
+    console.log("projectData",projectData)
+
     setOpenModal(false); // Close the modal after upload
   };
 
@@ -76,6 +81,7 @@ const ProjectView = () => {
     //   ...formData,
     //   document: file,
     // });
+    setUploadedDocument(file)
     console.log("upload ",file)
   };
 
@@ -182,12 +188,12 @@ const ProjectView = () => {
                               padding: "20px",
                               borderRadius: "10px",
                               border: "1px solid #e4e4e4",
-                              width: "320px",
+                              width: "420px",
                               marginTop: "30px",
                             }}
                           >
                             {PROJECT_DETAIL_PAGE.UPLOADED_FILES}
-                            <FileStructureView />
+                            <FileStructureView data={projectData}/>
                           </Box>
                         </Grid>
                       </Grid>
@@ -282,7 +288,7 @@ const ProjectView = () => {
         <Dialog open={openModal} onClose={() => setOpenModal(false)}>
           <DialogTitle>Upload Documents</DialogTitle>
           <DialogContent>
-          <DropZoneFileUpload label="You can only upload project documents" typeSelect={false} handleSubmitDocument={handleFileChange} maxFile={1}/>
+          <DropZoneFileUpload label="You can only upload project documents" typeSelect={false} handleSubmitDocument={handleFileChange} maxFile={0}/>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setOpenModal(false)} color="primary">
