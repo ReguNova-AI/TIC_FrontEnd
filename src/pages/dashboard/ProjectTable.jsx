@@ -202,7 +202,7 @@ export default function ProjectTable() {
             API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
-        setSnackData({
+        setLoading(false);
       });
   };
 
