@@ -51,7 +51,7 @@ const CountView = () => {
 
   const fetchData = () => {
     const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
-    const id = userdetails[0]?.user_id;
+    const id = userdetails?.[0]?.user_id;
 
     ProjectApiService.projectCounts(id)
       .then((response) => {

@@ -9,10 +9,9 @@ const ProtectedRoute = ({ children }) => {
     // Redirect to login page if not authenticated
     return <Navigate to="/login" state={{ from: location }} />;
   }
-  if(!sessionStorage.getItem("token"))
+  if(!sessionStorage.getItem("token") && sessionStorage.getItem("resetFlow") === null)
   {
-    console.log('sd')
-    // return <Navigate to="/login" />;
+    return <Navigate to="/login" />;
   }
   // Allow access to the page if authenticated
   return children;

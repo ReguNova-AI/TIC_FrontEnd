@@ -32,7 +32,7 @@ export default function AuthOTP() {
   const [isResendDisabled, setIsResendDisabled] = useState(true);
 
   // Function to handle the OTP submission
-  const handleSubmitForm = (values) => {
+  const handleSubmitForm = (values,{ setSubmitting }) => {
     const payload = values;
 
     // Example: Send OTP to server for verification
@@ -48,19 +48,24 @@ export default function AuthOTP() {
           // Perform further actions, like redirecting to the password reset page
           navigate("/passwordReset", { state: { showPage: true } });
         } else {
+          setSubmitting(false);
           setSnackData({
             show: true,
-            message: response.message || API_ERROR_MESSAGE.INVALID_OTP,
+            message: response?.message || API_ERROR_MESSAGE.INVALID_OTP,
             type: "error",
           });
+          
         }
       })
       .catch((errResponse) => {
+        setSubmitting(false);
+        console.log("errResponse",errResponse)
         setSnackData({
           show: true,
-          message: errResponse.error.message || API_ERROR_MESSAGE.VERIFY_OTP,
+          message: errResponse?.error?.message || API_ERROR_MESSAGE.VERIFY_OTP,
           type: "error",
         });
+        
       });
   };
 

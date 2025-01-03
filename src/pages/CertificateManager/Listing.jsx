@@ -113,7 +113,7 @@ const Listing = () => {
   };
 
   const fetchData = () => {
-    let userid = userdetails[0]?.user_id;
+    let userid = userdetails?.[0]?.user_id;
     CertificateApiService.certificateListing(userid)
       .then((response) => {
         // On success, you can add any additional logic here

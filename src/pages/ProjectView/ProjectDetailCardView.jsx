@@ -92,7 +92,7 @@ const ProjectDetailsCardView = ({ data }) => {
                 
                 <Divider orientation="vertical" flexItem sx={{ margin: '0 10px' }} />  {/* Vertical divider between labels */}
 
-                <Grid item xs={3}>
+                {/* <Grid item xs={3}>
                   <Typography variant="body2" color="text.primary">
                     <b>Mapping Standards:</b>
                   </Typography>
@@ -100,7 +100,7 @@ const ProjectDetailsCardView = ({ data }) => {
                     sSDKNJ#$%dfs454
                   </Typography>
                 </Grid>
-                
+                 */}
                 <Divider orientation="vertical" flexItem sx={{ margin: '0 10px' }} />  {/* Vertical divider between labels */}
 
                 <Grid item xs={3}>

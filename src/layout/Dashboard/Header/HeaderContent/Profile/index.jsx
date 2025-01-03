@@ -82,7 +82,7 @@ export default function Profile() {
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
   const handleLogout = () => {
     let payload = {
-      user_id: userdetails[0]?.user_id,
+      user_id: userdetails?.[0]?.user_id,
     };
     AuthApiService.logout(payload)
       .then((response) => {
@@ -133,9 +133,9 @@ export default function Profile() {
           alignItems="center"
           sx={{ p: 0.5 }}
         >
-          {userdetails[0]?.user_profile ? (
+          {userdetails?.[0]?.user_profile ? (
             <img
-              src={userdetails[0]?.user_profile}
+              src={userdetails?.[0]?.user_profile}
               alt={value.user_first_name}
               style={{ borderRadius: "50%", width: "32px", height: "32px" }}
             />
@@ -144,7 +144,7 @@ export default function Profile() {
           )}
 
           <Typography variant="subtitle1" sx={{ textTransform: "capitalize" }}>
-            {userdetails[0]?.user_first_name} {userdetails[0]?.user_last_name}
+            {userdetails?.[0]?.user_first_name} {userdetails?.[0]?.user_last_name}
           </Typography>
         </Stack>
       </ButtonBase>
@@ -189,15 +189,15 @@ export default function Profile() {
                       justifyContent="space-between"
                       alignItems="center"
                     >
-                      <Grid item>
+                      <Grid item style={{width:"80%"}}>
                         <Stack
                           direction="row"
                           spacing={1.25}
                           alignItems="center"
                         >
-                          {userdetails[0]?.user_profile ? (
+                          {userdetails?.[0]?.user_profile ? (
                             <img
-                              src={userdetails[0]?.user_profile}
+                              src={userdetails?.[0]?.user_profile}
                               alt={value.user_first_name}
                               style={{
                                 borderRadius: "50%",
@@ -215,11 +215,11 @@ export default function Profile() {
                           <Stack>
                             <Typography variant="h6">
                               {" "}
-                              {userdetails[0]?.user_first_name}{" "}
-                              {userdetails[0]?.user_last_name}
+                              {userdetails?.[0]?.user_first_name}{" "}
+                              {userdetails?.[0]?.user_last_name}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
-                              {userdetails[0]?.user_email}
+                              {userdetails?.[0]?.user_email}
                             </Typography>
                           </Stack>
                         </Stack>

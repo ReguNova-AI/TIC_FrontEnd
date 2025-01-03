@@ -75,7 +75,7 @@ export default function UserCreation({ onHandleClose }) {
     org_name: "",
     industry_id: "",
     industry_name: "",
-    created_by: userdetails[0]?.user_id,
+    created_by: userdetails?.[0]?.user_id,
   });
 
   const [errorValue, setErrorValue] = React.useState({
@@ -144,7 +144,7 @@ export default function UserCreation({ onHandleClose }) {
       org_name: "",
       industry_id: "",
       industry_name: "",
-      created_by: userdetails[0]?.user_id,
+      created_by: userdetails?.[0]?.user_id,
     });
   }
 

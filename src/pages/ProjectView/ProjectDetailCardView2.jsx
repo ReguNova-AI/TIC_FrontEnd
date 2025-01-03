@@ -104,14 +104,14 @@ const ProjectDetailsCardView = ({ data }) => {
                   </Typography>
                 </Grid>
 
-                <Grid item xs={12}>
+                {/* <Grid item xs={12}>
                   <Typography variant="body2" color="text.primary">
                     <b>Mapping Standards:</b>
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     {data.mapping_standards}
                   </Typography>
-                </Grid>
+                </Grid> */}
 
                 <Grid item xs={12}>
                   <Typography variant="body2" color="text.primary">
