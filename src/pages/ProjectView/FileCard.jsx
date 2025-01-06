@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -15,15 +15,46 @@ import {
   Box as MuiBox,
   Button
 } from '@mui/material';
-import { FileOutlined, DownloadOutlined, EyeOutlined } from '@ant-design/icons';
+import { DownloadOutlined, EyeOutlined } from '@ant-design/icons';
 import checklist from '../../assets/images/checklist3.jpg';
 import assessment from '../../assets/images/assessment2.jpg';
 import AssessmentView from './AssessmentView';
 
-const FileCard = ({ fileName, onDownload, onView }) => {
+// Function to parse the API response into a structured format (skipping the title)
+const parseApiResponse = (response) => {
+  const sections = response.split('---').slice(1); // Skip the first "Title" section
+  return sections.map((section,index) => {
+    const lines = section.trim().split('\n');
+    
+    // Get the title of the section, clean it up, and remove asterisks
+    let title = lines[0]
+      .replace('**', '')
+      .replace(':', '')   // Remove the colon after the section title
+      .trim();
+    title= title.replace("**","");
+    title= title.replace(`Section ${index+1}`,"");
+      // console.log("title",title,index)
+
+    // Remove the section number (e.g., "1.", "2.") from each point
+    const points = lines.slice(1).map(line => line.replace(/^\d+\./, '').trim());
+    
+    return { title, points };
+  });
+};
+
+const FileCard = ({ fileName, onDownload, onView, apiResponse }) => {
   // Modal open state and active tab state
   const [openModal, setOpenModal] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
+  const [sections, setSections] = useState([]);
+apiResponse = "**Title:** IEC 61400-12: Power performance measurements of electricity producing wind turbines – Overview\n\n---\n\n**Section 1: Scope**\n1. Define the procedures for assessing power performance characteristics of wind turbines.\n2. Provide an overview of measurement options for power performance evaluation.\n3. Specify meteorological variables required for power performance evaluation.\n4. Refer to other parts of the IEC 61400-12 series for detailed evaluations.\n5. Clarify the intended use of the document for various stakeholders.\n6. Ensure consistency, accuracy, and reproducibility in measurement techniques.\n7. Outline expected measurement durations for statistically significant data collection.\n8. Establish the relationship between power output and wind speed.\n9. Incorporate methods for estimating annual energy production (AEP).\n10. Highlight the importance of compliance with referenced standards.\n11. Include information on data set collection over continuous periods.\n12. Specify conditions for test site assessments.\n13. Emphasize the need for comprehensive wind speed measurements.\n14. Indicate the impact of atmospheric conditions on power performance.\n15. Define the roles of manufacturers, purchasers, and operators in compliance.\n\n---\n\n**Section 2: Normative references**\n1. List all applicable IEC standards related to power performance measurements.\n2. Ensure that dated references are the editions cited.\n3. Include updated references for undated documents.\n4. Provide context for how each referenced document supports this standard.\n5. Specify the importance of adherence to normative references.\n6. Clarify the role of IEC 61400-50 for wind measurement methodologies.\n7. Ensure inclusion of the latest amendments to referenced documents.\n8. Highlight the referenced documents' requirements as part of compliance.\n9. Promote familiarity with the listed normative references for all users.\n10. Encourage users to verify the latest editions of the referenced standards.\n11. Illustrate the interconnectedness of standards within the IEC 61400 series.\n12. Point out any potential patent rights associated with the references.\n13. Define how normative references influence power performance assessments.\n14. Indicate the significance of these references for regulatory compliance.\n15. Encourage cross-referencing of normative documents for comprehensive understanding.\n\n---\n\n**Section 3: Terms and definitions**\n1. Standardize key terms used throughout the document.\n2. Define \"annual energy production\" (AEP) and its calculation.\n3. Clarify \"data set\" in the context of power performance measurement.\n4. Explain \"flow distortion\" and its implications for measurement accuracy.\n5. Define \"hub height\" in relation to wind turbine specifications.\n6. Describe \"measured power curve\" and its significance.\n7. Clarify the meaning of \"net active electric power.\"\n8. Define \"obstacle\" and its impact on wind measurements.\n9. Specify the term \"power performance\" and its relevance.\n10. Explain \"rotor equivalent wind speed\" and its calculation.\n11. Define \"test site\" as it relates to wind turbine assessments.\n12. Clarify \"uncertainty in measurement\" and its implications for results.\n13. Describe \"wind measurement equipment\" and its types.\n14. Define \"wind shear\" and its impact on turbine performance.\n15. Clarify \"wind veer\" and its significance in power performance evaluations.\n\n---\n\n**Section 4: Symbols, units, and abbreviated terms**\n1. Create a comprehensive list of symbols used throughout the document.\n2. Define each symbol's meaning to ensure clarity.\n3. Specify standard units of measurement for all variables.\n4. Include abbreviations for key terms to facilitate understanding.\n5. Ensure consistency in the use of symbols and units.\n6. Clarify any non-standard units that may be used.\n7. Provide context for each symbol's application in equations.\n8. Encourage users to refer to this section for accurate interpretations.\n9. Indicate the importance of precision in symbol usage for compliance.\n10. Ensure symbols align with international standards for uniformity.\n11. Clarify any specific measurement conditions associated with symbols.\n12. Provide examples of how symbols are applied in calculations.\n13. Promote awareness of the significance of proper unit conversions.\n14. Indicate the relevance of each symbol in relation to performance measurements.\n15. Encourage users to familiarize themselves with symbols for accurate reporting.\n\n---\n\n**Section 5: Power performance method overview**\n1. Establish a clear methodology for measuring power performance.\n2. Describe the relationship between wind speed and turbine output.\n3. Define the measured power curve and its components.\n4. Detail the procedure for simultaneous meteorological measurements.\n5. Specify the duration required for significant data collection.\n6. Outline the calculations for estimating annual energy production (AEP).\n7. Include the importance of uncertainty assessments in results.\n8. Clarify the impact of turbulence on power performance measurements.\n9. Define the kinetic energy flux equations for wind measurements.\n10. Ensure that methodologies comply with IEC 61400-12 series requirements.\n11. Emphasize the need for standardization in measurement practices.\n12. Provide examples of typical meteorological variable measurements.\n13. Clarify the role of data normalization in performance assessments.\n14. Indicate the significance of accurate wind speed measurements.\n15. Encourage transparency in the reporting of measurement results.\n\n---\n\n**Summary:**\nThe document outlines the requirements for measuring the power performance of wind turbines, emphasizing standardized methodologies, normative references, and clear definitions. It is aimed at manufacturers, operators, and regulators to ensure accurate and consistent performance assessments in the wind energy sector.";
+
+  useEffect(() => {
+    if (apiResponse) {
+      const parsedSections = parseApiResponse(apiResponse);
+      setSections(parsedSections);
+    }
+  }, [apiResponse]);
 
   // Function to handle opening the modal
   const handleOpenModal = () => {
@@ -39,123 +70,6 @@ const FileCard = ({ fileName, onDownload, onView }) => {
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
   };
-
-  const pointsList = [
-    'Define battery systems for stationary applications including PV and UPS systems.',
-    'Include requirements for batteries used in light electric rail (LER) applications.',
-    'Specify vehicle auxiliary power (VAP) battery systems for recreational vehicles.',
-    'Ensure compliance with NFPA 70 and C22.1 installation codes.',
-    'Exclude traction power batteries from this standard.',
-    'Clarify applicability to sodium-beta and flowing electrolyte technologies.',
-    'Evaluate systems based on the manufacturer’s specified charge/discharge parameters.',
-    'Confirm that performance or reliability is not evaluated under this standard.',
-    'Include diagrams illustrating battery system boundaries.',
-    'Outline the intended use for energy storage systems.',
-    'Ensure all definitions align with industry standards.',
-    'Specify that repurposed batteries meet UL 1974 requirements.',
-    'Address connections to rail power lines for LER applications.',
-    'Provide emergency power specifications for rail cars.',
-    'Emphasize the importance of energy balancing during peak hours.'
-  ];
-
-  const componentRequirements = [
-    'Ensure compliance of components with applicable CSA and UL standards.',
-    'Document all components used in the battery system.',
-    'Maintain records of the manufacturer’s specifications for components.',
-    'Verify that components are suitable for the intended application.',
-    'Ensure electrical components comply with relevant electrical safety standards.',
-    'Include a list of standards applicable to components.',
-    'Validate that components meet requirements for environmental exposure.',
-    'Confirm that components are tested for chemical resistance.',
-    'Evaluate the compatibility of materials used in construction.',
-    'Maintain traceability of all components used in manufacturing.',
-    'Assess the performance of components under intended use conditions.',
-    'Conduct regular reviews of component standards to ensure compliance.',
-    'Document any changes in component specifications.',
-    'Ensure that all components are marked accordingly.',
-    'Confirm that components used in battery systems are of appropriate quality.'
-  ];
-
-  const measurementRequirements = [
-    'Use SI units as the primary measurement standard.',
-    'Include conversion factors for non-SI units as necessary.',
-    'Ensure consistency in measurement units throughout documentation.',
-    'Define measurement thresholds clearly.',
-    'Confirm that measurement methods are in accordance with industry practices.',
-    'Maintain records of measurement equipment calibration.',
-    'Specify tolerances for all measurement units used.',
-    'Ensure all measurements are traceable to recognized standards.',
-    'Include guidelines for reporting measurement results.',
-    'Confirm that all personnel are trained in measurement techniques.',
-    'Maintain a log of any deviations from standard measurement practices.',
-    'Ensure that all measurement equipment is suitable for its intended use.',
-    'Review and update measurement procedures regularly.',
-    'Document any changes in measurement standards.',
-    'Ensure compliance with relevant national and international measurement standards.'
-  ];
-
-  const constructionRequirements = [
-    'Confirm that non-metallic materials meet flammability standards.',
-    'Ensure metallic parts are resistant to corrosion.',
-    'Design enclosures to withstand physical abuse.',
-    'Maintain proper spacing and separation of electrical circuits.',
-    'Ensure adequate insulation levels for electrical components.',
-    'Document protective grounding and bonding practices.',
-    'Conduct a safety analysis for all battery systems.',
-    'Evaluate the effectiveness of protective circuits and controls.',
-    'Ensure thermal management systems are reliable and effective.',
-    'Document the materials used in electrolyte containment.',
-    'Include testing requirements for all battery cell designs.',
-    'Confirm that repurposed cells meet safety standards.',
-    'Ensure compliance with packaging and transport regulations.',
-    'Verify that all components are installed according to specifications.',
-    'Document any deviations from construction standards.'
-  ];
-
-  const testingRequirements = [
-    'Conduct fire hazard evaluations in accordance with specified criteria.',
-    'Ensure all tests consider single fault conditions.',
-    'Document important considerations for test methodologies.',
-    'Evaluate toxic emissions during testing.',
-    'Confirm accuracy of measurement equipment used in tests.',
-    'Conduct electrical tests on battery systems as specified.',
-    'Ensure compliance with thermal stability requirements.',
-    'Verify that all battery systems are operational after testing.',
-    'Document all test results and compliance criteria.',
-    'Ensure that test conditions are controlled and documented.',
-    'Confirm that the testing environment is safe and compliant.',
-    'Ensure that tests are conducted with fresh samples.',
-    'Maintain a log of all test anomalies and corrective actions.',
-    'Confirm that test results are reproducible and reliable.',
-    'Review and update performance testing protocols regularly.'
-  ];
-
-  const safetyFactors = [
-    'Material Safety Factor: Ensure materials meet minimum safety ratings.',
-    'Electrical Insulation Factor: Confirm insulation levels exceed baseline requirements.',
-    'Thermal Safety Factor: Assess thermal stability under maximum operating conditions.',
-    'Mechanical Safety Factor: Verify structural integrity under load and impact.',
-    'Environmental Safety Factor: Ensure compliance with environmental testing standards.',
-    'Chemical Resistance Factor: Confirm materials withstand exposure to electrolytes.',
-    'Operational Safety Factor: Validate operational limits for charging and discharging.',
-    'Testing Safety Factor: Ensure all tests are conducted with appropriate safety measures.',
-    'Component Safety Factor: Confirm all components are tested for reliability and safety.',
-    'Overall System Safety Factor: Evaluate the combined safety of all system components and design.'
-  ];
-
-  const testRequirements = [
-    "Overcharge Test: Evaluate the system's response to excessive charging.",
-    'High Rate Charge Test: Assess performance under high current charging conditions.',
-    "Short Circuit Test: Determine the system's ability to handle short circuit conditions.",
-    'Overload Under Discharge Test: Evaluate performance during excessive discharge currents.',
-    'Imbalanced Charging Test: Assess response to uneven charging conditions.',
-    'Temperature and Operating Limits Check Test: Verify that systems operate within specified limits.',
-    'Electromagnetic Immunity Tests: Ensure protection against electromagnetic interference.',
-    'Mechanical Tests: Assess resilience to vibrations, shocks, and impacts.',
-    'Environmental Tests: Evaluate performance under various environmental conditions.',
-    'Failure of Cooling/Thermal Management System Test: Confirm safety during thermal management failures.',
-    'Single Cell Failure Design Tolerance Test: Verify that single cell failures do not propagate.'
-  ];
 
   return (
     <>
@@ -194,89 +108,18 @@ const FileCard = ({ fileName, onDownload, onView }) => {
             ) : (
               <>
                 <Tabs value={activeTab} onChange={handleTabChange} aria-label="file-tabs">
-                  {/* Create 5 tabs */}
-                  <Tab label="Scope" />
-                  <Tab label="Components" />
-                  <Tab label="Units of Measurement" />
-                  <Tab label="Construction" />
-                  <Tab label="Performance" />
-                  <Tab label="Summary of Design Load Cases" />
-                  <Tab label="Summary of Partial Safety Factors" />
+                  {/* Dynamically generate tabs */}
+                  {sections.map((section, index) => (
+                    <Tab key={index} label={section.title} />
+                  ))}
                 </Tabs>
 
                 {/* Tab Content */}
                 <Box sx={{ padding: 2 }}>
-                  {activeTab === 0 && (
+                  {sections.length > 0 && (
                     <Typography>
                       <ul>
-                        {pointsList.map((point, index) => (
-                          <li key={index}>
-                            <Typography>{point}</Typography>
-                          </li>
-                        ))}
-                      </ul>
-                    </Typography>
-                  )}
-                  {activeTab === 1 && (
-                    <Typography>
-                      <ul>
-                        {componentRequirements.map((point, index) => (
-                          <li key={index}>
-                            <Typography>{point}</Typography>
-                          </li>
-                        ))}
-                      </ul>
-                    </Typography>
-                  )}
-                  {activeTab === 2 && (
-                    <Typography>
-                      <ul>
-                        {measurementRequirements.map((point, index) => (
-                          <li key={index}>
-                            <Typography>{point}</Typography>
-                          </li>
-                        ))}
-                      </ul>
-                    </Typography>
-                  )}
-                  {activeTab === 3 && (
-                    <Typography>
-                      <ul>
-                        {constructionRequirements.map((point, index) => (
-                          <li key={index}>
-                            <Typography>{point}</Typography>
-                          </li>
-                        ))}
-                      </ul>
-                    </Typography>
-                  )}
-                  {activeTab === 4 && (
-                    <Typography>
-                      <ul>
-                        {testingRequirements.map((point, index) => (
-                          <li key={index}>
-                            <Typography>{point}</Typography>
-                          </li>
-                        ))}
-                      </ul>
-                    </Typography>
-                  )}
-                  {activeTab === 5 && (
-                    <Typography>
-                      <ul>
-                        {testRequirements.map((point, index) => (
-                          <li key={index}>
-                            <Typography>{point}</Typography>
-                          </li>
-                        ))}
-                      </ul>
-                    </Typography>
-                  )}
-
-                  {activeTab === 6 && (
-                    <Typography>
-                      <ul>
-                        {safetyFactors.map((point, index) => (
+                        {sections[activeTab]?.points.map((point, index) => (
                           <li key={index}>
                             <Typography>{point}</Typography>
                           </li>

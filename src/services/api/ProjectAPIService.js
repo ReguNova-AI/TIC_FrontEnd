@@ -40,6 +40,10 @@ const _projectChat = (query)=>{
   return BaseApiService.get(`/api/v1/chat/askQuestion?user_question=${query}`, null, null);
 }
 
+const _projectChecklist = (payload) => {
+  return BaseApiService.post(`/api/v1/chat/uploadCheckList`, null, payload);
+};
+
 
 export const ProjectApiService = {
   projectCreate: _projectCreate,
@@ -48,5 +52,6 @@ export const ProjectApiService = {
   projectCounts:_projectCounts,
   projectUpdate:_projectUpdate,
   projectChat:_projectChat,
+  projectChecklist : _projectChecklist,
 
 };

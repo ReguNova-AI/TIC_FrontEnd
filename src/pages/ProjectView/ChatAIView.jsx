@@ -33,20 +33,20 @@ const ChatAIView = () => {
       .then((response) => {
         const newHistory = { question: query, answer: response.data.details.data.output_text };
         setHistory([...history, newHistory]); // Add to history
-        setSnackData({
-          show: true,
-          message: response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-          type: "success",
-        });
+        // setSnackData({
+        //   show: true,
+        //   message: response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+        //   type: "success",
+        // });
         setResponse(response.data.details.data.output_text);
         setLoading(false);
       })
       .catch((errResponse) => {
-        setSnackData({
-          show: true,
-          message: errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
+        // setSnackData({
+        //   show: true,
+        //   message: errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+        //   type: "error",
+        // });
         setLoading(false);
       });
   };

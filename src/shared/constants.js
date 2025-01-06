@@ -134,6 +134,7 @@ export const BUTTON_LABEL = Object.freeze({
   FILTER: "Filter",
   SEARCH: "Search",
   RUN_PROJECT: "Run Project",
+  RUN_CHECKLIST:"Run Checklist",
   SAVE_DRAFT: "Save as Draft",
   CREATE_PROJECT: "Create Project",
   VIEW: "View",

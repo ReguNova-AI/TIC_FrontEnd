@@ -21,6 +21,8 @@ import { Spin,Modal, } from "antd";
 import { API_ERROR_MESSAGE, API_SUCCESS_MESSAGE, STATUS, BUTTON_LABEL, TAB_LABEL, COUNT_CARD_LABELS, PROJECT_DETAIL_PAGE, HEADING } from "shared/constants";
 import DropZoneFileUpload from "pages/ProjectCreation/DropZoneFileUpload";
 
+import checklistfile from "../../assets/checklist3.jpg";
+
 const ProjectView = () => {
   const navigate = useNavigate();
   const [value, setValue] = React.useState(0);
@@ -65,6 +67,34 @@ const ProjectView = () => {
         setLoading(false);
       });
   };
+
+
+  const runChecklistAPI = ()=>{
+
+    const payload = new FormData();
+    payload.append("file", checklistfile);
+
+   
+    ProjectApiService.projectChecklist(payload)
+      .then((response) => {
+        setSnackData({
+          show: true,
+          message: response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+          type: "success",
+        });
+        SetProjectData(response?.data?.details[0]);
+        setLoading(false);
+      })
+      .catch((errResponse) => {
+        setSnackData({
+          show: true,
+          message: errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          type: "error",
+        });
+        setLoading(false);
+      });
+  }
+
 
   const UpdateProjectDetails = (payload) => { 
     ProjectApiService.projectUpdate(payload)
@@ -279,8 +309,8 @@ const ProjectView = () => {
                         >
                           {BUTTON_LABEL.UPLOAD_DOCUMENTS}
                         </Button>
-                        <Button variant="contained" sx={{ mt: 2 }}>
-                          {BUTTON_LABEL.RUN_PROJECT}
+                        <Button variant="contained" sx={{ mt: 2 }} onClick={()=>runChecklistAPI()}>
+                          {BUTTON_LABEL.RUN_CHECKLIST}
                         </Button>
                       </Box>
                     </Grid>

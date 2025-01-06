@@ -1,0 +1,129 @@
+**Title:** ANSI/CAN/UL 1973:2022 - Standard for Batteries for Use in Stationary and Motive Auxiliary Power Applications
+
+---
+
+### Section 1: Scope
+1. Define battery systems for stationary applications including PV and UPS systems.
+2. Include requirements for batteries used in light electric rail (LER) applications.
+3. Specify vehicle auxiliary power (VAP) battery systems for recreational vehicles.
+4. Ensure compliance with NFPA 70 and C22.1 installation codes.
+5. Exclude traction power batteries from this standard.
+6. Clarify applicability to sodium-beta and flowing electrolyte technologies.
+7. Evaluate systems based on the manufacturer’s specified charge/discharge parameters.
+8. Confirm that performance or reliability is not evaluated under this standard.
+9. Include diagrams illustrating battery system boundaries.
+10. Outline the intended use for energy storage systems.
+11. Ensure all definitions align with industry standards.
+12. Specify that repurposed batteries meet UL 1974 requirements.
+13. Address connections to rail power lines for LER applications.
+14. Provide emergency power specifications for rail cars.
+15. Emphasize the importance of energy balancing during peak hours.
+
+---
+
+### Section 2: Components
+1. Ensure compliance of components with applicable CSA and UL standards.
+2. Document all components used in the battery system.
+3. Maintain records of the manufacturer’s specifications for components.
+4. Verify that components are suitable for the intended application.
+5. Ensure electrical components comply with relevant electrical safety standards.
+6. Include a list of standards applicable to components.
+7. Validate that components meet requirements for environmental exposure.
+8. Confirm that components are tested for chemical resistance.
+9. Evaluate the compatibility of materials used in construction.
+10. Maintain traceability of all components used in manufacturing.
+11. Assess the performance of components under intended use conditions.
+12. Conduct regular reviews of component standards to ensure compliance.
+13. Document any changes in component specifications.
+14. Ensure that all components are marked accordingly.
+15. Confirm that components used in battery systems are of appropriate quality.
+
+---
+
+### Section 3: Units of Measurement
+1. Use SI units as the primary measurement standard.
+2. Include conversion factors for non-SI units as necessary.
+3. Ensure consistency in measurement units throughout documentation.
+4. Define measurement thresholds clearly.
+5. Confirm that measurement methods are in accordance with industry practices.
+6. Maintain records of measurement equipment calibration.
+7. Specify tolerances for all measurement units used.
+8. Ensure all measurements are traceable to recognized standards.
+9. Include guidelines for reporting measurement results.
+10. Confirm that all personnel are trained in measurement techniques.
+11. Maintain a log of any deviations from standard measurement practices.
+12. Ensure that all measurement equipment is suitable for its intended use.
+13. Review and update measurement procedures regularly.
+14. Document any changes in measurement standards.
+15. Ensure compliance with relevant national and international measurement standards.
+
+---
+
+### Section 4: Construction
+1. Confirm that non-metallic materials meet flammability standards.
+2. Ensure metallic parts are resistant to corrosion.
+3. Design enclosures to withstand physical abuse.
+4. Maintain proper spacing and separation of electrical circuits.
+5. Ensure adequate insulation levels for electrical components.
+6. Document protective grounding and bonding practices.
+7. Conduct a safety analysis for all battery systems.
+8. Evaluate the effectiveness of protective circuits and controls.
+9. Ensure thermal management systems are reliable and effective.
+10. Document the materials used in electrolyte containment.
+11. Include testing requirements for all battery cell designs.
+12. Confirm that repurposed cells meet safety standards.
+13. Ensure compliance with packaging and transport regulations.
+14. Verify that all components are installed according to specifications.
+15. Document any deviations from construction standards.
+
+---
+
+### Section 5: Performance
+1. Conduct fire hazard evaluations in accordance with specified criteria.
+2. Ensure all tests consider single fault conditions.
+3. Document important considerations for test methodologies.
+4. Evaluate toxic emissions during testing.
+5. Confirm accuracy of measurement equipment used in tests.
+6. Conduct electrical tests on battery systems as specified.
+7. Ensure compliance with thermal stability requirements.
+8. Verify that all battery systems are operational after testing.
+9. Document all test results and compliance criteria.
+10. Ensure that test conditions are controlled and documented.
+11. Confirm that the testing environment is safe and compliant.
+12. Ensure that tests are conducted with fresh samples.
+13. Maintain a log of all test anomalies and corrective actions.
+14. Confirm that test results are reproducible and reliable.
+15. Review and update performance testing protocols regularly.
+
+---
+
+### Summary of Design Load Cases
+1. **Overcharge Test:** Evaluate the system's response to excessive charging.
+2. **High Rate Charge Test:** Assess performance under high current charging conditions.
+3. **Short Circuit Test:** Determine the system's ability to handle short circuit conditions.
+4. **Overload Under Discharge Test:** Evaluate performance during excessive discharge currents.
+5. **Imbalanced Charging Test:** Assess response to uneven charging conditions.
+6. **Temperature and Operating Limits Check Test:** Verify that systems operate within specified limits.
+7. **Electromagnetic Immunity Tests:** Ensure protection against electromagnetic interference.
+8. **Mechanical Tests:** Assess resilience to vibrations, shocks, and impacts.
+9. **Environmental Tests:** Evaluate performance under various environmental conditions.
+10. **Failure of Cooling/Thermal Management System Test:** Confirm safety during thermal management failures.
+11. **Single Cell Failure Design Tolerance Test:** Verify that single cell failures do not propagate.
+
+---
+
+### Summary of Partial Safety Factors
+1. **Material Safety Factor:** Ensure materials meet minimum safety ratings.
+2. **Electrical Insulation Factor:** Confirm insulation levels exceed baseline requirements.
+3. **Thermal Safety Factor:** Assess thermal stability under maximum operating conditions.
+4. **Mechanical Safety Factor:** Verify structural integrity under load and impact.
+5. **Environmental Safety Factor:** Ensure compliance with environmental testing standards.
+6. **Chemical Resistance Factor:** Confirm materials withstand exposure to electrolytes.
+7. **Operational Safety Factor:** Validate operational limits for charging and discharging.
+8. **Testing Safety Factor:** Ensure all tests are conducted with appropriate safety measures.
+9. **Component Safety Factor:** Confirm all components are tested for reliability and safety.
+10. **Overall System Safety Factor:** Evaluate the combined safety of all system components and design.
+
+--- 
+
+This checklist provides a comprehensive overview of the compliance requirements based on the ANSI/CAN/UL 1973:2022 standard. Each section outlines critical items necessary for ensuring the safety and reliability of battery systems used in stationary and motive auxiliary power applications.
