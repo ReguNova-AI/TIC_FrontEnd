@@ -36,11 +36,17 @@ const _projectCounts = (id) => {
   return BaseApiService.get(`/api/v1/projects/counts?user_id=${id}`, null, null);
 };
 
+const _projectChat = (query)=>{
+  return BaseApiService.get(`/api/v1/chat/askQuestion?user_question=${query}`, null, null);
+}
+
+
 export const ProjectApiService = {
   projectCreate: _projectCreate,
   projectListing: _projectListing,
   projectDetails: _projectDetails,
   projectCounts:_projectCounts,
   projectUpdate:_projectUpdate,
+  projectChat:_projectChat,
 
 };
