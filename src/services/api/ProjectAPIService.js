@@ -19,9 +19,9 @@ const _projectListing = () => {
   } else {
     if (
       role !== "Super Admin" && role !== "Org Super Admin" && role !== "Admin") {
-      return BaseApiService.get(`/api/v1/org/projects?industry_id=${industry_id}`,null,null);
+      return BaseApiService.get(`/api/v1/user/projects`,null,null);
     } else {
-      return BaseApiService.get(`/api/v1/org/projects?`, null, null);
+      return BaseApiService.get(`/api/v1/org/projects?industry_id=${industry_id}`, null, null);
     }
   }
 

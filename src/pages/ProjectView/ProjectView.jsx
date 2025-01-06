@@ -8,7 +8,8 @@ import AnalyticEcommerce from "components/cards/statistics/AnalyticEcommerce";
 import ProjectDetailsCardView from "./ProjectDetailCardView2";
 import RecentHistory from "./RecentHistory";
 import ProgressBarView from "./ProgressBarView";
-import chatAI from "../../assets/images/chatAI.png";
+// import chatAI from "../../assets/images/chatAI.png";
+import ChatAIView from "./ChatAIView";
 import FileCard from "./FileCard";
 import EditProject from "./EditProject";
 import HistoryDetails from "./HistoryDetails";
@@ -61,6 +62,7 @@ const ProjectView = () => {
           message: errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
+        setLoading(false);
       });
   };
 
@@ -81,6 +83,7 @@ const ProjectView = () => {
           message: errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
+        setLoading(false);
       });
 
   }
@@ -326,7 +329,9 @@ const ProjectView = () => {
                       border: "1px solid #e4e4e4",
                     }}
                   >
-                    <img src={chatAI} width="100%" />
+                    {/* <img src={chatAI} width="100%" /> */}
+                    <ChatAIView />
+
                   </Box>
                 </CustomTabPanel>
               </Box>
