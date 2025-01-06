@@ -133,6 +133,7 @@ export default function ProjectTable() {
 
   const [data, setData] = useState([]);
   const [viewMode, setViewMode] = useState("card");
+  const [loading, setLoading] = useState(true);
   
   const [snackData, setSnackData] = useState({
     show: false,

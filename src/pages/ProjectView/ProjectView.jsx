@@ -32,6 +32,7 @@ const ProjectView = () => {
   const [loading, setLoading] = useState(true);
   const [projectData, SetProjectData] = useState([]);
   const [uploadedDocument,setUploadedDocument] = useState([]);
+  const [chatResponse,setChatResponse] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false); // To control modal visibility
   
   const [snackData, setSnackData] = useState({
@@ -73,6 +74,7 @@ const handlechatUpdate = (data)=>{
   const updatedResponse = { ...projectData };
   updatedResponse.chatResponse = {data:data};
   updatedResponse.checkListResponse = {}
+  setChatResponse = data[data.length-1]?.answer;
   UpdateProjectDetails(updatedResponse);
 
 }
@@ -366,7 +368,7 @@ const handlechatUpdate = (data)=>{
                     }}
                   >
                     {/* <img src={chatAI} width="100%" /> */}
-                    <ChatAIView onSubmit={(e)=>handlechatUpdate(e)} data={projectData.chatResponse}/>
+                    <ChatAIView onSubmit={(e)=>handlechatUpdate(e)} data={projectData?.chatResponse?.data} responseValue={chatResponse}/>
 
                   </Box>
                 </CustomTabPanel>

@@ -7,11 +7,11 @@ import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import { ProjectApiService } from 'services/api/ProjectAPIService';
 
-const ChatAIView = ({data,onSubmit}) => {
+const ChatAIView = ({data,onSubmit,responseValue}) => {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
-  const [response, setResponse] = useState('');
-  const [history, setHistory] = useState([]);  // State to store history of questions and responses
+  const [response, setResponse] = useState(responseValue || '');
+  const [history, setHistory] = useState(data || []);  // State to store history of questions and responses
   const [snackData, setSnackData] = useState({
     show: false,
     message: "",
@@ -35,7 +35,8 @@ const ChatAIView = ({data,onSubmit}) => {
       setHistory(prevHistory => [...prevHistory, newHistory]);
       setResponse(response.data.details.data.output_text);
       console.log("data",[...history, newHistory])
-      // onSubmit([...history, newHistory]);
+      
+      onSubmit([...history, newHistory]);
     } catch (errResponse) {
       // Handle error
     } finally {

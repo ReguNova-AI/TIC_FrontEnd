@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import * as actions from "../../../store/actions";
@@ -43,6 +43,9 @@ export default function AuthLogin() {
   });
 
   sessionStorage.clear();
+  sessionStorage.removeItem("userDetails");
+  localStorage.removeItem("userDetails"); // If you're using localStorage
+  document.cookie = "session_cookie=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/"; // Example for clearing cookies
   
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
