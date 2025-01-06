@@ -21,7 +21,7 @@ import { Spin,Modal, } from "antd";
 import { API_ERROR_MESSAGE, API_SUCCESS_MESSAGE, STATUS, BUTTON_LABEL, TAB_LABEL, COUNT_CARD_LABELS, PROJECT_DETAIL_PAGE, HEADING } from "shared/constants";
 import DropZoneFileUpload from "pages/ProjectCreation/DropZoneFileUpload";
 
-import checklistfile from "../../assets/checklist3.jpg";
+import checklistfile from "../../assets/IEC-61400-12-2022.pdf";
 
 const ProjectView = () => {
   const navigate = useNavigate();
@@ -68,13 +68,19 @@ const ProjectView = () => {
       });
   };
 
+const handlechatUpdate = (data)=>{
+  
+  const updatedResponse = { ...projectData };
+  updatedResponse.chatResponse = {data:data};
+  updatedResponse.checkListResponse = {}
+  UpdateProjectDetails(updatedResponse);
 
+}
   const runChecklistAPI = ()=>{
 
     const payload = new FormData();
     payload.append("file", checklistfile);
 
-   
     ProjectApiService.projectChecklist(payload)
       .then((response) => {
         setSnackData({
@@ -360,7 +366,7 @@ const ProjectView = () => {
                     }}
                   >
                     {/* <img src={chatAI} width="100%" /> */}
-                    <ChatAIView />
+                    <ChatAIView onSubmit={(e)=>handlechatUpdate(e)} data={projectData.chatResponse}/>
 
                   </Box>
                 </CustomTabPanel>

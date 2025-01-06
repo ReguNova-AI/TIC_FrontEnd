@@ -33,7 +33,19 @@ const _projectDetails = (id) => {
 };
 
 const _projectCounts = (id) => {
-  return BaseApiService.get(`/api/v1/projects/counts?user_id=${id}`, null, null);
+
+  if (role === "Super Admin") {
+    return BaseApiService.get(`/api/v1/sa/projects/counts`, null, null);
+  } else {
+    if (
+      role !== "Super Admin" && role !== "Org Super Admin" && role !== "Admin") {
+      return BaseApiService.get(`/api/v1/org/projects/counts?industry_id=${industry_id}`,null,null);
+    } else {
+      return BaseApiService.get(`/api/v1/projects/counts?user_id=${id}`, null, null);
+    }
+  }
+
+
 };
 
 const _projectChat = (query)=>{
@@ -41,7 +53,7 @@ const _projectChat = (query)=>{
 }
 
 const _projectChecklist = (payload) => {
-  return BaseApiService.post(`/api/v1/chat/uploadCheckList`, null, payload);
+  return BaseApiService.post(`/api/v1/chat/uploadStandardCheckList`, null, payload);
 };
 
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Box, TextField, Button, CircularProgress, Typography } from '@mui/material';
 import axios from 'axios';
 import { useSpring, animated } from 'react-spring'; // For animations
@@ -7,7 +7,7 @@ import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import { ProjectApiService } from 'services/api/ProjectAPIService';
 
-const ChatAIView = () => {
+const ChatAIView = ({data,onSubmit}) => {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState('');
@@ -25,31 +25,24 @@ const ChatAIView = () => {
     config: { tension: 100, friction: 10 }
   });
 
-  const handleSearch = async () => {
+  const handleSearch = useCallback(async () => {
     if (!query) return;
-
+  
     setLoading(true);
-    ProjectApiService.projectChat(query)
-      .then((response) => {
-        const newHistory = { question: query, answer: response.data.details.data.output_text };
-        setHistory([...history, newHistory]); // Add to history
-        // setSnackData({
-        //   show: true,
-        //   message: response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-        //   type: "success",
-        // });
-        setResponse(response.data.details.data.output_text);
-        setLoading(false);
-      })
-      .catch((errResponse) => {
-        // setSnackData({
-        //   show: true,
-        //   message: errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-        //   type: "error",
-        // });
-        setLoading(false);
-      });
-  };
+    try {
+      const response = await ProjectApiService.projectChat(query);
+      const newHistory = { question: query, answer: response.data.details.data.output_text };
+      setHistory(prevHistory => [...prevHistory, newHistory]);
+      setResponse(response.data.details.data.output_text);
+      console.log("data",[...history, newHistory])
+      // onSubmit([...history, newHistory]);
+    } catch (errResponse) {
+      // Handle error
+    } finally {
+      setLoading(false);
+    }
+  }, [query, history, onSubmit]);
+  
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
