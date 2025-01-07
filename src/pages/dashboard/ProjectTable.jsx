@@ -26,6 +26,7 @@ import { API_ERROR_MESSAGE } from 'shared/constants';
 import { formatDate, getStatusChipProps } from 'shared/utility';
 import CardView from 'pages/ProjectListing/CardView';
 import ToggleButtons from 'pages/ProjectListing/ToggleButton';
+import { useNavigate } from 'react-router';
 
 
 
@@ -130,6 +131,7 @@ function ProjectStatus({ status }) {
 export default function ProjectTable() {
   const order = 'asc';
   const orderBy = 'index';
+  const navigate = useNavigate();
 
   const [data, setData] = useState([]);
   const [viewMode, setViewMode] = useState("card");
@@ -214,6 +216,10 @@ export default function ProjectTable() {
     setViewMode(newViewMode); // Update view mode (list or card)
   };
 
+  const handleClick = (project_id)=>{
+    navigate(`/projectView/${project_id}`, { state: { project_id } });
+  }
+
   return (
     <Box style={{padding:"10px 20px", minHeight:"428px",alignContent: data.length > 0 ? "normal" :"space-around"}}>
       {data.length > 0 &&
@@ -248,7 +254,7 @@ export default function ProjectTable() {
                   key={row.project_name}
                 >
                   <TableCell component="th" id={labelId} scope="row">
-                    <Link color="secondary"> {row.project_name}</Link>
+                    <Link color="secondary" onClick={(e)=>handleClick(row.index)}> {row.project_name}</Link>
                   </TableCell>
                   <TableCell>{row.project_no}</TableCell>
                   <TableCell>{row.runs}</TableCell>

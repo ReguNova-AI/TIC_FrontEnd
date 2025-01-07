@@ -53,8 +53,6 @@ const Listing = () => {
   const [pageSize, setPageSize] = useState(10); // Number of rows per page
   const [loading, setLoading] = useState(true);
 
-  console.log("filterStatusValue",filterStatusValue)
-
   const [snackData, setSnackData] = useState({
     show: false,
     message: "",
@@ -156,7 +154,6 @@ const Listing = () => {
 
   // Centralized filtering logic
   const filterData = () => {
-    console.log("data",filteredData)
     return data.filter((item) => {
       console.log("statusFilter",statusFilter,filterStatusValue)
       const matchesStatus =

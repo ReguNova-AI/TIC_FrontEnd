@@ -28,7 +28,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 // Function to generate the status chip for each status
 const getStatusChip = (status) => {
-  const { title, color, borderColor } = getStatusChipProps(tag);
+  const { title, color, borderColor } = getStatusChipProps(status);
   return (
     <Chip
       key={status}
@@ -63,7 +63,10 @@ const CardView = ({ data,gridValue }) => {
 
   return (
     <Grid container spacing={3} style={{ marginTop: "20px" }}>
-      {data.map((item) => (
+      {console.log("data",data)}
+      {data.map((item) => {
+        const statusArray = Array.isArray(item.status) ? item.status : [item.status];
+       return (
         <Grid item xs={12} sm={6} md={gridValue ==2 ? 6 : 4} key={item.project_no}>
           <Card
             sx={{ borderRadius: "10px" }}
@@ -85,9 +88,9 @@ const CardView = ({ data,gridValue }) => {
 
                 {/* Render Chips for each status, floated to the right */}
                 <div style={{ display: "flex", flexWrap: "wrap" }}>
-                  {item?.status &&
-                    Array.isArray(item?.status) &&
-                    item?.status?.map((status) => getStatusChip(status))}
+                  {statusArray &&
+                    Array.isArray(statusArray) &&
+                    statusArray?.map((status) => getStatusChip(status))}
                 </div>
               </Box>
 
@@ -187,7 +190,7 @@ const CardView = ({ data,gridValue }) => {
             </CardActions>
           </Card>
         </Grid>
-      ))}
+)})}
     </Grid>
   );
 };
