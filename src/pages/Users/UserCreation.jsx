@@ -319,7 +319,19 @@ export default function UserCreation({ onHandleClose }) {
             response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
           type: "success",
         });
-        setOrgData(response?.data?.details || []); // Use an empty array as fallback
+
+        let filteredOrg = response?.data?.details || [];
+
+        // Get the logged-in user's role from `userdetails`
+        const userRole = userdetails?.[0]?.role_name;
+        const userOrg = userdetails?.[0]?.org_id;
+  
+        // Filter org based on the logged-in user's role
+        if (userRole !== "Super Admin") {
+          filteredOrg = filteredOrg.filter(org => org.org_id === userOrg);
+        }
+
+        setOrgData(filteredOrg); // Use an empty array as fallback
       })
       .catch((errResponse) => {
         setSnackData({
@@ -389,7 +401,26 @@ export default function UserCreation({ onHandleClose }) {
             response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
           type: "success",
         });
-        setRoleData(response?.data?.details || []); // Use an empty array as fallback
+        let filteredRoles = response?.data?.details || [];
+
+        // Get the logged-in user's role from `userdetails`
+        const userRole = userdetails?.[0]?.role_name;
+  
+        // Filter roles based on the logged-in user's role
+        if (userRole === "Super Admin") {
+          filteredRoles = filteredRoles.filter(role => role.role_name !== "Super Admin");
+        }
+  
+        if (userRole === "Org Super Admin") {
+          filteredRoles = filteredRoles.filter(role => role.role_name !== "Super Admin" && role.role_name !== "Org Super Admin");
+        }
+        
+        if(userRole !== "Super Admin" && userRole !== "Org Super Admin")
+        {
+          filteredRoles = filteredRoles.filter(role => role.role_name !== "Super Admin" && role.role_name !== "Org Super Admin" && role.role_name !== "Admin");
+        }
+        // Set the filtered roles data
+        setRoleData(filteredRoles);
       })
       .catch((errResponse) => {
         setSnackData({
