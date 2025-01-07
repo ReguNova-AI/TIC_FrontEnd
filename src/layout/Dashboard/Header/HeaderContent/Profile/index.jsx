@@ -96,7 +96,7 @@ export default function Profile() {
 
         sessionStorage.clear();
         localStorage.clear();
-
+       
         navigate("/login");
       })
       .catch((errResponse) => {

@@ -51,7 +51,7 @@ const actionSX = {
 // ==============================|| DASHBOARD - DEFAULT ||============================== //
 
 export default function DashboardDefault() {
-  let info = SessionService.getItem(STORAGE_KEYS.USER_INFO);
+  let info = JSON.parse(sessionStorage.getItem("userDetails"));
   sessionStorage.removeItem('resetFlow');
   
   return (

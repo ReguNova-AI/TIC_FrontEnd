@@ -74,7 +74,7 @@ export default function AuthLogin() {
             type: "success",
           });
           dispatch(actions.setAuthentication(response));
-
+ 
           navigate("/dashboard/default");
         }
       })
