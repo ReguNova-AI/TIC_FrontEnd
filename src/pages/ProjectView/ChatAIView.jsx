@@ -39,7 +39,7 @@ const ChatAIView = ({data,onSubmit,responseValue}) => {
       const newHistory = { question: query, answer: response.data.details.data.output_text };
       setHistory(prevHistory => [...prevHistory, newHistory]);
       setResponse(response.data.details.data.output_text);
-      console.log("data",[...history, newHistory])
+      // console.log("data",[...history, newHistory])
       
       onSubmit([...history, newHistory]);
     } catch (errResponse) {

@@ -71,7 +71,8 @@ const Listing = () => {
     setFilteredData(filterData());
   }, [filterStatusValue]);
 
-  
+  const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
+const userRole = userdetails?.[0]?.role_name;
 
   const createData = (
     index,
@@ -155,7 +156,7 @@ const Listing = () => {
   // Centralized filtering logic
   const filterData = () => {
     return data.filter((item) => {
-      console.log("statusFilter",statusFilter,filterStatusValue)
+      // console.log("statusFilter",statusFilter,filterStatusValue)
       const matchesStatus =
         statusFilter.length === 0 ||
         statusFilter.includes(filterStatusValue);
@@ -204,11 +205,14 @@ const Listing = () => {
         value={statusFilter}
         onChange={setStatusFilter}
       />
+     
+      {userRole === "Super Admin" || userRole === "Org Super Admin" || userRole === "Admin" ?
       <MultiSelectWithChip
         label="Industry"
         value={industryFilter}
         onChange={setIndustryFilter}
-      />
+      />:""
+      }
       <Button type="primary" onClick={() => setPopoverVisible(false)}>
         Done
       </Button>
@@ -245,16 +249,12 @@ const Listing = () => {
       dataIndex: "runs",
       key: "runs",
     },
-    {
+    ...(userRole === "Super Admin" || userRole === "Org Super Admin" || userRole === "Admin" ? [{
       title: LISTING_PAGE.INDUSTRY,
       dataIndex: "industry",
       key: "industry",
-      // filters: [
-      //   { text: "Manufacturing", value: "Manufacturing" },
-      //   { text: "Tech", value: "Tech" },
-      // ],
       onFilter: (value, record) => record.industry.includes(value),
-    },
+    }] : []),
     {
       title: LISTING_PAGE.REGULATORY_SANTARDS,
       dataIndex: "regulatory_standard",

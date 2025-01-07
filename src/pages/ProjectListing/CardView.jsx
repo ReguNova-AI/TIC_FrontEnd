@@ -61,9 +61,11 @@ const CardView = ({ data,gridValue }) => {
     navigate(`/projectView/${projectNo}`, { state: { projectNo } });
   };
 
+  const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
+const userRole = userdetails?.[0]?.role_name;
+
   return (
     <Grid container spacing={3} style={{ marginTop: "20px" }}>
-      {console.log("data",data)}
       {data.map((item) => {
         const statusArray = Array.isArray(item.status) ? item.status : [item.status];
        return (

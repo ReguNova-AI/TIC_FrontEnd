@@ -16,7 +16,7 @@ const _resetPassword = (payload) => {
   return BaseApiService.post(`/api/v1/resetPassword`, null, payload);
 };
 const _logout = (payload) => {
-  console.log("payload",payload)
+  // console.log("payload",payload)
   return BaseApiService.post(`/api/v1/logout`,null,payload);
 };
 

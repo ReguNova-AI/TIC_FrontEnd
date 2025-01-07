@@ -106,7 +106,6 @@ const CreateCertificate = ({onHandleClose}) => {
           message: response.message,
           type: "success",
         });
-        console.log
         onHandleClose(true);
       })
       .catch((errResponse) => {
