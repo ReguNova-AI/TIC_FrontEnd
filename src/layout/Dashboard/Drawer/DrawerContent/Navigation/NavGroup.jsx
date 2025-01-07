@@ -13,6 +13,8 @@ import NavSubItem from './NavSubItem';
 export default function NavGroup({ item }) {
   const { menuMaster } = useGetMenuMaster();
   const drawerOpen = menuMaster.isDashboardDrawerOpened;
+  const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
+  const userRole = userdetails?.[0]?.role_name;
 
   const navCollapse = item.children?.map((menuItem) => {
     switch (menuItem.type) {
@@ -21,7 +23,7 @@ export default function NavGroup({ item }) {
           <NavSubItem key={menuItem.id} item={menuItem} level={1} />
         );
       case 'item':
-        return <NavItem key={menuItem.id} item={menuItem} level={1} />;
+        return menuItem.access.includes("all") ||  menuItem.access.includes(userRole)? <NavItem key={menuItem.id} item={menuItem} level={1} /> : "";
       default:
         return (
           <Typography key={menuItem.id} variant="h6" color="error" align="center">

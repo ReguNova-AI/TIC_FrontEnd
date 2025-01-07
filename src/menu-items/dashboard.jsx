@@ -28,6 +28,7 @@ const dashboard = {
       url: '/dashboard/default',
       icon: icons.ProductOutlined,
       breadcrumbs: false,
+      access:["all"],
       
     },
     {
@@ -36,23 +37,26 @@ const dashboard = {
       type: 'item',
       url: '/projects',
       icon: icons.ProjectOutlined,
-      breadcrumbs: false
+      breadcrumbs: false,
+      access:["all"],
     },
-    {
-      id: 'documents',
-      title: 'Documents',
-      type: 'item',
-      url: '/documents',
-      icon: icons.FileTextOutlined,
-      breadcrumbs: false
-    },
+    // {
+    //   id: 'documents',
+    //   title: 'Documents',
+    //   type: 'item',
+    //   url: '/documents',
+    //   icon: icons.FileTextOutlined,
+    //   breadcrumbs: false,
+    //   access:["all"],
+    // },
     {
       id: 'certificateManager',
       title: 'Certificate Manager',
       type: 'item',
       url: '/certificateManager',
       icon: icons.SafetyCertificateOutlined,
-      breadcrumbs: false
+      breadcrumbs: false,
+      access:["all"],
     },
     {
       id: 'downloadReports',
@@ -61,6 +65,7 @@ const dashboard = {
       url: '',
       icon: icons.LineChartOutlined,
       breadcrumbs: false,
+      access:["all"],
       // children: [
       //   {
       //     id: 2,
@@ -76,7 +81,8 @@ const dashboard = {
       type: 'item',
       url: '/users',
       icon: icons.UserOutlined,
-      breadcrumbs: false
+      breadcrumbs: false,
+      access:["Super Admin","Org Super Admin","Admin"],
     },
     {
       id: 'organization',
@@ -84,7 +90,8 @@ const dashboard = {
       type: 'item',
       url: '/organization',
       icon: icons.PartitionOutlined,
-      breadcrumbs: false
+      breadcrumbs: false,
+      access:["Super Admin"],
     },
     {
       id: 'configuration',
@@ -92,7 +99,8 @@ const dashboard = {
       type: 'item',
       url: '/admin_config',
       icon: icons.SettingOutlined,
-      breadcrumbs: false
+      breadcrumbs: false,
+      access:["Super Admin"],
     },
     
     
