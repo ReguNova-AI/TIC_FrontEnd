@@ -381,6 +381,9 @@ export default function OrgCreation({ onHandleClose }) {
                   value={formData.org_name}
                   onChange={handleInputChange}
                   required
+                  inputProps={{
+                    maxLength: 30, // Restrict input to 40 characters
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -392,6 +395,9 @@ export default function OrgCreation({ onHandleClose }) {
                   value={formData.org_email}
                   onChange={handleInputChange}
                   required
+                  inputProps={{
+                    maxLength: 30, // Restrict input to 40 characters
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -402,6 +408,9 @@ export default function OrgCreation({ onHandleClose }) {
                   name="org_url"
                   value={formData.org_url}
                   onChange={handleInputChange}
+                  inputProps={{
+                    maxLength: 30, // Restrict input to 40 characters
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -465,6 +474,9 @@ export default function OrgCreation({ onHandleClose }) {
                   name="org_address_street"
                   value={formData.org_address.street}
                   onChange={handleInputChange}
+                  inputProps={{
+                    maxLength: 30, // Restrict input to 40 characters
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -475,6 +487,9 @@ export default function OrgCreation({ onHandleClose }) {
                   name="org_address_city"
                   value={formData.org_address.city}
                   onChange={handleInputChange}
+                  inputProps={{
+                    maxLength: 30, // Restrict input to 40 characters
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -485,6 +500,9 @@ export default function OrgCreation({ onHandleClose }) {
                   name="org_address_country"
                   value={formData.org_address.country}
                   onChange={handleInputChange}
+                  inputProps={{
+                    maxLength: 30, // Restrict input to 40 characters
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -495,6 +513,9 @@ export default function OrgCreation({ onHandleClose }) {
                   name="org_address_zip"
                   value={formData.org_address.zip}
                   onChange={handleInputChange}
+                  inputProps={{
+                    maxLength: 10, // Restrict input to 40 characters
+                  }}
                 />
               </Grid>
              
@@ -523,6 +544,9 @@ export default function OrgCreation({ onHandleClose }) {
                         value={formData.contact_json.primary_contact.first_name}
                         onChange={handleInputChange}
                         required
+                        inputProps={{
+                          maxLength: 30, // Restrict input to 40 characters
+                        }}
                       />
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -534,6 +558,9 @@ export default function OrgCreation({ onHandleClose }) {
                         value={formData.contact_json.primary_contact.last_name}
                         onChange={handleInputChange}
                         required
+                        inputProps={{
+                          maxLength: 30, // Restrict input to 40 characters
+                        }}
                       />
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -545,6 +572,9 @@ export default function OrgCreation({ onHandleClose }) {
                         value={formData.contact_json.primary_contact.email}
                         onChange={handleInputChange}
                         required
+                        inputProps={{
+                          maxLength: 30, // Restrict input to 40 characters
+                        }}
                       />
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -556,6 +586,9 @@ export default function OrgCreation({ onHandleClose }) {
                         value={formData.contact_json.primary_contact.phone}
                         onChange={handleInputChange}
                         required
+                        inputProps={{
+                          maxLength: 10, // Restrict input to 40 characters
+                        }}
                       />
                     </Grid>
                   </Grid>
@@ -585,6 +618,9 @@ export default function OrgCreation({ onHandleClose }) {
                           formData.contact_json.secondary_contact.first_name
                         }
                         onChange={handleInputChange}
+                        inputProps={{
+                          maxLength: 30, // Restrict input to 40 characters
+                        }}
                       />
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -597,6 +633,9 @@ export default function OrgCreation({ onHandleClose }) {
                           formData.contact_json.secondary_contact.last_name
                         }
                         onChange={handleInputChange}
+                        inputProps={{
+                          maxLength: 30, // Restrict input to 40 characters
+                        }}
                       />
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -607,6 +646,9 @@ export default function OrgCreation({ onHandleClose }) {
                         name="secondary_contact_email"
                         value={formData.contact_json.secondary_contact.email}
                         onChange={handleInputChange}
+                        inputProps={{
+                          maxLength: 30, // Restrict input to 40 characters
+                        }}
                       />
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -617,6 +659,9 @@ export default function OrgCreation({ onHandleClose }) {
                         name="secondary_contact_phone"
                         value={formData.contact_json.secondary_contact.phone}
                         onChange={handleInputChange}
+                        inputProps={{
+                          maxLength: 10, // Restrict input to 40 characters
+                        }}
                       />
                     </Grid>
                   </Grid>

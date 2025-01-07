@@ -588,6 +588,10 @@ export default function UserCreation({ onHandleClose }) {
                   value={formData.user_first_name}
                   onChange={handleInputChange}
                   required
+                  inputProps={{
+                    maxLength: 30, // Restrict input to 40 characters
+                  }}
+                  
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -599,6 +603,9 @@ export default function UserCreation({ onHandleClose }) {
                   value={formData.user_last_name}
                   onChange={handleInputChange}
                   required
+                  inputProps={{
+                    maxLength: 30, // Restrict input to 40 characters
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -612,6 +619,9 @@ export default function UserCreation({ onHandleClose }) {
                   error={!!errorValue.emailError}
                   helperText={errorValue.emailError}
                   required
+                  inputProps={{
+                    maxLength: 30, // Restrict input to 40 characters
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -625,6 +635,9 @@ export default function UserCreation({ onHandleClose }) {
                   error={!!errorValue.phoneError}
                   helperText={errorValue.phoneError}
                   required
+                  inputProps={{
+                    maxLength: 10, // Restrict input to 40 characters
+                  }}
                 />
               </Grid>
             </Grid>
@@ -638,6 +651,9 @@ export default function UserCreation({ onHandleClose }) {
                   name="user_address_street"
                   value={formData.user_address.street}
                   onChange={handleInputChange}
+                  inputProps={{
+                    maxLength: 30, // Restrict input to 40 characters
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -648,6 +664,9 @@ export default function UserCreation({ onHandleClose }) {
                   name="user_address_city"
                   value={formData.user_address.city}
                   onChange={handleInputChange}
+                  inputProps={{
+                    maxLength: 30, // Restrict input to 40 characters
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -658,6 +677,9 @@ export default function UserCreation({ onHandleClose }) {
                   name="user_address_state"
                   value={formData.user_address.state}
                   onChange={handleInputChange}
+                  inputProps={{
+                    maxLength: 30, // Restrict input to 40 characters
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -668,6 +690,9 @@ export default function UserCreation({ onHandleClose }) {
                   name="user_address_zip"
                   value={formData.user_address.zip}
                   onChange={handleInputChange}
+                  inputProps={{
+                    maxLength: 30, // Restrict input to 40 characters
+                  }}
                 />
               </Grid>
             </Grid>
