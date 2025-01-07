@@ -8,6 +8,11 @@ import Alert from "@mui/material/Alert";
 import { ProjectApiService } from 'services/api/ProjectAPIService';
 
 const ChatAIView = ({data,onSubmit,responseValue}) => {
+  
+  if(responseValue.length === 0)
+  {
+    responseValue = ""
+  }
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState(responseValue || '');
@@ -87,11 +92,9 @@ const ChatAIView = ({data,onSubmit,responseValue}) => {
           paddingRight: '10px',  // Space for scrollbar
         }}
       >
-        {history.length > 0 && (
-          <Typography variant="h6" sx={{ marginBottom: 1 }}>
-            Previous Conversations:
-          </Typography>
-        )}
+        <Typography variant="h6" sx={{ marginBottom: 1 }}>
+  {history.length > 0 && `Previously Asked ${history.length === 1 ? 'Question' : 'Questions'}`}
+</Typography>
         <Box
           sx={{
             marginTop: 3,

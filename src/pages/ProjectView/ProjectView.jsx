@@ -22,6 +22,7 @@ import { API_ERROR_MESSAGE, API_SUCCESS_MESSAGE, STATUS, BUTTON_LABEL, TAB_LABEL
 import DropZoneFileUpload from "pages/ProjectCreation/DropZoneFileUpload";
 
 import checklistfile from "../../assets/IEC-61400-12-2022.pdf";
+import axios from "axios";
 
 const ProjectView = () => {
   const navigate = useNavigate();
@@ -74,33 +75,50 @@ const handlechatUpdate = (data)=>{
   const updatedResponse = { ...projectData };
   updatedResponse.chatResponse = {data:data};
   updatedResponse.checkListResponse = {}
-  setChatResponse = data[data.length-1]?.answer;
+  setChatResponse(data[data.length-1]?.answer);
   UpdateProjectDetails(updatedResponse);
 
 }
-  const runChecklistAPI = ()=>{
+  const runChecklistAPI =async()=>{
     
     const payload = new FormData();
     payload.append("file", checklistfile);
 
-    ProjectApiService.projectChecklist(payload)
-      .then((response) => {
-        setSnackData({
-          show: true,
-          message: response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-          type: "success",
-        });
-        SetProjectData(response?.data?.details[0]);
-        setLoading(false);
-      })
-      .catch((errResponse) => {
-        setSnackData({
-          show: true,
-          message: errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
-        setLoading(false);
+    const headers = {
+      'Content-Type': 'multipart/form-data', // Example of a custom header (Authorization token)
+      "accept":"application/json",
+      // Add any other headers here
+    };
+
+    try {
+      const response = await axios.post('http://54.158.101.113:8000/uploadstd_chat/', payload, {
+        headers: headers
       });
+     console.log("response",response)
+    } catch (err) {
+      console.log(err)
+     }
+    
+  
+
+    // ProjectApiService.projectChecklist(payload)
+    //   .then((response) => {
+    //     setSnackData({
+    //       show: true,
+    //       message: response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+    //       type: "success",
+    //     });
+    //     SetProjectData(response?.data?.details[0]);
+    //     setLoading(false);
+    //   })
+    //   .catch((errResponse) => {
+    //     setSnackData({
+    //       show: true,
+    //       message: errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+    //       type: "error",
+    //     });
+    //     setLoading(false);
+    //   });
   }
 
 

@@ -59,7 +59,7 @@ const _projectChat = (query)=>{
 }
 
 const _projectChecklist = (payload) => {
-  return BaseApiService.post(`/api/v1/chat/uploadStandardCheckList`, null, payload);
+  return BaseApiService.post(`http://54.158.101.113:8000/uploadstd_chat`, null, payload);
 };
 
 
