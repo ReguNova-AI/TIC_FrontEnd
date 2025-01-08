@@ -54,6 +54,9 @@ const CreateCertificate = ({onHandleClose}) => {
       ...formData,
       document: file,
     });
+
+    console.log("file",file);
+
   };
 
   // Handle date selection from RangePicker
@@ -77,6 +80,8 @@ const CreateCertificate = ({onHandleClose}) => {
         ? STATUS.VALID
         : STATUS.EXPIRED;
 
+        
+
     const payload = {
       certificate_name: formData.certificate_name,
       certificate_subject: formData.certificate_subject,
@@ -91,32 +96,34 @@ const CreateCertificate = ({onHandleClose}) => {
         userdetails?.[0]?.user_first_name + " " + userdetails?.[0]?.user_last_name,
       org_id: userdetails?.[0]?.org_id,
       org_name: userdetails?.[0]?.org_name,
-      sector_id: 5,
-      sector_name: "Healthcare",
-      industry_id: 3,
-      industry_name: "Pharmaceuticals",
+      sector_id: userdetails?.[0]?.sector_id,
+      sector_name: userdetails?.[0]?.sector_name,
+      industry_id: userdetails?.[0]?.industry_id,
+      industry_name: userdetails?.[0]?.industry_name,
     };
 
-    CertificateApiService.certificateCreate(payload)
-      .then((response) => {
-        // On success, you can add any additional logic here
+    console.log("payload",payload);
 
-        setSnackData({
-          show: true,
-          message: response.message,
-          type: "success",
-        });
-        onHandleClose(true);
-      })
-      .catch((errResponse) => {
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
-      });
+    // CertificateApiService.certificateCreate(payload)
+    //   .then((response) => {
+    //     // On success, you can add any additional logic here
+
+    //     setSnackData({
+    //       show: true,
+    //       message: response.message,
+    //       type: "success",
+    //     });
+    //     onHandleClose(true);
+    //   })
+    //   .catch((errResponse) => {
+    //     setSnackData({
+    //       show: true,
+    //       message:
+    //         errResponse?.error?.message ||
+    //         API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+    //       type: "error",
+    //     });
+    //   });
   };
 
   return (

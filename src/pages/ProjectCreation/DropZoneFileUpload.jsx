@@ -144,6 +144,23 @@ const DropZoneFileUpload = (props) => {
       const allFiles = [...uploadedFiles, ...newFiles];
       const totalSize = getTotalSize(allFiles);
 
+      newFiles.forEach((file) => {
+      const reader = new FileReader()
+
+      reader.onabort = () => console.log('file reading was aborted')
+      reader.onerror = () => console.log('file reading has failed')
+      reader.onload = () => {
+      // Do whatever you want with the file contents
+        const binaryStr = reader.result
+        console.log("reader.result",reader.result)
+        console.log(binaryStr)
+      }
+      let fileValue = reader.readAsArrayBuffer(file);
+
+      console.log("fileValue",fileValue)
+    })
+
+
       if (allFiles.length > MAX_FILES_COUNT && MAX_FILES_COUNT !== 0) {
         setError(
           `You can upload up to ${MAX_FILES_COUNT} ${MAX_FILES_COUNT > 1 ? "files" : "file"} only.`

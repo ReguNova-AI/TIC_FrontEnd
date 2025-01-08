@@ -79,17 +79,42 @@ const handlechatUpdate = (data)=>{
   UpdateProjectDetails(updatedResponse);
 
 }
+
+const runChecklkistCRT = async()=>{
+  
+
+  const payload = new FormData();
+    payload.append("file", checklistfile);
+
+    
+    const headers = {
+      'Content-Type': 'multipart/form-data',
+      "Accept":"application/json",
+    };
+
+    try {
+      const response = await axios.post('http://54.158.101.113:8000/uploadstd_checklist_crt/', payload, {
+        headers: headers
+      });
+     console.log("response",response)
+    } catch (err) {
+      console.log(err)
+     }
+    
+
+}
+
   const runChecklistAPI =async()=>{
     
     const payload = new FormData();
     payload.append("file", checklistfile);
+    window.open(checklistfile);
 
     const headers = {
-      'Content-Type': 'multipart/form-data', // Example of a custom header (Authorization token)
-      "accept":"application/json",
-      // Add any other headers here
+      'Content-Type': 'multipart/form-data',
+      "Accept":"application/json",
     };
-
+    
     try {
       const response = await axios.post('http://54.158.101.113:8000/uploadstd_chat/', payload, {
         headers: headers
@@ -338,6 +363,12 @@ const handlechatUpdate = (data)=>{
                         <Button variant="contained" sx={{ mt: 2 }} onClick={()=>runChecklistAPI()}>
                           {BUTTON_LABEL.RUN_CHECKLIST}
                         </Button>
+
+
+                        <Button variant="contained" sx={{ mt: 2 }} onClick={()=>runChecklkistCRT()}>
+                        uploadstd checklist crt
+                        </Button>
+                        
                       </Box>
                     </Grid>
                   </Grid>
