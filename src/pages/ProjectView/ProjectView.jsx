@@ -88,7 +88,7 @@ const runChecklkistCRT = async()=>{
 
     
     const headers = {
-      'Content-Type': 'multipart/form-data',
+      // 'Content-Type': 'multipart/form-data',
       "Accept":"application/json",
     };
 
@@ -106,6 +106,7 @@ const runChecklkistCRT = async()=>{
 
   const runChecklistAPI =async()=>{
     
+    const checklistfile = document.getElementById('fileInput').files[0];
     const payload = new FormData();
     payload.append("file", checklistfile);
     window.open(checklistfile);
@@ -114,10 +115,10 @@ const runChecklkistCRT = async()=>{
       'Content-Type': 'multipart/form-data',
       "Accept":"application/json",
     };
-    
+
     try {
       const response = await axios.post('http://54.158.101.113:8000/uploadstd_chat/', payload, {
-        headers: headers
+        headers 
       });
      console.log("response",response)
     } catch (err) {
@@ -364,7 +365,7 @@ const runChecklkistCRT = async()=>{
                           {BUTTON_LABEL.RUN_CHECKLIST}
                         </Button>
 
-
+                        <input type="file" id="fileInput" />
                         <Button variant="contained" sx={{ mt: 2 }} onClick={()=>runChecklkistCRT()}>
                         uploadstd checklist crt
                         </Button>
