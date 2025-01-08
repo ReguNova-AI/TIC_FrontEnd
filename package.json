@@ -17,6 +17,7 @@
     "dev": "vite --mode development",
     "uat": "vite --mode uat"
   },
+  "proxy": "http://localhost:3000",
   "dependencies": {
     "@ant-design/colors": "^7.0.2",
     "@ant-design/icons": "^5.3.1",

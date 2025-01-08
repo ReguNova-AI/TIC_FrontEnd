@@ -36,10 +36,9 @@ const ChatAIView = ({data,onSubmit,responseValue}) => {
     setLoading(true);
     try {
       const response = await ProjectApiService.projectChat(query);
-      const newHistory = { question: query, answer: response.data.details.data.output_text };
+      const newHistory = { question: query, answer: response.data.data.output_text };
       setHistory(prevHistory => [...prevHistory, newHistory]);
-      setResponse(response.data.details.data.output_text);
-      // console.log("data",[...history, newHistory])
+      setResponse(response.data.data.output_text);
       
       onSubmit([...history, newHistory]);
     } catch (errResponse) {

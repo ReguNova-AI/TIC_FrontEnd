@@ -109,11 +109,16 @@ const runChecklkistCRT = async()=>{
     const checklistfile = document.getElementById('fileInput').files[0];
     const payload = new FormData();
     payload.append("file", checklistfile);
-    window.open(checklistfile);
+    // window.open(checklistfile);
 
+    console.log("payload",payload)
+    console.log("checklistfile",checklistfile)
     const headers = {
       'Content-Type': 'multipart/form-data',
       "Accept":"application/json",
+      "Access-Control-Allow-Origin":"*",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE",
+      "Access-Control-Allow-Headers": "Content-Type"
     };
 
     try {
@@ -126,25 +131,29 @@ const runChecklkistCRT = async()=>{
      }
     
   
+// console.log("sdfhjdsbsdfsd,fsd")
+//     ProjectApiService.projectChecklist(payload)
+//       .then((response) => {
+//         console.log("response",response)
+//         // setSnackData({
+//         //   show: true,
+//         //   message: response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+//         //   type: "success",
+//         // });
+//         // SetProjectData(response?.data?.details[0]);
+//         // setLoading(false);
+//       })
+//       .catch((errResponse) => {
+//         console.log("errResponse",errResponse)
+//         // setSnackData({
+//         //   show: true,
+//         //   message: errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+//         //   type: "error",
+//         // });
+//         // setLoading(false);
+//       });
+// console.log("8737845374827")
 
-    // ProjectApiService.projectChecklist(payload)
-    //   .then((response) => {
-    //     setSnackData({
-    //       show: true,
-    //       message: response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-    //       type: "success",
-    //     });
-    //     SetProjectData(response?.data?.details[0]);
-    //     setLoading(false);
-    //   })
-    //   .catch((errResponse) => {
-    //     setSnackData({
-    //       show: true,
-    //       message: errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-    //       type: "error",
-    //     });
-    //     setLoading(false);
-    //   });
   }
 
 
