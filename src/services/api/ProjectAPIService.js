@@ -23,7 +23,9 @@ const industry_id = userdetails?.[0]?.industry_id;
       role !== "Super Admin" && role !== "Org Super Admin" && role !== "Admin") {
       return BaseApiService.get(`/api/v1/user/projects`,null,null);
     } else {
-      return BaseApiService.get(`/api/v1/org/projects?industry_id=${industry_id}`, null, null);
+      // return BaseApiService.get(`/api/v1/org/projects?industry_id=${industry_id}`, null, null);
+      return BaseApiService.get(`/api/v1/org/projects`, null, null);
+
     }
   }
 
@@ -45,9 +47,10 @@ const industry_id = userdetails?.[0]?.industry_id;
   } else {
     if (
       role !== "Super Admin" && role !== "Org Super Admin" && role !== "Admin") {
-      return BaseApiService.get(`/api/v1/org/projects/counts?industry_id=${industry_id}`,null,null);
+        return BaseApiService.get(`/api/v1/projects/counts?user_id=${id}`, null, null);
+      
     } else {
-      return BaseApiService.get(`/api/v1/projects/counts?user_id=${id}`, null, null);
+      return BaseApiService.get(`/api/v1/org/projects/counts?industry_id=${industry_id}`,null,null);
     }
   }
 

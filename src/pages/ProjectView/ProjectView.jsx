@@ -116,9 +116,9 @@ const runChecklkistCRT = async()=>{
     const headers = {
       'Content-Type': 'multipart/form-data',
       "Accept":"application/json",
-      "Access-Control-Allow-Origin":"*",
-      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE",
-      "Access-Control-Allow-Headers": "Content-Type"
+      // "Access-Control-Allow-Origin":"*",
+      // "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE",
+      // "Access-Control-Allow-Headers": "Content-Type"
     };
 
     try {
