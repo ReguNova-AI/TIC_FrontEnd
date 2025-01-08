@@ -111,8 +111,9 @@ const runChecklkistCRT = async()=>{
     payload.append("file", checklistfile);
     // window.open(checklistfile);
 
-    console.log("payload",payload)
+    
     console.log("checklistfile",checklistfile)
+    console.log("payload",payload)
     const headers = {
       'Content-Type': 'multipart/form-data',
       "Accept":"application/json",
@@ -121,37 +122,37 @@ const runChecklkistCRT = async()=>{
       // "Access-Control-Allow-Headers": "Content-Type"
     };
 
-    try {
-      const response = await axios.post('http://54.158.101.113:8000/uploadstd_chat/', payload, {
-        headers 
-      });
-     console.log("response",response)
-    } catch (err) {
-      console.log(err)
-     }
+    // try {
+    //   const response = await axios.post('http://54.158.101.113:8000/uploadstd_chat/', payload, {
+    //     headers 
+    //   });
+    //  console.log("response",response)
+    // } catch (err) {
+    //   console.log(err)
+    //  }
     
   
 // console.log("sdfhjdsbsdfsd,fsd")
-//     ProjectApiService.projectChecklist(payload)
-//       .then((response) => {
-//         console.log("response",response)
-//         // setSnackData({
-//         //   show: true,
-//         //   message: response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-//         //   type: "success",
-//         // });
-//         // SetProjectData(response?.data?.details[0]);
-//         // setLoading(false);
-//       })
-//       .catch((errResponse) => {
-//         console.log("errResponse",errResponse)
-//         // setSnackData({
-//         //   show: true,
-//         //   message: errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-//         //   type: "error",
-//         // });
-//         // setLoading(false);
-//       });
+    ProjectApiService.projectChecklist(payload)
+      .then((response) => {
+        console.log("response",response)
+        // setSnackData({
+        //   show: true,
+        //   message: response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+        //   type: "success",
+        // });
+        // SetProjectData(response?.data?.details[0]);
+        // setLoading(false);
+      })
+      .catch((errResponse) => {
+        console.log("errResponse",errResponse)
+        // setSnackData({
+        //   show: true,
+        //   message: errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+        //   type: "error",
+        // });
+        // setLoading(false);
+      });
 // console.log("8737845374827")
 
   }

@@ -37,6 +37,7 @@ import {
   FORM_LABEL,
 } from "shared/constants";
 import { formatDate, getStatusChipProps } from "shared/utility";
+import NestedListing from "./NestedListing";
 
 const Listing = () => {
   const navigate = useNavigate();
@@ -52,6 +53,7 @@ const Listing = () => {
   const [currentPage, setCurrentPage] = useState(1); // Track the current page
   const [pageSize, setPageSize] = useState(10); // Number of rows per page
   const [loading, setLoading] = useState(true);
+  const [orgLevelData,setOrgLevelData] = useState([]);
 
   const [snackData, setSnackData] = useState({
     show: false,
@@ -112,6 +114,8 @@ const userRole = userdetails?.[0]?.role_name;
         });
 
         // console.log("response",response)
+
+        setOrgLevelData(response?.data?.details);
 
         const newData = response?.data?.details.map((project, index) => {
           return createData(
@@ -416,7 +420,8 @@ const userRole = userdetails?.[0]?.role_name;
             </Space>
           </Space>
           {/* Displaying Table or Card View */}
-          {viewMode === "list" ? (
+          
+          {viewMode === "list" ?  userRole === "Org Super Admin" || userRole === "Admin" ? <NestedListing data={orgLevelData}/> :(
             <Table
               columns={columns}
               dataSource={paginatedData}
