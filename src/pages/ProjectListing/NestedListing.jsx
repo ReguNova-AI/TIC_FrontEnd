@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { DownOutlined } from '@ant-design/icons';
-import { Badge, Button, Dropdown, Space, Table } from 'antd';
+import { Badge, Button, Dropdown, Space, Table,Avatar } from 'antd';
 import { BUTTON_LABEL, LISTING_PAGE } from 'shared/constants';
 import { formatDate, getStatusChipProps } from "shared/utility";
 import Stack from "@mui/material/Stack";
+import { UserOutlined } from '@ant-design/icons';
 
 import { Chip } from "@mui/material";
 
@@ -17,23 +18,25 @@ const NestedListing = ({data}) => {
   useEffect(() => {
     const fetchData = () => {
       const users = data?.map((user) => ({
-        key: user.user_id,
-        name: `${user.user_first_name} ${user.user_last_name}`,
-        profile: user.user_profile,
-        role_id: user.role_id,
+        key: user?.user_id,
+        name: `${user?.user_first_name} ${user?.user_last_name}`,
+        profile: user?.user_profile,
+        role_id: user?.role_id,
+        industry:user?.industry_name,
+        project_count : user?.projects?.length
       }));
 
       const projects = data?.flatMap((user) => {
         return user.projects.map((project) => ({
-          key: project.project_id,
-          last_run: project.last_run !== "null" && project.last_run !== null  && project.last_run !== "" ? formatDate(project.last_run) : "", // last_run
-          project_name: project.project_name,
-          project_no:project.project_no,
-          industry:project.industry,
-          regulatory_standard:project.regulatory_standard,
-          start_date:project.created_at !== "null" && project.created_at !== null && project.created_at !== ""  ? formatDate(project.created_at) : "", // start_date
-          status:project.status,
-          runs:project.runs,  
+          key: project?.project_id,
+          last_run: project?.last_run !== "null" && project?.last_run !== null  && project?.last_run !== "" ? formatDate(project?.last_run) : "", // last_run
+          project_name: project?.project_name,
+          project_no:project?.project_no,
+          industry:project?.industry,
+          regulatory_standard:project?.regulatory_standard,
+          start_date:project?.created_at !== "null" && project?.created_at !== null && project?.created_at !== ""  ? formatDate(project?.created_at) : "", // start_date
+          status:project?.status,
+          runs:project?.runs,  
         }));
       });
 
@@ -145,20 +148,50 @@ const NestedListing = ({data}) => {
 
   const columns = [
     {
-      title: 'User Name',
-      dataIndex: 'name',
-      key: 'name',
-    },
+        title: "User",
+        key: "profile",
+        render: (value, record) => {
+          // Ensure that 'value' is a string before processing
+          let avatarSrc = value.profile || "";
+    
+          return (
+            <>
+            <Avatar
+              key={value.user_id}
+              sx={{ width: 40, height: 40 }}
+              alt={value.user_first_name}
+            >
+              {avatarSrc ? (
+                <img src={avatarSrc} alt={value.user_first_name} style={{borderRadius: '50%' }} />
+              ) : (
+                <UserOutlined /> // Fallback to icon if no image
+              )}
+            </Avatar>
+            <span style={{marginLeft:"20px"}}>{value.name}</span>
+            </>
+          );
+        },
+      },
+    //   {
+    //     title: 'User Name',
+    //     dataIndex: 'name',
+    //     key: 'name',
+    //   },
     {
-      title: 'Profile',
-      dataIndex: 'profile',
-      key: 'profile',
-    },
+        title: 'Industry',
+        dataIndex: '',
+        key: '',
+      },
     {
       title: 'Role',
       dataIndex: 'role_id',
       key: 'role_id',
     },
+    {
+        title: 'Project Created',
+        dataIndex: 'project_count',
+        key: 'project_count',
+      },
   ];
 
   const expandedRowRender = (record) => {

@@ -381,7 +381,7 @@ const userRole = userdetails?.[0]?.role_name;
 
             {/* Search Input and Popover Filter */}
             <Space>
-              {paginatedData.length > 0 &&
+              {paginatedData.length > 0 && userRole !== "Org Super Admin" && userRole !== "Admin" &&
                 <ToggleButtons onViewModeChange={handleViewModeChange} />
               }
               <FormControl fullWidth>
