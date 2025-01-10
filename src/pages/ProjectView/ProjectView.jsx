@@ -430,7 +430,9 @@ const runChecklkistCRT = async()=>{
                       border: "1px solid #e4e4e4",
                     }}
                   >
-                    <FileCard fileName={PROJECT_DETAIL_PAGE.CHECKLIST_REPORT} />
+                    {projectData?.checkListResponse &&
+                      <FileCard fileName={PROJECT_DETAIL_PAGE.CHECKLIST_REPORT} data = {projectData?.checkListResponse}/>
+                    }
                     <FileCard fileName={PROJECT_DETAIL_PAGE.ASSESSMENT_REPORT} />
                   </Box>
 
