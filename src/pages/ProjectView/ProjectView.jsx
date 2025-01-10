@@ -82,45 +82,82 @@ const handlechatUpdate = (data)=>{
 
 const runChecklkistCRT = async()=>{
   
-
-  const payload = new FormData();
-    payload.append("file", checklistfile);
-
+  // const checklistfile = document.getElementById('fileInput').files[0];
+  // const payload = new FormData();
+  // payload.append("file", checklistfile);
+ 
     
-    const headers = {
-      // 'Content-Type': 'multipart/form-data',
-      "Accept":"application/json",
-    };
+  //   const headers = {
+  //     'Content-Type': 'multipart/form-data',
+  //     "Accept":"application/json",
+  //   };
 
-    try {
-      const response = await axios.post('http://54.158.101.113:8000/uploadstd_checklist_crt/', payload, {
-        headers: headers
+  //   try {
+  //     const response = await axios.post('http://54.158.101.113:8000/uploadstd_checklist_crt/', payload, {
+  //       headers: headers
+  //     });
+  //    console.log("response",response)
+  //   } catch (err) {
+  //     console.log(err)
+  //    }
+  setLoading(true);
+  const payload = {}
+  ProjectApiService.projectStandardChecklist(payload)
+      .then((response) => {
+        console.log("response",response)
+        setSnackData({
+          show: true,
+          message: response?.data?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+          type: "success",
+        });
+        // SetProjectData(response?.data?.details[0]);
+        setLoading(false);
+
+        const updatedResponse = { ...projectData };
+        updatedResponse.checkListResponse = response?.data?.data;
+        UpdateProjectDetails(updatedResponse);
+
+      })
+      .catch((errResponse) => {
+        setSnackData({
+          show: true,
+          message: errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          type: "error",
+        });
+        setLoading(false);
       });
-     console.log("response",response)
-    } catch (err) {
-      console.log(err)
-     }
-    
+
 
 }
 
   const runChecklistAPI =async()=>{
     
-    const checklistfile = document.getElementById('fileInput').files[0];
-    const payload = new FormData();
-    payload.append("file", checklistfile);
+    // const checklistfile = document.getElementById('fileInput').files[0];
+    // const payload = new FormData();
+    // payload.append("file", checklistfile);
     // window.open(checklistfile);
 
-    
-    console.log("checklistfile",checklistfile)
-    console.log("payload",payload)
-    const headers = {
-      'Content-Type': 'multipart/form-data',
-      "Accept":"application/json",
-      // "Access-Control-Allow-Origin":"*",
-      // "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE",
-      // "Access-Control-Allow-Headers": "Content-Type"
-    };
+    // if (checklistfile) {
+    //   // Convert file to binary (ArrayBuffer)
+    //   const reader = new FileReader();
+      
+    //   reader.onloadend = () => {
+    //     const binaryData = reader.result; // This will be an ArrayBuffer
+    //     setFileBinary(binaryData); // Store the binary data in state
+    //     console.log(binaryData); // Log or send to backend as needed
+    //   };
+      
+    //   // Read the file as an ArrayBuffer (binary)
+    //   reader.readAsArrayBuffer(checklistfile);
+    // }
+
+    // const headers = {
+    //   'Content-Type': 'multipart/form-data',
+    //   "Accept":"application/json",
+    //   // "Access-Control-Allow-Origin":"*",
+    //   // "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE",
+    //   // "Access-Control-Allow-Headers": "Content-Type"
+    // };
 
     // try {
     //   const response = await axios.post('http://54.158.101.113:8000/uploadstd_chat/', payload, {
@@ -130,31 +167,27 @@ const runChecklkistCRT = async()=>{
     // } catch (err) {
     //   console.log(err)
     //  }
+    const payload = {};
     
-  
-// console.log("sdfhjdsbsdfsd,fsd")
-    ProjectApiService.projectChecklist(payload)
+    ProjectApiService.projectUploadStandardChat(payload)
       .then((response) => {
         console.log("response",response)
-        // setSnackData({
-        //   show: true,
-        //   message: response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-        //   type: "success",
-        // });
+        setSnackData({
+          show: true,
+          message: response?.data?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+          type: "success",
+        });
         // SetProjectData(response?.data?.details[0]);
         // setLoading(false);
       })
       .catch((errResponse) => {
-        console.log("errResponse",errResponse)
-        // setSnackData({
-        //   show: true,
-        //   message: errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-        //   type: "error",
-        // });
-        // setLoading(false);
-      });
-// console.log("8737845374827")
+        setSnackData({
+          show: true,
+          message: errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          type: "error",
+        });
 
+      });
   }
 
 
@@ -262,7 +295,7 @@ const runChecklkistCRT = async()=>{
   return (
     <>
       <BreadcrumbsView previousLink="/projects" previousPage="My Projects" currentPage={projectData?.project_name}/>
-      <Spin spinning={loading}>
+      <Spin tip="Loading" size="large" spinning={loading}>
         <Box
           sx={{
             margin: "auto",
@@ -372,10 +405,11 @@ const runChecklkistCRT = async()=>{
                           {BUTTON_LABEL.UPLOAD_DOCUMENTS}
                         </Button>
                         <Button variant="contained" sx={{ mt: 2 }} onClick={()=>runChecklistAPI()}>
-                          {BUTTON_LABEL.RUN_CHECKLIST}
+                          {/* {BUTTON_LABEL.RUN_CHECKLIST} */}
+                          Upload standard chat
                         </Button>
 
-                        <input type="file" id="fileInput" />
+                        {/* <input type="file" id="fileInput" /> */}
                         <Button variant="contained" sx={{ mt: 2 }} onClick={()=>runChecklkistCRT()}>
                         uploadstd checklist crt
                         </Button>

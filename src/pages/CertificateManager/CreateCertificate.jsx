@@ -50,6 +50,8 @@ const CreateCertificate = ({onHandleClose}) => {
   };
 
   const handleFileChange = (file) => {
+
+    console.log("file value",file)
     setFormData({
       ...formData,
       document: file,

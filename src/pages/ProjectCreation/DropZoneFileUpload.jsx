@@ -11,6 +11,7 @@ import {
 } from "@ant-design/icons";
 import UploadIcon from "../../assets/images/icons/upload.svg";
 import { API_ERROR_MESSAGE, FILE_TYPE, FORM_LABEL } from "shared/constants";
+import { FileUploadApiService } from "services/api/FileUploadAPIService";
 
 const { Option } = Select;
 
@@ -138,28 +139,24 @@ const DropZoneFileUpload = (props) => {
     setShowModal(false); // Close the modal after selection
   };
 
+  const sendToApi = (value) => {
+    const filepayload = {
+      documents: [value],
+    };
+
+    FileUploadApiService.fileUpload(filepayload)
+      .then((response) => {
+        return response.data.details[0];
+      })
+      .catch((errResponse) => {
+        console.log("errResponse", errResponse);
+      });
+  };
   // Handle the file upload
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
     onDrop: (newFiles) => {
       const allFiles = [...uploadedFiles, ...newFiles];
       const totalSize = getTotalSize(allFiles);
-
-      newFiles.forEach((file) => {
-      const reader = new FileReader()
-
-      reader.onabort = () => console.log('file reading was aborted')
-      reader.onerror = () => console.log('file reading has failed')
-      reader.onload = () => {
-      // Do whatever you want with the file contents
-        const binaryStr = reader.result
-        console.log("reader.result",reader.result)
-        console.log(binaryStr)
-      }
-      let fileValue = reader.readAsArrayBuffer(file);
-
-      console.log("fileValue",fileValue)
-    })
-
 
       if (allFiles.length > MAX_FILES_COUNT && MAX_FILES_COUNT !== 0) {
         setError(
@@ -178,10 +175,36 @@ const DropZoneFileUpload = (props) => {
         if (props.typeSelect === true) {
           setShowModal(true);
         } else {
-          sortFile(props.maxFile === 1 ? "" : "Project Document", allFiles);
-        }
+          // Read files as binary and process them
+          const checklistfile = document.getElementById("fileInput").files[0];
 
-        setError(""); // Reset error if any
+          if (!checklistfile) {
+            alert("Please select a file first!");
+            return;
+          }
+
+          // Create a new FileReader to read the file as Base64
+          const reader = new FileReader();
+
+          reader.onloadend = function () {
+            // The file is read as a Base64 string
+            const base64String = reader.result; // Remove the data URI prefix "data:image/png;base64,"
+
+            // You can now send this Base64 string in your API request
+           const uploadedLink = sendToApi(base64String);
+
+          //  newFiles[0] = [...newfiles[0],]
+            setUploadedFiles((prevFiles) => [
+              ...prevFiles,
+              ...newFiles
+            ]);
+
+          };
+
+          // Read the file as Base64
+          reader.readAsDataURL(checklistfile);
+        }
+        setError('');
       }
     },
   });
@@ -237,7 +260,7 @@ const DropZoneFileUpload = (props) => {
           border: "1px dashed #aba8a8",
         }}
       >
-        <input {...getInputProps()} />
+        <input type="file" id="fileInput" {...getInputProps()} />
         <img src={UploadIcon} alt="UploadIcon" width={130} />
         <p style={{ alignContent: "center", margin: "auto" }}>
           {FORM_LABEL.DRAG_DROP_FILE}

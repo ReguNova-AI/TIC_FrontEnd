@@ -128,7 +128,7 @@ const RoleListing = () => {
   };
 
   return (
-    <Spin spinning={loading}>
+    <Spin tip="Loading" size="large" spinning={loading}>
       <ConfigProvider
         renderEmpty={() => <Empty description={GENERIC_DATA_LABEL.NO_DATA} />}
       >

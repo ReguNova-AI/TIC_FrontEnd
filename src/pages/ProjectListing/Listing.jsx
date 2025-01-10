@@ -53,7 +53,7 @@ const Listing = () => {
   const [currentPage, setCurrentPage] = useState(1); // Track the current page
   const [pageSize, setPageSize] = useState(10); // Number of rows per page
   const [loading, setLoading] = useState(true);
-  const [orgLevelData,setOrgLevelData] = useState([]);
+  const [orgLevelData, setOrgLevelData] = useState([]);
 
   const [snackData, setSnackData] = useState({
     show: false,
@@ -74,7 +74,7 @@ const Listing = () => {
   }, [filterStatusValue]);
 
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
-const userRole = userdetails?.[0]?.role_name;
+  const userRole = userdetails?.[0]?.role_name;
 
   const createData = (
     index,
@@ -126,8 +126,16 @@ const userRole = userdetails?.[0]?.role_name;
             project.industry_name, // industry
             project.mapping_standards, // mapping_no
             project.regulatory_standard,
-            project.created_at !== "null" && project.created_at !== null && project.created_at !== ""  ? formatDate(project.created_at) : "", // start_date
-            project.last_run !== "null" && project.last_run !== null  && project.last_run !== "" ? formatDate(project.last_run) : "", // last_run
+            project.created_at !== "null" &&
+              project.created_at !== null &&
+              project.created_at !== ""
+              ? formatDate(project.created_at)
+              : "", // start_date
+            project.last_run !== "null" &&
+              project.last_run !== null &&
+              project.last_run !== ""
+              ? formatDate(project.last_run)
+              : "", // last_run
             project.status // status
           );
         });
@@ -162,8 +170,7 @@ const userRole = userdetails?.[0]?.role_name;
     return data.filter((item) => {
       // console.log("statusFilter",statusFilter,filterStatusValue)
       const matchesStatus =
-        statusFilter.length === 0 ||
-        statusFilter.includes(filterStatusValue);
+        statusFilter.length === 0 || statusFilter.includes(filterStatusValue);
       const matchesIndustry =
         industryFilter.length === 0 || industryFilter.includes(item.industry);
       const matchesSearchText =
@@ -209,14 +216,18 @@ const userRole = userdetails?.[0]?.role_name;
         value={statusFilter}
         onChange={setStatusFilter}
       />
-     
-      {userRole === "Super Admin" || userRole === "Org Super Admin" || userRole === "Admin" ?
-      <MultiSelectWithChip
-        label="Industry"
-        value={industryFilter}
-        onChange={setIndustryFilter}
-      />:""
-      }
+
+      {userRole === "Super Admin" ||
+      userRole === "Org Super Admin" ||
+      userRole === "Admin" ? (
+        <MultiSelectWithChip
+          label="Industry"
+          value={industryFilter}
+          onChange={setIndustryFilter}
+        />
+      ) : (
+        ""
+      )}
       <Button type="primary" onClick={() => setPopoverVisible(false)}>
         Done
       </Button>
@@ -253,12 +264,18 @@ const userRole = userdetails?.[0]?.role_name;
       dataIndex: "runs",
       key: "runs",
     },
-    ...(userRole === "Super Admin" || userRole === "Org Super Admin" || userRole === "Admin" ? [{
-      title: LISTING_PAGE.INDUSTRY,
-      dataIndex: "industry",
-      key: "industry",
-      onFilter: (value, record) => record.industry.includes(value),
-    }] : []),
+    ...(userRole === "Super Admin" ||
+    userRole === "Org Super Admin" ||
+    userRole === "Admin"
+      ? [
+          {
+            title: LISTING_PAGE.INDUSTRY,
+            dataIndex: "industry",
+            key: "industry",
+            onFilter: (value, record) => record.industry.includes(value),
+          },
+        ]
+      : []),
     {
       title: LISTING_PAGE.REGULATORY_SANTARDS,
       dataIndex: "regulatory_standard",
@@ -330,10 +347,13 @@ const userRole = userdetails?.[0]?.role_name;
       title: LISTING_PAGE.ACTION,
       key: "action",
       dataIndex: "status",
-      render: (_,  { status }) => (
+      render: (_, { status }) => (
         <Button
           variant="contained"
-          style={{ background: status === "In Progress" ? "#dcdfdf" :"#003a8c", color:status === "In Progress" ? "#959191" : "#ffffff" }}
+          style={{
+            background: status === "In Progress" ? "#dcdfdf" : "#003a8c",
+            color: status === "In Progress" ? "#959191" : "#ffffff",
+          }}
           disabled={status === "In Progress" ? true : false}
         >
           {BUTTON_LABEL.RUN_PROJECT}
@@ -343,7 +363,7 @@ const userRole = userdetails?.[0]?.role_name;
   ];
 
   return (
-    <Spin spinning={loading}>
+    <Spin tip="Loading" size="large" spinning={loading}>
       <ConfigProvider
         renderEmpty={() => <Empty description={GENERIC_DATA_LABEL.NO_DATA} />}
       >
@@ -381,9 +401,11 @@ const userRole = userdetails?.[0]?.role_name;
 
             {/* Search Input and Popover Filter */}
             <Space>
-              {paginatedData.length > 0 && userRole !== "Org Super Admin" && userRole !== "Admin" &&
-                <ToggleButtons onViewModeChange={handleViewModeChange} />
-              }
+              {paginatedData.length > 0 &&
+                userRole !== "Org Super Admin" &&
+                userRole !== "Admin" && (
+                  <ToggleButtons onViewModeChange={handleViewModeChange} />
+                )}
               <FormControl fullWidth>
                 <InputLabel htmlFor="outlined-adornment-search">
                   {FORM_LABEL.SEARCH}
@@ -420,19 +442,23 @@ const userRole = userdetails?.[0]?.role_name;
             </Space>
           </Space>
           {/* Displaying Table or Card View */}
-          
-          {viewMode === "list" ?  userRole === "Org Super Admin" || userRole === "Admin" ? <NestedListing data={orgLevelData}/> :(
-            <Table
-              columns={columns}
-              dataSource={paginatedData}
-              rowKey="index"
-              pagination={{
-                current: currentPage,
-                pageSize,
-                total: filteredData?.length,
-                onChange: handlePaginationChange,
-              }}
-            />
+
+          {viewMode === "list" ? (
+            userRole === "Org Super Admin" || userRole === "Admin" ? (
+              <NestedListing data={orgLevelData} />
+            ) : (
+              <Table
+                columns={columns}
+                dataSource={paginatedData}
+                rowKey="index"
+                pagination={{
+                  current: currentPage,
+                  pageSize,
+                  total: filteredData?.length,
+                  onChange: handlePaginationChange,
+                }}
+              />
+            )
           ) : (
             <CardView data={paginatedData} />
           )}
