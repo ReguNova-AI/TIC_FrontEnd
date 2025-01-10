@@ -5,7 +5,7 @@ const _upload = (filepayload) => {
 };
 
 const _getFile = (filepayload) => {
-  return BaseApiService.get(`/api/v1/getFromS3`, filepayload, null );
+  return BaseApiService.post(`/api/v1/getFromS3`, null , filepayload );
 };
 
 export const FileUploadApiService = {

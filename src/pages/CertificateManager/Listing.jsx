@@ -229,10 +229,55 @@ const Listing = () => {
 const match = url.match(regex);
 const d=[]
 const filepayload = {
-  imageKeys:match[1],
+  imageKeys:[match[1]],
 }
 
 FileUploadApiService.fileget(filepayload).then((response) => {
+
+  const base64FileData = response?.data[0]?.response; // The Base64 string from the response
+  console.log("base64FileData",base64FileData)
+  if (!base64FileData) {
+    // Handle error if the response doesn't contain Base64 data
+    setSnackData({
+      show: true,
+      message: "File data is missing.",
+      type: "error",
+    });
+    return;
+  }
+
+  // If the Base64 string contains a data URI prefix, strip it
+  // const base64Data = base64FileData.split(',')[1]; // Remove the 'data:<mime-type>;base64,' prefix, if it exists
+
+  // Decode the Base64 data into binary
+  const binaryData = atob(base64FileData); // Decode Base64 to binary string
+  const byteArray = new Uint8Array(binaryData.length);
+
+  // Populate the Uint8Array with the binary data
+  for (let i = 0; i < binaryData.length; i++) {
+    byteArray[i] = binaryData.charCodeAt(i);
+  }
+
+  // Create a Blob object from the byteArray (you need to specify the correct MIME type for your file)
+  const mimeType = 'application/octet-stream'; // Change this based on the actual file type
+  const blob = new Blob([byteArray], { type: mimeType });
+
+
+  // Create a temporary download link
+  const url = window.URL.createObjectURL(blob);
+
+  // Create a link element and set the download attributes
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'downloaded_file'; // You can dynamically set this to the desired filename
+
+  // Append the link to the document body and simulate a click to trigger the download
+  document.body.appendChild(link);
+  link.click();
+
+  // Clean up the URL object and remove the link
+  window.URL.revokeObjectURL(url);
+  link.remove();
   // On success, you can add any additional logic here
   setSnackData({
     show: true,
@@ -302,9 +347,6 @@ FileUploadApiService.fileget(filepayload).then((response) => {
       dataIndex: "file_name",
       key: "file_name",
       render: (value,record) => {
-        // Check if status is an array, and handle accordingly
-    console.log("value",value)
-    console.log("reecord",record)
         // Return the mapped JSX elements
         return (
           <>
