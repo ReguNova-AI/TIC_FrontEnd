@@ -70,7 +70,6 @@ const DropZoneFileUpload = (props) => {
   };
 
   useEffect(() => {
-    console.log("uploadedFiles", uploadedFiles);
     props.handleSubmitDocument(uploadedFiles);
   }, [uploadedFiles]);
 
@@ -157,7 +156,10 @@ const DropZoneFileUpload = (props) => {
     onDrop: (newFiles) => {
       const allFiles = [...uploadedFiles, ...newFiles];
       const totalSize = getTotalSize(allFiles);
-
+      // Read files as binary and process them
+      const checklistfile = document.getElementById("fileInput").files;
+// console.log("checklistfile",checklistfile)
+// console.log("newFiles",newFiles)
       if (allFiles.length > MAX_FILES_COUNT && MAX_FILES_COUNT !== 0) {
         setError(
           `You can upload up to ${MAX_FILES_COUNT} ${MAX_FILES_COUNT > 1 ? "files" : "file"} only.`
@@ -175,14 +177,13 @@ const DropZoneFileUpload = (props) => {
         if (props.typeSelect === true) {
           setShowModal(true);
         } else {
-          // Read files as binary and process them
-          const checklistfile = document.getElementById("fileInput").files[0];
-
-          if (!checklistfile) {
+  
+          if (!newFiles) {
             alert("Please select a file first!");
             return;
           }
 
+          
           // Create a new FileReader to read the file as Base64
           const reader = new FileReader();
 
@@ -202,7 +203,7 @@ const DropZoneFileUpload = (props) => {
           };
 
           // Read the file as Base64
-          reader.readAsDataURL(checklistfile);
+          reader.readAsDataURL(newFiles[0]);
         }
         setError('');
       }

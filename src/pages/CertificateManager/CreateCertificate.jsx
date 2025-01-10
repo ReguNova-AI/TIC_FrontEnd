@@ -51,13 +51,13 @@ const CreateCertificate = ({onHandleClose}) => {
 
   const handleFileChange = (file) => {
 
-    console.log("file value",file)
+    // console.log("file value",file)
     setFormData({
       ...formData,
       document: file,
     });
 
-    console.log("file",file);
+    // console.log("file",file);
 
   };
 
@@ -106,26 +106,26 @@ const CreateCertificate = ({onHandleClose}) => {
 
     console.log("payload",payload);
 
-    // CertificateApiService.certificateCreate(payload)
-    //   .then((response) => {
-    //     // On success, you can add any additional logic here
+    CertificateApiService.certificateCreate(payload)
+      .then((response) => {
+        // On success, you can add any additional logic here
 
-    //     setSnackData({
-    //       show: true,
-    //       message: response.message,
-    //       type: "success",
-    //     });
-    //     onHandleClose(true);
-    //   })
-    //   .catch((errResponse) => {
-    //     setSnackData({
-    //       show: true,
-    //       message:
-    //         errResponse?.error?.message ||
-    //         API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-    //       type: "error",
-    //     });
-    //   });
+        setSnackData({
+          show: true,
+          message: response.message,
+          type: "success",
+        });
+        onHandleClose(true);
+      })
+      .catch((errResponse) => {
+        setSnackData({
+          show: true,
+          message:
+            errResponse?.error?.message ||
+            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          type: "error",
+        });
+      });
   };
 
   return (
