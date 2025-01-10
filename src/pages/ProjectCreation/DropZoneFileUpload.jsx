@@ -160,6 +160,7 @@ const DropZoneFileUpload = (props) => {
         try {
           const filepayload = {
             documents: [fileDataUrl],
+            type:file.type,
           };
   
           const response = await FileUploadApiService.fileUpload(filepayload);
