@@ -26,6 +26,7 @@ import {
 import { formatDate, getStatusChipProps } from "shared/utility";
 import { CertificateApiService } from "services/api/CertificateAPIService";
 import CreateCertificate from "./CreateCertificate";
+import { FileUploadApiService } from "services/api/FileUploadAPIService";
 
 const Listing = () => {
   const navigate = useNavigate();
@@ -221,6 +222,39 @@ const Listing = () => {
     fetchData();
   };
 
+  const downloadFile=(url)=>{
+
+    const regex = /\/([^/]+)$/;  // Match the part after the last "/"
+
+const match = url.match(regex);
+const d=[]
+const filepayload = {
+  imageKeys:match[1],
+}
+
+FileUploadApiService.fileget(filepayload).then((response) => {
+  // On success, you can add any additional logic here
+  setSnackData({
+    show: true,
+    message:
+      response?.message || API_SUCCESS_MESSAGE.DOWNLOADED_SUCCESSFULLY,
+    type: "success",
+  });
+})
+.catch((errResponse) => {
+  setSnackData({
+    show: true,
+    message:
+      errResponse?.error?.message ||
+      API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+    type: "error",
+  });
+
+});
+
+
+  }
+
   // Table columns
   const columns = [
     {
@@ -262,6 +296,22 @@ const Listing = () => {
       title: LISTING_PAGE.DATE_OF_EXPIRE,
       dataIndex: "date_of_expiry",
       key: "date_of_expiry",
+    },
+    {
+      title: LISTING_PAGE.FILE_UPLOADED,
+      dataIndex: "file_name",
+      key: "file_name",
+      render: (value,record) => {
+        // Check if status is an array, and handle accordingly
+    console.log("value",value)
+    console.log("reecord",record)
+        // Return the mapped JSX elements
+        return (
+          <>
+          <span style={{display: "display",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",width:"70%",  marginRight:"10px"}}>{value}</span> <DownloadOutlined onClick={(e)=>downloadFile(record.file_url)}/>
+          </>
+        );
+      }
     },
     {
       title: LISTING_PAGE.STATUS,

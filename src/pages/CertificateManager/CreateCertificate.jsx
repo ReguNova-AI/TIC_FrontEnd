@@ -50,13 +50,14 @@ const CreateCertificate = ({onHandleClose}) => {
   };
 
   const handleFileChange = (file) => {
-
-    // console.log("file value",file)
+    if(file)
+    {
     setFormData({
       ...formData,
-      document: file,
+      file_url: file[0]?.path,
+      file_name: file[0]?.name,
     });
-
+  }
     // console.log("file",file);
 
   };
@@ -91,8 +92,8 @@ const CreateCertificate = ({onHandleClose}) => {
       issuer: formData.issuer,
       date_of_issued: formData.date_of_issued,
       date_of_expiry: formData.date_of_expiry,
-      file_url: "https://example.com/certificates/advanced-security.pdf",
-      file_name: "example",
+      file_url: formData.file_url,
+      file_name: formData.file_name,
       created_by_id: userdetails?.[0]?.user_id,
       created_by_name:
         userdetails?.[0]?.user_first_name + " " + userdetails?.[0]?.user_last_name,

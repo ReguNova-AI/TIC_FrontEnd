@@ -26,7 +26,7 @@ const DropZoneFileUpload = (props) => {
 
   // Function to get the file type and return the respective icon
   const getFileIcon = (file) => {
-    const fileType = file.type.split("/")[0]; // Get the main type like image, application, etc.
+    const fileType = file?.type?.split("/")[0]; // Get the main type like image, application, etc.
     switch (fileType) {
       case FILE_TYPE.IMAGE:
         return (
@@ -102,7 +102,7 @@ const DropZoneFileUpload = (props) => {
 
   const sortFile = (selectedTypeValue, files) => {
     let filesWithType = null;
-
+    setShowModal(false);
     if (props.typeSelect === true) {
       filesWithType = tempFiles.map((file) => ({
         path: file.path,
@@ -138,18 +138,56 @@ const DropZoneFileUpload = (props) => {
     setShowModal(false); // Close the modal after selection
   };
 
-  const sendToApi = (value) => {
-    const filepayload = {
-      documents: [value],
-    };
-
-    FileUploadApiService.fileUpload(filepayload)
-      .then((response) => {
-        return response.data.details[0];
+  const renderFileData = async (files) => {
+    const processedFiles = await Promise.all(
+      files.map(async (file) => {
+        let uploadedLink = null;
+  
+        // Create a new FileReader to read the file as Base64
+        const reader = new FileReader();
+  
+        // Return a promise that resolves when the file is read
+        const fileDataUrl = await new Promise((resolve, reject) => {
+          reader.onloadend = () => resolve(reader.result);
+          reader.onerror = reject; // Handle any errors while reading the file
+          reader.readAsDataURL(file); // Start reading the file
+        });
+  
+        // Now that the file is read, upload the Base64 data to the API
+        try {
+          const filepayload = {
+            documents: [fileDataUrl],
+          };
+  
+          const response = await FileUploadApiService.fileUpload(filepayload);
+          console.log("response.data.details[0]", response.data.details[0]);
+  
+          return {
+            relativePath: file.relativePath,
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            path: response.data.details[0], // Add or override the path with the uploaded link
+          };
+        } catch (errResponse) {
+          console.log("errResponse", errResponse);
+          // You can return a fallback object or null to handle errors
+          return null;
+        }
       })
-      .catch((errResponse) => {
-        console.log("errResponse", errResponse);
-      });
+    );
+  
+    console.log("processedFiles", processedFiles);
+  
+    // Filter out any null values from errors before updating the state
+    const validFiles = processedFiles.filter((file) => file !== null);
+  
+    // Once all files are processed, update the state
+    setUploadedFiles((prevFiles) => [...prevFiles, ...validFiles]);
+  };
+  
+  const sendToApi = async (value) => {
+    
   };
   // Handle the file upload
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
@@ -158,8 +196,7 @@ const DropZoneFileUpload = (props) => {
       const totalSize = getTotalSize(allFiles);
       // Read files as binary and process them
       const checklistfile = document.getElementById("fileInput").files;
-// console.log("checklistfile",checklistfile)
-// console.log("newFiles",newFiles)
+      // console.log("checklistfile",checklistfile)
       if (allFiles.length > MAX_FILES_COUNT && MAX_FILES_COUNT !== 0) {
         setError(
           `You can upload up to ${MAX_FILES_COUNT} ${MAX_FILES_COUNT > 1 ? "files" : "file"} only.`
@@ -177,35 +214,14 @@ const DropZoneFileUpload = (props) => {
         if (props.typeSelect === true) {
           setShowModal(true);
         } else {
-  
           if (!newFiles) {
             alert("Please select a file first!");
             return;
           }
 
-          
-          // Create a new FileReader to read the file as Base64
-          const reader = new FileReader();
-
-          reader.onloadend = function () {
-            // The file is read as a Base64 string
-            const base64String = reader.result; // Remove the data URI prefix "data:image/png;base64,"
-
-            // You can now send this Base64 string in your API request
-           const uploadedLink = sendToApi(base64String);
-
-          //  newFiles[0] = [...newfiles[0],]
-            setUploadedFiles((prevFiles) => [
-              ...prevFiles,
-              ...newFiles
-            ]);
-
-          };
-
-          // Read the file as Base64
-          reader.readAsDataURL(newFiles[0]);
+          renderFileData(newFiles);
         }
-        setError('');
+        setError("");
       }
     },
   });

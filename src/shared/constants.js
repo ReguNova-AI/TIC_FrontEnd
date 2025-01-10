@@ -23,6 +23,7 @@ export const API_SUCCESS_MESSAGE = {
   PASSWORD_RESET:"Password reset successfully",
   OTP_VERIFY:"OTP verified successfully",
   UPDATED_SUCCESSFULLY: "Data updated successfully",
+  DOWNLOADED_SUCCESSFULLY: "File downloaded successfully",
   
 };
 
@@ -101,6 +102,7 @@ export const LISTING_PAGE = Object.freeze({
   ORG_WEBSITE:"Website",
   ORG_ADDRESS:"Address",
   ROLE:"Role",
+  FILE_UPLOADED:"File Uploaded"
 });
 
 export const TAB_LABEL = Object.freeze({
