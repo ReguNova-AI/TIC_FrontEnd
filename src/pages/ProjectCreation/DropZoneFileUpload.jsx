@@ -158,9 +158,10 @@ const DropZoneFileUpload = (props) => {
   
         // Now that the file is read, upload the Base64 data to the API
         try {
+          const fileType = file.name.split(".");
           const filepayload = {
             documents: [fileDataUrl],
-            type:file.type,
+            type:fileType[1],
           };
   
           const response = await FileUploadApiService.fileUpload(filepayload);
