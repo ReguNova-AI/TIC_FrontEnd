@@ -134,8 +134,11 @@ const DropZoneFileUpload = (props) => {
       message.error(API_ERROR_MESSAGE.PLEASE_SELECT_DOC_TYPE);
       return;
     }
-    sortFile(selectedType);
-    setShowModal(false); // Close the modal after selection
+    // sortFile(selectedType);
+    setShowModal(false); 
+    renderFileData(tempFiles);
+
+   // Close the modal after selection
   };
 
   const renderFileData = async (files) => {
@@ -160,13 +163,12 @@ const DropZoneFileUpload = (props) => {
           };
   
           const response = await FileUploadApiService.fileUpload(filepayload);
-          console.log("response.data.details[0]", response.data.details[0]);
-  
           return {
             relativePath: file.relativePath,
             name: file.name,
             size: file.size,
             type: file.type,
+            documenttype: selectedType,
             path: response.data.details[0], // Add or override the path with the uploaded link
           };
         } catch (errResponse) {
