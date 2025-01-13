@@ -10,8 +10,15 @@ import {
   FileExcelOutlined,
 } from "@ant-design/icons";
 import UploadIcon from "../../assets/images/icons/upload.svg";
-import { API_ERROR_MESSAGE, FILE_TYPE, FORM_LABEL } from "shared/constants";
+import {
+  API_ERROR_MESSAGE,
+  API_SUCCESS_MESSAGE,
+  FILE_TYPE,
+  FORM_LABEL,
+} from "shared/constants";
 import { FileUploadApiService } from "services/api/FileUploadAPIService";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 
 const { Option } = Select;
 
@@ -21,6 +28,11 @@ const DropZoneFileUpload = (props) => {
   const [selectedType, setSelectedType] = useState(""); // State for the selected document type
   const [tempFiles, setTempFiles] = useState([]); // State to temporarily hold files before type selection
   const [showModal, setShowModal] = useState(false); // State to control the modal visibility
+  const [snackData, setSnackData] = useState({
+    show: false,
+    message: "",
+    type: "error",
+  });
 
   const MAX_FILES_COUNT = props.maxFile || 0;
 
@@ -89,9 +101,36 @@ const DropZoneFileUpload = (props) => {
   };
 
   // Function to handle removing a file from the list
-  const removeFile = (fileName) => {
+  const removeFile = (fileDetails) => {
+    const regex = /\/([^/]+)$/; // Match the part after the last "/"
+
+    const match = fileDetails.path.match(regex);
+    const filepayload = {
+      imageKey: match[1],
+    };
+
+    FileUploadApiService.fileDelete(filepayload)
+      .then((response) => {
+        // On success, you can add any additional logic here
+        setSnackData({
+          show: true,
+          message:
+            response?.message || API_SUCCESS_MESSAGE.DELETED_SUCCESSFULLY,
+          type: "success",
+        });
+      })
+      .catch((errResponse) => {
+        setSnackData({
+          show: true,
+          message:
+            errResponse?.error?.message ||
+            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          type: "error",
+        });
+      });
+
     setUploadedFiles((prevFiles) =>
-      prevFiles.filter((file) => file.name !== fileName)
+      prevFiles.filter((file) => file.name !== fileDetails.name)
     );
   };
 
@@ -135,36 +174,47 @@ const DropZoneFileUpload = (props) => {
       return;
     }
     // sortFile(selectedType);
-    setShowModal(false); 
+    setShowModal(false);
     renderFileData(tempFiles);
 
-   // Close the modal after selection
+    // Close the modal after selection
   };
 
   const renderFileData = async (files) => {
     const processedFiles = await Promise.all(
       files.map(async (file) => {
         let uploadedLink = null;
-  
+
         // Create a new FileReader to read the file as Base64
         const reader = new FileReader();
-  
+
         // Return a promise that resolves when the file is read
         const fileDataUrl = await new Promise((resolve, reject) => {
           reader.onloadend = () => resolve(reader.result);
           reader.onerror = reject; // Handle any errors while reading the file
           reader.readAsDataURL(file); // Start reading the file
         });
-  
+
         // Now that the file is read, upload the Base64 data to the API
         try {
           const fileType = file.name.split(".");
           const filepayload = {
             documents: [fileDataUrl],
-            type:fileType[1],
+            type: fileType[1],
           };
-  
+
           const response = await FileUploadApiService.fileUpload(filepayload);
+
+          if (response) {
+            // On success, you can add any additional logic here
+            setSnackData({
+              show: true,
+              message:
+                response?.message || API_SUCCESS_MESSAGE.UPLOADED_SUCCESSFULLY,
+              type: "success",
+            });
+          }
+
           return {
             relativePath: file.relativePath,
             name: file.name,
@@ -180,19 +230,17 @@ const DropZoneFileUpload = (props) => {
         }
       })
     );
-  
+
     console.log("processedFiles", processedFiles);
-  
+
     // Filter out any null values from errors before updating the state
     const validFiles = processedFiles.filter((file) => file !== null);
-  
+
     // Once all files are processed, update the state
     setUploadedFiles((prevFiles) => [...prevFiles, ...validFiles]);
   };
-  
-  const sendToApi = async (value) => {
-    
-  };
+
+  const sendToApi = async (value) => {};
   // Handle the file upload
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
     onDrop: (newFiles) => {
@@ -209,7 +257,7 @@ const DropZoneFileUpload = (props) => {
       }
 
       // Check if total size exceeds 2MB
-      if (totalSize > 2 * 1024 * 1024) {
+      if (totalSize > 200 * 1024 * 1024) {
         setError(API_ERROR_MESSAGE.FILE_SIZE_200MB);
       } else {
         setTempFiles(newFiles);
@@ -250,7 +298,7 @@ const DropZoneFileUpload = (props) => {
 
       <button
         style={{ background: "transparent", border: "none" }}
-        onClick={() => removeFile(file.name)}
+        onClick={() => removeFile(file)}
       >
         <DeleteFilled style={{ color: "#f5222d" }} />
       </button>
@@ -328,6 +376,19 @@ const DropZoneFileUpload = (props) => {
         </h5>
         <ul>{files}</ul>
       </aside>
+      <Snackbar
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        open={snackData.show}
+        autoHideDuration={3000}
+        onClose={() => setSnackData({ show: false })}
+      >
+        <Alert
+          onClose={() => setSnackData({ show: false })}
+          severity={snackData.type}
+        >
+          {snackData.message}
+        </Alert>
+      </Snackbar>
     </section>
   );
 };

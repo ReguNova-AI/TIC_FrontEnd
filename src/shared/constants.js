@@ -24,6 +24,8 @@ export const API_SUCCESS_MESSAGE = {
   OTP_VERIFY:"OTP verified successfully",
   UPDATED_SUCCESSFULLY: "Data updated successfully",
   DOWNLOADED_SUCCESSFULLY: "File downloaded successfully",
+  DELETED_SUCCESSFULLY:"Deleted successfully",
+  UPLOADED_SUCCESSFULLY:"Uploaded successfully"
   
 };
 

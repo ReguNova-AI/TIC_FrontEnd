@@ -8,7 +8,12 @@ const _getFile = (filepayload) => {
   return BaseApiService.post(`/api/v1/getFromS3`, null , filepayload );
 };
 
+const _deleteFile = (filepayload) => {
+  return BaseApiService.post(`/api/v1/deleteFromS3`, null, filepayload);
+};
+
 export const FileUploadApiService = {
   fileUpload: _upload,
   fileget: _getFile,
+  fileDelete : _deleteFile,
 };
