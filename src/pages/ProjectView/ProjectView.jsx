@@ -71,10 +71,10 @@ const ProjectView = () => {
   };
 
 const handlechatUpdate = (data)=>{
+  console.log("data",data)
   
   const updatedResponse = { ...projectData };
   updatedResponse.chatResponse = {data:data};
-  updatedResponse.checkListResponse = {}
   setChatResponse(data[data.length-1]?.answer);
   UpdateProjectDetails(updatedResponse);
 

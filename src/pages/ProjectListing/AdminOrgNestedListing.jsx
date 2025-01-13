@@ -4,10 +4,12 @@ import { ApartmentOutlined } from '@ant-design/icons';
 import { Chip } from "@mui/material";
 import Stack from "@mui/material/Stack";
 import { formatDate, getStatusChipProps } from "shared/utility";
+import { useLocation, useNavigate } from "react-router-dom";
 
 
 // AdminOrgNestedListing Component
 const AdminOrgNestedListing = ({data}) => {
+  const navigate = useNavigate();
   const [dataSource, setDataSource] = useState([]);
   const [searchText, setSearchText] = useState('');
 
@@ -19,11 +21,24 @@ const AdminOrgNestedListing = ({data}) => {
     fetchData();
   }, [data]);
 
+  const handleNavigateToProject = (projectNo) => {
+    navigate(`/projectView/${projectNo}`, { state: { projectNo } });
+  };
+
+
   const projectColumns = [
     {
       title: 'Project Name',
       dataIndex: 'project_name',
       key: 'project_name',
+      render: (text, record) => (
+        <a
+          onClick={() => handleNavigateToProject(record.project_id)}
+          style={{ color: "#1890ff", cursor: "pointer" }}
+        >
+          {record.project_name}
+        </a>
+      ),
     },
     {
       title: 'Project No',

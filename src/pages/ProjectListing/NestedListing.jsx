@@ -6,10 +6,10 @@ import { formatDate, getStatusChipProps } from "shared/utility";
 import Stack from "@mui/material/Stack";
 import { UserOutlined } from '@ant-design/icons';
 import { Chip } from "@mui/material";
-
-// Example API response (replace with actual API call)
+import { useLocation, useNavigate } from "react-router-dom";
 
 const NestedListing = ({ data }) => {
+  const navigate = useNavigate();
   const [dataSource, setDataSource] = useState([]);
   const [expandDataSource, setExpandDataSource] = useState([]);
   const [searchText, setSearchText] = useState(''); // State for search input
@@ -33,11 +33,23 @@ const NestedListing = ({ data }) => {
     fetchData();
   }, [data]);
 
+  const handleNavigateToProject = (projectNo) => {
+    navigate(`/projectView/${projectNo}`, { state: { projectNo } });
+  };
+
   const expandColumns = [
     {
       title: LISTING_PAGE.PROJECT_NAME,
       dataIndex: 'project_name',
       key: 'project_name',
+      render: (text, record) => (
+        <a
+          onClick={() => handleNavigateToProject(record.project_id)}
+          style={{ color: "#1890ff", cursor: "pointer" }}
+        >
+          {record.project_name}
+        </a>
+      ),
     },
     {
       title: LISTING_PAGE.PROJECT_No,
