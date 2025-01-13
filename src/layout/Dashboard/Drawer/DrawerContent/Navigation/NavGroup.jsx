@@ -23,7 +23,7 @@ export default function NavGroup({ item }) {
           <NavSubItem key={menuItem.id} item={menuItem} level={1} />
         );
       case 'item':
-        return menuItem.access.includes("all") ||  menuItem.access.includes(userRole)? <NavItem key={menuItem.id} item={menuItem} level={1} /> : "";
+        return menuItem.access.includes("all") ||  menuItem.access.includes(userRole)?  userRole === "Super Admin" && menuItem.superAdminAccess !== true ? "" : < NavItem key={menuItem.id} item={menuItem} level={1} /> : "";
       default:
         return (
           <Typography key={menuItem.id} variant="h6" color="error" align="center">

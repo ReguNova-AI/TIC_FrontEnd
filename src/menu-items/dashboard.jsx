@@ -29,6 +29,7 @@ const dashboard = {
       icon: icons.ProductOutlined,
       breadcrumbs: false,
       access:["all"],
+      superAdminAccess:true
       
     },
     {
@@ -39,6 +40,7 @@ const dashboard = {
       icon: icons.ProjectOutlined,
       breadcrumbs: false,
       access:["all"],
+      superAdminAccess:true
     },
     // {
     //   id: 'documents',
@@ -57,6 +59,7 @@ const dashboard = {
       icon: icons.SafetyCertificateOutlined,
       breadcrumbs: false,
       access:["all"],
+      superAdminAccess:false
     },
     {
       id: 'downloadReports',
@@ -66,6 +69,7 @@ const dashboard = {
       icon: icons.LineChartOutlined,
       breadcrumbs: false,
       access:["all"],
+      superAdminAccess:true
       // children: [
       //   {
       //     id: 2,
@@ -83,6 +87,7 @@ const dashboard = {
       icon: icons.UserOutlined,
       breadcrumbs: false,
       access:["Super Admin","Org Super Admin","Admin"],
+      superAdminAccess:true
     },
     {
       id: 'organization',
@@ -92,6 +97,7 @@ const dashboard = {
       icon: icons.PartitionOutlined,
       breadcrumbs: false,
       access:["Super Admin"],
+      superAdminAccess:true
     },
     {
       id: 'configuration',
@@ -101,6 +107,7 @@ const dashboard = {
       icon: icons.SettingOutlined,
       breadcrumbs: false,
       access:["Super Admin"],
+      superAdminAccess:true
     },
     
     
