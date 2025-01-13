@@ -8,7 +8,7 @@ import {
   Popover,
   Button,
   Spin,
-  Modal,
+  Modal,Avatar
 } from "antd";
 import { Chip } from "@mui/material";
 import FormControl from "@mui/material/FormControl";
@@ -41,6 +41,8 @@ import {
 import { formatDate, getStatusChipProps } from "shared/utility";
 import { OrganisationApiService } from "services/api/OrganizationAPIService";
 import OrgCreation from "./OrgCreation";
+import { ApartmentOutlined } from '@ant-design/icons';
+
 
 const OrganizationListing = () => {
   const navigate = useNavigate();
@@ -105,8 +107,10 @@ const OrganizationListing = () => {
           const addressParts = [];
           if (org.org_address?.city) addressParts.push(org.org_address?.city);
           if (org.org_address?.state) addressParts.push(org.org_address?.state);
-          if (org.org_address?.street) addressParts.push(org.org_address?.street);
-          if (org.org_address?.country) addressParts.push(org.org_address?.country);
+          if (org.org_address?.street)
+            addressParts.push(org.org_address?.street);
+          if (org.org_address?.country)
+            addressParts.push(org.org_address?.country);
 
           // Join the address parts with a comma
           const address = addressParts.join(", ");
@@ -210,12 +214,25 @@ const OrganizationListing = () => {
       dataIndex: "org_name",
       key: "org_name",
       render: (text, record) => (
-        <a
-          onClick={() => handleNavigateToOrganization(record.index)}
-          style={{ color: "#1890ff", cursor: "pointer" }}
-        >
-          {text}
-        </a>
+        <>
+          <Avatar
+            sx={{ width: 40, height: 40 }}
+            alt={record.org_name}
+            src={
+              record.org_logo || (
+                <ApartmentOutlined style={{ color: "black" }} />
+              )
+            }
+          />
+          <span style={{ marginLeft: 10 }}>
+            <a
+              onClick={() => handleNavigateToOrganization(record.index)}
+              style={{ color: "#1890ff", cursor: "pointer" }}
+            >
+              {text}
+            </a>
+          </span>
+        </>
       ),
       filterSearch: true,
       onFilter: (value, record) =>

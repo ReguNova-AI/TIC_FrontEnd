@@ -109,30 +109,37 @@ export default function OrgCreation({ onHandleClose }) {
   const handleBack = () => {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
+  useEffect(()=>{
+    setFormData({
+      ...formData,
+      org_logo: uploadedFileData, // URL for avatar upload
+    });
+  },[uploadedFileData])
+
 
   const handleSubmit = () => {
-    let filepayload = { documents: [uploadedFileData], type: "jpg" };
-    FileUploadApiService.fileUpload(filepayload)
-      .then((response) => {
-        setSnackData({
-          show: true,
-          message: response?.message || API_SUCCESS_MESSAGE.USER_CREATED,
-          type: "success",
-        });
-        setFormData({
-          ...formData,
-          org_logo: "", // URL for avatar upload
-        });
-      })
-      .catch((errResponse) => {
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
-      });
+    // let filepayload = { documents: [uploadedFileData], type: "jpg" };
+    // FileUploadApiService.fileUpload(filepayload)
+    //   .then((response) => {
+    //     setSnackData({
+    //       show: true,
+    //       message: response?.message || API_SUCCESS_MESSAGE.USER_CREATED,
+    //       type: "success",
+    //     });
+    //     setFormData({
+    //       ...formData,
+    //       org_logo: "", // URL for avatar upload
+    //     });
+    //   })
+    //   .catch((errResponse) => {
+    //     setSnackData({
+    //       show: true,
+    //       message:
+    //         errResponse?.error?.message ||
+    //         API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+    //       type: "error",
+    //     });
+    //   });
 
     let payload = formData;
     OrganisationApiService.organisationCreate(payload)
