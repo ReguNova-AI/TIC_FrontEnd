@@ -38,6 +38,7 @@ import {
 } from "shared/constants";
 import { formatDate, getStatusChipProps } from "shared/utility";
 import NestedListing from "./NestedListing";
+import AdminOrgNestedListing from "./AdminOrgNestedListing";
 
 const Listing = () => {
   const navigate = useNavigate();
@@ -443,7 +444,8 @@ const Listing = () => {
           </Space>
           {/* Displaying Table or Card View */}
 
-          {viewMode === "list" ? (
+          {viewMode === "list" ? 
+          userRole === "Super Admin" ? <AdminOrgNestedListing data={orgLevelData} /> :(
             userRole === "Org Super Admin" || userRole === "Admin" ? (
               <NestedListing data={orgLevelData} />
             ) : (

@@ -58,11 +58,13 @@ const NestedListing = ({ data }) => {
       title: LISTING_PAGE.START_DATE,
       dataIndex: 'created_at',
       key: 'created_at',
+      render: (created_at) => created_at ? formatDate(created_at) : "",
     },
     {
       title: LISTING_PAGE.LAST_RUN,
       dataIndex: 'last_run',
       key: 'last_run',
+      render: (last_run) => last_run ? formatDate(last_run) : "",
     },
     {
       title: LISTING_PAGE.STATUS,
@@ -118,7 +120,7 @@ const NestedListing = ({ data }) => {
               {avatarSrc ? (
                 <img src={avatarSrc} alt={value.user_first_name} style={{ borderRadius: '50%' }} />
               ) : (
-                <UserOutlined /> // Fallback to icon if no image
+                <UserOutlined style={{color:"black"}}/> // Fallback to icon if no image
               )}
             </Avatar>
             <span style={{ marginLeft: "20px" }}>{value.name}</span>
