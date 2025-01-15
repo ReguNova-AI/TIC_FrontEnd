@@ -244,7 +244,8 @@ export const HEADING = Object.freeze({
   CREATE_NEW_PROJECT: "Create a New Project",
   CREATE_USER: "Create User",
   CREATE_ORG:"Create Organization",
-  EDIT_PROJECT:"Edit Project Details"
+  EDIT_PROJECT:"Edit Project Details",
+  INVITE_USERS:"Invite users",
 });
 
 export const CLOSE_ALERT_DESCRIPTION =

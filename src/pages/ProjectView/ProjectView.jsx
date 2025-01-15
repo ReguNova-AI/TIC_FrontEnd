@@ -106,7 +106,7 @@ const ProjectView = () => {
     const updatedResponse = { ...projectData };
     updatedResponse.chatResponse = { data: data };
     setChatResponse(data[data.length - 1]?.answer);
-    UpdateProjectDetails(updatedResponse,false);
+    UpdateProjectDetails(updatedResponse, false);
   };
 
   const runChecklkistCRT = async () => {
@@ -144,7 +144,8 @@ const ProjectView = () => {
         const updatedResponse = { ...projectData };
         updatedResponse.checkListResponse = response?.data?.data;
         updatedResponse.no_of_runs = updatedResponse.no_of_runs + 1;
-        UpdateProjectDetails(updatedResponse,true);
+        updatedResponse.status = "In Progress";
+        UpdateProjectDetails(updatedResponse, true);
       })
       .catch((errResponse) => {
         setSnackData({
@@ -217,7 +218,7 @@ const ProjectView = () => {
       });
   };
 
-  const UpdateProjectDetails = (payload,countUpdate=false) => {
+  const UpdateProjectDetails = (payload, countUpdate = false) => {
     ProjectApiService.projectUpdate(payload)
       .then((response) => {
         setSnackData({
@@ -257,7 +258,7 @@ const ProjectView = () => {
     SetProjectData(updatedResponse);
     setOpenModal(false); // Close the modal after upload
     setLoading(true);
-    UpdateProjectDetails(updatedResponse,false);
+    UpdateProjectDetails(updatedResponse, false);
   };
 
   const handleFileChange = (file) => {
@@ -301,7 +302,7 @@ const ProjectView = () => {
     updatedResponse.project_no = data.projectNo;
 
     setLoading(true);
-    UpdateProjectDetails(updatedResponse,false);
+    UpdateProjectDetails(updatedResponse, false);
   };
 
   CustomTabPanel.propTypes = {
@@ -422,9 +423,13 @@ const ProjectView = () => {
                         <Typography variant="h5">
                           {PROJECT_DETAIL_PAGE.LAST_RUN_DETAILS}
                         </Typography>
-                        <span style={{fontSize:"12px",color:"grey"}}>
-                          {projectData.last_run !== null && projectData.last_run !== "null" && projectData.last_run !=="" ? formatDate(projectData.last_run) : ""}
-                         </span>
+                        <span style={{ fontSize: "12px", color: "grey" }}>
+                          {projectData.last_run !== null &&
+                          projectData.last_run !== "null" &&
+                          projectData.last_run !== ""
+                            ? formatDate(projectData.last_run)
+                            : ""}
+                        </span>
                         <div style={{ marginTop: "20px" }}>
                           <RecentHistory data={projectData} />
                         </div>
@@ -554,7 +559,9 @@ const ProjectView = () => {
         </Dialog>
 
         <Modal
-          title={HEADING.EDIT_PROJECT}
+          title={
+            modalType === "Edit" ? HEADING.EDIT_PROJECT : HEADING.INVITE_USERS
+          }
           visible={isModalVisible}
           onCancel={handleModalClose}
           footer={null}
@@ -571,7 +578,7 @@ const ProjectView = () => {
 
         {/* Snackbar */}
         <Snackbar
-        style={{top:"80px"}}
+          style={{ top: "80px" }}
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
           open={snackData.show}
           autoHideDuration={3000}
