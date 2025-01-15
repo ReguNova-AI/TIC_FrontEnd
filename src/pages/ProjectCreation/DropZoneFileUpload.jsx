@@ -220,7 +220,7 @@ const DropZoneFileUpload = (props) => {
             name: file.name,
             size: file.size,
             type: file.type,
-            documenttype: props.typeSelect === false ? "Project Document" : selectedType,
+            documenttype: props.typeSelect === false ? props.maxFile === 0 ? "Project Document" : "" : selectedType,
             path: response.data.details[0], // Add or override the path with the uploaded link
           };
         } catch (errResponse) {

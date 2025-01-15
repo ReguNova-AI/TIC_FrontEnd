@@ -543,7 +543,7 @@ const ProjectView = () => {
           <DialogContent>
             <DropZoneFileUpload
               label="You can only upload project documents"
-              typeSelect={false}
+              typeSelect={false}        
               handleSubmitDocument={handleFileChange}
               maxFile={0}
             />
