@@ -19,6 +19,7 @@ import { DownloadOutlined, EyeOutlined } from '@ant-design/icons';
 import checklist from '../../assets/images/checklist3.jpg';
 import assessment from '../../assets/images/assessment2.jpg';
 import AssessmentView from './AssessmentView';
+import { saveAs } from 'file-saver';
 
 // Function to parse the API response into a structured format (skipping the title)
 const parseApiResponse = (response) => {
@@ -92,6 +93,12 @@ apiResponse = data;
     setActiveTab(newValue);
   };
 
+  const downloadChecklistFile = ()=>{
+    const content = data;
+    const blob = new Blob([content], { type: 'application/msword' });
+    saveAs(blob, 'IEC_Power_Performance_Standard.doc');
+  }
+
   return (
     <>
       <Card sx={{ width: 200, textAlign: 'center', boxShadow: 3, marginRight: '20px' }}>
@@ -110,7 +117,7 @@ apiResponse = data;
 
         {/* Action Buttons (Download and View) */}
         <CardActions sx={{ justifyContent: 'center' }}>
-          <IconButton color="primary" onClick={onDownload} aria-label="download">
+          <IconButton color="primary" onClick={downloadChecklistFile} aria-label="download">
             <DownloadOutlined />
           </IconButton>
           <IconButton color="primary" onClick={handleOpenModal} aria-label="view">
