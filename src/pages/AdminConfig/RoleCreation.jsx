@@ -11,7 +11,7 @@ import {
 } from "shared/constants";
 import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
 
-const RoleCreation = () => {
+const RoleCreation = ({onHandleClose}) => {
   const navigate = useNavigate();
   const [snackData, setSnackData] = useState({
     show: false,
@@ -45,9 +45,12 @@ const RoleCreation = () => {
 
         setSnackData({
           show: true,
-          message: response.message,
+          message: response?.data?.message,
           type: "success",
         });
+        onHandleClose(response?.data?.message);
+
+
         // navigate("/projectView", {
         //   state: { projectName: formData.certificate_name }, // Pass props here
         // });

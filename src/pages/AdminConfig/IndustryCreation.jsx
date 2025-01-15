@@ -23,7 +23,7 @@ import {
 import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
 import { UserApiService } from "services/api/UserAPIService";
 
-const IndustryCreation = () => {
+const IndustryCreation = ({onHandleClose}) => {
   const navigate = useNavigate();
   const [sectorData, setSectorData] = useState([]);
   const [snackData, setSnackData] = useState({
@@ -89,9 +89,18 @@ const IndustryCreation = () => {
         // On success, you can add any additional logic here
         setSnackData({
           show: true,
-          message: response.message,
+          message: response?.data?.message,
           type: "success",
         });
+        setFormData({
+          ...formData,
+          industry_name: "",
+          sector_name: "",
+          sector_id: null,
+        });
+
+        onHandleClose(response?.data?.message);
+
       })
       .catch((errResponse) => {
         setSnackData({

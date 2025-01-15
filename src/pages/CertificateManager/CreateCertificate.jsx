@@ -253,7 +253,7 @@ const CreateCertificate = ({onHandleClose}) => {
       style={{top:"80px"}}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
         open={snackData.show}
-        autoHideDuration={30000}
+        autoHideDuration={3000}
         onClose={() => setSnackData({ show: false })}
       >
         <Alert

@@ -207,7 +207,7 @@ export const FORM_LABEL = Object.freeze({
   SECONDARY_CONTACT:"Secondary Contact Details",
   SECTOR_NAME:"Sector Name",
   INDUSTRY_NAME: "Industry Name",
-  ROLE_NAME:"Role",
+  ROLE_NAME:"Role Name",
 
 });
 export const STEPPER_LABEL = Object.freeze({

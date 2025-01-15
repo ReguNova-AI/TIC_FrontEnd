@@ -12,12 +12,34 @@ import RoleListing from './RoleListing';
 import SectorCreation from './SectorCreation';
 import IndustryCreation from './IndustryCreation';
 import { BUTTON_LABEL } from 'shared/constants';
+import RoleCreation from './RoleCreation';
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 
 const { Text } = Typography;
 
 const AdminConfig = () => {
   const [visible, setVisible] = useState(false);
   const [modalContent, setModalContent] = useState({});
+  const [message,setMessage] = useState("");
+  const [snackData, setSnackData] = useState({
+    show: false,
+    message: "",
+    type: "error",
+  });
+
+
+  const handleClose = (messagevalue) => {
+    setMessage(messagevalue);
+    setModalContent(false);
+    setSnackData({
+      show: true,
+      message: messagevalue,
+      type: "success",
+    });
+    handleModalClose();
+  };
+
 
   const tabs = [
     {
@@ -59,6 +81,8 @@ const AdminConfig = () => {
   const handleModalClose = () => {
     setVisible(false);
     setModalContent('');
+    setMessage("");
+  
   };
 
   return (
@@ -123,12 +147,26 @@ const AdminConfig = () => {
           {modalContent.action === "List" && modalContent?.tab?.title === "Sectors" ? <SectorListing/>
           : modalContent.action === "List" && modalContent?.tab?.title === "Industries" ? <IndustriesListing/>
           : modalContent.action === "List" && modalContent?.tab?.title === "Roles" ? <RoleListing/>
-          : modalContent.action === "Create" && modalContent?.tab?.title === "Sectors" ? <SectorCreation/>
-          : modalContent.action === "Create" && modalContent?.tab?.title === "Industries" ? <IndustryCreation/>
-          : modalContent.action === "Create" && modalContent?.tab?.title === "Roles" ? <SectorCreation/>
+          : modalContent.action === "Create" && modalContent?.tab?.title === "Sectors" ? <SectorCreation onHandleClose={(e) => handleClose(e)}/>
+          : modalContent.action === "Create" && modalContent?.tab?.title === "Industries" ? <IndustryCreation onHandleClose={(e) => handleClose(e)}/>
+          : modalContent.action === "Create" && modalContent?.tab?.title === "Roles" ? <RoleCreation onHandleClose={(e) => handleClose(e)}/>
           : null}
        
       </Modal>
+      <Snackbar
+      
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        open={snackData.show}
+        autoHideDuration={3000}
+        onClose={() => setSnackData({ show: false })}
+      >
+        <Alert
+          onClose={() => setSnackData({ show: false })}
+          severity={snackData.type}
+        >
+          {snackData.message}
+        </Alert>
+      </Snackbar>
     </>
   );
 };

@@ -11,8 +11,9 @@ import {
 } from "shared/constants";
 import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
 
-const SectorCreation = () => {
+const SectorCreation = ({onHandleClose}) => {
   const navigate = useNavigate();
+ 
   const [snackData, setSnackData] = useState({
     show: false,
     message: "",
@@ -45,7 +46,7 @@ const SectorCreation = () => {
 
         setSnackData({
           show: true,
-          message: response.message,
+          message: response?.data?.message,
           type: "success",
         });
 
@@ -54,6 +55,8 @@ const SectorCreation = () => {
           sector_name: "",
           sector_desc: "",
         });
+        onHandleClose(response?.data?.message);
+
         
       })
       .catch((errResponse) => {

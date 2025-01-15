@@ -480,7 +480,7 @@ FileUploadApiService.fileget(filepayload).then((response) => {
               total: filteredData?.length,
               onChange: handlePaginationChange,
             }}
-          />
+          /> 
         </Space>
         <Modal
           title={FORM_LABEL.CERTIFICATE_UPLOAD}
