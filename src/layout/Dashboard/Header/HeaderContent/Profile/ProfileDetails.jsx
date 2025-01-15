@@ -25,6 +25,7 @@ const ProfileDetails = () => {
   const [formData, setFormData] = useState({});
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
   const userId = userdetails?.[0]?.user_id;
+  const userRole = userdetails?.[0]?.role_name;
 
   const [snackData, setSnackData] = useState({
     show: false,
@@ -148,16 +149,23 @@ const ProfileDetails = () => {
                 <Descriptions.Item label="Phone Number">
                   {profileData?.user_phone_no}
                 </Descriptions.Item>
+                {userRole !== "Super Admin" ?
                 <Descriptions.Item label="Address">
                   {profileData?.user_address?.street},{" "}
                   {profileData?.user_address?.city},{" "}
                   {profileData?.user_address?.state} -{" "}
                   {profileData?.user_address?.zip}
                 </Descriptions.Item>
+                :
+                <Descriptions.Item label="Role">
+                {profileData?.role_name}
+              </Descriptions.Item>
+                }
               </Descriptions>
             </Card>
 
-            <Divider />
+            {userRole !== "Super Admin" &&
+            <>            <Divider />
 
             {/* Organization Details Section */}
             <Card title="Organization Details" bordered={false}>
@@ -176,6 +184,8 @@ const ProfileDetails = () => {
                 </Descriptions.Item>
               </Descriptions>
             </Card>
+            </>
+}
           </Card>
         </Col>
       </Row>
