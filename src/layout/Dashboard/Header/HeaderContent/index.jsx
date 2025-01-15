@@ -13,13 +13,15 @@ import { useNavigate } from 'react-router-dom';
 // ==============================|| HEADER - CONTENT ||============================== //
 export default function HeaderContent() {
   const navigate = useNavigate();
+  const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
+  const userRole = userdetails?.[0]?.role_name;
 
   return (
     <>
       <Box sx={{ width: '100%', ml: 1 }} />
-      <Tooltip title="Add New Project" arrow>
-       <Button style={{ padding: "4px 20px",background: "#00bfa5",color: "white" }} onClick={(e)=>navigate("/createProject")}> <PlusOutlined  style={{ fontSize: "15px", color: "white" }}/> <span style={{marginLeft:"7px"}}>Project</span></Button>
-      </Tooltip>
+     {userRole !== "Super Admin" && <Tooltip title="Add New Project" arrow>
+       <Button style={{ padding: "4px 28px",background: "#00bfa5",color: "white" }} onClick={(e)=>navigate("/createProject")}> <PlusOutlined  style={{ fontSize: "15px", color: "white" }}/> <span style={{marginLeft:"7px"}}>Project</span></Button>
+      </Tooltip>}
       <Notification />
       <Profile />
     </>

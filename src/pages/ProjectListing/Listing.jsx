@@ -386,7 +386,7 @@ const Listing = () => {
               alignItems: "center",
             }}
           >
-            <Button
+            {userRole !== "Super Admin" && <Button
               type="primary"
               onClick={() => navigate("/createProject")}
               style={{
@@ -398,11 +398,12 @@ const Listing = () => {
             >
               <FileFilled style={{ marginRight: 4 }} />
               {BUTTON_LABEL.CREATE_PROJECT}
-            </Button>
+            </Button>}
 
             {/* Search Input and Popover Filter */}
             <Space>
               {paginatedData.length > 0 &&
+                userRole !== "Super Admin" &&
                 userRole !== "Org Super Admin" &&
                 userRole !== "Admin" && (
                   <ToggleButtons onViewModeChange={handleViewModeChange} />
