@@ -5,6 +5,10 @@ import BaseApiService from "./BaseApiService";
 const _userCreate = (payload) => {
   return BaseApiService.post(`/api/v1/user/create`, null, payload);
 };
+const _userUpdate = (payload) => {
+  return BaseApiService.put(`/api/v1/user/update`, null, payload);
+};
+
 
 const _userListing = () => {
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
@@ -49,6 +53,7 @@ const _roleDetails = () => {
 
 export const UserApiService = {
   userCreate: _userCreate,
+  userUpdate: _userUpdate,
   userListing: _userListing,
   userDetails: _userDetails,
   orgDetails: _orgDetails,

@@ -18,6 +18,7 @@ export const LOGIN_PAGE = {
 export const API_SUCCESS_MESSAGE = {
   FETCHED_SUCCESSFULLY: "Data fetched successfully",
   USER_CREATED: "User created successfully",
+  DETAILS_UPDATED: "Details updated successfully",
   LOGGED_OUT: "Logged out successfully",
   OTP_SENT:"OTP sent successfully",
   PASSWORD_RESET:"Password reset successfully",
