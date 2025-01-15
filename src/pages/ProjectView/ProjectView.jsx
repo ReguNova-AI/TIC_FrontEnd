@@ -1,6 +1,18 @@
 import React, { useEffect, useState } from "react";
 import BreadcrumbsView from "components/Breadcrumbs";
-import { Typography, Box, Tabs, Tab, Grid, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
+import {
+  Typography,
+  Box,
+  Tabs,
+  Tab,
+  Grid,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+} from "@mui/material";
 import PropTypes from "prop-types";
 import TimelineView from "./TimelineView";
 import FileStructureView from "./FileStructureView";
@@ -17,12 +29,24 @@ import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { ProjectApiService } from "services/api/ProjectAPIService";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
-import { Spin,Modal, } from "antd";
-import { API_ERROR_MESSAGE, API_SUCCESS_MESSAGE, STATUS, BUTTON_LABEL, TAB_LABEL, COUNT_CARD_LABELS, PROJECT_DETAIL_PAGE, HEADING } from "shared/constants";
+import { Spin, Modal, Result } from "antd";
+import {
+  API_ERROR_MESSAGE,
+  API_SUCCESS_MESSAGE,
+  STATUS,
+  BUTTON_LABEL,
+  TAB_LABEL,
+  COUNT_CARD_LABELS,
+  PROJECT_DETAIL_PAGE,
+  HEADING,
+} from "shared/constants";
 import DropZoneFileUpload from "pages/ProjectCreation/DropZoneFileUpload";
+import chatLoadingicon from "../../assets/images/icons/chatLoadingIcon.svg";
 
 import checklistfile from "../../assets/IEC-61400-12-2022.pdf";
 import axios from "axios";
+import Icon, { SmileOutlined } from "@ant-design/icons";
+import { formatDate } from "shared/utility";
 
 const ProjectView = () => {
   const navigate = useNavigate();
@@ -32,21 +56,24 @@ const ProjectView = () => {
   const { id } = useParams();
   const [loading, setLoading] = useState(true);
   const [projectData, SetProjectData] = useState([]);
-  const [uploadedDocument,setUploadedDocument] = useState([]);
-  const [chatResponse,setChatResponse] = useState([]);
+  const [uploadedDocument, setUploadedDocument] = useState([]);
+  const [chatResponse, setChatResponse] = useState([]);
+  const [chatLoading, setChatloading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false); // To control modal visibility
-  
+  // const chatLoadingIcon = (props) => <Icon component={chatLoadingicon} {...props} />;
+
   const [snackData, setSnackData] = useState({
     show: false,
     message: "",
     type: "error",
   });
-  const [modalType,setModalType] = useState("");
+  const [modalType, setModalType] = useState("");
   const [openModal, setOpenModal] = useState(false); // State to control modal visibility
   const [fileName, setFileName] = useState(""); // State to store the uploaded file name
-  
+
   useEffect(() => {
     fetchDetails(id);
+    // runChecklistAPI();
   }, [id]);
 
   const fetchDetails = (id) => {
@@ -54,7 +81,8 @@ const ProjectView = () => {
       .then((response) => {
         setSnackData({
           show: true,
-          message: response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+          message:
+            response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
           type: "success",
         });
         SetProjectData(response?.data?.details[0]);
@@ -63,51 +91,51 @@ const ProjectView = () => {
       .catch((errResponse) => {
         setSnackData({
           show: true,
-          message: errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          message:
+            errResponse?.error?.message ||
+            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
         setLoading(false);
       });
   };
 
-const handlechatUpdate = (data)=>{
-  console.log("data",data)
-  
-  const updatedResponse = { ...projectData };
-  updatedResponse.chatResponse = {data:data};
-  setChatResponse(data[data.length-1]?.answer);
-  UpdateProjectDetails(updatedResponse);
+  const handlechatUpdate = (data) => {
+    console.log("data", data);
 
-}
+    const updatedResponse = { ...projectData };
+    updatedResponse.chatResponse = { data: data };
+    setChatResponse(data[data.length - 1]?.answer);
+    UpdateProjectDetails(updatedResponse,false);
+  };
 
-const runChecklkistCRT = async()=>{
-  
-  // const checklistfile = document.getElementById('fileInput').files[0];
-  // const payload = new FormData();
-  // payload.append("file", checklistfile);
- 
-    
-  //   const headers = {
-  //     'Content-Type': 'multipart/form-data',
-  //     "Accept":"application/json",
-  //   };
+  const runChecklkistCRT = async () => {
+    // const checklistfile = document.getElementById('fileInput').files[0];
+    // const payload = new FormData();
+    // payload.append("file", checklistfile);
 
-  //   try {
-  //     const response = await axios.post('http://54.158.101.113:8000/uploadstd_checklist_crt/', payload, {
-  //       headers: headers
-  //     });
-  //    console.log("response",response)
-  //   } catch (err) {
-  //     console.log(err)
-  //    }
-  setLoading(true);
-  const payload = {}
-  ProjectApiService.projectStandardChecklist(payload)
+    //   const headers = {
+    //     'Content-Type': 'multipart/form-data',
+    //     "Accept":"application/json",
+    //   };
+
+    //   try {
+    //     const response = await axios.post('http://54.158.101.113:8000/uploadstd_checklist_crt/', payload, {
+    //       headers: headers
+    //     });
+    //    console.log("response",response)
+    //   } catch (err) {
+    //     console.log(err)
+    //    }
+    setLoading(true);
+    const payload = {};
+    ProjectApiService.projectStandardChecklist(payload)
       .then((response) => {
-        console.log("response",response)
+        console.log("response", response);
         setSnackData({
           show: true,
-          message: response?.data?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+          message:
+            response?.data?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
           type: "success",
         });
         // SetProjectData(response?.data?.details[0]);
@@ -115,23 +143,22 @@ const runChecklkistCRT = async()=>{
 
         const updatedResponse = { ...projectData };
         updatedResponse.checkListResponse = response?.data?.data;
-        UpdateProjectDetails(updatedResponse);
-
+        updatedResponse.no_of_runs = updatedResponse.no_of_runs + 1;
+        UpdateProjectDetails(updatedResponse,true);
       })
       .catch((errResponse) => {
         setSnackData({
           show: true,
-          message: errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          message:
+            errResponse?.error?.message ||
+            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
         setLoading(false);
       });
+  };
 
-
-}
-
-  const runChecklistAPI =async()=>{
-    
+  const runChecklistAPI = async () => {
     // const checklistfile = document.getElementById('fileInput').files[0];
     // const payload = new FormData();
     // payload.append("file", checklistfile);
@@ -140,13 +167,13 @@ const runChecklkistCRT = async()=>{
     // if (checklistfile) {
     //   // Convert file to binary (ArrayBuffer)
     //   const reader = new FileReader();
-      
+
     //   reader.onloadend = () => {
     //     const binaryData = reader.result; // This will be an ArrayBuffer
     //     setFileBinary(binaryData); // Store the binary data in state
     //     console.log(binaryData); // Log or send to backend as needed
     //   };
-      
+
     //   // Read the file as an ArrayBuffer (binary)
     //   reader.readAsArrayBuffer(checklistfile);
     // }
@@ -161,42 +188,42 @@ const runChecklkistCRT = async()=>{
 
     // try {
     //   const response = await axios.post('http://54.158.101.113:8000/uploadstd_chat/', payload, {
-    //     headers 
+    //     headers
     //   });
     //  console.log("response",response)
     // } catch (err) {
     //   console.log(err)
     //  }
     const payload = {};
-    
+    setChatloading(true);
     ProjectApiService.projectUploadStandardChat(payload)
       .then((response) => {
-        console.log("response",response)
-        setSnackData({
-          show: true,
-          message: response?.data?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-          type: "success",
-        });
+        // console.log("response",response)
+        // setSnackData({
+        //   show: true,
+        //   message: response?.data?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+        //   type: "success",
+        // });
         // SetProjectData(response?.data?.details[0]);
-        // setLoading(false);
+        setChatloading(false);
       })
       .catch((errResponse) => {
-        setSnackData({
-          show: true,
-          message: errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
-
+        // setSnackData({
+        //   show: true,
+        //   message: errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+        //   type: "error",
+        // });
+        setChatloading(false);
       });
-  }
+  };
 
-
-  const UpdateProjectDetails = (payload) => { 
+  const UpdateProjectDetails = (payload,countUpdate=false) => {
     ProjectApiService.projectUpdate(payload)
       .then((response) => {
         setSnackData({
           show: true,
-          message: response?.message || API_SUCCESS_MESSAGE.UPDATED_SUCCESSFULLY,
+          message:
+            response?.message || API_SUCCESS_MESSAGE.UPDATED_SUCCESSFULLY,
           type: "success",
         });
         SetProjectData(response?.data?.details[0]);
@@ -205,13 +232,14 @@ const runChecklkistCRT = async()=>{
       .catch((errResponse) => {
         setSnackData({
           show: true,
-          message: errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          message:
+            errResponse?.error?.message ||
+            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
         setLoading(false);
       });
-
-  }
+  };
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -224,17 +252,16 @@ const runChecklkistCRT = async()=>{
     // Append the new documents to the existing documents array
     updatedResponse.documents = [
       ...updatedResponse.documents,
-      ...uploadedDocument
+      ...uploadedDocument,
     ];
     SetProjectData(updatedResponse);
     setOpenModal(false); // Close the modal after upload
     setLoading(true);
-    UpdateProjectDetails(updatedResponse);
+    UpdateProjectDetails(updatedResponse,false);
   };
 
-
   const handleFileChange = (file) => {
-    setUploadedDocument(file)
+    setUploadedDocument(file);
   };
 
   function CustomTabPanel(props) {
@@ -254,7 +281,7 @@ const runChecklkistCRT = async()=>{
   }
 
   const handleModalOpen = (type) => {
-    setModalType(type)
+    setModalType(type);
     setIsModalVisible(true);
   };
 
@@ -267,17 +294,15 @@ const runChecklkistCRT = async()=>{
     // fetchData();
   };
 
-  const updateDetails = (data) =>{
-  
+  const updateDetails = (data) => {
     const updatedResponse = { ...projectData };
     updatedResponse.project_name = data.projectName;
     updatedResponse.project_description = data.projectDesc;
     updatedResponse.project_no = data.projectNo;
 
     setLoading(true);
-    UpdateProjectDetails(updatedResponse);
-  }
-
+    UpdateProjectDetails(updatedResponse,false);
+  };
 
   CustomTabPanel.propTypes = {
     children: PropTypes.node,
@@ -294,7 +319,11 @@ const runChecklkistCRT = async()=>{
 
   return (
     <>
-      <BreadcrumbsView previousLink="/projects" previousPage="My Projects" currentPage={projectData?.project_name}/>
+      <BreadcrumbsView
+        previousLink="/projects"
+        previousPage="My Projects"
+        currentPage={projectData?.project_name}
+      />
       <Spin tip="Loading" size="large" spinning={loading}>
         <Box
           sx={{
@@ -307,7 +336,10 @@ const runChecklkistCRT = async()=>{
         >
           <Grid container rowSpacing={4.5} columnSpacing={2.75}>
             <Grid item xs={3} sm={3} md={3} lg={3}>
-              <ProjectDetailsCardView data={projectData} handleClick={(e)=>handleModalOpen(e)}/>
+              <ProjectDetailsCardView
+                data={projectData}
+                handleClick={(e) => handleModalOpen(e)}
+              />
             </Grid>
 
             <Grid item xs={9} sm={9} md={9} lg={9}>
@@ -355,10 +387,12 @@ const runChecklkistCRT = async()=>{
                         </Grid>
                       </Grid>
                       <Grid container style={{ marginTop: "20px" }}>
-                        <Grid item xs={12} sm={12} md={12} lg={12}>
-                          <Typography>{PROJECT_DETAIL_PAGE.CURRENT_PROGRESS_STATUS}</Typography>
+                        {/* <Grid item xs={12} sm={12} md={12} lg={12}>
+                          <Typography>
+                            {PROJECT_DETAIL_PAGE.CURRENT_PROGRESS_STATUS}
+                          </Typography>
                           <ProgressBarView />
-                        </Grid>
+                        </Grid> */}
                         <Grid item xs={12} sm={12} md={12} lg={12}>
                           <Box
                             style={{
@@ -371,7 +405,7 @@ const runChecklkistCRT = async()=>{
                             }}
                           >
                             {PROJECT_DETAIL_PAGE.UPLOADED_FILES}
-                            <FileStructureView data={projectData}/>
+                            <FileStructureView data={projectData} />
                           </Box>
                         </Grid>
                       </Grid>
@@ -385,7 +419,12 @@ const runChecklkistCRT = async()=>{
                           border: "1px solid #e4e4e4",
                         }}
                       >
-                        <Typography variant="h5">{PROJECT_DETAIL_PAGE.LAST_RUN_DETAILS}</Typography>
+                        <Typography variant="h5">
+                          {PROJECT_DETAIL_PAGE.LAST_RUN_DETAILS}
+                        </Typography>
+                        <span style={{fontSize:"12px",color:"grey"}}>
+                          {projectData.last_run !== null && projectData.last_run !== "null" && projectData.last_run !=="" ? formatDate(projectData.last_run) : ""}
+                         </span>
                         <div style={{ marginTop: "20px" }}>
                           <RecentHistory data={projectData} />
                         </div>
@@ -404,16 +443,19 @@ const runChecklkistCRT = async()=>{
                         >
                           {BUTTON_LABEL.UPLOAD_DOCUMENTS}
                         </Button>
-                        <Button variant="contained" sx={{ mt: 2 }} onClick={()=>runChecklistAPI()}>
-                          {/* {BUTTON_LABEL.RUN_CHECKLIST} */}
+                        {/* <Button variant="contained" sx={{ mt: 2 }} onClick={()=>runChecklistAPI()}>
+                         
                           Upload standard chat
-                        </Button>
+                        </Button> */}
 
                         {/* <input type="file" id="fileInput" /> */}
-                        <Button variant="contained" sx={{ mt: 2 }} onClick={()=>runChecklkistCRT()}>
-                        uploadstd checklist crt
+                        <Button
+                          variant="contained"
+                          sx={{ mt: 2 }}
+                          onClick={() => runChecklkistCRT()}
+                        >
+                          uploadstd checklist crt
                         </Button>
-                        
                       </Box>
                     </Grid>
                   </Grid>
@@ -430,10 +472,15 @@ const runChecklkistCRT = async()=>{
                       border: "1px solid #e4e4e4",
                     }}
                   >
-                    {projectData?.checkListResponse &&
-                      <FileCard fileName={PROJECT_DETAIL_PAGE.CHECKLIST_REPORT} data = {projectData?.checkListResponse}/>
-                    }
-                    <FileCard fileName={PROJECT_DETAIL_PAGE.ASSESSMENT_REPORT} />
+                    {projectData?.checkListResponse && (
+                      <FileCard
+                        fileName={PROJECT_DETAIL_PAGE.CHECKLIST_REPORT}
+                        data={projectData?.checkListResponse}
+                      />
+                    )}
+                    <FileCard
+                      fileName={PROJECT_DETAIL_PAGE.ASSESSMENT_REPORT}
+                    />
                   </Box>
 
                   <Box
@@ -464,8 +511,20 @@ const runChecklkistCRT = async()=>{
                     }}
                   >
                     {/* <img src={chatAI} width="100%" /> */}
-                    <ChatAIView onSubmit={(e)=>handlechatUpdate(e)} data={projectData?.chatResponse?.data} responseValue={chatResponse}/>
-
+                    {/* <Spin tip="Just a moment, I'm gathering the information for you..." size="large" spinning={chatLoading} style={{background:"white"}}> */}
+                    {chatLoading ? (
+                      <Result
+                        icon={<img src={chatLoadingicon} width={"10%"} />}
+                        subTitle="Just a moment, I'm gathering the information for you..."
+                      />
+                    ) : (
+                      <ChatAIView
+                        onSubmit={(e) => handlechatUpdate(e)}
+                        data={projectData?.chatResponse?.data}
+                        responseValue={chatResponse}
+                      />
+                    )}
+                    {/* </Spin> */}
                   </Box>
                 </CustomTabPanel>
               </Box>
@@ -477,7 +536,12 @@ const runChecklkistCRT = async()=>{
         <Dialog open={openModal} onClose={() => setOpenModal(false)}>
           <DialogTitle>Upload Documents</DialogTitle>
           <DialogContent>
-          <DropZoneFileUpload label="You can only upload project documents" typeSelect={false} handleSubmitDocument={handleFileChange} maxFile={0}/>
+            <DropZoneFileUpload
+              label="You can only upload project documents"
+              typeSelect={false}
+              handleSubmitDocument={handleFileChange}
+              maxFile={0}
+            />
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setOpenModal(false)} color="primary">
@@ -489,9 +553,20 @@ const runChecklkistCRT = async()=>{
           </DialogActions>
         </Dialog>
 
-        <Modal title={HEADING.EDIT_PROJECT} visible={isModalVisible} onCancel={handleModalClose} footer={null} width={800}>
+        <Modal
+          title={HEADING.EDIT_PROJECT}
+          visible={isModalVisible}
+          onCancel={handleModalClose}
+          footer={null}
+          width={800}
+        >
           {/* <UserCreation onHandleClose={(e)=>handleClose()}/> */}
-          <EditProject data={projectData} onHandleClose={(e)=>handleClose()} editDetails={(e)=>updateDetails(e)} type={modalType}/>
+          <EditProject
+            data={projectData}
+            onHandleClose={(e) => handleClose()}
+            editDetails={(e) => updateDetails(e)}
+            type={modalType}
+          />
         </Modal>
 
         {/* Snackbar */}
@@ -501,7 +576,10 @@ const runChecklkistCRT = async()=>{
           autoHideDuration={3000}
           onClose={() => setSnackData({ show: false })}
         >
-          <Alert onClose={() => setSnackData({ show: false })} severity={snackData.type}>
+          <Alert
+            onClose={() => setSnackData({ show: false })}
+            severity={snackData.type}
+          >
             {snackData.message}
           </Alert>
         </Snackbar>

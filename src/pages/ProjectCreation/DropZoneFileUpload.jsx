@@ -220,7 +220,7 @@ const DropZoneFileUpload = (props) => {
             name: file.name,
             size: file.size,
             type: file.type,
-            documenttype: selectedType,
+            documenttype: props.typeSelect === false ? "Project Document" : selectedType,
             path: response.data.details[0], // Add or override the path with the uploaded link
           };
         } catch (errResponse) {
@@ -262,7 +262,7 @@ const DropZoneFileUpload = (props) => {
       } else {
         setTempFiles(newFiles);
 
-        // Only show the modal if the typeSelect prop is true
+        // Only show the modal if the props.typeSelect prop is true
         if (props.typeSelect === true) {
           setShowModal(true);
         } else {

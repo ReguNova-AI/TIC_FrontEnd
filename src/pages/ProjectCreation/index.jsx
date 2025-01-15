@@ -132,7 +132,7 @@ const MyForm = () => {
       industry_id: userdetails?.[0]?.industry_id,
       industry_name: userdetails?.[0]?.industry_name,
       status: updatedStatus,
-      no_of_runs: 0,
+      no_of_runs: updatedStatus === "Draft" ? 0 : 1,
       success_count: 0,
       fail_count: 0,
       // last_run: submissionStatus === 'Draft' ? null : formatDateToCustomFormat(new Date()),
@@ -151,7 +151,7 @@ const MyForm = () => {
           message: response.message,
           type: "success",
         });
-        const projectId= response?.data?.details?.[0].project_id
+        const projectId= response?.data?.details?.[0].project_id;
         navigate(`/projectView/${projectId}`, { state: { projectId:projectId,projectName: formData.projectName } });
       })
       .catch((errResponse) => {
