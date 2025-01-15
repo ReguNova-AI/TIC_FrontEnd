@@ -75,7 +75,20 @@ const CreateCertificate = ({onHandleClose}) => {
   };
 
   const handleSubmit = (e) => {
+
     e.preventDefault();
+
+  // Check if file is selected
+  if (!formData.file_url) {
+    setSnackData({
+      show: true,
+      message: "Please upload a certificate file.",
+      type: "error",
+    });
+    return; // Don't proceed with form submission
+  }
+
+
     const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
     const today = new Date().toISOString().split("T")[0];
     const updatedStatus =
@@ -237,9 +250,10 @@ const CreateCertificate = ({onHandleClose}) => {
       </Box>
 
       <Snackbar
+      style={{top:"80px"}}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
         open={snackData.show}
-        autoHideDuration={3000}
+        autoHideDuration={30000}
         onClose={() => setSnackData({ show: false })}
       >
         <Alert
