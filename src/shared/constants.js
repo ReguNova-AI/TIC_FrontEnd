@@ -242,6 +242,7 @@ export const FILE_TYPE = Object.freeze({
 export const HEADING = Object.freeze({
   CREATE_NEW_PROJECT: "Create a New Project",
   CREATE_USER: "Create User",
+  CREATE_ORG:"Create Organization",
   EDIT_PROJECT:"Edit Project Details"
 });
 

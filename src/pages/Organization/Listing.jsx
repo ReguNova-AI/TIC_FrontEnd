@@ -360,7 +360,7 @@ const OrganizationListing = () => {
           )}
         </Space>
         <Modal
-          title={HEADING.CREATE_USER}
+          title={HEADING.CREATE_ORG}
           visible={isModalVisible}
           onCancel={handleModalClose}
           footer={null}
