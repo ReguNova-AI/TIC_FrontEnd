@@ -46,12 +46,12 @@ const IndustryCreation = ({onHandleClose}) => {
   const fetchSectorDetails = () => {
     AdminConfigAPIService.sectorListing()
       .then((response) => {
-        setSnackData({
-          show: true,
-          message:
-            response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-          type: "success",
-        });
+        // setSnackData({
+        //   show: true,
+        //   message:
+        //     response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+        //   type: "success",
+        // });
 
         const sectors = response?.data?.details || []; // Use an empty array as fallback
         setSectorData(sectors);

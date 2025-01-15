@@ -183,6 +183,7 @@ const SectorListing = () => {
         </Space>
 
         <Snackbar
+        style={{top:"80px"}}
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
           open={snackData.show}
           autoHideDuration={9000}

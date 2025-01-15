@@ -80,9 +80,8 @@ const AdminConfig = () => {
 
   const handleModalClose = () => {
     setVisible(false);
-    setModalContent('');
+    setModalContent({});
     setMessage("");
-  
   };
 
   return (
@@ -154,7 +153,7 @@ const AdminConfig = () => {
        
       </Modal>
       <Snackbar
-      
+      style={{top:"80px"}}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
         open={snackData.show}
         autoHideDuration={3000}

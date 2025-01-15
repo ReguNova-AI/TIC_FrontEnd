@@ -209,6 +209,7 @@ export default function AuthOTP() {
       </Formik>
 
       <Snackbar
+      style={{top:"80px"}}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
         open={snackData.show}
         autoHideDuration={3000}

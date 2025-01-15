@@ -114,6 +114,7 @@ const ChatAIView = ({data,onSubmit,responseValue}) => {
 
       {/* Snackbar for displaying messages */}
       <Snackbar
+      style={{top:"80px"}}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
         open={snackData.show}
         autoHideDuration={3000}

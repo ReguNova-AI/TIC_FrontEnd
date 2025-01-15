@@ -88,6 +88,7 @@ const CountView = () => {
 
       {/* Snackbar for showing error messages */}
       <Snackbar
+      style={{top:"80px"}}
         open={snackData.show}
         autoHideDuration={6000}
         onClose={() => setSnackData({ ...snackData, show: false })}

@@ -188,6 +188,28 @@ export default function UserCreation({ onHandleClose }) {
         });
         setValuetoNull()
         setActiveStep(0);
+       setFormData({
+        ...formData,
+          role_id: "",
+          user_first_name: "",
+          user_last_name: "",
+          user_profile: "", // URL for avatar upload
+          user_email: "",
+          user_phone_no: "",
+          user_address: {
+            street: "",
+            city: "",
+            state: "",
+            zip: "",
+          },
+          sector_id: "",
+          sector_name: "",
+          org_id: "",
+          org_name: "",
+          industry_id: "",
+          industry_name: "",
+          created_by: userdetails?.[0]?.user_id,
+        });
         onHandleClose(true);
       })
       .catch((errResponse) => {
