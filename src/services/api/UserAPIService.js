@@ -39,8 +39,8 @@ const _userEmailCheck = (email) => {
   return BaseApiService.get(`api/v1/users/exist?email=${email}`, null, null);
 };
 
-const _userDetails = (id) => {
-  return BaseApiService.get(`/api/v1/users/${id}`, null, null);
+const _userDetails = (userId) => {
+  return BaseApiService.get(`/api/v1/users/${userId}`, null, null);
 };
 
 const _roleDetails = () => {

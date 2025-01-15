@@ -56,6 +56,10 @@ export default function Profile() {
     if (url === "logout") {
       handleLogout();
     }
+    if(url === "profileDetails")
+    {
+      navigate("/profileDetails");
+    }
   };
 
   const anchorRef = useRef(null);
@@ -247,7 +251,7 @@ export default function Profile() {
                     <ListItemButton
                       selected={selectedIndex === 1}
                       onClick={(event) =>
-                        handleListItemClick(1, "/apps/profiles/account/basic")
+                        handleListItemClick(1, "profileDetails")
                       }
                     >
                       <ListItemIcon>

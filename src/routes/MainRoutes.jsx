@@ -7,6 +7,7 @@ import ProjectForm from 'pages/ProjectCreation';
 import ProjectView from 'pages/ProjectView/ProjectView';
 import UserListing from 'pages/Users/UserListing';
 import ProtectedRoute from './ProtectedRoute';
+import ProfileDetails from 'layout/Dashboard/Header/HeaderContent/Profile/ProfileDetails';
 
 const Color = Loadable(lazy(() => import('pages/component-overview/color')));
 const Typography = Loadable(lazy(() => import('pages/component-overview/typography')));
@@ -92,6 +93,11 @@ const MainRoutes = {
       path : 'organization',
       element: <ProtectedRoute><OrganizationListing/></ProtectedRoute>
     },
+    {
+      path : 'profileDetails',
+      element: <ProtectedRoute><ProfileDetails/></ProtectedRoute>
+    },
+    
     
   ]
 };
