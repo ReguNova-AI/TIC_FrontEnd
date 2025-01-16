@@ -17,6 +17,16 @@ import { DownOutlined , UpOutlined } from '@ant-design/icons';
 // project import
 import { handlerActiveItem, useGetMenuMaster } from 'api/menu';
 
+import dashboardIcon from "../../../../../assets/images/icons/dashboardIcon.svg";
+import organization from "../../../../../assets/images/icons/organization.svg";
+import projects from "../../../../../assets/images/icons/projects.svg";
+import users from "../../../../../assets/images/icons/users.svg";
+import report from "../../../../../assets/images/icons/report.svg";
+import certificate from "../../../../../assets/images/icons/certificate.svg";
+import dashboard2 from "../../../../../assets/images/icons/dashboard2.svg";
+
+
+
 function NavSubItem({ item, level }) {
   const theme = useTheme();
 
@@ -38,8 +48,26 @@ function NavSubItem({ item, level }) {
     listItemProps = { component: 'a', href: item.url, target: itemTarget };
   }
 
+  const icons = {
+    dashboard: dashboard2,
+    myProject: projects,
+    certificateManager: certificate,
+    downloadReports: report,
+    users: users,
+    organization: organization,
+    configuration: dashboardIcon, // Default icon
+  };
   const Icon = item.icon;
-  const itemIcon = item.icon ? <Icon style={{ fontSize: drawerOpen ? '1rem' : '1.25rem' }} /> : false;
+  // const itemIcon = item.icon ? <Icon style={{ fontSize: drawerOpen ? '1rem' : '1.25rem' }} /> : false;
+  const itemIcon = item.id ? (
+    <img
+      src={icons[item.id] || dashboardIcon} // fallback icon
+      width={drawerOpen ? "20px" : "25px"}
+      alt={`${item.title} icon`} // Add alt for accessibility
+    />
+  ) : (
+    false
+  );
 
   // Handle active item on page load
   useEffect(() => {

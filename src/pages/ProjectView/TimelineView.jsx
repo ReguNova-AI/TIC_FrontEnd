@@ -4,7 +4,7 @@ import { Timeline } from 'antd';
 
 const TimelineView = () => {
  return ( <Timeline
-    mode="alternate"
+    mode="left"
     items={[
       {
         children: 'Create a project on 2015-09-01',

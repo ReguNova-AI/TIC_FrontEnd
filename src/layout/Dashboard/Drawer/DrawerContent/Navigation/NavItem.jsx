@@ -1,18 +1,25 @@
-import PropTypes from 'prop-types';
-import { forwardRef, useEffect } from 'react';
-import { Link, useLocation, matchPath } from 'react-router-dom';
+import PropTypes from "prop-types";
+import { forwardRef, useEffect } from "react";
+import { Link, useLocation, matchPath } from "react-router-dom";
 
 // material-ui
-import { useTheme } from '@mui/material/styles';
-import Avatar from '@mui/material/Avatar';
-import Chip from '@mui/material/Chip';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import Typography from '@mui/material/Typography';
+import { useTheme } from "@mui/material/styles";
+import Avatar from "@mui/material/Avatar";
+import Chip from "@mui/material/Chip";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemText from "@mui/material/ListItemText";
+import Typography from "@mui/material/Typography";
 
 // project import
-import { handlerActiveItem, useGetMenuMaster } from 'api/menu';
+import { handlerActiveItem, useGetMenuMaster } from "api/menu";
+import dashboardIcon from "../../../../../assets/images/icons/dashboardIcon.svg";
+import organization from "../../../../../assets/images/icons/organization.svg";
+import projects from "../../../../../assets/images/icons/projects.svg";
+import users from "../../../../../assets/images/icons/users.svg";
+import report from "../../../../../assets/images/icons/report.svg";
+import certificate from "../../../../../assets/images/icons/certificate.svg";
+import dashboard2 from "../../../../../assets/images/icons/dashboard2.svg";
 
 export default function NavItem({ item, level }) {
   const theme = useTheme();
@@ -21,20 +28,44 @@ export default function NavItem({ item, level }) {
   const drawerOpen = menuMaster.isDashboardDrawerOpened;
   const openItem = menuMaster.openedItem;
 
-  let itemTarget = '_self';
+  let itemTarget = "_self";
   if (item.target) {
-    itemTarget = '_blank';
+    itemTarget = "_blank";
   }
-  let listItemProps = { component: forwardRef((props, ref) => <Link ref={ref} {...props} to={item.url} target={itemTarget} />) };
+  let listItemProps = {
+    component: forwardRef((props, ref) => (
+      <Link ref={ref} {...props} to={item.url} target={itemTarget} />
+    )),
+  };
   if (item?.external) {
-    listItemProps = { component: 'a', href: item.url, target: itemTarget };
+    listItemProps = { component: "a", href: item.url, target: itemTarget };
   }
+
+  const icons = {
+    dashboard: dashboard2,
+    myProject: projects,
+    certificateManager: certificate,
+    downloadReports: report,
+    users: users,
+    organization: organization,
+    configuration: dashboardIcon, // Default icon
+  };
 
   const Icon = item.icon;
-  const itemIcon = item.icon ? <Icon style={{ fontSize: drawerOpen ? '1rem' : '1.25rem' }} /> : false;
-
+  // const itemIcon = item.icon ? <Icon style={{ fontSize: drawerOpen ? '1rem' : '1.25rem' }} /> : false;
+  const itemIcon = item.id ? (
+    <img
+      src={icons[item.id] || dashboardIcon} // fallback icon
+      width={drawerOpen ? "20px" : "25px"}
+      alt={`${item.title} icon`} // Add alt for accessibility
+    />
+  ) : (
+    false
+  );
   const { pathname } = useLocation();
-  const isSelected = !!matchPath({ path: item.url, end: false }, pathname) || openItem === item.id;
+  const isSelected =
+    !!matchPath({ path: item.url, end: false }, pathname) ||
+    openItem === item.id;
 
   // active menu item on page load
   useEffect(() => {
@@ -42,8 +73,8 @@ export default function NavItem({ item, level }) {
     // eslint-disable-next-line
   }, [pathname]);
 
-  const textColor = 'text.primary';
-  const iconSelectedColor = 'primary.main';
+  const textColor = "text.primary";
+  const iconSelectedColor = "primary.main";
 
   return (
     <ListItemButton
@@ -56,30 +87,30 @@ export default function NavItem({ item, level }) {
         pl: drawerOpen ? `${level * 28}px` : 1.5,
         py: !drawerOpen && level === 1 ? 1.25 : 1,
         ...(drawerOpen && {
-          '&:hover': {
-            bgcolor: 'primary.lighter'
+          "&:hover": {
+            bgcolor: "primary.lighter",
           },
-          '&.Mui-selected': {
-            bgcolor: 'primary.lighter',
+          "&.Mui-selected": {
+            bgcolor: "primary.lighter",
             borderRight: `2px solid ${theme.palette.primary.main}`,
             color: iconSelectedColor,
-            '&:hover': {
+            "&:hover": {
               color: iconSelectedColor,
-              bgcolor: 'primary.lighter'
-            }
-          }
+              bgcolor: "primary.lighter",
+            },
+          },
         }),
         ...(!drawerOpen && {
-          '&:hover': {
-            bgcolor: 'transparent'
+          "&:hover": {
+            bgcolor: "transparent",
           },
-          '&.Mui-selected': {
-            '&:hover': {
-              bgcolor: 'transparent'
+          "&.Mui-selected": {
+            "&:hover": {
+              bgcolor: "transparent",
             },
-            bgcolor: 'transparent'
-          }
-        })
+            bgcolor: "transparent",
+          },
+        }),
       }}
     >
       {itemIcon && (
@@ -91,19 +122,19 @@ export default function NavItem({ item, level }) {
               borderRadius: 1.5,
               width: 36,
               height: 36,
-              alignItems: 'center',
-              justifyContent: 'center',
-              '&:hover': {
-                bgcolor: 'secondary.lighter'
-              }
+              alignItems: "center",
+              justifyContent: "center",
+              "&:hover": {
+                bgcolor: "secondary.lighter",
+              },
             }),
             ...(!drawerOpen &&
               isSelected && {
-                bgcolor: 'primary.lighter',
-                '&:hover': {
-                  bgcolor: 'primary.lighter'
-                }
-              })
+                bgcolor: "primary.lighter",
+                "&:hover": {
+                  bgcolor: "primary.lighter",
+                },
+              }),
           }}
         >
           {itemIcon}
@@ -112,7 +143,10 @@ export default function NavItem({ item, level }) {
       {(drawerOpen || (!drawerOpen && level !== 1)) && (
         <ListItemText
           primary={
-            <Typography variant="h6" sx={{ color: isSelected ? iconSelectedColor : textColor }}>
+            <Typography
+              variant="h6"
+              sx={{ color: isSelected ? iconSelectedColor : textColor }}
+            >
               {item.title}
             </Typography>
           }

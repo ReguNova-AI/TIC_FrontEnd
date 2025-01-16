@@ -70,10 +70,12 @@ const ProjectView = () => {
   const [modalType, setModalType] = useState("");
   const [openModal, setOpenModal] = useState(false); // State to control modal visibility
   const [fileName, setFileName] = useState(""); // State to store the uploaded file name
+  const [historyData, setHistoryData] = useState({ history: [] });
+  const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
+  const userName = userdetails?.[0].user_first_name + " " + userdetails?.[0].user_last_name;
 
   useEffect(() => {
     fetchDetails(id);
-    // runChecklistAPI();
   }, [id]);
 
   const fetchDetails = (id) => {
@@ -86,7 +88,13 @@ const ProjectView = () => {
           type: "success",
         });
         SetProjectData(response?.data?.details[0]);
+        setHistoryData({history:response?.data?.details[0].history || [] })
         setLoading(false);
+
+        if(response?.data?.details[0].standardUploaded === false || response?.data?.details[0].standardUploaded === 0)
+        {
+          runChecklistAPI();
+        }
       })
       .catch((errResponse) => {
         setSnackData({
@@ -110,23 +118,7 @@ const ProjectView = () => {
   };
 
   const runChecklkistCRT = async () => {
-    // const checklistfile = document.getElementById('fileInput').files[0];
-    // const payload = new FormData();
-    // payload.append("file", checklistfile);
-
-    //   const headers = {
-    //     'Content-Type': 'multipart/form-data',
-    //     "Accept":"application/json",
-    //   };
-
-    //   try {
-    //     const response = await axios.post('http://54.158.101.113:8000/uploadstd_checklist_crt/', payload, {
-    //       headers: headers
-    //     });
-    //    console.log("response",response)
-    //   } catch (err) {
-    //     console.log(err)
-    //    }
+    
     setLoading(true);
     const payload = {};
     ProjectApiService.projectStandardChecklist(payload)
@@ -145,7 +137,22 @@ const ProjectView = () => {
         updatedResponse.checkListResponse = response?.data?.data;
         updatedResponse.no_of_runs = updatedResponse.no_of_runs + 1;
         updatedResponse.status = "In Progress";
-        UpdateProjectDetails(updatedResponse, true);
+
+        const newHistory = createHistoryObject(data, previousData,"checklistRun");
+        setHistoryData((prevState) => {
+          const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
+          // After the state update, include the updated history in the updatedResponse
+          const updatedResponseWithHistory = { ...updatedResponse, history: updatedHistory };
+          
+          // You can also call UpdateProjectDetails here, using the updated response with history
+          // setLoading(true);
+          UpdateProjectDetails(updatedResponseWithHistory, false);
+      
+          return { history: updatedHistory }; // Update state with the new history array
+        });
+
+
+        // UpdateProjectDetails(updatedResponse, true);
       })
       .catch((errResponse) => {
         setSnackData({
@@ -160,41 +167,6 @@ const ProjectView = () => {
   };
 
   const runChecklistAPI = async () => {
-    // const checklistfile = document.getElementById('fileInput').files[0];
-    // const payload = new FormData();
-    // payload.append("file", checklistfile);
-    // window.open(checklistfile);
-
-    // if (checklistfile) {
-    //   // Convert file to binary (ArrayBuffer)
-    //   const reader = new FileReader();
-
-    //   reader.onloadend = () => {
-    //     const binaryData = reader.result; // This will be an ArrayBuffer
-    //     setFileBinary(binaryData); // Store the binary data in state
-    //     console.log(binaryData); // Log or send to backend as needed
-    //   };
-
-    //   // Read the file as an ArrayBuffer (binary)
-    //   reader.readAsArrayBuffer(checklistfile);
-    // }
-
-    // const headers = {
-    //   'Content-Type': 'multipart/form-data',
-    //   "Accept":"application/json",
-    //   // "Access-Control-Allow-Origin":"*",
-    //   // "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE",
-    //   // "Access-Control-Allow-Headers": "Content-Type"
-    // };
-
-    // try {
-    //   const response = await axios.post('http://54.158.101.113:8000/uploadstd_chat/', payload, {
-    //     headers
-    //   });
-    //  console.log("response",response)
-    // } catch (err) {
-    //   console.log(err)
-    //  }
     const payload = {};
     setChatloading(true);
     ProjectApiService.projectUploadStandardChat(payload)
@@ -207,6 +179,8 @@ const ProjectView = () => {
         // });
         // SetProjectData(response?.data?.details[0]);
         setChatloading(false);
+        handlestandardChatUploadUpdate();
+
       })
       .catch((errResponse) => {
         // setSnackData({
@@ -217,6 +191,32 @@ const ProjectView = () => {
         setChatloading(false);
       });
   };
+
+  const handlestandardChatUploadUpdate = () => {
+   
+    const updatedResponse = { ...projectData };
+    updatedResponse.standardUploaded = true;
+
+    const previousData = { ...projectData };
+    const newHistory = createHistoryObject(updatedResponse, previousData,"StandardUpdates");
+    
+    setHistoryData((prevState) => {
+      const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
+      // After the state update, include the updated history in the updatedResponse
+      const updatedResponseWithHistory = { ...updatedResponse, history: updatedHistory };
+      
+      // You can also call UpdateProjectDetails here, using the updated response with history
+      UpdateProjectDetails(updatedResponseWithHistory, false);
+  
+      return { history: updatedHistory }; // Update state with the new history array
+    });
+
+
+    // updatedResponse.history = [...previousData.history, newHistory];
+    // UpdateProjectDetails(updatedResponse, false);
+
+  };
+
 
   const UpdateProjectDetails = (payload, countUpdate = false) => {
     ProjectApiService.projectUpdate(payload)
@@ -258,7 +258,23 @@ const ProjectView = () => {
     SetProjectData(updatedResponse);
     setOpenModal(false); // Close the modal after upload
     setLoading(true);
-    UpdateProjectDetails(updatedResponse, false);
+
+    const previousData = { ...projectData };
+    const newHistory = createHistoryObject(uploadedDocument, previousData,'documentUpload');
+    setHistoryData((prevState) => {
+      const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
+      // After the state update, include the updated history in the updatedResponse
+      const updatedResponseWithHistory = { ...updatedResponse, history: updatedHistory };
+      
+      // You can also call UpdateProjectDetails here, using the updated response with history
+      setLoading(true);
+      UpdateProjectDetails(updatedResponseWithHistory, false);
+  
+      return { history: updatedHistory }; // Update state with the new history array
+    });
+
+
+    // UpdateProjectDetails(updatedResponse, false);
   };
 
   const handleFileChange = (file) => {
@@ -295,14 +311,49 @@ const ProjectView = () => {
     // fetchData();
   };
 
+  // Helper function to create a history object based on changes
+  const createHistoryObject = (data, previousData,heading) => {
+
+    const historyItem = {
+      changedby: userName,
+      date: new Date().toISOString(),
+      changes: {
+        projectName: heading === "projectDetails" ? data?.projectName !== previousData.project_name ? data.projectName : '':"",
+        projectNo: heading === "projectDetails" ? data?.projectNo !== previousData.project_no ? data.projectNo : '':"",
+        description: heading === "projectDetails" ? data?.projectDesc !== previousData.project_description ? data.projectDesc : '':"",
+        invite: '', 
+        documents: heading === "documentUpload" ? data ? data : '':"", 
+        checklistRun: heading === "checklistRun" ? "Checklist generated" :'', 
+        assessmentRun: '',
+        standardUplaoded: heading === "StandardUpdates" ? data.standardUploaded !== previousData.standardUploaded ? data.standardUploaded : '':"",
+        status: previousData.status, 
+      },
+    };
+    return historyItem;
+  };
+
   const updateDetails = (data) => {
     const updatedResponse = { ...projectData };
+    const previousData = { ...projectData };
     updatedResponse.project_name = data.projectName;
     updatedResponse.project_description = data.projectDesc;
     updatedResponse.project_no = data.projectNo;
 
-    setLoading(true);
-    UpdateProjectDetails(updatedResponse, false);
+    const newHistory = createHistoryObject(data, previousData,"projectDetails");
+    setHistoryData((prevState) => {
+      const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
+      // After the state update, include the updated history in the updatedResponse
+      const updatedResponseWithHistory = { ...updatedResponse, history: updatedHistory };
+      
+      // You can also call UpdateProjectDetails here, using the updated response with history
+      setLoading(true);
+      UpdateProjectDetails(updatedResponseWithHistory, false);
+  
+      return { history: updatedHistory }; // Update state with the new history array
+    });
+
+    // setLoading(true);
+    // UpdateProjectDetails(updatedResponse, false);
   };
 
   CustomTabPanel.propTypes = {
