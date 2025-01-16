@@ -401,7 +401,7 @@ const ProjectView = () => {
                               padding: "20px",
                               borderRadius: "10px",
                               border: "1px solid #e4e4e4",
-                              width: "420px",
+                              // width: "420px",
                               marginTop: "30px",
                             }}
                           >

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { CheckOutlined, FolderFilled } from '@ant-design/icons';
+import { CheckOutlined, DownloadOutlined, FolderFilled } from '@ant-design/icons';
 import { Tree } from 'antd';
+import { Tooltip } from '@mui/material';
 
 const FileStructureView = ({ data }) => {
   const [showLine, setShowLine] = useState(true);
@@ -27,7 +28,15 @@ const FileStructureView = ({ data }) => {
 
       // Add the document under the correct folder
       treeStructure[documenttype].children.push({
-        title: name,
+        title: <div style={{ display: 'flex', alignItems: 'center' }}>
+          <span style={{width: "48%", overflow: "hidden", display: "inline-block", whiteSpace: "nowrap", textOverflow: "ellipsis"}}>{name}</span> 
+        {/* Tooltip for the download icon */}
+        <Tooltip title="Download">
+          <DownloadOutlined style={{ marginLeft:8,marginRight: 8, fontSize: 16, color: 'green' }} />
+        </Tooltip>
+        {/* Document Name */}
+       
+      </div>,
         key: path, // Use document path as a unique key
         isLeaf: true, // Mark the document as a leaf node
       });
