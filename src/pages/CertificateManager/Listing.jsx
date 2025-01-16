@@ -309,7 +309,7 @@ FileUploadApiService.fileget(filepayload).then((response) => {
       render: (text, record) => (
         <a
           onClick={() => handleNavigateToProject(record.index)}
-          style={{ color: "#1890ff", cursor: "pointer" }}
+          style={{ color: "#2ba9bc", cursor: "pointer" }}
         >
           {text}
         </a>

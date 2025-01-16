@@ -45,7 +45,7 @@ const NestedListing = ({ data }) => {
       render: (text, record) => (
         <a
           onClick={() => handleNavigateToProject(record.project_id)}
-          style={{ color: "#1890ff", cursor: "pointer" }}
+          style={{ color: "#2ba9bc", cursor: "pointer" }}
         >
           {record.project_name}
         </a>

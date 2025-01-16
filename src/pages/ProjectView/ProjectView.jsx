@@ -510,7 +510,7 @@ const ProjectView = () => {
                           sx={{ mt: 2 }}
                           onClick={() => runChecklkistCRT()}
                         >
-                          uploadstd checklist crt
+                         {projectData.checkListResponse ? "Compliance Assessment" : "Generate Checklist"} 
                         </Button>
                       </Box>
                     </Grid>

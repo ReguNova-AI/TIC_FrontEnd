@@ -227,7 +227,7 @@ const OrganizationListing = () => {
           <span style={{ marginLeft: 10 }}>
             <a
               onClick={() => handleNavigateToOrganization(record.index)}
-              style={{ color: "#1890ff", cursor: "pointer" }}
+              style={{ color: "#2ba9bc", cursor: "pointer" }}
             >
               {text}
             </a>

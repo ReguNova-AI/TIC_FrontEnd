@@ -294,7 +294,7 @@ const DropZoneFileUpload = (props) => {
           {formatFileSize(file.size)}
         </span>{" "}
         <span
-          style={{ marginLeft: "10px", fontSize: "12px", color: "#1890ff" }}
+          style={{ marginLeft: "10px", fontSize: "12px", color: "#2ba9bc" }}
         >
           {file.documenttype && `(${file.documenttype})`}
         </span>

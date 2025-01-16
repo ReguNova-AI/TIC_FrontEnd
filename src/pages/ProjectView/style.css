@@ -6,8 +6,8 @@
   
   /* Optional: Change the color of the icon for the active (in-progress) step */
   .ant-steps-item-process .ant-steps-item-icon {
-    background-color: #1890ff !important;  /* Blue background for the active step */
-    border-color: #1890ff !important;      /* Blue border for the active step */
+    background-color: #2ba9bc !important;  /* Blue background for the active step */
+    border-color: #2ba9bc !important;      /* Blue border for the active step */
     color: white !important;               /* Set icon color to white */
   }
   
