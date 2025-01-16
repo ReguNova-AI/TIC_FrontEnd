@@ -294,7 +294,7 @@ const OrganizationListing = () => {
               type="primary"
               onClick={handleModalOpen}
               style={{
-                background: "#00bfa5",
+                background: "#2ba9bc",
                 display: "flex",
                 alignItems: "center",
                 borderRadius: "20px",

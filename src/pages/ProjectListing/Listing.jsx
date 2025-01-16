@@ -390,7 +390,7 @@ const Listing = () => {
               type="primary"
               onClick={() => navigate("/createProject")}
               style={{
-                background: "#00bfa5",
+                background: "#2ba9bc",
                 display: "flex",
                 alignItems: "center",
                 borderRadius: "20px",

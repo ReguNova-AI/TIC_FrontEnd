@@ -20,7 +20,7 @@ export default function HeaderContent() {
     <>
       <Box sx={{ width: '100%', ml: 1 }} />
      {userRole !== "Super Admin" && <Tooltip title="Add New Project" arrow>
-       <Button style={{ padding: "4px 28px",background: "#00bfa5",color: "white" }} onClick={(e)=>navigate("/createProject")}> <PlusOutlined  style={{ fontSize: "15px", color: "white" }}/> <span style={{marginLeft:"7px"}}>Project</span></Button>
+       <Button style={{ padding: "4px 28px",background: "#2ba9bc",color: "white" }} onClick={(e)=>navigate("/createProject")}> <PlusOutlined  style={{ fontSize: "15px", color: "white" }}/> <span style={{marginLeft:"7px"}}>Project</span></Button>
       </Tooltip>}
       <Notification />
       <Profile />
