@@ -56,7 +56,7 @@ export default function NavItem({ item, level }) {
   const itemIcon = item.id ? (
     <img
       src={icons[item.id] || dashboardIcon} // fallback icon
-      width={drawerOpen ? "20px" : "25px"}
+      width={drawerOpen ? "22px" : "27px"}
       alt={`${item.title} icon`} // Add alt for accessibility
     />
   ) : (
