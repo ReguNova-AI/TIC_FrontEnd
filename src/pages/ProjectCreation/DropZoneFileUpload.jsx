@@ -223,6 +223,7 @@ const DropZoneFileUpload = (props) => {
             type: file.type,
             documenttype: props.typeSelect === false ? props.maxFile === 0 ? "Project Document" : "" : selectedType,
             path: response.data.details[0], // Add or override the path with the uploaded link
+            uploadedOn:new Date(),
           };
         } catch (errResponse) {
           console.log("errResponse", errResponse);
