@@ -19,6 +19,7 @@ import {
 import { FileUploadApiService } from "services/api/FileUploadAPIService";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
+import { Tooltip } from "@mui/material";
 
 const { Option } = Select;
 
@@ -284,8 +285,10 @@ const DropZoneFileUpload = (props) => {
       style={{ display: "flex", alignItems: "center", marginBottom: "10px" }}
     >
       <span style={{ marginRight: "10px" }}>{getFileIcon(file)}</span>
-      <span style={{ flex: 1 }}>
-        {file.name}{" "}
+      <span style={{ flex: 1 ,width:"90%"}}>
+      <Tooltip title={file.name} arrow>
+        <span style={{width: "62%", overflow: "hidden", display: "inline-block", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>{file.name}{" "}</span>
+        </Tooltip>
         <span style={{ color: "grey", padding: "10px", fontSize: "10px" }}>
           {formatFileSize(file.size)}
         </span>{" "}
