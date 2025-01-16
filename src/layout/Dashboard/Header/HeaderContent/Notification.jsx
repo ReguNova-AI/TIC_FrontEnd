@@ -25,6 +25,7 @@ import Transitions from 'components/@extended/Transitions';
 
 // assets
 import BellOutlined from '@ant-design/icons/BellOutlined';
+import bellicon from '../../../../assets/images/icons/notification.svg'
 import CheckCircleOutlined from '@ant-design/icons/CheckCircleOutlined';
 import GiftOutlined from '@ant-design/icons/GiftOutlined';
 import MessageOutlined from '@ant-design/icons/MessageOutlined';
@@ -82,7 +83,8 @@ export default function Notification() {
         onClick={handleToggle}
       >
         <Badge badgeContent={read} color="primary">
-          <BellOutlined />
+          {/* <BellOutlined /> */}
+          <img src={bellicon} width="20px" />
         </Badge>
       </IconButton>
       <Popper

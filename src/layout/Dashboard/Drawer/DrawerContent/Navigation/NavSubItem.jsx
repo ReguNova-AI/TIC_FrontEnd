@@ -24,8 +24,11 @@ import users from "../../../../../assets/images/icons/users.svg";
 import report from "../../../../../assets/images/icons/report.svg";
 import certificate from "../../../../../assets/images/icons/certificate.svg";
 import dashboard2 from "../../../../../assets/images/icons/dashboard2.svg";
-
-
+import certificate2 from "../../../../../assets/images/icons/certificate2.svg";
+import certificate3 from "../../../../../assets/images/icons/certificate3.svg";
+import users2 from "../../../../../assets/images/icons/users2.svg";
+import setting from "../../../../../assets/images/icons/setting.svg";
+import { Tooltip } from "@mui/material";
 
 function NavSubItem({ item, level }) {
   const theme = useTheme();
@@ -51,12 +54,13 @@ function NavSubItem({ item, level }) {
   const icons = {
     dashboard: dashboard2,
     myProject: projects,
-    certificateManager: certificate,
+    certificateManager: certificate3,
     downloadReports: report,
-    users: users,
+    users: users2,
     organization: organization,
-    configuration: dashboardIcon, // Default icon
+    configuration: setting, // Default icon
   };
+
   const Icon = item.icon;
   // const itemIcon = item.icon ? <Icon style={{ fontSize: drawerOpen ? '1rem' : '1.25rem' }} /> : false;
   const itemIcon = item.id ? (
@@ -80,7 +84,7 @@ function NavSubItem({ item, level }) {
   };
 
   const textColor = 'text.primary';
-  const iconSelectedColor = 'primary.main';
+  const iconSelectedColor = "#2ba9bc";
 
   return (
     <>
@@ -96,13 +100,15 @@ function NavSubItem({ item, level }) {
           zIndex: 1201,
           pl: drawerOpen ? `${level * 28}px` : 1.5,
           py: !drawerOpen && level === 1 ? 1.25 : 1,
+          mb:drawerOpen ? 1 : 0,
+        justifyContent : drawerOpen ? "left" : "center",
           ...(drawerOpen && {
             '&:hover': {
               bgcolor: 'primary.lighter',
             },
             '&.Mui-selected': {
               bgcolor: 'primary.lighter',
-              borderRight: `2px solid ${theme.palette.primary.main}`,
+              borderRight: `2px solid ${iconSelectedColor}`,
               color: iconSelectedColor,
               '&:hover': {
                 color: iconSelectedColor,
@@ -128,6 +134,7 @@ function NavSubItem({ item, level }) {
             sx={{
               minWidth: 28,
               color: isSelected ? iconSelectedColor : textColor,
+              justifyContent : drawerOpen ? "left" : "center",
               ...(!drawerOpen && {
                 borderRadius: 1.5,
                 width: 36,
@@ -147,13 +154,13 @@ function NavSubItem({ item, level }) {
                 }),
             }}
           >
-            {itemIcon}
+            {!drawerOpen ? <Tooltip title={item.title}> {itemIcon}</Tooltip> :itemIcon}
           </ListItemIcon>
         )}
         {(drawerOpen || (!drawerOpen && level !== 1)) && (
           <ListItemText
             primary={
-              <Typography variant="h6" sx={{ color: isSelected ? iconSelectedColor : textColor }}>
+              <Typography variant="h6" sx={{ ml:1, color: isSelected ? iconSelectedColor : textColor , fontSize:"0.875rem",fontWeight:isSelected ?500 : 400}}>
                 {item.title}
               </Typography>
             }
