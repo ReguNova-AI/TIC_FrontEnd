@@ -37,7 +37,7 @@ const RecentHistory = ({data}) => {
       {
         title: <span style={{ fontSize: '12px',fontWeight:"600" }}>{STEPPER_LABEL.PROJECT_CREATION}</span>,
         description:<span style={{ fontSize: '11px' }}>Created on {data.created_at ? formatDate(data.created_at) : ""}</span>,
-        status: data.created_at ? `${STEPPER_LABEL.FINISH_STATUS}` : `${STEPPER_LABEL.PROCESS_STATUS}`, 
+        status: data?.created_at ? `${STEPPER_LABEL.FINISH_STATUS}` : `${STEPPER_LABEL.PROCESS_STATUS}`, 
       },
       {
         title: <span style={{ fontSize: '12px',fontWeight:"600" }}>{STEPPER_LABEL.PROJECT_DOCUMENT}</span>,
@@ -46,6 +46,11 @@ const RecentHistory = ({data}) => {
       },
       {
         title: <span style={{ fontSize: '12px',fontWeight:"600" }}>{STEPPER_LABEL.STANDARD_DOCUMENT}</span>,
+        description: <span style={{ fontSize: '11px' }}>{data?.regulatory_standard ? "Uploaded" : "Not Uploaded"}</span>,
+        status: data?.regulatory_standard ? `${STEPPER_LABEL.FINISH_STATUS}` : `${STEPPER_LABEL.PROCESS_STATUS}`, 
+      },
+      {
+        title: <span style={{ fontSize: '12px',fontWeight:"600" }}>{STEPPER_LABEL.CUSTOM_STANDARD_DOCUMENT}</span>,
         description: <span style={{ fontSize: '11px' }}>{standardDocumentData ? "Uploaded" : "Not Uploaded"}</span>,
         status: standardDocumentData ? `${STEPPER_LABEL.FINISH_STATUS}` : `${STEPPER_LABEL.PROCESS_STATUS}`, 
       },

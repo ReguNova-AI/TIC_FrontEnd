@@ -58,6 +58,7 @@ export default function UserCreation({ onHandleClose }) {
   // Updated formData structure to match the desired format
   const [formData, setFormData] = React.useState({
     role_id: "",
+    role_name:"",
     user_first_name: "",
     user_last_name: "",
     user_profile: "", // URL for avatar upload
@@ -127,6 +128,7 @@ export default function UserCreation({ onHandleClose }) {
     setFormData({
       ...formData,
       role_id: null,
+      role_name:"",
       user_first_name: "",
       user_last_name: "",
       user_profile: "", // URL for avatar upload
@@ -191,6 +193,7 @@ export default function UserCreation({ onHandleClose }) {
        setFormData({
         ...formData,
           role_id: "",
+          role_name:"",
           user_first_name: "",
           user_last_name: "",
           user_profile: "", // URL for avatar upload
@@ -576,9 +579,13 @@ console.log("availableIndustries",availableIndustries)
 
   const handleRoleChange = (event) => {
     const roleId = event.target.value;
+
+    const roleName= roleData.find((role) => role.role_id === roleId)?.role_name
+    
     setFormData({
       ...formData,
       role_id: roleId,
+      role_name:roleName,
     });
   };
 
