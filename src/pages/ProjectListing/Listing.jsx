@@ -406,8 +406,9 @@ const Listing = () => {
                 userRole !== "Super Admin" &&
                 userRole !== "Org Super Admin" &&
                 userRole !== "Admin" && (
+                  <>
                   <ToggleButtons onViewModeChange={handleViewModeChange} />
-                )}
+               
               <FormControl fullWidth>
                 <InputLabel htmlFor="outlined-adornment-search">
                   {FORM_LABEL.SEARCH}
@@ -441,6 +442,8 @@ const Listing = () => {
               <Button>
                 <DownloadOutlined />
               </Button>
+              </>
+               )}
             </Space>
           </Space>
           {/* Displaying Table or Card View */}

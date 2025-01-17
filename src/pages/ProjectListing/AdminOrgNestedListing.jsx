@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Avatar, Input } from 'antd';
+import { Table, Avatar, Input,Space } from 'antd';
 import { ApartmentOutlined } from '@ant-design/icons';
 import { Chip } from "@mui/material";
 import Stack from "@mui/material/Stack";
 import { formatDate, getStatusChipProps } from "shared/utility";
+import { BUTTON_LABEL, LISTING_PAGE ,FORM_LABEL } from 'shared/constants';
 import { useLocation, useNavigate } from "react-router-dom";
-
+import FormControl from "@mui/material/FormControl";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import InputLabel from "@mui/material/InputLabel";
+import InputAdornment from "@mui/material/InputAdornment";
+import {SearchOutlined} from "@ant-design/icons";
 
 // AdminOrgNestedListing Component
 const AdminOrgNestedListing = ({data}) => {
@@ -200,12 +205,26 @@ const AdminOrgNestedListing = ({data}) => {
   return (
     <>
       {/* Search input */}
-      <Input
-        placeholder="Search by organization, industry, or project name"
-        value={searchText}
-        onChange={handleSearchChange}
-        style={{ marginBottom: 16, width: 300 }}
-      />
+
+      <Space style={{float:"right", marginBottom:"20px"}}>
+      <FormControl >
+                <InputLabel htmlFor="outlined-adornment-search">
+                Search by organization, industry, or project name
+                </InputLabel>
+                <OutlinedInput
+                  id="outlined-adornment-search"
+                  startAdornment={
+                    <InputAdornment position="start">
+                      <SearchOutlined />
+                    </InputAdornment>
+                  }
+                  label={FORM_LABEL.SEARCH}
+                  onChange={handleSearchChange}
+                  style={{width:"400px"}}
+                />
+              </FormControl>
+              </Space>
+
 
       {/* Table rendering */}
       {console.log("dataSource",dataSource)}

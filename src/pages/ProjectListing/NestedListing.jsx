@@ -1,12 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { DownOutlined } from '@ant-design/icons';
 import { Badge, Button, Dropdown, Space, Table, Avatar, Input } from 'antd';
-import { BUTTON_LABEL, LISTING_PAGE } from 'shared/constants';
+import { BUTTON_LABEL, LISTING_PAGE ,FORM_LABEL } from 'shared/constants';
 import { formatDate, getStatusChipProps } from "shared/utility";
 import Stack from "@mui/material/Stack";
 import { UserOutlined } from '@ant-design/icons';
 import { Chip } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
+import FormControl from "@mui/material/FormControl";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import InputLabel from "@mui/material/InputLabel";
+import InputAdornment from "@mui/material/InputAdornment";
+import {SearchOutlined} from "@ant-design/icons";
+
 
 const NestedListing = ({ data }) => {
   const navigate = useNavigate();
@@ -185,12 +191,31 @@ const NestedListing = ({ data }) => {
   return (
     <>
       {/* Search input */}
-      <Input
+      <Space style={{float:"right", marginTop:"-20px", marginBottom:"20px"}}>
+      <FormControl >
+                <InputLabel htmlFor="outlined-adornment-search">
+                Search by project name or user name
+                </InputLabel>
+                <OutlinedInput
+                  id="outlined-adornment-search"
+                  startAdornment={
+                    <InputAdornment position="start">
+                      <SearchOutlined />
+                    </InputAdornment>
+                  }
+                  label={FORM_LABEL.SEARCH}
+                  onChange={handleSearchChange}
+                  style={{width:"300px"}}
+                />
+              </FormControl>
+              </Space>
+
+      {/* <Input
         placeholder="Search by project name or user name"
         value={searchText}
         onChange={handleSearchChange}
         style={{ marginBottom: 16, width: 300 }}
-      />
+      /> */}
 
       {/* Table rendering */}
       <Table
