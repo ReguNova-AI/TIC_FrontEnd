@@ -42,6 +42,10 @@ import {
 } from "shared/constants";
 import DropZoneFileUpload from "pages/ProjectCreation/DropZoneFileUpload";
 import chatLoadingicon from "../../assets/images/icons/chatLoadingIcon.svg";
+import chatLoadingicon2 from "../../assets/images/icons/chatLoadingIcon2.svg";
+import chatLoadingicon3 from "../../assets/images/icons/chatLoadingIcon3.svg";
+
+
 import checklistfile from "../../assets/IEC-61400-12-2022.pdf";
 import axios from "axios";
 import Icon, { SmileOutlined } from "@ant-design/icons";
@@ -576,7 +580,7 @@ const ProjectView = () => {
                     {/* <Spin tip="Just a moment, I'm gathering the information for you..." size="large" spinning={chatLoading} style={{background:"white"}}> */}
                     {chatLoading ? (
                       <Result
-                        icon={<img src={chatLoadingicon} width={"10%"} />}
+                        icon={<img src={chatLoadingicon2} width={"20%"} />}
                         subTitle="Just a moment, I'm gathering the information for you..."
                       />
                     ) : (
