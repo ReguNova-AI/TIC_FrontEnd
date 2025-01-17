@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { CheckOutlined, DownloadOutlined, FolderFilled } from '@ant-design/icons';
 import { Tree } from 'antd';
 import { Tooltip } from '@mui/material';
+import { FORM_LABEL } from 'shared/constants';
 
 const FileStructureView = ({ data }) => {
   const [showLine, setShowLine] = useState(true);
@@ -14,8 +15,11 @@ const FileStructureView = ({ data }) => {
     const treeStructure = {};
 
     documents.forEach((document) => {
-      const { documenttype, name, path } = document;
-
+      let { documenttype, name, path } = document;
+      if(documenttype === "Custom Regulatory")
+      {
+        documenttype = FORM_LABEL.CUSTOM_REGULATORY;
+      }
       // If the tree structure doesn't have the folder (documenttype), create it
       if (!treeStructure[documenttype]) {
         treeStructure[documenttype] = {
@@ -32,7 +36,7 @@ const FileStructureView = ({ data }) => {
           <span style={{width: "48%", overflow: "hidden", display: "inline-block", whiteSpace: "nowrap", textOverflow: "ellipsis"}}>{name}</span> 
         {/* Tooltip for the download icon */}
         <Tooltip title="Download">
-          <DownloadOutlined style={{ marginLeft:8,marginRight: 8, fontSize: 16, color: 'green' }} />
+          {/* <DownloadOutlined style={{ marginLeft:8,marginRight: 8, fontSize: 16, color: 'green' }} /> */}
         </Tooltip>
         {/* Document Name */}
        

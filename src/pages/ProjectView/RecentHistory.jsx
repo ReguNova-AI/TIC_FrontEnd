@@ -1,6 +1,6 @@
 import React from 'react';
 import { Steps } from 'antd';
-import { STEPPER_LABEL } from 'shared/constants';
+import { FORM_LABEL, STEPPER_LABEL } from 'shared/constants';
 import { formatDate } from 'shared/utility';
 // import "./style.css";
 const description = 'This is a description.';
@@ -10,12 +10,12 @@ const RecentHistory = ({data}) => {
   let count =0;
 
   data?.documents?.map(value=>{
-    if(value.documenttype === "Project Document")
+    if(value.documenttype ===  FORM_LABEL.PROJECT_DOCUMENT)
     {
       documentData = true;
       count = 1;
     }
-    if(value.documenttype === "Custom Regulatory")
+    if(value.documenttype === FORM_LABEL.CUSTOM_REGULATORY)
     {
       standardDocumentData = true;
       count = 2;
@@ -57,8 +57,8 @@ const RecentHistory = ({data}) => {
       {
         title: <span style={{ fontSize: '12px',fontWeight:"600" }}>{STEPPER_LABEL.ASSESSMENT_REPORT}</span>,
         description:<span style={{ fontSize: '11px' }}></span>,
-        status: data.checkListResponse ? `${STEPPER_LABEL.FINISH_STATUS}` : `${STEPPER_LABEL.PROCESS_STATUS}`, 
-      },
+        status: data.complianceAssesment ? `${STEPPER_LABEL.FINISH_STATUS}` : `${STEPPER_LABEL.PROCESS_STATUS}`, 
+      }, 
       {
         title:<span style={{ fontSize: '12px',fontWeight:"600" }}>{STEPPER_LABEL.FINAL_STEP}</span>,
         status: `${STEPPER_LABEL.PROCESS_STATUS}`, 
