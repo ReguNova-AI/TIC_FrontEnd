@@ -1,56 +1,90 @@
 import React from 'react';
-import { Accordion, AccordionSummary, AccordionDetails, Typography, Box, Divider } from '@mui/material';
-import { DownOutlined } from '@ant-design/icons';
-import TimelineView from './TimelineView';
+import { Timeline, Card, Col, Row, Space } from 'antd';
+import { EditOutlined, FileTextOutlined, FileImageOutlined, FileOutlined } from '@ant-design/icons';
+// import './TimelineView.css';
 
-const timelineData = [
-  { date: "2024-12-01", title: "System Update", details: "The control system was updated to the latest version to enhance safety features and improve reliability." },
-  { date: "2024-11-15", title: "Safety Review", details: "A comprehensive safety review was conducted, addressing potential vulnerabilities and making adjustments to protocols." },
-  { date: "2024-10-10", title: "Annual Maintenance", details: "Annual maintenance was performed on the turbine, ensuring all components are operating within safe parameters." },
-  { date: "2024-09-01", title: "Firmware Upgrade", details: "A firmware upgrade was completed to fix bugs and optimize performance." },
-  { date: "2024-08-15", title: "Safety Incident Report", details: "A safety incident was reported involving a minor malfunction in the braking system. The issue was resolved promptly." }
-];
+const HistoryDetails = ({data}) => {
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleString(); // You can customize the format as needed
+  };
 
-const HistoryDetails = () => {
+  const renderChange = (change) => {
+    const entries = Object.entries(change);
+    return entries.map(([key, value]) => {
+      if (key === 'documents' && value.length > 0) {
+        return (
+          <div key={key}>
+            <Space direction="vertical">
+              <strong>Documents uploaded:</strong>
+              {value.map((doc, index) => (
+                <a href={doc.path} key={index} target="_blank" rel="noopener noreferrer">
+                  <FileOutlined /> {doc.name}
+                </a>
+              ))}
+            </Space>
+          </div>
+        );
+      }
+      if (key === 'projectName' && value) {
+        return (
+          <div key={key}>
+            <strong>Project Name:</strong> {value}
+          </div>
+        );
+      }
+      if (key === 'projectNo' && value) {
+        return (
+          <div key={key}>
+            <strong>Project No.:</strong> {value}
+          </div>
+        );
+      }
+      if (key === 'description' && value) {
+        return (
+          <div key={key}>
+            <strong>Description:</strong> {value}
+          </div>
+        );
+      }
+      if (key === 'checklistRun' && value) {
+        return (
+          <div key={key}>
+            <strong>Checklist generated</strong>
+          </div>
+        );
+      }
+      if (key === 'assessmentRun' && value) {
+        return (
+          <div key={key}>
+            <strong>Run Compliance Assessment</strong>
+          </div>
+        );
+      }
+
+      
+
+      if (key === 'status' && value) {
+        return (
+          <div key={key}>
+            <strong>Current Status:</strong> {value}
+          </div>
+        );
+      }
+      return null; // Filter out null entries (if any)
+    });
+  };
+
   return (
-    <Box sx={{ width: '100%', marginTop: 2 }}>
-      {/* Iterate over the timeline data */}
-      {timelineData.map((item, index) => (
-        <div key={index} style={{ marginBottom: "15px", position: 'relative', paddingLeft: '40px' }}>
-          {/* Vertical Line to connect the timeline events */}
-          {index > 0 && (
-            <div
-              style={{
-                position: 'absolute',
-                left: '10px',
-                top: '0',
-                width: '2px',
-                height: '100%',
-                backgroundColor: '#ddd',
-              }}
-            />
-          )}
-
-          {/* Accordion Component for each timeline event */}
-          <Accordion>
-            <AccordionSummary
-              expandIcon={<DownOutlined />}
-              aria-controls={`panel${index}-content`}
-              id={`panel${index}-header`}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                <Typography variant="h6" sx={{ flex: 1 }}>
-                  {`${item.date}`}
-                </Typography>
-              </Box>
-            </AccordionSummary>
-            <AccordionDetails>
-             <TimelineView /> 
-            </AccordionDetails>
-          </Accordion>
-        </div>
+    <Timeline mode="alternate" >
+      {data?.map((changeEntry, index) => (
+        <Timeline.Item key={index} label={formatDate(changeEntry.date)} >
+          <Card title={`${changeEntry.changedby}`} >
+            {renderChange(changeEntry.changes)}
+          </Card>
+        </Timeline.Item>
       ))}
-    </Box>
+    </Timeline>
   );
 };
 

@@ -1,0 +1,25 @@
+/* Custom CSS to ensure all items are aligned to the left */
+.custom-timeline .ant-timeline-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start !important; /* Force left alignment for all items */
+  }
+  
+  .custom-timeline .ant-timeline-item-content {
+    display: block;
+    align-items: flex-start !important; /* Force content to left */
+  }
+  
+  .custom-timeline .ant-timeline-item-label {
+    text-align: left !important; /* Ensure the label aligns left */
+  }
+  
+  .custom-timeline .ant-timeline-item-tail {
+    display: none; /* Optional: hide the timeline line for a cleaner look */
+  }
+  
+  .custom-timeline .ant-card {
+    width: 100%;
+    padding: 12px;
+  }
+  

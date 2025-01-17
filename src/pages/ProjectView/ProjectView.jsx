@@ -29,7 +29,7 @@ import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { ProjectApiService } from "services/api/ProjectAPIService";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
-import { Spin, Modal, Result } from "antd";
+import { Spin, Modal, Result ,Empty} from "antd";
 import {
   API_ERROR_MESSAGE,
   API_SUCCESS_MESSAGE,
@@ -42,7 +42,6 @@ import {
 } from "shared/constants";
 import DropZoneFileUpload from "pages/ProjectCreation/DropZoneFileUpload";
 import chatLoadingicon from "../../assets/images/icons/chatLoadingIcon.svg";
-
 import checklistfile from "../../assets/IEC-61400-12-2022.pdf";
 import axios from "axios";
 import Icon, { SmileOutlined } from "@ant-design/icons";
@@ -60,6 +59,8 @@ const ProjectView = () => {
   const [chatResponse, setChatResponse] = useState([]);
   const [chatLoading, setChatloading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false); // To control modal visibility
+  const [historyValue,setHistoryValue] = useState([]);
+  
   // const chatLoadingIcon = (props) => <Icon component={chatLoadingicon} {...props} />;
 
   const [snackData, setSnackData] = useState({
@@ -96,6 +97,7 @@ const ProjectView = () => {
         });
         SetProjectData(response?.data?.details[0]);
         setHistoryData({history:response?.data?.details[0].history || [] })
+        setHistoryValue(response?.data?.details[0].history);
         setLoading(false);
       })
       .catch((errResponse) => {
@@ -550,8 +552,13 @@ const ProjectView = () => {
                     <Typography style={{ fontSize: "18px" }}>
                       {PROJECT_DETAIL_PAGE.HISTORY_DETAILS}
                     </Typography>
-                    <HistoryDetails />
-                    <TimelineView />
+                    
+                    {projectData?.history !== undefined && projectData?.history !== null ?
+                      <HistoryDetails data={projectData?.history || historyValue}/>
+                      :
+                      <Empty />
+                    }
+                    {/* <TimelineView /> */}
                   </Box>
                 </CustomTabPanel>
 
