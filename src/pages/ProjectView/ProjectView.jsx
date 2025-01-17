@@ -80,7 +80,7 @@ const ProjectView = () => {
   }, [id]);
 
   useEffect(()=>{
-    if(projectData.standardUploaded === false || projectData.standardUploaded === 0 || projectData.standardUploaded === "false" || projectData.standardUploaded === null, projectData.standardUploaded === "null")
+    if(projectData.standardUploaded === false || projectData.standardUploaded === 0 || projectData.standardUploaded === "false" || projectData.standardUploaded === null || projectData.standardUploaded === "null")
     {
       runChecklistAPI();
     }

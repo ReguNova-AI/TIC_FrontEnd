@@ -115,6 +115,23 @@ const MyForm = () => {
     const updatedStatus = submissionStatus === 'Draft' ? 'Draft' : 'In Progress';
     const selectedUserData=handleMultiple(formData.teamMembers);
 
+
+    const historyItem = {
+      changedby: userdetails?.[0]?.user_first_name + " " + userdetails?.[0]?.user_last_name,
+      date: new Date().toISOString(),
+      changes: {
+        projectName: formData.projectName || "",
+        projectNo: formData.projectNo || "",
+        description: formData.projectDesc || "",
+        invite: '', 
+        documents: formData.document || "", 
+        checklistRun: "", 
+        assessmentRun: '',
+        standardUplaoded: "",
+        status: updatedStatus, 
+      },
+    };
+
     const payload = {
       project_name: formData.projectName,
       project_no: formData.projectNo,
@@ -138,6 +155,7 @@ const MyForm = () => {
       // last_run: submissionStatus === 'Draft' ? null : formatDateToCustomFormat(new Date()),
       mapping_standards: "",
       summary_report: {},
+      history:[historyItem],
     };
     if (submissionStatus !== 'Draft') {
       payload.last_run = formatDateToCustomFormat(new Date());
