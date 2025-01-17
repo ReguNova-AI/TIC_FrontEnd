@@ -118,18 +118,18 @@ const IndustriesListing = () => {
       },
   
     
-    {
-      title: LISTING_PAGE.ACTION,
-      key: "action",
-      render: (_, record) => (
-        <Button
-          style={{ border: "none" }}
-          onClick={() => handleDelete(record.sector_id)}
-        >
-          <DeleteFilled />
-        </Button>
-      ),
-    },
+    // {
+    //   title: LISTING_PAGE.ACTION,
+    //   key: "action",
+    //   render: (_, record) => (
+    //     <Button
+    //       style={{ border: "none" }}
+    //       onClick={() => handleDelete(record.sector_id)}
+    //     >
+    //       <DeleteFilled />
+    //     </Button>
+    //   ),
+    // },
   ];
 
   // Handle delete action

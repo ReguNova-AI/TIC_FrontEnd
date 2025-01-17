@@ -247,7 +247,7 @@ const UserListing = () => {
             sx={{ width: 40, height: 40 }}
             alt={value.user_first_name}
           >
-            {avatarSrc ? (
+            {avatarSrc && avatarSrc !== "null" ? (
               <img src={avatarSrc} alt={value.user_first_name} style={{borderRadius: '50%' }} />
             ) : (
               <UserOutlined /> // Fallback to icon if no image

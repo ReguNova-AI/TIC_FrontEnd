@@ -499,9 +499,21 @@ export default function UserCreation({ onHandleClose }) {
     const orgId = event.target.value;
     setSelectedOrg(orgId);
 
+    
+
     // Find the selected organization
     const selectedOrganization = orgData.find((org) => org.org_id === orgId);
-    let industryIds = JSON.parse(selectedOrganization?.industries || "[]");
+
+    let industryIds = null;
+    if (selectedOrganization?.industries?.includes(",")) {
+      industryIds = selectedOrganization?.industries
+        .split(',')  // Split by comma
+        .map(industry => Number(industry.trim())); // Convert each string to a number
+    }
+    else{
+      industryIds = JSON.parse(selectedOrganization?.industries || "[]");
+    }
+    console.log("industryIds",industryIds)
 
     const sectors = Array.isArray(selectedOrganization?.sector_id)
       ? selectedOrganization.sector_id
@@ -516,6 +528,8 @@ export default function UserCreation({ onHandleClose }) {
       industryIds.includes(industry.industry_id)
     );
 
+
+console.log("availableIndustries",availableIndustries)
     setFilteredIndustries(availableIndustries);
     setSelectedIndustry(""); // Reset selected industry
 

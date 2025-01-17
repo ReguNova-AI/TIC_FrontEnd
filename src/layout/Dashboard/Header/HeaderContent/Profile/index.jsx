@@ -143,7 +143,7 @@ export default function Profile() {
           alignItems="center"
           sx={{ p: 0.5 }}
         >
-          {userdetails?.[0]?.user_profile ? (
+          {userdetails?.[0]?.user_profile && userdetails?.[0]?.user_profile !== "null" ? (
             <img
               src={userdetails?.[0]?.user_profile}
               alt={value.user_first_name}

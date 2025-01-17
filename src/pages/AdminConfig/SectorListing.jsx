@@ -106,18 +106,18 @@ const SectorListing = () => {
       onFilter: (value, record) =>
         record.sector_name.toLowerCase().includes(value.toLowerCase()),
     },
-    {
-      title: LISTING_PAGE.ACTION,
-      key: "action",
-      render: (_, record) => (
-        <Button
-          style={{ border: "none" }}
-          onClick={() => handleDelete(record.sector_id)}
-        >
-          <DeleteFilled />
-        </Button>
-      ),
-    },
+    // {
+    //   title: LISTING_PAGE.ACTION,
+    //   key: "action",
+    //   render: (_, record) => (
+    //     <Button
+    //       style={{ border: "none" }}
+    //       onClick={() => handleDelete(record.sector_id)}
+    //     >
+    //       <DeleteFilled />
+    //     </Button>
+    //   ),
+    // },
   ];
 
   // Handle delete action
