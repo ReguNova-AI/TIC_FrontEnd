@@ -25,7 +25,7 @@ import { saveAs } from 'file-saver';
 const parseApiResponse = (response) => {
   // Split the response by '---' to separate sections
   const sections = response.split('---').slice(1); // Skip the first "Title" section
-  console.log("sections",sections)
+  // console.log("sections",sections)
 
   // Check if the last section is the Summary and ensure it's handled correctly
   const lastSection = sections[sections.length - 1]?.trim();
@@ -60,8 +60,8 @@ const parseApiResponse = (response) => {
     // Process the remaining lines as "points" and clean the list
     const points = lines.slice(1).map(line => line.replace(/^\d+\./, '')?.trim());
 
-    console.log("title",title);
-    console.log("points",points);
+    // console.log("title",title);
+    // console.log("points",points);x
 
     return { title, points };
   });
