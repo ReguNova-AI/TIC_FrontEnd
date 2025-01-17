@@ -78,6 +78,13 @@ const ProjectView = () => {
     fetchDetails(id);
   }, [id]);
 
+  useEffect(()=>{
+    if(projectData.standardUploaded === false || projectData.standardUploaded === 0 || projectData.standardUploaded === "false" || projectData.standardUploaded === null, projectData.standardUploaded === "null")
+    {
+      runChecklistAPI();
+    }
+  },[projectData])
+
   const fetchDetails = (id) => {
     ProjectApiService.projectDetails(id)
       .then((response) => {
@@ -90,11 +97,6 @@ const ProjectView = () => {
         SetProjectData(response?.data?.details[0]);
         setHistoryData({history:response?.data?.details[0].history || [] })
         setLoading(false);
-
-        if(response?.data?.details[0].standardUploaded === false || response?.data?.details[0].standardUploaded === 0)
-        {
-          runChecklistAPI();
-        }
       })
       .catch((errResponse) => {
         setSnackData({
@@ -195,7 +197,7 @@ const ProjectView = () => {
   const handlestandardChatUploadUpdate = () => {
    
     const updatedResponse = { ...projectData };
-    updatedResponse.standardUploaded = true;
+    updatedResponse.standardUploaded = "true";
 
     const previousData = { ...projectData };
     const newHistory = createHistoryObject(updatedResponse, previousData,"StandardUpdates");
@@ -210,9 +212,6 @@ const ProjectView = () => {
   
       return { history: updatedHistory }; // Update state with the new history array
     });
-
-
-    // updatedResponse.history = [...previousData.history, newHistory];
     // UpdateProjectDetails(updatedResponse, false);
 
   };
