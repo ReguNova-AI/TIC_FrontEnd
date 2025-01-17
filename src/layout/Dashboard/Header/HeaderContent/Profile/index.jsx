@@ -36,6 +36,12 @@ import { QuestionCircleOutlined, UserOutlined } from "@ant-design/icons";
 import { AuthApiService } from "services/api/AuthApiService";
 import { useNavigate } from "react-router";
 import { API_SUCCESS_MESSAGE } from "shared/constants";
+import userIcon from  "../../../../../assets/images/icons/users2.svg";
+import informationIcon from  "../../../../../assets/images/icons/information.svg";
+import logoutIcon from  "../../../../../assets/images/icons/logout.svg";
+
+
+
 
 // ==============================|| HEADER CONTENT - PROFILE ||============================== //
 
@@ -237,7 +243,8 @@ export default function Profile() {
                               handleListItemClick(3, "logout")
                             }
                           >
-                            <LogoutOutlined />
+                            {/* <LogoutOutlined /> */}
+                            <img src={logoutIcon} width="20px"/>
                           </IconButton>
                         </Tooltip>
                       </Grid>
@@ -255,7 +262,8 @@ export default function Profile() {
                       }
                     >
                       <ListItemIcon>
-                        <UserOutlined />
+                        {/* <UserOutlined /> */}
+                        <img src={userIcon} width="20px"/>
                       </ListItemIcon>
                       <ListItemText primary="View Profile" />
                     </ListItemButton>
@@ -265,7 +273,8 @@ export default function Profile() {
                       onClick={(event) => handleListItemClick(2, "/apps")}
                     >
                       <ListItemIcon>
-                        <QuestionCircleOutlined />
+                        {/* <QuestionCircleOutlined /> */}
+                        <img src={informationIcon} width="20px"/>
                       </ListItemIcon>
                       <ListItemText primary="Support" />
                     </ListItemButton>
@@ -274,7 +283,8 @@ export default function Profile() {
                       onClick={(event) => handleListItemClick(3, "logout")}
                     >
                       <ListItemIcon>
-                        <LogoutOutlined />
+                        {/* <LogoutOutlined /> */}
+                        <img src={logoutIcon} width="20px"/>
                       </ListItemIcon>
                       <ListItemText primary="Logout" />
                     </ListItemButton>
