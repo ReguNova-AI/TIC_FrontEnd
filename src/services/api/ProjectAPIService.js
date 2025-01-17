@@ -61,6 +61,11 @@ const _projectChat = (query)=>{
   return BaseApiService.get(`/api/v1/chat/askQuestion?user_question=${query}`, null, null);
 }
 
+const _projectComplianceAssessment = (query)=>{
+  return BaseApiService.get(`/api/v1/chat/runComplainceAssessment?requirements=${query}`, null, null);
+}
+
+
 const _projectUploadStandardChat = (payload) => {
   return BaseApiService.post(`/api/v1/chat/uploadStandardChat`, null, payload);
 };
@@ -81,6 +86,7 @@ export const ProjectApiService = {
   projectChat:_projectChat,
   projectUploadStandardChat : _projectUploadStandardChat,
   projectStandardChecklist : _projectStandardChecklist,
+  projectComplianceAssessment : _projectComplianceAssessment,
 
 
 };

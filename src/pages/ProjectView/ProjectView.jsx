@@ -125,6 +125,52 @@ const ProjectView = () => {
     UpdateProjectDetails(updatedResponse, false);
   };
 
+  const runComplianceAssessmenet = async (query) =>{
+    setLoading(true);
+    ProjectApiService.projectComplianceAssessment(query)
+      .then((response) => {
+        // setSnackData({
+        //   show: true,
+        //   message:
+        //     response?.data?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+        //   type: "success",
+        // });
+        // SetProjectData(response?.data?.details[0]);
+        setLoading(false);
+
+        const updatedResponse = { ...projectData };
+        updatedResponse.complianceAssesment = response?.data?.data;
+        updatedResponse.no_of_runs = updatedResponse?.no_of_runs + 1;
+        updatedResponse.status = "In Progress";
+
+        const newHistory = createHistoryObject(data, previousData,"assessmentRun");
+        setHistoryData((prevState) => {
+          const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
+          // After the state update, include the updated history in the updatedResponse
+          const updatedResponseWithHistory = { ...updatedResponse, history: updatedHistory };
+          
+          // You can also call UpdateProjectDetails here, using the updated response with history
+          // setLoading(true);
+          UpdateProjectDetails(updatedResponseWithHistory, false);
+      
+          return { history: updatedHistory }; // Update state with the new history array
+        });
+
+
+        // UpdateProjectDetails(updatedResponse, true);
+      })
+      .catch((errResponse) => {
+        setSnackData({
+          show: true,
+          message:
+            errResponse?.error?.message ||
+            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          type: "error",
+        });
+        setLoading(false);
+      });
+  };
+
   const runChecklkistCRT = async () => {
     
     setLoading(true);
@@ -329,7 +375,7 @@ const ProjectView = () => {
         invite: '', 
         documents: heading === "documentUpload" ? data ? data : '':"", 
         checklistRun: heading === "checklistRun" ? "Checklist generated" :'', 
-        assessmentRun: '',
+        assessmentRun: heading === "assessmentRun" ? "Compliance Assessment run" :'',
         standardUplaoded: heading === "StandardUpdates" ? data.standardUploaded !== previousData.standardUploaded ? data.standardUploaded : '':"",
         status: previousData.status, 
       },
@@ -513,7 +559,7 @@ const ProjectView = () => {
                         <Button
                           variant="contained"
                           sx={{ mt: 2 }}
-                          onClick={() => runChecklkistCRT()}
+                          onClick={() => projectData.checkListResponse ? runComplianceAssessmenet(projectData.checkListResponse) : runChecklkistCRT() }
                         >
                          {projectData.checkListResponse ? "Compliance Assessment" : "Generate Checklist"} 
                         </Button>
