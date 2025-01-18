@@ -42,6 +42,8 @@ import { formatDate, getStatusChipProps } from "shared/utility";
 import { OrganisationApiService } from "services/api/OrganizationAPIService";
 import OrgCreation from "./OrgCreation";
 import { ApartmentOutlined } from '@ant-design/icons';
+import addorgIcon from "../../assets/images/icons/addOrg.svg";
+import Orgicon from "../../assets/images/icons/orgListing.svg"
 
 
 const OrganizationListing = () => {
@@ -215,15 +217,17 @@ const OrganizationListing = () => {
       key: "org_name",
       render: (text, record) => (
         <>
+        {record.org_logo ?
           <Avatar
             sx={{ width: 40, height: 40 }}
             alt={record.org_name}
             src={
-              record.org_logo || (
-                <ApartmentOutlined style={{ color: "black" }} />
-              )
+              record.org_logo
             }
           />
+          :
+          <img src={Orgicon} width="32px" style={{verticalAlign:"middle"}}/>
+    }
           <span style={{ marginLeft: 10 }}>
             <a
               onClick={() => handleNavigateToOrganization(record.index)}
@@ -300,7 +304,8 @@ const OrganizationListing = () => {
                 borderRadius: "20px",
               }}
             >
-              <FileFilled style={{ marginRight: 4 }} />
+              {/* <FileFilled style={{ marginRight: 4 }} /> */}
+              <img src={addorgIcon} width="18px" />
               {BUTTON_LABEL.CREATE_ORGANIZATION}
             </Button>
 

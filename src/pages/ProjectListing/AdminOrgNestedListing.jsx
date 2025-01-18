@@ -11,6 +11,9 @@ import OutlinedInput from "@mui/material/OutlinedInput";
 import InputLabel from "@mui/material/InputLabel";
 import InputAdornment from "@mui/material/InputAdornment";
 import {SearchOutlined} from "@ant-design/icons";
+import Orgicon from "../../assets/images/icons/orgListing.svg"
+import projectIcon from "../../assets/images/icons/projectIcon3.svg"
+
 
 // AdminOrgNestedListing Component
 const AdminOrgNestedListing = ({data}) => {
@@ -36,14 +39,17 @@ const AdminOrgNestedListing = ({data}) => {
       title: 'Project Name',
       dataIndex: 'project_name',
       key: 'project_name',
-      render: (text, record) => (
+      render: (text, record) => {return(
+        <>
+        <img src={projectIcon} width="20px" style={{verticalAlign:"middle",marginRight:"10px"}}/>
         <a
           onClick={() => handleNavigateToProject(record.project_id)}
           style={{ color: "#2ba9bc", cursor: "pointer" }}
         >
           {record.project_name}
         </a>
-      ),
+        </>
+      )},
     },
     {
       title: 'Project No',
@@ -126,11 +132,15 @@ const AdminOrgNestedListing = ({data}) => {
       key: 'org_name',
       render: (value, record) => (
         <>
+        {record.org_logo ?
           <Avatar
             sx={{ width: 40, height: 40 }}
             alt={record.org_name}
-            src={record.org_logo || <ApartmentOutlined style={{color:"black"}} />}
+            src={record.org_logo}
           />
+          :
+          <img src={Orgicon} width="32px" style={{verticalAlign:"middle"}}/>
+        }
           <span style={{ marginLeft: 10 }}>{value}</span>
         </>
       ),

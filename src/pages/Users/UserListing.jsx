@@ -28,6 +28,9 @@ import { UserApiService } from "services/api/UserAPIService";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import { UserOutlined } from '@ant-design/icons';
+import addUserIcon from "../../assets/images/icons/addUser.svg";
+import userListingIcon from "../../assets/images/icons/userListingicon2.svg";
+
 
 // import CardView from "./CardView";
 // import ToggleButtons from "./ToggleButton";
@@ -233,41 +236,62 @@ const UserListing = () => {
 
   // Table columns
   const columns = [
-    {
-      title: "",
-      key: "profile_url",
-      render: (value, record) => {
-        // Ensure that 'value' is a string before processing
-        let avatarSrc = value.profile_url || "";
+    // {
+    //   title: "",
+    //   key: "profile_url",
+    //   render: (value, record) => {
+    //     // Ensure that 'value' is a string before processing
+    //     let avatarSrc = value.profile_url || "";
   
-        return (
-          
-          <Avatar
-            key={value.user_id}
-            sx={{ width: 40, height: 40 }}
-            alt={value.user_first_name}
-          >
-            {avatarSrc && avatarSrc !== "null" ? (
-              <img src={avatarSrc} alt={value.user_first_name} style={{borderRadius: '50%' }} />
-            ) : (
-              <UserOutlined /> // Fallback to icon if no image
-            )}
-          </Avatar>
-        );
-      },
-    },        
+    //     return (
+    //       <>
+    //       {avatarSrc && avatarSrc !== "null" ? 
+    //       <Avatar
+    //         key={value.user_id}
+    //         sx={{ width: 40, height: 40 }}
+    //         alt={value.user_first_name}
+    //       >
+           
+    //           <img src={avatarSrc} alt={value.user_first_name} style={{borderRadius: '50%' }} />
+            
+    //       </Avatar>
+    //       :
+    //       <img  src={userListingIcon} width="20px" />
+    //   }
+    //   </>
+    //     );
+    //   },
+    // },        
     {
       title: LISTING_PAGE.NAME,
       dataIndex: "first_name",
       key: "first_name",
-      render: (text, record) => (
+      render: (text, record) => {
+        let avatarSrc = record.profile_url || "";
+        return (
+          <>
+           {avatarSrc && avatarSrc !== "null" ? 
+          <Avatar
+            key={record.user_id}
+            sx={{ width: 40, height: 40 }}
+            alt={record.user_first_name}
+          >
+           
+              <img src={avatarSrc} alt={record.user_first_name} style={{borderRadius: '50%' }} />
+            
+          </Avatar>
+          :
+          <img  src={userListingIcon} width="32px" style={{verticalAlign:"middle"}}/>
+      }
         <a
           onClick={() => handleNavigateToUsers(record.index)}
-          style={{ color: "#2ba9bc", cursor: "pointer" }}
+          style={{ color: "#2ba9bc", cursor: "pointer", marginLeft:"10px" }}
         >
           {text}
         </a>
-      ),
+        </>
+        );
+      },
       filterSearch: true,
       onFilter: (value, record) =>
         record.first_name.toLowerCase().includes(value.toLowerCase()),
@@ -348,7 +372,8 @@ const UserListing = () => {
                 borderRadius: "20px",
               }}
             >
-              <FileFilled style={{ marginRight: 4 }} />
+              {/* <FileFilled style={{ marginRight: 4 }} /> */}
+              <img src = {addUserIcon} width="18px"  />
               {BUTTON_LABEL.CREATE_USER}
             </Button>
 

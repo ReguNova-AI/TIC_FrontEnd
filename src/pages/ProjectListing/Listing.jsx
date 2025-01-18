@@ -39,6 +39,10 @@ import {
 import { formatDate, getStatusChipProps } from "shared/utility";
 import NestedListing from "./NestedListing";
 import AdminOrgNestedListing from "./AdminOrgNestedListing";
+import projectIcon from "../../assets/images/icons/projectIcon3.svg";
+import addProjectIcon from "../../assets/images/icons/addProject.svg";
+
+
 
 const Listing = () => {
   const navigate = useNavigate();
@@ -241,14 +245,20 @@ const Listing = () => {
       title: LISTING_PAGE.PROJECT_NAME,
       dataIndex: "project_name",
       key: "project_name",
-      render: (text, record) => (
+      render: (text, record) => {
+        return (
+          <>
+           <img src={projectIcon} width="20px" style={{verticalAlign:"middle",marginRight:"10px"}}/>
         <a
           onClick={() => handleNavigateToProject(record.index)}
           style={{ color: "#2ba9bc", cursor: "pointer" }}
         >
+         
           {text}
         </a>
-      ),
+        </>
+        )
+      },
       filterSearch: true,
       onFilter: (value, record) =>
         record.project_name.toLowerCase().includes(value.toLowerCase()),
@@ -396,7 +406,8 @@ const Listing = () => {
                 borderRadius: "20px",
               }}
             >
-              <FileFilled style={{ marginRight: 4 }} />
+              {/* <FileFilled style={{ marginRight: 4 }} /> */}
+              <img src={addProjectIcon} width="20px" />
               {BUTTON_LABEL.CREATE_PROJECT}
             </Button>}
 

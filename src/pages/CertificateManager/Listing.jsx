@@ -27,6 +27,9 @@ import { formatDate, getStatusChipProps } from "shared/utility";
 import { CertificateApiService } from "services/api/CertificateAPIService";
 import CreateCertificate from "./CreateCertificate";
 import { FileUploadApiService } from "services/api/FileUploadAPIService";
+import certificateIcon from "../../assets/images/icons/certificateIcon.svg";
+import addCertificateIcon from "../../assets/images/icons/addCertificate.svg";
+
 
 const Listing = () => {
   const navigate = useNavigate();
@@ -306,14 +309,18 @@ FileUploadApiService.fileget(filepayload).then((response) => {
       title: LISTING_PAGE.CERTIFICATE_NAME,
       dataIndex: "certificate_name",
       key: "certificate_name",
-      render: (text, record) => (
+      render: (text, record) => {
+        return(
+          <>
+          <img src={certificateIcon} width="24px" style={{verticalAlign:"middle",marginRight:"10px"}} />
         <a
           onClick={() => handleNavigateToProject(record.index)}
           style={{ color: "#2ba9bc", cursor: "pointer" }}
         >
           {text}
         </a>
-      ),
+        </>
+      )},
       filterSearch: true,
       onFilter: (value, record) =>
         record.certificate_name.toLowerCase().includes(value.toLowerCase()),
@@ -444,7 +451,8 @@ FileUploadApiService.fileget(filepayload).then((response) => {
                 borderRadius: "20px",
               }}
             >
-              <FileFilled style={{ marginRight: 4 }} />
+              {/* <FileFilled style={{ marginRight: 4 }} /> */}
+              <img src={addCertificateIcon} width="20px" /> 
               {BUTTON_LABEL.UPLOAD_CERTIFICATE}
             </Button>
 
