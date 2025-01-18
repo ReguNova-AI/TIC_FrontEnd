@@ -3,11 +3,11 @@ import { CheckOutlined, DownloadOutlined, FolderFilled } from '@ant-design/icons
 import { Tree } from 'antd';
 import { Tooltip } from '@mui/material';
 import { FORM_LABEL } from 'shared/constants';
-
+import folderIcon from "../../assets/images/icons/folderIcon1.svg";
 const FileStructureView = ({ data }) => {
   const [showLine, setShowLine] = useState(true);
   const [showIcon, setShowIcon] = useState(true);
-  const [showLeafIcon, setShowLeafIcon] = useState(true);
+  const [showLeafIcon, setShowLeafIcon] = useState(false);
   const [gData, setGData] = useState([]); // Store the tree data
 
   // Function to transform the data into the required tree format
@@ -25,7 +25,8 @@ const FileStructureView = ({ data }) => {
         treeStructure[documenttype] = {
           title: documenttype,
           key: documenttype.replace(/\s+/g, '-'), // Key to be unique (no spaces)
-          icon: <FolderFilled style={{ color: "blue" }} />,
+          // icon: <FolderFilled style={{ color: "blue" }} />,
+          icon:<img src={folderIcon} width="20px" style={{marginRight:"10px"}}/>,
           children: [],
         };
       }
