@@ -98,7 +98,7 @@ const SectorCreation = ({onHandleClose}) => {
                 type="submit"
                 variant="contained"
                 style={{
-                  background: "#003a8c",
+                  background: "#2ba9bc",
                   float: "right",
                   textTransform: "none",
                 }}

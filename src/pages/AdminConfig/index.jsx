@@ -120,7 +120,7 @@ const AdminConfig = () => {
                 {tab.creation === "true" &&
                 <Button
                 type="primary"
-                style={{ background: "#003a8c", color: "#ffffff" }}
+                style={{ background: "#2ba9bc", color: "#ffffff" }}
                   
                   onClick={() => handleButtonClick('Create', tab)}
                   
