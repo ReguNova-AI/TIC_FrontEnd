@@ -37,7 +37,7 @@ export default function Header() {
   const mainHeader = (
     <Toolbar>
       <img src={logo} width="100px" />
-      <IconButton
+      {/* <IconButton
         disableRipple
         aria-label="open drawer"
         onClick={() => handlerDrawerOpen(!drawerOpen)}
@@ -48,7 +48,7 @@ export default function Header() {
       >
         
         {!drawerOpen ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-      </IconButton>
+      </IconButton> */}
       {headerContent}
     </Toolbar>
   );
