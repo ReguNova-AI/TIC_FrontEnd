@@ -35,17 +35,12 @@ const StandardListing = () => {
   }, []);
 
   const fetchData = () => {
-    AdminConfigAPIService.roleListing()
+    AdminConfigAPIService.standardListing()
       .then((response) => {
         // Check the response structure and map data accordingly
         if (response?.data?.details) {
-          const newData = response?.data?.details.map((role) => ({
-            role_id: role.role_id,
-            role_name: role.role_name, 
-            permissions:role.permissions
-          }));
-          setData(newData);
-          setFilteredData(newData);
+          setData(response?.data?.details);
+          setFilteredData(response?.data?.details);
         }
         setLoading(false);
 
@@ -79,7 +74,7 @@ const StandardListing = () => {
   // Centralized filtering logic
   useEffect(() => {
     const filtered = data.filter((item) =>
-      item.role_name.toLowerCase().includes(debouncedSearchText)
+      item.standard_name.toLowerCase().includes(debouncedSearchText)
     );
     setFilteredData(filtered);
   }, [debouncedSearchText, data]);
@@ -99,13 +94,22 @@ const StandardListing = () => {
   // Table columns
   const columns = [
     {
-      title: LISTING_PAGE.ROLE,
-      dataIndex: "role_name",
-      key: "role_name",
+      title: LISTING_PAGE.INDUSTRY,
+      dataIndex: "industry_name",
+      key: "industry_name",
       render: (text) => text, // Directly display the role_name
       filterSearch: true,
       onFilter: (value, record) =>
-        record.role_name.toLowerCase().includes(value.toLowerCase()),
+        record.industry_name.toLowerCase().includes(value.toLowerCase()),
+    },
+    {
+      title: LISTING_PAGE.STANDARD_NAME,
+      dataIndex: "standard_name",
+      key: "standard_name",
+      render: (text) => text, // Directly display the role_name
+      filterSearch: true,
+      onFilter: (value, record) =>
+        record.standard_name.toLowerCase().includes(value.toLowerCase()),
     },
     // {
     //   title: LISTING_PAGE.ACTION,

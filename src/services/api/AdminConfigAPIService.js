@@ -25,7 +25,15 @@ const _roleListing = (userid) => {
 };
 
 const _permissionListing =()=>{
-  return BaseApiService.get(`api/v1/permissions`,null,null);
+  return BaseApiService.get(`/api/v1/permissions`,null,null);
+}
+
+const _standardCreate = (payload) => {
+  return BaseApiService.post(`/api/v1/regulatories/create`, null, payload);
+};
+
+const _standardListing =()=>{
+  return BaseApiService.get(`/api/v1/regulatories`,null,null);
 }
 
 export const AdminConfigAPIService = {
@@ -36,4 +44,6 @@ export const AdminConfigAPIService = {
   roleCreate:_roleCreate,
   roleListing: _roleListing,
   permissionListing:_permissionListing,
+  standardCreate: _standardCreate,
+  standardListing: _standardListing,
 };

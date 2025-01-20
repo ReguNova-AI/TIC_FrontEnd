@@ -24,12 +24,11 @@ import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
 import { UserApiService } from "services/api/UserAPIService";
 import DropZoneFileUpload from "pages/ProjectCreation/DropZoneFileUpload";
 
-const StandardCreation = ({onHandleClose}) => {
+const StandardCreation = ({ onHandleClose }) => {
   const navigate = useNavigate();
   const [sectorData, setSectorData] = useState([]);
   const [industryData, setIndustryData] = useState([]);
 
-  
   const [filteredIndustries, setFilteredIndustries] = useState([]);
   const [selectedIndustry, setSelectedIndustry] = useState("");
   const [snackData, setSnackData] = useState({
@@ -41,10 +40,9 @@ const StandardCreation = ({onHandleClose}) => {
   const [formData, setFormData] = useState({
     industry_name: "",
     industry_description: "d",
-    sector_id: null,
-    sector_name: "",
-    file_name:"",
-    file_url:"",
+    standard_name: "",
+    file_name: "",
+    file_url: "",
   });
 
   useEffect(() => {
@@ -74,7 +72,7 @@ const StandardCreation = ({onHandleClose}) => {
         });
       });
 
-      AdminConfigAPIService.industryListing()
+    AdminConfigAPIService.industryListing()
       .then((response) => {
         // Check the response structure and map data accordingly
         if (response?.data?.details) {
@@ -85,7 +83,6 @@ const StandardCreation = ({onHandleClose}) => {
       })
       .catch((errResponse) => {
         setLoading(false);
-       
       });
   };
 
@@ -101,46 +98,48 @@ const StandardCreation = ({onHandleClose}) => {
     e.preventDefault();
     const payload = {
       industry_name: formData.industry_name,
-      industry_description: "test description",
-      sector_id: formData.sector_id,
-      sector_name: formData.sector_name,
+      industry_id: formData.industry_id,
+      standard_name: formData.standard_name,
+      standard_url: formData.file_url,
     };
 
-    console.log("formData",formData)
+    console.log("formData", payload);
 
-    // AdminConfigAPIService.industryCreate(payload)
-    //   .then((response) => {
-    //     // On success, you can add any additional logic here
-    //     setSnackData({
-    //       show: true,
-    //       message: response?.data?.message,
-    //       type: "success",
-    //     });
-    //     setFormData({
-    //       ...formData,
-    //       industry_name: "",
-    //       sector_name: "",
-    //       sector_id: null,
-    //     });
+    AdminConfigAPIService.standardCreate(payload)
+      .then((response) => {
+        // On success, you can add any additional logic here
+        setSnackData({
+          show: true,
+          message: response?.data?.message,
+          type: "success",
+        });
+        setFormData({
+          ...formData,
+          industry_name: "",
+          industry_description: "d",
+          standard_name: "",
+          file_name: "",
+          file_url: "",
+        });
 
-    //     onHandleClose(response?.data?.message);
-
-    //   })
-    //   .catch((errResponse) => {
-    //     setSnackData({
-    //       show: true,
-    //       message:
-    //         errResponse?.error?.message ||
-    //         API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-    //       type: "error",
-    //     });
-    //   });
+        onHandleClose(response?.data?.message);
+      })
+      .catch((errResponse) => {
+        setSnackData({
+          show: true,
+          message:
+            errResponse?.error?.message ||
+            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          type: "error",
+        });
+      });
   };
 
   const handleSectorChange = (event) => {
     const sectorName = event.target.value;
-    const sectorId = sectorData.find((sector) => sector.sector_name === sectorName)
-      ?.sector_id || "";
+    const sectorId =
+      sectorData.find((sector) => sector.sector_name === sectorName)
+        ?.sector_id || "";
     setFormData({
       ...formData,
       sector_name: sectorName,
@@ -153,7 +152,6 @@ const StandardCreation = ({onHandleClose}) => {
       (industry) => industry.sector_id === sectorId
     );
     setFilteredIndustries(filteredIndustries);
-
   };
 
   const handleIndustryChange = (event) => {
@@ -172,18 +170,15 @@ const StandardCreation = ({onHandleClose}) => {
   };
 
   const handleFileChange = (file) => {
-    if(file)
-    {
-    setFormData({
-      ...formData,
-      file_url: file[0]?.path,
-      file_name: file[0]?.name,
-    });
-  }
+    if (file) {
+      setFormData({
+        ...formData,
+        file_url: file[0]?.path,
+        file_name: file[0]?.name,
+      });
+    }
     // console.log("file",file);
-
   };
-
 
   return (
     <>
@@ -197,20 +192,19 @@ const StandardCreation = ({onHandleClose}) => {
           <Grid container spacing={2}>
             {/* First row - 3 items */}
             <Grid item xs={12} sm={6}>
-                <TextField
-                  label={FORM_LABEL.STANDARD_NAME}
-                  variant="outlined"
-                  fullWidth
-                  name="standard_name"
-                  value={formData.standard_name}
-                  onChange={handleInputChange}
-                  required
-                  inputProps={{
-                    maxLength: 30, // Restrict input to 40 characters
-                  }}
-                  
-                />
-              </Grid>
+              <TextField
+                label={FORM_LABEL.STANDARD_NAME}
+                variant="outlined"
+                fullWidth
+                name="standard_name"
+                value={formData.standard_name}
+                onChange={handleInputChange}
+                required
+                inputProps={{
+                  maxLength: 30, // Restrict input to 40 characters
+                }}
+              />
+            </Grid>
 
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
@@ -236,29 +230,29 @@ const StandardCreation = ({onHandleClose}) => {
               </FormControl>
             </Grid>
             <Grid item xs={12} sm={6}>
-            <FormControl fullWidth>
-                  <InputLabel>
-                    {FORM_LABEL.INDUSTRY}
-                    <span>*</span>
-                  </InputLabel>
-                  <Select
-                    value={selectedIndustry}
-                    onChange={handleIndustryChange}
-                    disabled={filteredIndustries.length === 0}
-                  >
-                    {/* <MenuItem value="">
+              <FormControl fullWidth>
+                <InputLabel>
+                  {FORM_LABEL.INDUSTRY}
+                  <span>*</span>
+                </InputLabel>
+                <Select
+                  value={selectedIndustry}
+                  onChange={handleIndustryChange}
+                  disabled={filteredIndustries.length === 0}
+                >
+                  {/* <MenuItem value="">
                       <em>None</em>
                     </MenuItem> */}
-                    {filteredIndustries.map((industry) => (
-                      <MenuItem
-                        key={industry.industry_id}
-                        value={industry.industry_id}
-                      >
-                        {industry.industry_name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                  {filteredIndustries.map((industry) => (
+                    <MenuItem
+                      key={industry.industry_id}
+                      value={industry.industry_id}
+                    >
+                      {industry.industry_name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </Grid>
             <Grid item xs={12} sm={12}>
               <DropZoneFileUpload
@@ -287,7 +281,7 @@ const StandardCreation = ({onHandleClose}) => {
       </Box>
 
       <Snackbar
-      style={{top:"80px"}}
+        style={{ top: "80px" }}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
         open={snackData.show}
         autoHideDuration={3000}
