@@ -10,7 +10,6 @@ import {
   Divider,
   Tag,
 } from "antd";
-import { EditFilled, EditOutlined } from "@ant-design/icons";
 import { API_ERROR_MESSAGE, API_SUCCESS_MESSAGE } from "shared/constants";
 import { UserApiService } from "services/api/UserAPIService";
 import Snackbar from "@mui/material/Snackbar";
@@ -19,74 +18,48 @@ import avatar1 from "assets/images/users/avatar-1.png";
 import AvatarUpload from "../../../../../pages/Users/AvatarUpload";
 
 const ProfileDetails = () => {
-  const [profileData, setProfileData] = useState([]);
+  const [profileData, setProfileData] = useState({});
   const [loading, setLoading] = useState(true);
-  const [uploadedFileData, setUpoadedFileData] = useState("");
-  const [formData, setFormData] = useState({});
-  const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
-  const userId = userdetails?.[0]?.user_id;
-  const userRole = userdetails?.[0]?.role_name;
-
+  const [uploadedFileData, setUploadedFileData] = useState("");
   const [snackData, setSnackData] = useState({
     show: false,
     message: "",
     type: "error",
   });
 
+  const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
+  const userId = userdetails?.[0]?.user_id;
+  const userRole = userdetails?.[0]?.role_name;
+
   useEffect(() => {
     fetchData();
   }, []);
 
   useEffect(() => {
-    let payload = {
-      ...formData,
-      user_profile: uploadedFileData, // URL for avatar upload
-    };
-    updateProfile(payload);
+    if (uploadedFileData) {
+      let payload = {
+        ...profileData,
+        user_profile: uploadedFileData, // URL for avatar upload
+      };
+      updateProfile(payload);
+    }
   }, [uploadedFileData]);
 
   const fetchData = () => {
     UserApiService.userDetails(userId)
       .then((response) => {
-        // On success, you can add any additional logic here
         setSnackData({
           show: true,
-          message:
-            response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+          message: response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
           type: "success",
         });
-        setProfileData(response.data.details[0]);
-        let data = response.data.details[0];
-        setFormData({
-          user_id: data.user_id,
-          org_id: data.org_id,
-          role_id: data.role_id,
-          user_first_name: data.user_first_name,
-          user_last_name: data.user_last_name,
-          user_profile: data.user_profile,
-          user_email: data.user_email,
-          user_phone_no: data.user_phone_no,
-          user_password: data.user_password,
-          user_address: {
-            zip: data.user_address.zip,
-            city: data.user_address.city,
-            state: data.user_address.state,
-            street: data.user_address.street,
-          },
-          sector_id: data.sector_id,
-          sector_name: data.sector_name,
-          org_name: data.org_name,
-          industry_id: data.industry_id,
-          industry_name: data.industry_name,
-        });
+        setProfileData(response?.data?.details[0]);
         setLoading(false);
       })
       .catch((errResponse) => {
         setSnackData({
           show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          message: errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
         setLoading(false);
@@ -101,14 +74,12 @@ const ProfileDetails = () => {
           message: response?.message || API_SUCCESS_MESSAGE.DETAILS_UPDATED,
           type: "success",
         });
-        fetchData();
+        fetchData(); // Refresh data after update
       })
       .catch((errResponse) => {
         setSnackData({
           show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          message: errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
       });
@@ -120,7 +91,6 @@ const ProfileDetails = () => {
         <Col>
           <Card
             title="Profile Details"
-            //   extra={<Button icon={<EditFilled  />} type="link" style={{color:"black"}}>Edit</Button>}
             style={{ width: "100%" }}
           >
             <div
@@ -133,7 +103,7 @@ const ProfileDetails = () => {
               {profileData?.user_profile ? (
                 <Avatar size={100} src={profileData?.user_profile} />
               ) : (
-                <AvatarUpload onUpload={setUpoadedFileData} />
+                <AvatarUpload onUpload={setUploadedFileData} />
               )}
             </div>
 
@@ -149,43 +119,43 @@ const ProfileDetails = () => {
                 <Descriptions.Item label="Phone Number">
                   {profileData?.user_phone_no}
                 </Descriptions.Item>
-                {userRole !== "Super Admin" ?
-                <Descriptions.Item label="Address">
-                  {profileData?.user_address?.street},{" "}
-                  {profileData?.user_address?.city},{" "}
-                  {profileData?.user_address?.state} -{" "}
-                  {profileData?.user_address?.zip}
-                </Descriptions.Item>
-                :
-                <Descriptions.Item label="Role">
-                {profileData?.role_name}
-              </Descriptions.Item>
-                }
+                {userRole !== "Super Admin" ? (
+                  <Descriptions.Item label="Address">
+                    {profileData?.user_address?.street},{" "}
+                    {profileData?.user_address?.city},{" "}
+                    {profileData?.user_address?.state} -{" "}
+                    {profileData?.user_address?.zip}
+                  </Descriptions.Item>
+                ) : (
+                  <Descriptions.Item label="Role">
+                    {profileData?.role_name}
+                  </Descriptions.Item>
+                )}
               </Descriptions>
             </Card>
 
-            {userRole !== "Super Admin" &&
-            <>            <Divider />
-
-            {/* Organization Details Section */}
-            <Card title="Organization Details" bordered={false}>
-              <Descriptions bordered column={2}>
-                <Descriptions.Item label="Organization">
-                  {profileData?.org_name}
-                </Descriptions.Item>
-                <Descriptions.Item label="Industry">
-                  {profileData?.industry_name}
-                </Descriptions.Item>
-                <Descriptions.Item label="Sector">
-                  {profileData?.sector_name}
-                </Descriptions.Item>
-                <Descriptions.Item label="Role">
-                  {profileData?.role_name}
-                </Descriptions.Item>
-              </Descriptions>
-            </Card>
-            </>
-}
+            {userRole !== "Super Admin" && (
+              <>
+                <Divider />
+                {/* Organization Details Section */}
+                <Card title="Organization Details" bordered={false}>
+                  <Descriptions bordered column={2}>
+                    <Descriptions.Item label="Organization">
+                      {profileData?.org_name}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Industry">
+                      {profileData?.industry_name}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Sector">
+                      {profileData?.sector_name}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Role">
+                      {profileData?.role_name}
+                    </Descriptions.Item>
+                  </Descriptions>
+                </Card>
+              </>
+            )}
           </Card>
         </Col>
       </Row>
