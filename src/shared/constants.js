@@ -105,7 +105,10 @@ export const LISTING_PAGE = Object.freeze({
   ORG_WEBSITE:"Website",
   ORG_ADDRESS:"Address",
   ROLE:"Role",
-  FILE_UPLOADED:"File Uploaded"
+  FILE_UPLOADED:"File Uploaded",
+  PERMISSION_NAME:"Permission Name",
+  PERMISSION_DESC:"Description",
+  PERMISSION_CATEGORY: "Category",
 });
 
 export const TAB_LABEL = Object.freeze({
@@ -210,6 +213,8 @@ export const FORM_LABEL = Object.freeze({
   SECTOR_NAME:"Sector Name",
   INDUSTRY_NAME: "Industry Name",
   ROLE_NAME:"Role Name",
+  ROLE_DESC:"Description",
+  STANDARD_NAME: "Standard Name",
 
 });
 export const STEPPER_LABEL = Object.freeze({

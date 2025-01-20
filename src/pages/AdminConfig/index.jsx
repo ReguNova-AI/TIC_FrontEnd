@@ -15,6 +15,10 @@ import { BUTTON_LABEL } from 'shared/constants';
 import RoleCreation from './RoleCreation';
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
+import standardsIcon from "../../assets/images/icons/standards2.svg";
+import StandardListing from './StandardListing';
+import StandardCreation from './StandardCreation';
+import PermissionListing from './PermissionListing';
 
 const { Text } = Typography;
 
@@ -70,6 +74,13 @@ const AdminConfig = () => {
       listing:'true',
       creation:'false',
     },
+    {
+      title: 'Regulatory Standards',
+      icon: <img src={standardsIcon} width="30px" />,
+      description: 'Manage Standards for each industry.',
+      listing:'true',
+      creation:'true',
+    },
   ];
 
   const handleButtonClick = (action, tab) => {
@@ -88,21 +99,21 @@ const AdminConfig = () => {
     <>
       <Row gutter={16}>
         {tabs.map((tab) => (
-          <Col span={6} key={tab.title}>
+          <Col span={6} key={tab.title} style={{padding:"10px 8px"}}>
             <Card
               hoverable
-              style={{ cursor: 'pointer' }}
+              style={{ cursor: 'pointer',height:"230px" }}
             >
               {/* Heading with Icon */}
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
                 <span style={{fontSize:"1.8em"}}>{tab.icon}</span>
-                <Typography.Title level={4} style={{ marginLeft: '8px' }}>
+                <Typography.Title level={4} style={{ marginLeft: '8px',marginTop:"10px" }}>
                   {tab.title}
                 </Typography.Title>
               </div>
 
               {/* Description Above Buttons */}
-              <Text type="secondary" style={{ display: 'block', marginBottom: '16px' }}>
+              <Text type="secondary" style={{ display: 'block', marginBottom: '16px', height:"60px" }}>
                 {tab.description}
               </Text>
 
@@ -139,17 +150,18 @@ const AdminConfig = () => {
         visible={visible}
         onCancel={handleModalClose}
         footer={null}
-        width={modalContent.action === "Create" && modalContent?.tab?.title === "Sectors" ||  modalContent.action === "Create" && modalContent?.tab?.title === "Roles"  ? 400 :600}
-      >
-       
-          
+        width={modalContent.action === "Create" && modalContent?.tab?.title === "Sectors" ? 400 :  modalContent.action === "Create" && modalContent?.tab?.title === "Roles"  ? 800 :600}
+      > 
           {modalContent.action === "List" && modalContent?.tab?.title === "Sectors" ? <SectorListing/>
           : modalContent.action === "List" && modalContent?.tab?.title === "Industries" ? <IndustriesListing/>
           : modalContent.action === "List" && modalContent?.tab?.title === "Roles" ? <RoleListing/>
+          : modalContent.action === "List" && modalContent?.tab?.title === "Permissions" ? <PermissionListing/>
+          : modalContent.action === "List" && modalContent?.tab?.title === "Regulatory Standards" ? <StandardListing/>
           : modalContent.action === "Create" && modalContent?.tab?.title === "Sectors" ? <SectorCreation onHandleClose={(e) => handleClose(e)}/>
           : modalContent.action === "Create" && modalContent?.tab?.title === "Industries" ? <IndustryCreation onHandleClose={(e) => handleClose(e)}/>
           : modalContent.action === "Create" && modalContent?.tab?.title === "Roles" ? <RoleCreation onHandleClose={(e) => handleClose(e)}/>
-          : null}
+          : modalContent.action === "Create" && modalContent?.tab?.title === "Regulatory Standards" ? <StandardCreation onHandleClose={(e) => handleClose(e)}/>
+          :null}
        
       </Modal>
       <Snackbar

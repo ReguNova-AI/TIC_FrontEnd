@@ -425,7 +425,7 @@ export default function OrgCreation({ onHandleClose }) {
                   <InputLabel>{FORM_LABEL.SECTOR}</InputLabel>
                   <Select
                     value={formData.sector_name}
-                    onChange={handleSectorChange}
+                    onChange={handleSectorChange} 
                     name="sector_name"
                     disabled={sectorData.length === 0}
                   >
