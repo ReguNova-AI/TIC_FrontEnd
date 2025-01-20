@@ -41,7 +41,7 @@ export default function DashboardLayout() {
         onClick={() => handlerDrawerOpen(!drawerOpen)}
         style={{
           marginTop: "66px",
-          position: "absolute",
+          position: "fixed",
           marginLeft: drawerOpen ? "240px" : !downXL ? "63px" : "2px",
           zIndex: "999999",
           borderRadius:"50%",
