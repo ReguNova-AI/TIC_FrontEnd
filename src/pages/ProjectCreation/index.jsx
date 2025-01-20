@@ -23,11 +23,14 @@ import Alert from "@mui/material/Alert";
 import { formatDateToCustomFormat } from "shared/utility";
 import { API_ERROR_MESSAGE, API_SUCCESS_MESSAGE, BUTTON_LABEL, FORM_LABEL, HEADING } from "shared/constants";
 import { UserApiService } from "services/api/UserAPIService";
+import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
 
 const MyForm = () => {
   const [submissionStatus, setSubmissionStatus] = useState("");
   const navigate = useNavigate();
   const [userData, setUserData] = useState([]); // Initially, set userData as an empty array
+  const [standardData,setStandardData] = useState([]);
+  const [loading,setLoading] = useState(false);
   const [snackData, setSnackData] = useState({
     show: false,
     message: "",
@@ -48,6 +51,7 @@ const MyForm = () => {
   // Fetch the user data when the component mounts
   useEffect(() => {
     fetchUserData();
+    fetchStandardData();
   }, []);
 
   const fetchUserData = () => {
@@ -67,6 +71,34 @@ const MyForm = () => {
           show: true,
           message:
             errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          type: "error",
+        });
+      });
+  };
+
+  const fetchStandardData = () => {
+    AdminConfigAPIService.standardListing()
+      .then((response) => {
+        // Check the response structure and map data accordingly
+        if (response?.data?.details) {
+          setStandardData(response?.data?.details);
+        }
+        setLoading(false);
+
+        setSnackData({
+          show: true,
+          message:
+            response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+          type: "success",
+        });
+      })
+      .catch((errResponse) => {
+        setLoading(false);
+        setSnackData({
+          show: true,
+          message:
+            errResponse?.error?.message ||
+            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
       });
@@ -276,9 +308,12 @@ const MyForm = () => {
                   onChange={handleInputChange}
                   required
                 >
-                  <MenuItem value="Reg1">Regulatory 1</MenuItem>
-                  <MenuItem value="Reg2">Regulatory 2</MenuItem>
-                  <MenuItem value="Reg3">Regulatory 3</MenuItem>
+                  {standardData?.map(sData=>{
+                    return <MenuItem value={sData.standard_name}>{sData.standard_name}</MenuItem>
+                  })}
+                  
+                  {/* <MenuItem value="Reg2">Regulatory 2</MenuItem>
+                  <MenuItem value="Reg3">Regulatory 3</MenuItem> */}
                 </Select>
               </FormControl>
             </Grid>
