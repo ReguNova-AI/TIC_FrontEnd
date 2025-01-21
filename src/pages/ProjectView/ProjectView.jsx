@@ -92,7 +92,7 @@ const ProjectView = () => {
     {
       runChecklistAPI();
     }
-  },[projectData])
+  },[projectData,standardData])
 
   const fetchDetails = (id) => {
     ProjectApiService.projectDetails(id)
@@ -362,8 +362,8 @@ const ProjectView = () => {
   };
 
   const runChecklistAPI = async () => {
-
-    const fileName= standardData.find((data) => data?.standard_name === projectData?.regulatory_standard).standard_url;
+    
+    const fileName= standardData.find((data) => data?.standard_name === projectData?.regulatory_standard)?.standard_url;
    
     const regex = /\/([^/]+)$/; // Match the part after the last "/"
 
