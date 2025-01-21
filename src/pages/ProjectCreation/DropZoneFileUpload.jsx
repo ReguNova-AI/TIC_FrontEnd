@@ -198,10 +198,10 @@ const DropZoneFileUpload = (props) => {
 
         // Now that the file is read, upload the Base64 data to the API
         try {
-          const fileType = file.name.split(".");
+          const fileType = file.name.split(".").pop();
           const filepayload = {
             documents: [fileDataUrl],
-            type: fileType[1],
+            type: fileType,
           };
 
           const response = await FileUploadApiService.fileUpload(filepayload);
@@ -248,6 +248,15 @@ const DropZoneFileUpload = (props) => {
     onDrop: (newFiles) => {
       const allFiles = [...uploadedFiles, ...newFiles];
       const totalSize = getTotalSize(allFiles);
+
+      if (selectedType === FORM_LABEL.CUSTOM_REGULATORY) {
+        // Check if more than 1 file is selected
+        if (newFiles.length > 1) {
+          setError(API_ERROR_MESSAGE.CUSTOM_REGULATORY_SINGLE_FILE_ONLY);
+          return; // Prevent further processing if the error is set
+        }
+      }
+
       // Read files as binary and process them
       const checklistfile = document.getElementById("fileInput").files;
       // console.log("checklistfile",checklistfile)

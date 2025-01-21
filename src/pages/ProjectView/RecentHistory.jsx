@@ -56,12 +56,12 @@ const RecentHistory = ({data}) => {
       },
       {
         title: <span style={{ fontSize: '12px',fontWeight:"600" }}>{STEPPER_LABEL.CHECKLIST_REPORT}</span>,
-        description: <span style={{ fontSize: '11px' }}></span>,
+        description: <span style={{ fontSize: '11px' }}>{data.checkListResponse ? "Generated" : "Not generated"}</span>,
         status: data.checkListResponse ? `${STEPPER_LABEL.FINISH_STATUS}` : `${STEPPER_LABEL.PROCESS_STATUS}`, 
       },
       {
         title: <span style={{ fontSize: '12px',fontWeight:"600" }}>{STEPPER_LABEL.ASSESSMENT_REPORT}</span>,
-        description:<span style={{ fontSize: '11px' }}></span>,
+        description:<span style={{ fontSize: '11px' }}>{data.complianceAssesment ? "Generated" : "Not generated"}</span>,
         status: data.complianceAssesment ? `${STEPPER_LABEL.FINISH_STATUS}` : `${STEPPER_LABEL.PROCESS_STATUS}`, 
       }, 
       {

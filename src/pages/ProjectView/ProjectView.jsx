@@ -39,6 +39,7 @@ import {
   COUNT_CARD_LABELS,
   PROJECT_DETAIL_PAGE,
   HEADING,
+  FORM_LABEL,
 } from "shared/constants";
 import DropZoneFileUpload from "pages/ProjectCreation/DropZoneFileUpload";
 import chatLoadingicon from "../../assets/images/icons/chatLoadingIcon.svg";
@@ -50,6 +51,7 @@ import checklistfile from "../../assets/IEC-61400-12-2022.pdf";
 import axios from "axios";
 import Icon, { SmileOutlined } from "@ant-design/icons";
 import { formatDate } from "shared/utility";
+import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
 
 const ProjectView = () => {
   const navigate = useNavigate();
@@ -59,6 +61,7 @@ const ProjectView = () => {
   const { id } = useParams();
   const [loading, setLoading] = useState(true);
   const [projectData, SetProjectData] = useState([]);
+  const [standardData,setStandardData] = useState([]);
   const [uploadedDocument, setUploadedDocument] = useState([]);
   const [chatResponse, setChatResponse] = useState([]);
   const [chatLoading, setChatloading] = useState(false);
@@ -81,6 +84,7 @@ const ProjectView = () => {
 
   useEffect(() => {
     fetchDetails(id);
+    fetchStandardData();
   }, [id]);
 
   useEffect(()=>{
@@ -116,6 +120,35 @@ const ProjectView = () => {
       });
   };
 
+  const fetchStandardData = () => {
+    AdminConfigAPIService.standardListing()
+      .then((response) => {
+        // Check the response structure and map data accordingly
+        if (response?.data?.details) {
+          setStandardData(response?.data?.details);
+        }
+        setLoading(false);
+
+        setSnackData({
+          show: true,
+          message:
+            response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+          type: "success",
+        });
+      })
+      .catch((errResponse) => {
+        setLoading(false);
+        setSnackData({
+          show: true,
+          message:
+            errResponse?.error?.message ||
+            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          type: "error",
+        });
+      });
+  };
+
+
   const handlechatUpdate = (data) => {
     console.log("data", data);
 
@@ -125,9 +158,88 @@ const ProjectView = () => {
     UpdateProjectDetails(updatedResponse, false);
   };
 
+  const parseApiResponse = (response) => {
+    // Split the response by '---' to separate sections
+    const sections = response.split('---').slice(1); // Skip the first "Title" section
+    // console.log("sections",sections)
+  
+    // Check if the last section is the Summary and ensure it's handled correctly
+    const lastSection = sections[sections.length - 1]?.trim();
+  
+    // If the last section starts with "Summary:", we explicitly name it
+    if (lastSection?.startsWith("Summary:")) {
+      // Set the last section as Summary with a defined title
+      sections[sections.length - 1] = `**Summary**\n${lastSection}`;
+    }
+    let dataArray=[];
+    // Now process all sections
+    sections.map((section, index) => {
+      let lines = section?.trim()?.split('\n'); // Split the section into lines
+  
+      // Extract and clean the title of the section
+      let title = lines[0]
+        .replace('**', '')      // Remove asterisks around the title
+        .replace(':', '')       // Remove colon after section title
+        .trim();
+        title= title.replace("**","");
+      if(title?.startsWith("Summary"))
+      {
+        lines.push(title.replace("Summary",`${index}.`))
+        lines[0] = title.replace("Summary** ",`${index}.`);
+        
+        title = "Summary";
+      } 
+      else{
+        title = title.replace(`Section ${index + 1}`, '')?.trim();
+      }   
+     
+      // Process the remaining lines as "points" and clean the list
+      const points = lines.slice(1).map(line => dataArray.push(line.replace(/^\d+\./, '')?.trim()));
+      
+  
+      // console.log("title",title);
+      // console.log("points",points);x
+  
+      return { title, points };
+    });
+
+    return dataArray;
+  };
+
+
   const runComplianceAssessmenet = async (query) =>{
     setLoading(true);
-    ProjectApiService.projectComplianceAssessment(query)
+    let file=null;
+    projectData?.documents.forEach((document) => {
+      let { documenttype, name, path } = document;
+      if(documenttype === FORM_LABEL.PROJECT_DOCUMENT)
+      {
+       file = path;
+      }
+    });
+
+    const regex = /\/([^/]+)$/; // Match the part after the last "/"
+
+    const match = file?.match(regex);
+
+    const payload = new FormData();
+    payload.append("imageKey", match?.[1]);
+
+    // const payload = {
+    //   imageKey :match?.[1]
+    // };
+
+    const data = parseApiResponse(query);
+    
+    ProjectApiService.projectDocumentUpload(payload)
+      .then((response) => {
+        setLoading(false);
+
+        let payload1 = {
+          "requirements":data,
+        }
+
+        ProjectApiService.projectComplianceAssessment(payload1)
       .then((response) => {
         // setSnackData({
         //   show: true,
@@ -169,12 +281,41 @@ const ProjectView = () => {
         });
         setLoading(false);
       });
+
+
+
+        // UpdateProjectDetails(updatedResponse, true);
+      })
+      .catch((errResponse) => {
+        setSnackData({
+          show: true,
+          message:
+            errResponse?.error?.message ||
+            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          type: "error",
+        });
+        setLoading(false);
+      });
+
+
+    
   };
 
   const runChecklkistCRT = async () => {
-    
+
+    const fileName= standardData.find((data) => data?.standard_name === projectData?.regulatory_standard).standard_url;
+   
+    const regex = /\/([^/]+)$/; // Match the part after the last "/"
+
+    const match = fileName.match(regex);
+
+    const payload = new FormData();
+    payload.append("imageKey", match?.[1]);
+    // const payload = {
+    //   imageKey :match[1]
+    // };
     setLoading(true);
-    const payload = {};
+
     ProjectApiService.projectStandardChecklist(payload)
       .then((response) => {
         console.log("response", response);
@@ -221,7 +362,18 @@ const ProjectView = () => {
   };
 
   const runChecklistAPI = async () => {
-    const payload = {};
+
+    const fileName= standardData.find((data) => data?.standard_name === projectData?.regulatory_standard).standard_url;
+   
+    const regex = /\/([^/]+)$/; // Match the part after the last "/"
+
+    const match = fileName.match(regex);
+
+    const payload = new FormData();
+    payload.append("imageKey", match?.[1]);
+    // const payload = {
+    //   imageKey :match[1]
+    // };
     setChatloading(true);
     ProjectApiService.projectUploadStandardChat(payload)
       .then((response) => {

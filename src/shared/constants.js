@@ -38,7 +38,8 @@ export const API_ERROR_MESSAGE = {
   NO_FILE_SELECTED: "No file selected",
   INCORRECT_EMAIL:"Email Id is not valid",
   INVALID_OTP:"Invalid OTP",
-  VERIFY_OTP:"Error occurred while verifying OTP."
+  VERIFY_OTP:"Error occurred while verifying OTP.",
+  CUSTOM_REGULATORY_SINGLE_FILE_ONLY : "You can upload only one Standard document",
 
 };
 

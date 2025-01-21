@@ -61,21 +61,25 @@ const _projectChat = (query)=>{
   return BaseApiService.get(`/api/v1/chat/askQuestion?user_question=${query}`, null, null);
 }
 
-const _projectComplianceAssessment = (query)=>{
-  return BaseApiService.get(`/api/v1/chat/runComplainceAssessment?requirements=${query}`, null, null);
+const _projectComplianceAssessment = (payload1)=>{
+  return BaseApiService.post(`/api/v1/chat/runComplainceAssessment`, null, payload1);
 }
 
 
 const _projectUploadStandardChat = (payload) => {
-  return BaseApiService.post(`/api/v1/chat/uploadStandardChat`, null, payload);
+  // return BaseApiService.post(`/api/v1/chat/uploadStandardChat`, null, payload);
+  return BaseApiService.post(`/api/v2/chat/uploadStandardChat`, null, payload);
 };
 
 const _projectStandardChecklist = (payload) => {
-  return BaseApiService.post(`/api/v1/chat/uploadStandardCheckList`, null, payload);
+  // return BaseApiService.post(`/api/v1/chat/uploadStandardCheckList`, null, payload);
+  return BaseApiService.post(`/api/v2/chat/uploadStandardCheckList`, null, payload);
+
 };
 
-
-
+const _projectDocumentUpload = (payload) => {
+  return BaseApiService.post(`/api/v2/chat/uploadProjectDocs`, null, payload);
+};
 
 export const ProjectApiService = {
   projectCreate: _projectCreate,
@@ -87,6 +91,6 @@ export const ProjectApiService = {
   projectUploadStandardChat : _projectUploadStandardChat,
   projectStandardChecklist : _projectStandardChecklist,
   projectComplianceAssessment : _projectComplianceAssessment,
-
+  projectDocumentUpload:_projectDocumentUpload,
 
 };
