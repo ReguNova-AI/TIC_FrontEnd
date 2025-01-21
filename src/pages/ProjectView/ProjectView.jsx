@@ -251,11 +251,12 @@ const ProjectView = () => {
         setLoading(false);
 
         const updatedResponse = { ...projectData };
+        const previousData = {...projectData};
         updatedResponse.complianceAssesment = response?.data?.data;
         updatedResponse.no_of_runs = updatedResponse?.no_of_runs + 1;
         updatedResponse.status = "In Progress";
 
-        const newHistory = createHistoryObject(data, previousData,"assessmentRun");
+        const newHistory = createHistoryObject(projectData, previousData,"assessmentRun");
         setHistoryData((prevState) => {
           const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
           // After the state update, include the updated history in the updatedResponse
@@ -327,24 +328,8 @@ const ProjectView = () => {
         });
         // SetProjectData(response?.data?.details[0]);
         setLoading(false);
-
-        const updatedResponse = { ...projectData };
-        updatedResponse.checkListResponse = response?.data?.data;
-        updatedResponse.no_of_runs = updatedResponse.no_of_runs + 1;
-        updatedResponse.status = "In Progress";
-
-        const newHistory = createHistoryObject(data, previousData,"checklistRun");
-        setHistoryData((prevState) => {
-          const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
-          // After the state update, include the updated history in the updatedResponse
-          const updatedResponseWithHistory = { ...updatedResponse, history: updatedHistory };
-          
-          // You can also call UpdateProjectDetails here, using the updated response with history
-          // setLoading(true);
-          UpdateProjectDetails(updatedResponseWithHistory, false);
-      
-          return { history: updatedHistory }; // Update state with the new history array
-        });
+        handleCRTUpdate(response);
+       
 
 
         // UpdateProjectDetails(updatedResponse, true);
@@ -361,8 +346,29 @@ const ProjectView = () => {
       });
   };
 
+  const handleCRTUpdate = (response)=>{
+    const updatedResponse = { ...projectData };
+    const previousData ={...projectData};
+    updatedResponse.checkListResponse = response?.data?.data;
+    updatedResponse.no_of_runs = updatedResponse.no_of_runs + 1;
+    updatedResponse.status = "In Progress";
+
+    const newHistory = createHistoryObject(projectData, previousData,"checklistRun");
+    setHistoryData((prevState) => {
+      const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
+      // After the state update, include the updated history in the updatedResponse
+      const updatedResponseWithHistory = { ...updatedResponse, history: updatedHistory };
+      
+      // You can also call UpdateProjectDetails here, using the updated response with history
+      // setLoading(true);
+      UpdateProjectDetails(updatedResponseWithHistory, false);
+  
+      return { history: updatedHistory }; // Update state with the new history array
+    });
+  }
+
   const runChecklistAPI = async () => {
-    
+
     const fileName= standardData.find((data) => data?.standard_name === projectData?.regulatory_standard)?.standard_url;
    
     const regex = /\/([^/]+)$/; // Match the part after the last "/"
