@@ -86,9 +86,20 @@ export default function DashboardDefault() {
       </Grid> */}
      
       {userRole === "Super Admin" ?
+      <>
       <Grid item xs={12} md={6} lg={8}>
+        <Box sx={{bgcolor:"white", border:"1px solid #eeeeee", borderRadius:"10px",boxShadow:"rgb(228, 228, 228) 6px 12px 20px"}}>
       <BarChart />
+      </Box>
       </Grid>
+      <Grid item xs={12} md={6} lg={4}>
+     
+      <AnalyticEcommerce title="Organization Count" count="$35,078" graphic={true}/>
+      <br/>
+      <AnalyticEcommerce title="Total Users" count="$35,078" graphic={true}/>
+      </Grid>
+      </>
+      
       :
       <>
       <Grid item md={8} sx={{ display: { sm: 'none', md: 'block', lg: 'none' } }} />
