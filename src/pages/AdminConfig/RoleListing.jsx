@@ -42,7 +42,8 @@ const RoleListing = () => {
           const newData = response?.data?.details.map((role) => ({
             role_id: role.role_id,
             role_name: role.role_name, 
-            permissions:role.permissions
+            permissions:role.permissions,
+            role_desc:role.role_desc
           }));
           setData(newData);
           setFilteredData(newData);
@@ -106,6 +107,13 @@ const RoleListing = () => {
       filterSearch: true,
       onFilter: (value, record) =>
         record.role_name.toLowerCase().includes(value.toLowerCase()),
+    },
+    {
+      title: LISTING_PAGE.DESCRIPTION,
+      dataIndex: "role_desc",
+      key: "role_desc",
+      render: (text) => text, // Directly display the role_name
+      
     },
     // {
     //   title: LISTING_PAGE.ACTION,

@@ -106,6 +106,7 @@ export const LISTING_PAGE = Object.freeze({
   ORG_WEBSITE:"Website",
   ORG_ADDRESS:"Address",
   ROLE:"Role",
+  DESCRIPTION:"Description",
   FILE_UPLOADED:"File Uploaded",
   PERMISSION_NAME:"Permission Name",
   PERMISSION_DESC:"Description",
