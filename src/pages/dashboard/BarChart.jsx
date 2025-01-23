@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as echarts from 'echarts';
-import { DashboardApiService } from '../../services/api/dashboardAPIService';
+import { DashboardApiService } from 'services/api/dashboardAPIService';
+// import { DashboardApiService } from '../../services/api/dashboardAPIService';
 
 const BarChart = ({data}) => {
   // Create a reference to the chart container

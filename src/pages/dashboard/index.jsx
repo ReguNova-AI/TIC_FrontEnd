@@ -89,7 +89,7 @@ export default function DashboardDefault() {
       <>
       <Grid item xs={12} md={6} lg={8}>
         <Box sx={{bgcolor:"white", border:"1px solid #eeeeee", borderRadius:"10px",boxShadow:"rgb(228, 228, 228) 6px 12px 20px"}}>
-      <BarChart />
+      {/* <BarChart /> */}
       </Box>
       </Grid>
       <Grid item xs={12} md={6} lg={4}>
