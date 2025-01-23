@@ -163,7 +163,7 @@ const Listing = () => {
 
   // Handle search with debounce
   const handleSearch = (value) => {
-    const searchText = value.toLowerCase();
+    const searchText = value?.toLowerCase();
     setSearchText(searchText);
   };
 
@@ -175,12 +175,12 @@ const Listing = () => {
     return data.filter((item) => {
       // console.log("statusFilter",statusFilter,filterStatusValue)
       const matchesStatus =
-        statusFilter.length === 0 || statusFilter.includes(filterStatusValue);
+        statusFilter.length === 0 || statusFilter?.includes(filterStatusValue);
       const matchesIndustry =
-        industryFilter.length === 0 || industryFilter.includes(item.industry);
+        industryFilter.length === 0 || industryFilter?.includes(item.industry);
       const matchesSearchText =
-        item.project_name.toLowerCase().includes(debouncedSearchText) ||
-        item.project_no.toString().includes(debouncedSearchText);
+        item?.project_name?.toLowerCase()?.includes(debouncedSearchText) ||
+        item?.project_no?.toString()?.includes(debouncedSearchText);
 
       return matchesStatus && matchesIndustry && matchesSearchText;
     });
@@ -261,7 +261,7 @@ const Listing = () => {
       },
       filterSearch: true,
       onFilter: (value, record) =>
-        record.project_name.toLowerCase().includes(value.toLowerCase()),
+        record?.project_name?.toLowerCase().includes(value?.toLowerCase()),
     },
     {
       title: LISTING_PAGE.PROJECT_No,

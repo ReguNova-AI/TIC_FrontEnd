@@ -133,7 +133,7 @@ apiResponse = data;
       </Card>
 
       {/* Modal Popup */}
-      <Dialog open={openModal} onClose={handleCloseModal} fullWidth maxWidth="lg">
+      <Dialog open={openModal} onClose={handleCloseModal} fullWidth maxWidth="lg" style={{zIndex:"999999"}}>
         <DialogTitle>File Details</DialogTitle>
         <DialogContent>
           <MuiBox sx={{ width: '100%' }}>

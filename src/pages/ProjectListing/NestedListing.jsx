@@ -12,6 +12,7 @@ import OutlinedInput from "@mui/material/OutlinedInput";
 import InputLabel from "@mui/material/InputLabel";
 import InputAdornment from "@mui/material/InputAdornment";
 import {SearchOutlined} from "@ant-design/icons";
+import projectIcon from "../../assets/images/icons/projectIcon3.svg"
 
 
 const NestedListing = ({ data }) => {
@@ -48,14 +49,17 @@ const NestedListing = ({ data }) => {
       title: LISTING_PAGE.PROJECT_NAME,
       dataIndex: 'project_name',
       key: 'project_name',
-      render: (text, record) => (
+      render: (text, record) => {return(
+        <>
+        <img src={projectIcon} width="20px" style={{verticalAlign:"middle",marginRight:"10px"}}/>
         <a
           onClick={() => handleNavigateToProject(record.project_id)}
           style={{ color: "#2ba9bc", cursor: "pointer" }}
         >
           {record.project_name}
         </a>
-      ),
+        </>
+      )},
     },
     {
       title: LISTING_PAGE.PROJECT_No,

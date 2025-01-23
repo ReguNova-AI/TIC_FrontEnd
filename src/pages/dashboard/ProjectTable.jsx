@@ -132,9 +132,12 @@ export default function ProjectTable() {
   const order = 'asc';
   const orderBy = 'index';
   const navigate = useNavigate();
+  let info = JSON.parse(sessionStorage.getItem("userDetails"));
+  const userRole = info?.[0]?.role_name;
+  const userId = info?.[0]?.user_id;
 
   const [data, setData] = useState([]);
-  const [viewMode, setViewMode] = useState("card");
+  const [viewMode, setViewMode] = useState(userRole !== "Org Super Admin" && userRole === "Admin" ? "card": "list");
   const [loading, setLoading] = useState(true);
   
   const [snackData, setSnackData] = useState({
@@ -142,6 +145,8 @@ export default function ProjectTable() {
     message: "",
     type: "error",
   });
+
+  
 
   useEffect(() => {
     fetchData();
@@ -222,7 +227,8 @@ export default function ProjectTable() {
 
   return (
     <Box style={{padding:"10px 20px", minHeight:"428px",alignContent: data.length > 0 ? "normal" :"space-around"}}>
-      {data.length > 0 &&
+      <Typography variant="h5">Recent Projects</Typography>
+      {data.length > 0 && userRole !== "Org Super Admin" && userRole !== "Admin" &&
       <Box style={{float:"right"}}>
       <ToggleButtons onViewModeChange={handleViewModeChange} viewSelected="card" />
       </Box>

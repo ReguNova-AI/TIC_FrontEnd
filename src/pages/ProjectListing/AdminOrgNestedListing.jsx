@@ -70,13 +70,13 @@ const AdminOrgNestedListing = ({data}) => {
       title: 'Start Date',
       dataIndex: 'created_at',
       key: 'created_at',
-      render: (created_at) => created_at ? formatDate(created_at) : "",
+      render: (created_at) => created_at && created_at != "null" ? formatDate(created_at) : "",
     },
     {
       title: 'Last Run',
       dataIndex: 'last_run',
       key: 'last_run',
-      render: (last_run) => last_run ? formatDate(last_run) : "",
+      render: (last_run) => last_run && last_run != "null" ? formatDate(last_run) : "",
     },
     {
       title: 'Status',

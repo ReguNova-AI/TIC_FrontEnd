@@ -17,9 +17,9 @@ const StyledPage = styled(animated.main)`
   }
 `;
 
-const CountView = () => {
-  const [data, setData] = useState({});
-  const [updatedCards, setUpdatedCards] = useState([]); // Now using state for updated cards
+const CountView = ({data}) => {
+  
+  const [updatedCards, setUpdatedCards] = useState([]);// Now using state for updated cards
   const [snackData, setSnackData] = useState({
     show: false,
     message: "",
@@ -35,8 +35,11 @@ const CountView = () => {
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    // fetchData();
+     // Update the cards with the new counts from API response
+     const updatedCards = updateCardCounts([...content.cards1], data);
+     setUpdatedCards(updatedCards); // Update the state with new card data
+  }, [data]);
 
   // Function to update the card counts before passing them to CardGrid
   const updateCardCounts = (cards, apiResponse) => {
@@ -49,26 +52,6 @@ const CountView = () => {
     });
   };
 
-  const fetchData = () => {
-    const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
-    const id = userdetails?.[0]?.user_id;
-
-    ProjectApiService.projectCounts(id)
-      .then((response) => {
-        setData(response.data.details);
-        // Update the cards with the new counts from API response
-        const updatedCards = updateCardCounts([...content.cards1], response?.data?.details);
-        setUpdatedCards(updatedCards); // Update the state with new card data
-      })
-      .catch((errResponse) => {
-        setSnackData({
-          show: true,
-          message: errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
-        setUpdatedCards([...content.cards1])
-      });
-  };
 
   return (
     <StyledPage className="page">
