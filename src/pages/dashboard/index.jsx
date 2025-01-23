@@ -26,7 +26,7 @@ import ChatBotView from '../../components/chatbot/ChatbotView';
 
 import SessionService from '../../services/SessionService';
 import { STORAGE_KEYS } from '../../shared/constants';
-import BarChart from './BarChart';
+// import BarChart from './BarChart';
 
 
 
