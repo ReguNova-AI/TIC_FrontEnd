@@ -97,6 +97,10 @@ const MainRoutes = {
       path : 'profileDetails',
       element: <ProtectedRoute><ProfileDetails/></ProtectedRoute>
     },
+    {
+      path : 'reports',
+      element: <ProtectedRoute><ErrorPage/></ProtectedRoute>
+    },
     
     
   ]

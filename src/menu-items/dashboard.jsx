@@ -65,7 +65,7 @@ const dashboard = {
       id: 'downloadReports',
       title: 'Download Reports',
       type: 'collapse',
-      url: '',
+      url: '/reports',
       icon: icons.LineChartOutlined,
       breadcrumbs: false,
       access:["all"],
