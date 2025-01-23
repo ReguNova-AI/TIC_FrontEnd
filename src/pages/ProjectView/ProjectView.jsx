@@ -150,8 +150,6 @@ const ProjectView = () => {
 
 
   const handlechatUpdate = (data) => {
-    console.log("data", data);
-
     const updatedResponse = { ...projectData };
     updatedResponse.chatResponse = { data: data };
     setChatResponse(data[data.length - 1]?.answer);
@@ -194,7 +192,7 @@ const ProjectView = () => {
       }   
      
       // Process the remaining lines as "points" and clean the list
-      const points = lines.slice(1).map(line => dataArray.push(line.replace(/^\d+\./, '')?.trim()));
+      const points = lines.slice(1).map(line => line !== "" && line !== null && dataArray.push(line.replace(/^\d+\./, '')?.trim()));
       
   
       // console.log("title",title);
@@ -230,10 +228,10 @@ const ProjectView = () => {
     // };
 
     const data = parseApiResponse(query);
-    
+
     ProjectApiService.projectDocumentUpload(payload)
       .then((response) => {
-        setLoading(false);
+        // setLoading(false);
 
         let payload1 = {
           "requirements":data,
@@ -252,7 +250,7 @@ const ProjectView = () => {
 
         const updatedResponse = { ...projectData };
         const previousData = {...projectData};
-        updatedResponse.complianceAssesment = response?.data?.data;
+        updatedResponse.complianceAssesment = {data:response?.data?.data};
         updatedResponse.no_of_runs = updatedResponse?.no_of_runs + 1;
         updatedResponse.status = "In Progress";
 
@@ -282,9 +280,6 @@ const ProjectView = () => {
         });
         setLoading(false);
       });
-
-
-
         // UpdateProjectDetails(updatedResponse, true);
       })
       .catch((errResponse) => {

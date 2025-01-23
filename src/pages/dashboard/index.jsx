@@ -26,6 +26,7 @@ import ChatBotView from '../../components/chatbot/ChatbotView';
 
 import SessionService from '../../services/SessionService';
 import { STORAGE_KEYS } from '../../shared/constants';
+import BarChart from './BarChart';
 
 
 
@@ -52,7 +53,9 @@ const actionSX = {
 
 export default function DashboardDefault() {
   let info = JSON.parse(sessionStorage.getItem("userDetails"));
-  sessionStorage.removeItem('resetFlow');
+  const userRole = info?.[0]?.role_name;
+
+  sessionStorage.removeItem('resetFlow');  
   
   return (
     <Grid container rowSpacing={4.5} columnSpacing={2.75}>
@@ -82,7 +85,12 @@ export default function DashboardDefault() {
         <AnalyticEcommerce title="Failed" count="10" isLoss color="error" graphic={true}/>
       </Grid> */}
      
-
+      {userRole === "Super Admin" ?
+      <Grid item xs={12} md={6} lg={8}>
+      <BarChart />
+      </Grid>
+      :
+      <>
       <Grid item md={8} sx={{ display: { sm: 'none', md: 'block', lg: 'none' } }} />
 
       {/* row 2 */}
@@ -120,6 +128,8 @@ export default function DashboardDefault() {
           <MonthlyBarChart />
         </MainCard>
       </Grid>
+      </>
+      }
       <Grid item xs={12} md={12} lg={12}>
         <Box
           sx={{
