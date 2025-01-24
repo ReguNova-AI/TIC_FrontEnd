@@ -33,6 +33,8 @@ import { ProjectApiService } from "services/api/ProjectAPIService";
 import content from "../../components/cards/statistics/content";
 import { useEffect, useState } from "react";
 import UserWeeklyBarChart from "./UserWeeklyBarChart";
+import { DashboardApiService } from "services/api/DashboardAPIService";
+import PieChart from "./PieChart";
 
 // import ChatBotView from 'components/chatbot/ChatbotView';
 
@@ -70,6 +72,33 @@ export default function DashboardDefault() {
   useEffect(() => {
     fetchData();
   }, []);
+
+
+  const [chartData,setChartData] = useState([]);
+  const [pieChartData,setPieChartData]= useState([]);
+
+  useEffect(() => {
+    fetchData();
+    if(userRole === "Super Admin")
+    {
+      fetchDataForCharts();
+    }
+  }, []);
+
+  const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
+    const id = userdetails?.[0]?.user_id;
+
+    const fetchDataForCharts = ()=>{
+    DashboardApiService.topprojectIndustryVise()
+      .then((response) => {
+        setChartData(response?.data?.industryCount);
+        setPieChartData(response?.data?.orgCount)
+       
+      })
+      .catch((errResponse) => {
+       
+      });
+    }
 
   const fetchData = () => {
     ProjectApiService.projectCounts(userId)
@@ -131,9 +160,9 @@ export default function DashboardDefault() {
               }}
             >
               <Typography variant="h5" style={{ padding: "25px 0px 0px 24px" }}>
-                Organization wise project counts
+                Industry wise project counts
               </Typography>
-              <BarChart />
+              <BarChart data={chartData}/>
             </Box>
           </Grid>
           <Grid item xs={12} md={6} lg={3}>
@@ -152,6 +181,22 @@ export default function DashboardDefault() {
               iconRender={true}
               icon={UserIcon}
             />
+          </Grid>
+          <Grid item xs={12} md={7} lg={7} >
+          <Box
+              sx={{
+                bgcolor: "white",
+                border: "1px solid #eeeeee",
+                borderRadius: "10px",
+                boxShadow: "rgb(228, 228, 228) 6px 12px 20px",
+              }}
+            >
+              <Typography variant="h5" style={{ padding: "25px 0px 0px 24px" }}>
+                Organisation wise project counts
+              </Typography>
+              <PieChart data={pieChartData} />
+            </Box>
+          
           </Grid>
         </>
       ) : (

@@ -6,33 +6,13 @@ import { DashboardApiService } from 'services/api/DashboardAPIService';
 const BarChart = ({data}) => {
   // Create a reference to the chart container
   const chartRef = useRef(null);
-  const [chartData,setChartData] = useState([]);
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
-    const id = userdetails?.[0]?.user_id;
-
-    const fetchData = ()=>{
-
-    
-    DashboardApiService.topprojectIndustryVise()
-      .then((response) => {
-        setChartData(response?.data)
-       
-      })
-      .catch((errResponse) => {
-       
-      });
-    }
+ 
 
   useEffect(() => {
     // Initialize the chart when the component is mounted
     const myChart = echarts.init(chartRef.current);
-    const industries = chartData.map(item => item.industry_name);
-    const projectCounts = chartData.map(item => item.project_count);
+    const industries = data.map(item => item.industry_name);
+    const projectCounts = data.map(item => item.project_count);
 
     // Chart options
     const option = {
@@ -90,7 +70,7 @@ const BarChart = ({data}) => {
       myChart.dispose();
       window.removeEventListener('resize', () => myChart.resize());
     };
-  }, [chartData]);
+  }, [data]);
 
   return (
     <div
