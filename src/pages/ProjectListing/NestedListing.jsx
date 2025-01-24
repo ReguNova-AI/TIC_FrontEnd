@@ -51,7 +51,7 @@ const NestedListing = ({ data }) => {
       key: 'project_name',
       render: (text, record) => {return(
         <>
-        <img src={projectIcon} width="20px" style={{verticalAlign:"middle",marginRight:"10px"}}/>
+        <img src={projectIcon} width="30px" style={{verticalAlign:"middle",marginRight:"10px"}}/>
         <a
           onClick={() => handleNavigateToProject(record.project_id)}
           style={{ color: "#2ba9bc", cursor: "pointer" }}
