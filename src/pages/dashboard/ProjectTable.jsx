@@ -137,7 +137,7 @@ export default function ProjectTable() {
   const userId = info?.[0]?.user_id;
 
   const [data, setData] = useState([]);
-  const [viewMode, setViewMode] = useState(userRole !== "Org Super Admin" && userRole === "Admin" ? "card": "list");
+  const [viewMode, setViewMode] = useState(userRole !== "Org Super Admin" && userRole !== "Admin" ? "card": "list");
   const [loading, setLoading] = useState(true);
   
   const [snackData, setSnackData] = useState({
@@ -182,10 +182,12 @@ export default function ProjectTable() {
   const fetchData = () => {
     ProjectApiService.projectListing()
       .then((response) => {
+        let newData = null;
         
         // console.log("response",response)
-
-        const newData = response?.data?.details.map((project, index) => {
+        if(userRole === "Org Super Admin" || userRole === "Admin")
+        {
+         newData = response?.data?.map((project, index) => {
           return createData(
             project.project_id, // index
             project.project_no, // project_no
@@ -199,6 +201,24 @@ export default function ProjectTable() {
             project.status // status
           );
         });
+      }
+      else
+      {
+         newData = response?.data?.details.map((project, index) => {
+          return createData(
+            project.project_id, // index
+            project.project_no, // project_no
+            project.project_name, // project_name
+            project.no_of_runs, // runs
+            project.industry_name, // industry
+            project.mapping_standards, // mapping_no
+            project.regulatory_standard,
+            project.created_at !== "null" && project.created_at !== "" ? formatDate(project.created_at) : "", // start_date
+            project.last_run !== "null" && project.last_run !== "" ? formatDate(project.last_run) : "", // last_run
+            project.status // status
+          );
+        });
+      }
 
         const limitedData = newData.slice(0, 6);
 

@@ -32,6 +32,7 @@ import UserIcon from "../../assets/images/icons/userIcon4.svg";
 import { ProjectApiService } from "services/api/ProjectAPIService";
 import content from "../../components/cards/statistics/content";
 import { useEffect, useState } from "react";
+import UserWeeklyBarChart from "./UserWeeklyBarChart";
 
 // import ChatBotView from 'components/chatbot/ChatbotView';
 
@@ -89,6 +90,7 @@ export default function DashboardDefault() {
       });
   };
 
+  
   return (
     <Grid container rowSpacing={4.5} columnSpacing={2.75}>
       {/* row 1 */}
@@ -191,18 +193,9 @@ export default function DashboardDefault() {
               />
             ) : (
               <>
-                <Grid
-                  container
-                  alignItems="center"
-                  justifyContent="space-between"
-                >
-                  <Grid item>
-                    <Typography variant="h5">Overview</Typography>
-                  </Grid>
-                  <Grid item />
-                </Grid>
+                
                 <MainCard
-                  sx={{ mt: 2 }}
+                 
                   content={false}
                   style={{ boxShadow: "6px 12px 20px #e4e4e4" }}
                 >
@@ -214,7 +207,7 @@ export default function DashboardDefault() {
                       {/* <Typography variant="h3">$7,650</Typography> */}
                     </Stack>
                   </Box>
-                  <MonthlyBarChart />
+                  <UserWeeklyBarChart/>
                 </MainCard>
               </>
             )}
