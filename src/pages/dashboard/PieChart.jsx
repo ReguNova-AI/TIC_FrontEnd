@@ -70,7 +70,7 @@ const PieChart = ({data}) => {
   return (
     <div
       ref={chartRef}
-      style={{ width: '100%', height: '450px' }} // Set the width and height as needed
+      style={{ width: '100%', minHeight: '550px' }} // Set the width and height as needed
     />
   );
 };

@@ -182,7 +182,7 @@ export default function DashboardDefault() {
               icon={UserIcon}
             />
           </Grid>
-          <Grid item xs={12} md={7} lg={7} >
+          <Grid item xs={12} md={8} lg={8} >
           <Box
               sx={{
                 bgcolor: "white",
@@ -252,11 +252,20 @@ export default function DashboardDefault() {
                       {/* <Typography variant="h3">$7,650</Typography> */}
                     </Stack>
                   </Box>
-                  <UserWeeklyBarChart/>
+                  <UserWeeklyBarChart />
                 </MainCard>
               </>
             )}
           </Grid>
+          {/* <Grid item xs={12} md={8} lg={8}>
+          <MainCard
+                 
+                 content={false}
+                 style={{ boxShadow: "6px 12px 20px #e4e4e4" }}
+               >
+         
+          </MainCard>
+          </Grid> */}
         </>
       )}
       <Grid item xs={12} md={12} lg={12}>
