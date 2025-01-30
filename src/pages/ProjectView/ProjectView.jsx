@@ -299,11 +299,10 @@ const ProjectView = () => {
 
   const runChecklkistCRT = async () => {
 
-    const fileName= standardData.find((data) => data?.standard_name === projectData?.regulatory_standard).standard_url;
-   
+    let fileName= standardData.find((data) => data?.standard_name === projectData?.regulatory_standard).standard_url;
+    let customFileName = projectData?.documents?.filter(f => f.documenttype === FORM_LABEL.CUSTOM_REGULATORY).map(f => f.path);
     const regex = /\/([^/]+)$/; // Match the part after the last "/"
-
-    const match = fileName.match(regex);
+    const match = customFileName?.length > 0 ? customFileName?.[0].match(regex) : fileName.match(regex);
 
     const payload = new FormData();
     payload.append("imageKey", match?.[1]);
