@@ -714,7 +714,7 @@ const ProjectView = () => {
                           sx={{ mt: 2 }}
                           onClick={() => projectData.checkListResponse ? runComplianceAssessmenet(projectData.checkListResponse) : runChecklkistCRT() }
                         >
-                         {projectData.checkListResponse ? "Compliance Assessment" : "Generate Checklist"} 
+                         {projectData.checkListResponse ? BUTTON_LABEL.RUN_PROJECT : BUTTON_LABEL.RUN_CHECKLIST} 
                         </Button>
                       </Box>
                     </Grid>

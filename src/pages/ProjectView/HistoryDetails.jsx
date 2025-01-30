@@ -57,7 +57,7 @@ const HistoryDetails = ({data}) => {
       if (key === 'assessmentRun' && value) {
         return (
           <div key={key}>
-            <strong>Run Compliance Assessment</strong>
+            <strong>Run Assessment</strong>
           </div>
         );
       }
