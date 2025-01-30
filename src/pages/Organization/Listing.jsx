@@ -8,14 +8,14 @@ import {
   Popover,
   Button,
   Spin,
-  Modal,Avatar
+  Modal,
+  Avatar,
 } from "antd";
 import { Chip } from "@mui/material";
 import FormControl from "@mui/material/FormControl";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import InputLabel from "@mui/material/InputLabel";
 import InputAdornment from "@mui/material/InputAdornment";
-import Stack from "@mui/material/Stack";
 import MultiSelectWithChip from "components/form/MultiSelectWithChip"; // Assuming this is a custom component
 import {
   SearchOutlined,
@@ -23,11 +23,8 @@ import {
   FileFilled,
 } from "@ant-design/icons";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ProjectApiService } from "services/api/ProjectAPIService";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
-import CardView from "./CardView";
-import ToggleButtons from "./ToggleButton";
 import {
   API_ERROR_MESSAGE,
   LISTING_PAGE,
@@ -38,12 +35,11 @@ import {
   FORM_LABEL,
   HEADING,
 } from "shared/constants";
-import { formatDate, getStatusChipProps } from "shared/utility";
 import { OrganisationApiService } from "services/api/OrganizationAPIService";
 import OrgCreation from "./OrgCreation";
-import { ApartmentOutlined } from '@ant-design/icons';
 import addorgIcon from "../../assets/images/icons/addOrg.svg";
-import Orgicon from "../../assets/images/icons/orgListing.svg"
+import Orgicon from "../../assets/images/icons/orgListing.svg";
+import { UserApiService } from "services/api/UserAPIService";
 
 
 const OrganizationListing = () => {
@@ -55,6 +51,11 @@ const OrganizationListing = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [statusFilter, setStatusFilter] = useState([]);
   const [industryFilter, setIndustryFilter] = useState([]);
+  const [sectorFilter, setSectorFilter] = useState([]);
+  const [nameFilter, setNameFilter] = useState(""); // For sorting by name
+  const [industryData, setIndustryData] = useState([]);
+  const [sectorData, setSectorData] = useState([]);
+  const [sortOrder, setSortOrder] = useState("ascend"); // 'ascend' or 'descend'
   const [popoverVisible, setPopoverVisible] = useState(false); // Control popover visibility
   const [viewMode, setViewMode] = useState("list"); // 'list' or 'card'
   const [currentPage, setCurrentPage] = useState(1); // Track the current page
@@ -70,6 +71,8 @@ const OrganizationListing = () => {
 
   useEffect(() => {
     fetchData();
+    fetchSectorDetails();
+    fetchIndustryDetails();
   }, []);
 
   const createData = (
@@ -97,7 +100,6 @@ const OrganizationListing = () => {
   const fetchData = () => {
     OrganisationApiService.organisationListing()
       .then((response) => {
-        // On success, you can add any additional logic here
         setSnackData({
           show: true,
           message:
@@ -145,52 +147,97 @@ const OrganizationListing = () => {
       });
   };
 
-  // Handle search with debounce
+  const fetchIndustryDetails = () => {
+    UserApiService.industryDetails()
+      .then((response) => {
+        setSnackData({
+          show: true,
+          message:
+            response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+          type: "success",
+        });
+        const industryNames = response?.data?.details.map(item => item.industry_name);
+        setIndustryData(industryNames || []); // Use an empty array as fallback
+      })
+      .catch((errResponse) => {
+        setSnackData({
+          show: true,
+          message:
+            errResponse?.error?.message ||
+            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          type: "error",
+        });
+      });
+  };
+
+  const fetchSectorDetails = () => {
+    UserApiService.sectorDetails()
+      .then((response) => {
+        setSnackData({
+          show: true,
+          message:
+            response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+          type: "success",
+        });
+        const sectors = response?.data?.details.map(item => item.sector_name);
+        setSectorData(sectors || []);
+      })
+      .catch((errResponse) => {
+        setSnackData({
+          show: true,
+          message:
+            errResponse?.error?.message ||
+            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          type: "error",
+        });
+      });
+  };
+
   const handleSearch = (value) => {
     const searchText = value.toLowerCase();
     setSearchText(searchText);
   };
 
-  // Debounced search input (500ms delay)
   const debouncedSearchText = useDebounce(searchText, 500);
 
-  // Centralized filtering logic
   const filterData = () => {
-    return data.filter((item) => {
-      const matchesStatus =
-        statusFilter.length === 0 || statusFilter.includes(filterStatusValue);
-      const matchesIndustry =
-        industryFilter.length === 0 || industryFilter.includes(item.industry);
+    let filtered = data.filter((item) => {
+      const matchesStatus = statusFilter.length === 0 || statusFilter.includes(filterStatusValue);
+      const matchesIndustry = industryFilter.length === 0 || industryFilter.some(ind => item.industry.includes(ind));
+      const matchesSector = sectorFilter.length === 0 || sectorFilter.includes(item.sector);
       const matchesSearchText =
         item.org_name.toLowerCase().includes(debouncedSearchText) ||
         item.org_email.toString().includes(debouncedSearchText);
 
-      return matchesStatus && matchesIndustry && matchesSearchText;
+      return matchesStatus && matchesSector && matchesIndustry && matchesSearchText;
     });
+
+    if (sortOrder === "ascend") {
+      filtered.sort((a, b) => a.org_name.localeCompare(b.org_name));
+    } else if (sortOrder === "descend") {
+      filtered.sort((a, b) => b.org_name.localeCompare(a.org_name));
+    }
+
+    return filtered;
   };
 
-  // Effect for updating filtered data based on filters
   useEffect(() => {
     setFilteredData(filterData());
-  }, [statusFilter, industryFilter, debouncedSearchText]);
+  }, [statusFilter, industryFilter, sectorFilter, debouncedSearchText, sortOrder]);
 
-  // Handle view mode switch
   const handleViewModeChange = (newViewMode) => {
     setViewMode(newViewMode); // Update view mode (list or card)
   };
 
-  // Handle project navigation
   const handleNavigateToOrganization = (org_id) => {
     // navigate(`/projectView/${org_id}`, { state: { org_id } });
   };
 
-  // Handle pagination change
   const handlePaginationChange = (page, pageSize) => {
     setCurrentPage(page);
     setPageSize(pageSize);
   };
 
-  // Pagination logic
   const paginatedData = filteredData.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
@@ -204,12 +251,44 @@ const OrganizationListing = () => {
     setIsModalVisible(false);
     fetchData();
   };
+
   const handleClose = () => {
     setIsModalVisible(false);
     fetchData();
   };
 
-  // Table columns
+  const filterPopoverContent = (
+    <div style={{ padding: "10px", minWidth: "200px" }}>
+      <div>
+        <label><b>Sector</b></label>
+        <MultiSelectWithChip
+          value={sectorFilter}
+          onChange={setSectorFilter}
+          options={sectorData}
+          placeholder="Select Sector"
+        />
+      </div>
+      <div style={{ marginTop: "10px" }}>
+        <label><b>Industry</b></label>
+        <MultiSelectWithChip
+          value={industryFilter}
+          onChange={setIndustryFilter}
+          options={industryData}
+          placeholder="Select Industry"
+        />
+      </div>
+      <div style={{ marginTop: "10px" }}>
+        <label><b>Sort Organization Name</b></label>
+        <br />
+        <br />
+        <Space direction="horizontal">
+          <Button onClick={() => setSortOrder("ascend")} type={sortOrder === "ascend" ? "primary" : "default"}>Ascending</Button>
+          <Button onClick={() => setSortOrder("descend")} type={sortOrder === "descend" ? "primary" : "default"}>Descending</Button>
+        </Space>
+      </div>
+    </div>
+  );
+
   const columns = [
     {
       title: LISTING_PAGE.ORG_NAME,
@@ -217,17 +296,15 @@ const OrganizationListing = () => {
       key: "org_name",
       render: (text, record) => (
         <>
-        {record.org_logo ?
-          <Avatar
-            sx={{ width: 40, height: 40 }}
-            alt={record.org_name}
-            src={
-              record.org_logo
-            }
-          />
-          :
-          <img src={Orgicon} width="32px" style={{verticalAlign:"middle"}}/>
-    }
+          {record.org_logo ?
+            <Avatar
+              sx={{ width: 40, height: 40 }}
+              alt={record.org_name}
+              src={record.org_logo}
+            />
+            :
+            <img src={Orgicon} width="32px" style={{verticalAlign:"middle"}} />
+          }
           <span style={{ marginLeft: 10 }}>
             <a
               onClick={() => handleNavigateToOrganization(record.index)}
@@ -255,11 +332,6 @@ const OrganizationListing = () => {
       key: "org_url",
     },
     {
-      title: LISTING_PAGE.ORG_ADDRESS,
-      dataIndex: "org_address",
-      key: "org_address",
-    },
-    {
       title: LISTING_PAGE.SECTOR,
       dataIndex: "sector",
       key: "sector",
@@ -268,6 +340,19 @@ const OrganizationListing = () => {
       title: LISTING_PAGE.INDUSTRY,
       dataIndex: "industry",
       key: "industry",
+      // render: (industry) => (
+      //   <>
+      //     {industry?.map((item, index) => (
+      //       <Chip label={item} key={index} sx={{ marginBottom: 1 }} />
+      //     ))}
+      //   </>
+      // ),
+    },
+    {
+      title: LISTING_PAGE.ORG_ADDRESS,
+      dataIndex: "org_address",
+      key: "org_address",
+      render: (address) => <span>{address || GENERIC_DATA_LABEL.NO_DATA}</span>,
     },
   ];
 
@@ -276,7 +361,7 @@ const OrganizationListing = () => {
       <ConfigProvider
         renderEmpty={() => <Empty description={GENERIC_DATA_LABEL.NO_DATA} />}
       >
-        <Space
+      <Space
           direction="vertical"
           style={{
             width: "100%",
@@ -307,48 +392,40 @@ const OrganizationListing = () => {
               {/* <FileFilled style={{ marginRight: 4 }} /> */}
               <img src={addorgIcon} width="18px" />
               {BUTTON_LABEL.CREATE_ORGANIZATION}
-            </Button>
-
-            {/* Search Input and Popover Filter */}
+            </Button>       
+            
             <Space>
-              {/* <ToggleButtons onViewModeChange={handleViewModeChange} /> */}
-              <FormControl fullWidth>
-                <InputLabel htmlFor="outlined-adornment-search">
-                  {FORM_LABEL.SEARCH}
-                </InputLabel>
-                <OutlinedInput
-                  id="outlined-adornment-search"
-                  startAdornment={
-                    <InputAdornment position="start">
-                      <SearchOutlined />
-                    </InputAdornment>
-                  }
-                  label={FORM_LABEL.SEARCH}
-                  onChange={(e) => handleSearch(e.target.value)}
-                />
-              </FormControl>
+             <FormControl fullWidth>
+          <InputLabel htmlFor="outlined-adornment-search">{FORM_LABEL.SEARCH}</InputLabel>
+          <OutlinedInput
+            id="outlined-adornment-search"
+            startAdornment={
+              <InputAdornment position="start">
+                <SearchOutlined />
+              </InputAdornment>
+            }
+            label={FORM_LABEL.SEARCH}
+            onChange={(e) => handleSearch(e.target.value)}
+          />
+        </FormControl>
+        
+        <Popover
+          content={filterPopoverContent}
+          title={BUTTON_LABEL.FILTER}
+          visible={popoverVisible}
+          onVisibleChange={setPopoverVisible}
+          trigger="click"
+        >
+          <Button
+            type="primary"
+            style={{ background: "#003a8c", color: "#ffffff" }}
+          >
+            {BUTTON_LABEL.FILTER}
+          </Button>
+        </Popover>
 
-              {/* <Popover
-                content={filterPopoverContent}
-                title={BUTTON_LABEL.FILTER}
-                visible={popoverVisible}
-                onVisibleChange={setPopoverVisible}
-                trigger="click"
-              >
-                <Button
-                  type="primary"
-                  style={{ background: "#003a8c", color: "#ffffff" }}
-                >
-                  {BUTTON_LABEL.FILTER}
-                </Button>
-              </Popover> */}
-              <Button>
-                <DownloadOutlined />
-              </Button>
-            </Space>
-          </Space>
-          {/* Displaying Table or Card View */}
-          {viewMode === "list" ? (
+      </Space>
+      </Space>
             <Table
               columns={columns}
               dataSource={paginatedData}
@@ -356,24 +433,22 @@ const OrganizationListing = () => {
               pagination={{
                 current: currentPage,
                 pageSize,
-                total: filteredData?.length,
+                total: filteredData.length,
                 onChange: handlePaginationChange,
               }}
             />
-          ) : (
-            <CardView data={paginatedData} />
-          )}
-        </Space>
-        <Modal
-          title={HEADING.CREATE_ORG}
-          visible={isModalVisible}
-          onCancel={handleModalClose}
-          footer={null}
-          width={800}
-        >
-          <OrgCreation onHandleClose={(e) => handleClose()} />
-        </Modal>
-        <Snackbar
+            </Space>
+      {/* Modal for Organization Creation */}
+      <Modal
+        title={HEADING.CREATE_ORG}
+        visible={isModalVisible}
+        onCancel={handleModalClose}
+        footer={null}
+        width={800}
+      >
+         <OrgCreation onHandleClose={(e) => handleClose()} />
+      </Modal>
+    <Snackbar
         style={{top:"80px"}}
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
           open={snackData.show}
@@ -387,12 +462,10 @@ const OrganizationListing = () => {
             {snackData.message}
           </Alert>
         </Snackbar>
-      </ConfigProvider>
-    </Spin>
+        </ConfigProvider>
+  </Spin>
   );
 };
-
-// Custom hook for debouncing input value
 function useDebounce(value, delay) {
   const [debouncedValue, setDebouncedValue] = useState(value);
 
