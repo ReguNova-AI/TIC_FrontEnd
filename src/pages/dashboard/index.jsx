@@ -29,6 +29,8 @@ import { API_ERROR_MESSAGE, STORAGE_KEYS } from "../../shared/constants";
 import BarChart from "./BarChart";
 import orgIcon from "../../assets/images/icons/orgIcon4.svg";
 import UserIcon from "../../assets/images/icons/userIcon4.svg";
+import UserIcon2 from "../../assets/images/icons/userIcon6.svg";
+
 import { ProjectApiService } from "services/api/ProjectAPIService";
 import content from "../../components/cards/statistics/content";
 import { useEffect, useState } from "react";
@@ -68,6 +70,8 @@ export default function DashboardDefault() {
   const [countData, setCountData] = useState({});
   const [orgCount, setOrgCount] = useState("");
   const [userCount, setUserCount] = useState("");
+  const [inactiveUserCount, setInactiveUserCount] = useState("");
+
 
   useEffect(() => {
     fetchData();
@@ -105,7 +109,8 @@ export default function DashboardDefault() {
       .then((response) => {
         setCountData(response?.data?.details);
         setOrgCount(response?.data?.orgCount?.[0]?.count);
-        setUserCount(response?.data?.userCount?.[0]?.count);
+        setUserCount(response?.data?.activeUserCount?.[0]?.count);
+        setInactiveUserCount(response?.data?.inactiveUserCount?.[0]?.count);
       })
       .catch((errResponse) => {
         setSnackData({
@@ -175,12 +180,22 @@ export default function DashboardDefault() {
             />
             <br />
             <AnalyticEcommerce
-              title="Total Users"
+              title="Total Active Users"
               count={userCount || 0}
               graphic={false}
               iconRender={true}
               icon={UserIcon}
             />
+            <br />
+            <AnalyticEcommerce
+              title="Total Inactive Users"
+              count={inactiveUserCount || 0}
+              graphic={false}
+              iconRender={true}
+              icon={UserIcon2}
+            />
+
+
           </Grid>
           <Grid item xs={12} md={8} lg={8} >
           <Box
