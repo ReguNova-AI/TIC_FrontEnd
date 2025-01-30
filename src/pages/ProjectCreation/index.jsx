@@ -130,7 +130,7 @@ const MyForm = () => {
   };
 
   const handleMultiple = (selectedIds)=>{
-    const selectedMembers = selectedIds.map((userId) => {
+    const selectedMembers = selectedIds?.map((userId) => {
       const member = userData.find((user) => user.user_id === userId);
       return member ? { user_id: member.user_id, user_name: `${member.user_first_name} ${member.user_last_name}`, user_email: member.user_email, user_profile: member.user_profile } : null;
     }).filter(Boolean);      
@@ -331,7 +331,7 @@ const MyForm = () => {
                   onChange={handleSelectChange}
                   renderValue={(selected) => (
                     <Box sx={{ display: "flex", flexWrap: "wrap" }}>
-                      {selected.map((value) => {
+                      {selected?.map((value) => {
                         const member = userData.find(
                           (member) => member.user_id === value
                         );
@@ -346,7 +346,7 @@ const MyForm = () => {
                     </Box>
                   )}
                 >
-                  {userData.map((member) => (
+                  {userData?.map((member) => (
                     <MenuItem key={member.user_id} value={member.user_id}>
                       {member.user_first_name} {member.user_last_name} - {member.user_email}
                     </MenuItem>
@@ -358,7 +358,7 @@ const MyForm = () => {
             {/* Render Profile Cards for Selected Team Members */}
             <Grid item xs={12} sm={12}>
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
-                {formData.teamMembers.map((selectedId) => {
+                {formData.teamMembers?.map((selectedId) => {
                   const member = userData.find(
                     (user) => user.user_id === selectedId
                   );

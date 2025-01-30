@@ -798,7 +798,7 @@ const ProjectView = () => {
         </Box>
 
         {/* File Upload Modal */}
-        <Dialog open={openModal} onClose={() => setOpenModal(false)}>
+        <Dialog open={openModal} onClose={() => setOpenModal(false)} style={{zIndex:"999"}}>
           <DialogTitle>Upload Documents</DialogTitle>
           <DialogContent>
             <DropZoneFileUpload

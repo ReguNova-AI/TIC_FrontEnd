@@ -122,7 +122,7 @@ const Listing = () => {
 
         setOrgLevelData(response?.data?.details);
 
-        const newData = response?.data?.details.map((project, index) => {
+        const newData = response?.data?.details?.map((project, index) => {
           return createData(
             project.project_id, // index
             project.project_no, // project_no
@@ -313,7 +313,7 @@ const Listing = () => {
         // Return the mapped JSX elements
         return (
           <>
-            {statusArray.map((tag, index) => {
+            {statusArray?.map((tag, index) => {
               const { title, color, borderColor } = getStatusChipProps(tag);
 
               return (

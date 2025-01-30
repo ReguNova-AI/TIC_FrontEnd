@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { Modal, Select, message } from "antd"; // Import Modal and Select from Ant Design
+import { Modal, Select, message, Progress,Popconfirm } from "antd"; // Import Modal, Select, and Progress from Ant Design
 import {
   FileImageOutlined,
   FilePdfOutlined,
@@ -8,6 +8,7 @@ import {
   FileTextOutlined,
   DeleteFilled,
   FileExcelOutlined,
+  CloseCircleOutlined,
 } from "@ant-design/icons";
 import UploadIcon from "../../assets/images/icons/upload.svg";
 import {
@@ -112,7 +113,6 @@ const DropZoneFileUpload = (props) => {
 
     FileUploadApiService.fileDelete(filepayload)
       .then((response) => {
-        // On success, you can add any additional logic here
         setSnackData({
           show: true,
           message:
@@ -144,7 +144,7 @@ const DropZoneFileUpload = (props) => {
     let filesWithType = null;
     setShowModal(false);
     if (props.typeSelect === true) {
-      filesWithType = tempFiles.map((file) => ({
+      filesWithType = tempFiles && tempFiles?.map((file) => ({
         path: file.path,
         relativePath: file.relativePath,
         name: file.name,
@@ -153,7 +153,7 @@ const DropZoneFileUpload = (props) => {
         documenttype: selectedTypeValue,
       }));
     } else {
-      filesWithType = files.map((file) => ({
+      filesWithType = files && files?.map((file) => ({
         path: file.path,
         relativePath: file.relativePath,
         name: file.name,
@@ -174,22 +174,33 @@ const DropZoneFileUpload = (props) => {
       message.error(API_ERROR_MESSAGE.PLEASE_SELECT_DOC_TYPE);
       return;
     }
-    // sortFile(selectedType);
     setShowModal(false);
     renderFileData(tempFiles);
+  };
 
-    // Close the modal after selection
+  const cancel = (e) => {
+    console.log(e);
+    // message.error('Click on No');
   };
 
   const renderFileData = async (files) => {
+
+    const checkFileType = uploadedFiles?.map(data=>data.documenttype === FORM_LABEL.CUSTOM_REGULATORY)
+    
+    if (selectedType === FORM_LABEL.CUSTOM_REGULATORY || (checkFileType?.includes(true) && selectedType !==FORM_LABEL.PROJECT_DOCUMENT)) {
+      if (files.length > 1 || checkFileType?.includes(true)) {
+        setError(API_ERROR_MESSAGE.CUSTOM_REGULATORY_SINGLE_FILE_ONLY);
+        return;
+      }
+    }
+
     const processedFiles = await Promise.all(
-      files.map(async (file) => {
+      files && files?.map(async (file) => {
         let uploadedLink = null;
 
         // Create a new FileReader to read the file as Base64
         const reader = new FileReader();
 
-        // Return a promise that resolves when the file is read
         const fileDataUrl = await new Promise((resolve, reject) => {
           reader.onloadend = () => resolve(reader.result);
           reader.onerror = reject; // Handle any errors while reading the file
@@ -204,10 +215,24 @@ const DropZoneFileUpload = (props) => {
             type: fileType,
           };
 
-          const response = await FileUploadApiService.fileUpload(filepayload);
+          const response = await FileUploadApiService.fileUpload(filepayload, {
+            // Track upload progress
+            onUploadProgress: (progressEvent) => {
+              const percent = Math.round(
+                (progressEvent.loaded * 100) / progressEvent.total
+              );
+
+              setUploadedFiles((prevFiles) =>
+              prevFiles && prevFiles?.map((uploadedFile) =>
+                  uploadedFile.name === file.name
+                    ? { ...uploadedFile, progress: percent }
+                    : uploadedFile
+                )
+              );
+            },
+          });
 
           if (response) {
-            // On success, you can add any additional logic here
             setSnackData({
               show: true,
               message:
@@ -221,53 +246,46 @@ const DropZoneFileUpload = (props) => {
             name: file.name,
             size: file.size,
             type: file.type,
-            documenttype: props.typeSelect === false ? props.maxFile === 0 ? "Project Document" : "" : selectedType,
-            path: response.data.details[0], // Add or override the path with the uploaded link
-            uploadedOn:new Date(),
+            documenttype:
+              props.typeSelect === false
+                ? props.maxFile === 0
+                  ? "Project Document"
+                  : ""
+                : selectedType,
+            path: response.data.details[0],
+            uploadedOn: new Date(),
+            progress: 100, // After successful upload, set progress to 100%
           };
         } catch (errResponse) {
           console.log("errResponse", errResponse);
-          // You can return a fallback object or null to handle errors
           return null;
         }
       })
     );
 
-    console.log("processedFiles", processedFiles);
-
-    // Filter out any null values from errors before updating the state
     const validFiles = processedFiles.filter((file) => file !== null);
 
-    // Once all files are processed, update the state
     setUploadedFiles((prevFiles) => [...prevFiles, ...validFiles]);
   };
 
-  const sendToApi = async (value) => {};
-  // Handle the file upload
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
     onDrop: (newFiles) => {
       const allFiles = [...uploadedFiles, ...newFiles];
       const totalSize = getTotalSize(allFiles);
+      console.log("selectedType",selectedType,"sdfsd",FORM_LABEL.CUSTOM_REGULATORY)
 
-      if (selectedType === FORM_LABEL.CUSTOM_REGULATORY) {
-        // Check if more than 1 file is selected
-        if (newFiles.length > 1) {
-          setError(API_ERROR_MESSAGE.CUSTOM_REGULATORY_SINGLE_FILE_ONLY);
-          return; // Prevent further processing if the error is set
-        }
-      }
+      
 
-      // Read files as binary and process them
-      const checklistfile = document.getElementById("fileInput").files;
-      // console.log("checklistfile",checklistfile)
+       // Read files as binary and process them
+       const checklistfile = document.getElementById("fileInput").files;
+   
       if (allFiles.length > MAX_FILES_COUNT && MAX_FILES_COUNT !== 0) {
         setError(
-          `You can upload up to ${MAX_FILES_COUNT} ${MAX_FILES_COUNT > 1 ? "files" : "file"} only.`
+          `You can upload up to ${MAX_FILES_COUNT} ${MAX_FILES_COUNT === 1 ? "file" : "files"} only.`
         );
         return;
       }
 
-      // Check if total size exceeds 2MB
       if (totalSize > 200 * 1024 * 1024) {
         setError(API_ERROR_MESSAGE.FILE_SIZE_200MB);
       } else {
@@ -286,42 +304,86 @@ const DropZoneFileUpload = (props) => {
         }
         setError("");
       }
-    },
-  });
+  },
+});
 
-  const files = uploadedFiles.map((file) => (
-    <li
-      key={file.name}
-      style={{ display: "flex", alignItems: "center", marginBottom: "10px" }}
-    >
-      <span style={{ marginRight: "10px" }}>{getFileIcon(file)}</span>
-      <span style={{ flex: 1 ,width:"90%"}}>
-      <Tooltip title={file.name} arrow>
-        <span style={{width: "62%", overflow: "hidden", display: "inline-block", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>{file.name}{" "}</span>
-        </Tooltip>
-        <span style={{ color: "grey", padding: "10px", fontSize: "10px" }}>
-          {formatFileSize(file.size)}
-        </span>{" "}
-        <span
-          style={{ marginLeft: "10px", fontSize: "12px", color: "#2ba9bc" }}
+  const files = uploadedFiles?.length >0 && uploadedFiles?.map((file) => (
+          <li
+            key={file.name}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              marginBottom: "10px",
+            }}
+          >
+            <span style={{ marginRight: "10px" }}>{getFileIcon(file)}</span>
+            <span style={{ flex: 1, width: "90%" }}>
+              <Tooltip title={file.name} arrow>
+                <span
+                  style={{
+                    width: "62%",
+                    overflow: "hidden",
+                    display: "inline-block",
+                    whiteSpace: "nowrap",
+                    textOverflow: "ellipsis",
+                    marginBottom:"-10px"
+                  }}
+                >
+                  {file.name}{" "}
+                </span>
+              </Tooltip>
+              <span
+                style={{
+                  color: "grey",
+                  padding: "10px",
+                  fontSize: "10px",
+                }}
+              >
+                {formatFileSize(file.size)}
+              </span>{" "}
+              <span
+                style={{ marginLeft: "10px", fontSize: "12px", color: "#2ba9bc" }}
+              >
+                {file.documenttype && `(${file.documenttype})`}
+              </span>
+              
+              {/* Progress Bar */}
+              {file?.progress !== undefined && (
+                <Progress
+                  percent={file?.progress}
+                  size="small"
+                  style={{ width: "90%", marginTop: "5px" }}
+                  // format={(percent) => `${percent}%`}
+                />
+              )}
+            </span>
+
+            <Popconfirm
+          title={`Delete file`}
+          description="Are you sure you want to delete?"
+          onConfirm={(e) => removeFile(file)}
+          onCancel={cancel}
+          okText="Confirm"
+          cancelText="Cancel"
+          icon={
+              <CloseCircleOutlined
+                style={{
+                  color: "red",
+                }}
+              />
+          }
         >
-          {file.documenttype && `(${file.documenttype})`}
-        </span>
-      </span>
-
-      <button
-        style={{ background: "transparent", border: "none" }}
-        onClick={() => removeFile(file)}
-      >
-        <DeleteFilled style={{ color: "#f5222d" }} />
-      </button>
-    </li>
-  ));
-
-  // Calculate total file size
+            <button
+              style={{ background: "transparent", border: "none" }}
+              // onClick={() => removeFile(file)}
+            >
+              <DeleteFilled style={{ color: "#f5222d" }} />
+            </button>
+            </Popconfirm>
+          </li>
+        ));
   const totalFileSize = getTotalSize(uploadedFiles);
   const formattedTotalFileSize = formatFileSize(totalFileSize);
-
   return (
     <section
       className="container"
@@ -349,7 +411,7 @@ const DropZoneFileUpload = (props) => {
         </p>
       </div>
 
-      {/* Modal for document type selection */}
+      {/* Modal for selecting file type */}
       <Modal
         title={FORM_LABEL.DOCUMENT_TYPE}
         visible={showModal}
@@ -359,7 +421,7 @@ const DropZoneFileUpload = (props) => {
         okButtonProps={{
           disabled: !selectedType, // Disable the OK button if no type is selected
         }}
-      >
+        >
         <Select
           value={selectedType}
           onChange={handleTypeChange}
@@ -381,6 +443,7 @@ const DropZoneFileUpload = (props) => {
         )}
       </Modal>
 
+      {/* Snackbar for success/error messages */}
       {error && <div style={{ color: "red", marginTop: "10px" }}>{error}</div>}
 
       <aside>
@@ -402,7 +465,11 @@ const DropZoneFileUpload = (props) => {
           {snackData.message}
         </Alert>
       </Snackbar>
-    </section>
+     
+
+      {/* File List and Progress Bar */}
+      
+      </section>
   );
 };
 
