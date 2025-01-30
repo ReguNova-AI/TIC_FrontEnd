@@ -278,7 +278,7 @@ const OrganizationListing = () => {
         />
       </div>
       <div style={{ marginTop: "10px" }}>
-        <label><b>Sort Organization Name</b></label>
+        <label><b>Sort Organization Name by:</b></label>
         <br />
         <br />
         <Space direction="horizontal">

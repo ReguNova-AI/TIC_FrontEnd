@@ -31,6 +31,7 @@ function getStyles(name, personName, theme) {
 export default function MultiSelectWithChip(props) {
   const theme = useTheme();
   const [personName, setPersonName] = React.useState([]);
+
   const names =props?.options
 
   // Handle the changes for both selecting and deselecting items

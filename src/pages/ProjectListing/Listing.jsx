@@ -8,6 +8,7 @@ import {
   Popover,
   Button,
   Spin,
+  Radio,
 } from "antd";
 import { Chip } from "@mui/material";
 import FormControl from "@mui/material/FormControl";
@@ -16,11 +17,7 @@ import InputLabel from "@mui/material/InputLabel";
 import InputAdornment from "@mui/material/InputAdornment";
 import Stack from "@mui/material/Stack";
 import MultiSelectWithChip from "components/form/MultiSelectWithChip"; // Assuming this is a custom component
-import {
-  SearchOutlined,
-  DownloadOutlined,
-  FileFilled,
-} from "@ant-design/icons";
+import { SearchOutlined, DownloadOutlined } from "@ant-design/icons";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ProjectApiService } from "services/api/ProjectAPIService";
 import Snackbar from "@mui/material/Snackbar";
@@ -42,8 +39,6 @@ import AdminOrgNestedListing from "./AdminOrgNestedListing";
 import projectIcon from "../../assets/images/icons/projectIcon3.svg";
 import addProjectIcon from "../../assets/images/icons/addProject.svg";
 
-
-
 const Listing = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -52,6 +47,7 @@ const Listing = () => {
   const [searchText, setSearchText] = useState("");
   const [filteredData, setFilteredData] = useState([]);
   const [statusFilter, setStatusFilter] = useState([]);
+  const [statusData, setStatusData] = useState(["In Progress","Draft","Success","Failed"]);
   const [industryFilter, setIndustryFilter] = useState([]);
   const [popoverVisible, setPopoverVisible] = useState(false); // Control popover visibility
   const [viewMode, setViewMode] = useState("list"); // 'list' or 'card'
@@ -65,17 +61,20 @@ const Listing = () => {
     message: "",
     type: "error",
   });
+  const [sortBy, setSortBy] = useState("status"); // Default sorting by status
+  const [sortOrder, setSortOrder] = useState("ascend"); // Default ascending order
 
   useEffect(() => {
     fetchData();
   }, []);
 
-  // Use effect for initializing the status filter based on location state
+  // Effect for initializing the status filter based on location state
   useEffect(() => {
     if (filterStatusValue && filterStatusValue != "Total Project") {
       setStatusFilter([filterStatusValue]); // Set the statusFilter if status is passed
+      setFilteredData(filterData());
     }
-    setFilteredData(filterData());
+    
   }, [filterStatusValue]);
 
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
@@ -110,15 +109,12 @@ const Listing = () => {
   const fetchData = () => {
     ProjectApiService.projectListing()
       .then((response) => {
-        // On success, you can add any additional logic here
         setSnackData({
           show: true,
           message:
             response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
           type: "success",
         });
-
-        // console.log("response",response)
 
         setOrgLevelData(response?.data?.details);
 
@@ -161,21 +157,18 @@ const Listing = () => {
       });
   };
 
-  // Handle search with debounce
   const handleSearch = (value) => {
     const searchText = value?.toLowerCase();
     setSearchText(searchText);
   };
 
-  // Debounced search input (500ms delay)
   const debouncedSearchText = useDebounce(searchText, 500);
 
-  // Centralized filtering logic
   const filterData = () => {
-    return data.filter((item) => {
-      // console.log("statusFilter",statusFilter,filterStatusValue)
+    
+    let filteredData = data.filter((item) => {
       const matchesStatus =
-        statusFilter.length === 0 || statusFilter?.includes(filterStatusValue);
+        statusFilter.length === 0 || statusFilter[0] === "Total Projects" || statusFilter?.includes(item.status);
       const matchesIndustry =
         industryFilter.length === 0 || industryFilter?.includes(item.industry);
       const matchesSearchText =
@@ -184,41 +177,52 @@ const Listing = () => {
 
       return matchesStatus && matchesIndustry && matchesSearchText;
     });
+
+    // Sorting logic based on sortBy state
+    if (sortOrder === "ascend") {
+      filteredData.sort((a, b) => a.project_name.localeCompare(b.project_name));
+    } else if (sortOrder === "descend") {
+      filteredData.sort((a, b) => b.project_name.localeCompare(a.project_name));
+    }
+
+    return filteredData;
   };
 
-  // Effect for updating filtered data based on filters
   useEffect(() => {
     setFilteredData(filterData());
-  }, [statusFilter, industryFilter, debouncedSearchText]);
+  }, [statusFilter, industryFilter, debouncedSearchText, sortBy, sortOrder]);
 
-  // Handle view mode switch
+  useEffect(() => {
+    if(filteredData && filterStatusValue !== "Total Project")
+    {
+      setFilteredData(filterData());
+
+    }
+  }, [data]);
+
   const handleViewModeChange = (newViewMode) => {
-    setViewMode(newViewMode); // Update view mode (list or card)
+    setViewMode(newViewMode);
   };
 
-  // Handle project navigation
   const handleNavigateToProject = (projectNo) => {
     navigate(`/projectView/${projectNo}`, { state: { projectNo } });
   };
 
-  // Handle pagination change
   const handlePaginationChange = (page, pageSize) => {
     setCurrentPage(page);
     setPageSize(pageSize);
   };
 
-  // Pagination logic
   const paginatedData = filteredData.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
-
-  // Filter popover content
   const filterPopoverContent = (
     <div>
       <MultiSelectWithChip
         label="Status"
         value={statusFilter}
+        options={statusData}
         onChange={setStatusFilter}
       />
 
@@ -233,32 +237,48 @@ const Listing = () => {
       ) : (
         ""
       )}
-      <Button type="primary" onClick={() => setPopoverVisible(false)}>
+
+      <div style={{ marginTop: "10px" }}>
+        <label><b>Sort Project Name by:</b></label>
+        <br />
+        <br />
+        <Space direction="horizontal">
+          <Button onClick={() => setSortOrder("ascend")} type={sortOrder === "ascend" ? "primary" : "default"}>Ascending</Button>
+          <Button onClick={() => setSortOrder("descend")} type={sortOrder === "descend" ? "primary" : "default"}>Descending</Button>
+        </Space>
+      </div>
+
+
+      {/* <Button
+        type="primary"
+        onClick={() => setPopoverVisible(false)}
+        style={{ marginTop: "16px" }}
+      >
         Done
-      </Button>
+      </Button> */}
     </div>
   );
 
-  // Table columns
   const columns = [
     {
       title: LISTING_PAGE.PROJECT_NAME,
       dataIndex: "project_name",
       key: "project_name",
-      render: (text, record) => {
-        return (
-          <>
-           <img src={projectIcon} width="30px" style={{verticalAlign:"middle",marginRight:"10px"}}/>
-        <a
-          onClick={() => handleNavigateToProject(record.index)}
-          style={{ color: "#2ba9bc", cursor: "pointer" }}
-        >
-         
-          {text}
-        </a>
+      render: (text, record) => (
+        <>
+          <img
+            src={projectIcon}
+            width="30px"
+            style={{ verticalAlign: "middle", marginRight: "10px" }}
+          />
+          <a
+            onClick={() => handleNavigateToProject(record.index)}
+            style={{ color: "#2ba9bc", cursor: "pointer" }}
+          >
+            {text}
+          </a>
         </>
-        )
-      },
+      ),
       filterSearch: true,
       onFilter: (value, record) =>
         record?.project_name?.toLowerCase().includes(value?.toLowerCase()),
@@ -396,77 +416,80 @@ const Listing = () => {
               alignItems: "center",
             }}
           >
-            {userRole !== "Super Admin" && <Button
-              type="primary"
-              onClick={() => navigate("/createProject")}
-              style={{
-                background: "#2ba9bc",
-                display: "flex",
-                alignItems: "center",
-                borderRadius: "20px",
-              }}
-            >
-              {/* <FileFilled style={{ marginRight: 4 }} /> */}
-              <img src={addProjectIcon} width="20px" />
-              {BUTTON_LABEL.CREATE_PROJECT}
-            </Button>}
+            {userRole !== "Super Admin" && (
+              <Button
+                type="primary"
+                onClick={() => navigate("/createProject")}
+                style={{
+                  background: "#2ba9bc",
+                  display: "flex",
+                  alignItems: "center",
+                  borderRadius: "20px",
+                }}
+              >
+                {/* <FileFilled style={{ marginRight: 4 }} /> */}
+                <img src={addProjectIcon} width="20px" />
+                {BUTTON_LABEL.CREATE_PROJECT}
+              </Button>
+            )}
 
             {/* Search Input and Popover Filter */}
             <Space>
-              {paginatedData.length > 0 &&
+              {
                 userRole !== "Super Admin" &&
                 userRole !== "Org Super Admin" &&
                 userRole !== "Admin" && (
                   <>
-                  <ToggleButtons onViewModeChange={handleViewModeChange} />
-               
-              <FormControl fullWidth>
-                <InputLabel htmlFor="outlined-adornment-search">
-                  {FORM_LABEL.SEARCH}
-                </InputLabel>
-                <OutlinedInput
-                  id="outlined-adornment-search"
-                  startAdornment={
-                    <InputAdornment position="start">
-                      <SearchOutlined />
-                    </InputAdornment>
-                  }
-                  label={FORM_LABEL.SEARCH}
-                  onChange={(e) => handleSearch(e.target.value)}
-                />
-              </FormControl>
+                    <ToggleButtons onViewModeChange={handleViewModeChange} />
 
-              <Popover
-                content={filterPopoverContent}
-                title={BUTTON_LABEL.FILTER}
-                visible={popoverVisible}
-                onVisibleChange={setPopoverVisible}
-                trigger="click"
-              >
-                <Button
-                  type="primary"
-                  style={{ background: "#003a8c", color: "#ffffff" }}
-                >
-                  {BUTTON_LABEL.FILTER}
-                </Button>
-              </Popover>
-              <Button>
-                <DownloadOutlined />
-              </Button>
-              </>
-               )}
+                    <FormControl fullWidth>
+                      <InputLabel htmlFor="outlined-adornment-search">
+                        {FORM_LABEL.SEARCH}
+                      </InputLabel>
+                      <OutlinedInput
+                        id="outlined-adornment-search"
+                        startAdornment={
+                          <InputAdornment position="start">
+                            <SearchOutlined />
+                          </InputAdornment>
+                        }
+                        label={FORM_LABEL.SEARCH}
+                        onChange={(e) => handleSearch(e.target.value)}
+                      />
+                    </FormControl>
+
+                    <Popover
+                      content={filterPopoverContent}
+                      title={BUTTON_LABEL.FILTER}
+                      visible={popoverVisible}
+                      onVisibleChange={setPopoverVisible}
+                      trigger="click"
+                    >
+                      <Button
+                        type="primary"
+                        style={{ background: "#003a8c", color: "#ffffff" }}
+                      >
+                        {BUTTON_LABEL.FILTER}
+                      </Button>
+                    </Popover>
+                    <Button>
+                      <DownloadOutlined />
+                    </Button>
+                  </>
+                )}
             </Space>
           </Space>
           {/* Displaying Table or Card View */}
 
-          {viewMode === "list" ? 
-          userRole === "Super Admin" ? <AdminOrgNestedListing data={orgLevelData} /> :(
-            userRole === "Org Super Admin" || userRole === "Admin" ? (
+          {viewMode === "list" ? (
+            userRole === "Super Admin" ? (
+              <AdminOrgNestedListing data={orgLevelData} />
+            ) : userRole === "Org Super Admin" || userRole === "Admin" ? (
               <NestedListing data={orgLevelData} />
             ) : (
               <Table
                 columns={columns}
-                dataSource={paginatedData}
+                dataSource={filteredData}
                 rowKey="index"
                 pagination={{
                   current: currentPage,
@@ -481,7 +504,7 @@ const Listing = () => {
           )}
         </Space>
         <Snackbar
-        style={{top:"80px"}}
+          style={{ top: "80px" }}
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
           open={snackData.show}
           autoHideDuration={3000}
