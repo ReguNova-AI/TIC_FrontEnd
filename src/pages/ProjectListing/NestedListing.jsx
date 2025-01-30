@@ -13,6 +13,7 @@ import InputLabel from "@mui/material/InputLabel";
 import InputAdornment from "@mui/material/InputAdornment";
 import {SearchOutlined} from "@ant-design/icons";
 import projectIcon from "../../assets/images/icons/projectIcon3.svg"
+import userListingIcon from "../../assets/images/icons/userListingicon2.svg";
 
 
 const NestedListing = ({ data }) => {
@@ -134,17 +135,23 @@ const NestedListing = ({ data }) => {
         let avatarSrc = value.profile || "";
         return (
           <>
+          {avatarSrc && avatarSrc !== "null" ? (
             <Avatar
               key={value.user_id}
               sx={{ width: 40, height: 40 }}
               alt={value.user_first_name}
             >
-              {avatarSrc ? (
+             
                 <img src={avatarSrc} alt={value.user_first_name} style={{ borderRadius: '50%' }} />
+                </Avatar>
               ) : (
-                <UserOutlined style={{color:"black"}}/> // Fallback to icon if no image
-              )}
-            </Avatar>
+                <img
+                src={userListingIcon}
+                width="32px"
+                style={{ verticalAlign: "middle" }}
+              />
+              )} 
+            
             <span style={{ marginLeft: "20px" }}>{value.name}</span>
           </>
         );

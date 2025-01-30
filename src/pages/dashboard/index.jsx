@@ -244,13 +244,23 @@ export default function DashboardDefault() {
           </Grid>
           <Grid item xs={12} md={5} lg={4}>
             {userRole === "Org Super Admin" || userRole === "Admin" ? (
+              <>
               <AnalyticEcommerce
-                title="Total Users"
+                title="Total Active Users"
                 count={userCount || 0}
                 graphic={false}
                 iconRender={true}
                 icon={UserIcon}
               />
+              <br />
+            <AnalyticEcommerce
+              title="Total Inactive Users"
+              count={inactiveUserCount || 0}
+              graphic={false}
+              iconRender={true}
+              icon={UserIcon2}
+            />
+            </>
             ) : (
               <>
                 

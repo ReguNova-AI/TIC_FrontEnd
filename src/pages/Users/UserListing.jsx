@@ -617,7 +617,7 @@ const UserListing = () => {
                     onChange={handleChange}
                     aria-label="basic tabs example"
                   >
-                    <Tab label="Actiive Users" {...a11yProps(0)} />
+                    <Tab label="Active Users" {...a11yProps(0)} />
                     <Tab label="Inactive Users" {...a11yProps(1)} />
                   </Tabs>
                 </Box>

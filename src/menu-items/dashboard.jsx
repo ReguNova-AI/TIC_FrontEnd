@@ -61,24 +61,24 @@ const dashboard = {
       access:["all"],
       superAdminAccess:false
     },
-    {
-      id: 'downloadReports',
-      title: 'Download Reports',
-      type: 'collapse',
-      url: '/reports',
-      icon: icons.LineChartOutlined,
-      breadcrumbs: false,
-      access:["all"],
-      superAdminAccess:true
-      // children: [
-      //   {
-      //     id: 2,
-      //     title: 'Reports',
-      //     url: '/dashboard/sub',
-      //     icon: icons.ProductOutlined,
-      //   },
-      // ],
-    },
+    // {
+    //   id: 'downloadReports',
+    //   title: 'Download Reports',
+    //   type: 'collapse',
+    //   url: '/reports',
+    //   icon: icons.LineChartOutlined,
+    //   breadcrumbs: false,
+    //   access:["all"],
+    //   superAdminAccess:true
+    //   // children: [
+    //   //   {
+    //   //     id: 2,
+    //   //     title: 'Reports',
+    //   //     url: '/dashboard/sub',
+    //   //     icon: icons.ProductOutlined,
+    //   //   },
+    //   // ],
+    // },
     {
       id: 'users',
       title: 'Users',
