@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Space, Table, ConfigProvider, Empty, Button, Spin } from "antd";
+import { Space, Table, ConfigProvider, Empty, Button, Spin, Tooltip,Popconfirm } from "antd";
 import FormControl from "@mui/material/FormControl";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import InputLabel from "@mui/material/InputLabel";
 import InputAdornment from "@mui/material/InputAdornment";
-import { DeleteFilled, SearchOutlined } from "@ant-design/icons";
+import { CloseCircleOutlined,DeleteFilled, SearchOutlined } from "@ant-design/icons";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
@@ -15,6 +15,8 @@ import {
   GENERIC_DATA_LABEL,
   FORM_LABEL,
 } from "shared/constants";
+import trashIcon from "../../assets/images/icons/trash4.svg";
+
 
 const StandardListing = () => {
   const [data, setData] = useState([]);
@@ -40,6 +42,7 @@ const StandardListing = () => {
         // Check the response structure and map data accordingly
         if (response?.data?.details) {
           setData(response?.data?.details);
+          setCurrentPage(1);
           setFilteredData(response?.data?.details);
         }
         setLoading(false);
@@ -111,24 +114,68 @@ const StandardListing = () => {
       onFilter: (value, record) =>
         record.standard_name.toLowerCase().includes(value.toLowerCase()),
     },
-    // {
-    //   title: LISTING_PAGE.ACTION,
-    //   key: "action",
-    //   render: (_, record) => (
-    //     <Button
-    //       style={{ border: "none" }}
-    //       onClick={() => handleDelete(record.sector_id)}
-    //     >
-    //       <DeleteFilled />
-    //     </Button>
-    //   ),
-    // },
+    {
+      title: LISTING_PAGE.ACTION,
+      key: "action",
+      render: (_, record) => (
+        <Popconfirm
+          title={`Delete  ${record.standard_name} Standard`}
+          description="Are you sure you want to delete?"
+          onConfirm={(e) => handleDelete(record.standard_id)}
+          onCancel={cancel}
+          okText="Confirm"
+          cancelText="Cancel"
+          icon={
+              <CloseCircleOutlined
+                style={{
+                  color: "red",
+                }}
+              />
+          }
+        >
+          <Tooltip title="Delete Standard" >
+          <img src={trashIcon} width="22px"/>
+        </Tooltip>
+        </Popconfirm>
+
+        
+      ),
+    },
   ];
 
+  const cancel = (e) => {
+    console.log(e);
+    // message.error('Click on No');
+  };
+
   // Handle delete action
-  const handleDelete = (sectorId) => {
+  const handleDelete = (id) => {
     // Implement your delete logic here
-    console.log("Delete sector with id:", sectorId);
+    AdminConfigAPIService.standardDelete(id)
+      .then((response) => {
+        // Check the response structure and map data accordingly
+        setLoading(false);
+
+        setSnackData({
+          show: true,
+          message:
+            response?.message || API_SUCCESS_MESSAGE.STANDARD_DELETED,
+          type: "success",
+        });
+        fetchData();
+      })
+      .catch((errResponse) => {
+        setLoading(false);
+        console.log("errResponse",errResponse.response?.data?.message)
+        setSnackData({
+          show: true,
+          message:
+          errResponse.response?.data?.message ==="This regulatory is in use" ? "Can't delete this standard, it is already used in project creation" :
+            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          type: "error",
+        });
+      });
+
   };
 
   return (

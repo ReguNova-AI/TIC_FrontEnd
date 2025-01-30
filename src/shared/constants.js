@@ -26,8 +26,13 @@ export const API_SUCCESS_MESSAGE = {
   UPDATED_SUCCESSFULLY: "Data updated successfully",
   DOWNLOADED_SUCCESSFULLY: "File downloaded successfully",
   DELETED_SUCCESSFULLY:"Deleted successfully",
-  UPLOADED_SUCCESSFULLY:"Uploaded successfully"
-  
+  UPLOADED_SUCCESSFULLY:"Uploaded successfully",
+  SECTOR_DELETED:"Sector deleted successfully",
+  USER_DISABLED:"User access is disabled successfully",
+  USER_ENABLED:"User access is enabled successfully",
+  INDUSTRY_DELETED:"Industry deleted successfully",
+  ROLE_DELETED:"Role deleted successfully",
+  STANDARD_DELETED:"Standard deleted successfully",
 };
 
 export const API_ERROR_MESSAGE = {

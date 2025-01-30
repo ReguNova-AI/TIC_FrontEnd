@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Space, Table, ConfigProvider, Empty, Button, Spin } from "antd";
+import { Space, Table, ConfigProvider, Empty, Button, Spin, Tooltip,Popconfirm } from "antd";
 import FormControl from "@mui/material/FormControl";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import InputLabel from "@mui/material/InputLabel";
 import InputAdornment from "@mui/material/InputAdornment";
-import { DeleteFilled, SearchOutlined } from "@ant-design/icons";
+import { CloseCircleOutlined,DeleteFilled, SearchOutlined } from "@ant-design/icons";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
@@ -15,6 +15,8 @@ import {
   GENERIC_DATA_LABEL,
   FORM_LABEL,
 } from "shared/constants";
+import trashIcon from "../../assets/images/icons/trash4.svg";
+
 
 const RoleListing = () => {
   const [data, setData] = useState([]);
@@ -46,6 +48,7 @@ const RoleListing = () => {
             role_desc:role.role_desc
           }));
           setData(newData);
+          setCurrentPage(1);
           setFilteredData(newData);
         }
         setLoading(false);
@@ -115,26 +118,68 @@ const RoleListing = () => {
       render: (text) => text, // Directly display the role_name
       
     },
-    // {
-    //   title: LISTING_PAGE.ACTION,
-    //   key: "action",
-    //   render: (_, record) => (
-    //     <Button
-    //       style={{ border: "none" }}
-    //       onClick={() => handleDelete(record.sector_id)}
-    //     >
-    //       <DeleteFilled />
-    //     </Button>
-    //   ),
-    // },
+    {
+      title: LISTING_PAGE.ACTION,
+      key: "action",
+      render: (_, record) => (
+        <Popconfirm
+          title={`Delete ${record.role_name} Role`}
+          description="Are you sure you want to delete?"
+          onConfirm={(e) => handleDelete(record.role_id)}
+          onCancel={cancel}
+          okText="Confirm"
+          cancelText="Cancel"
+          icon={
+              <CloseCircleOutlined
+                style={{
+                  color: "red",
+                }}
+              />
+          }
+        >
+          <Tooltip title="Delete Role" >
+          <img src={trashIcon} width="22px"/>
+        </Tooltip>
+        </Popconfirm>
+
+        
+      ),
+    },
   ];
 
-  // Handle delete action
-  const handleDelete = (sectorId) => {
-    // Implement your delete logic here
-    console.log("Delete sector with id:", sectorId);
+  const cancel = (e) => {
+    console.log(e);
+    // message.error('Click on No');
   };
 
+  // Handle delete action
+  const handleDelete = (id) => {
+    // Implement your delete logic here
+    AdminConfigAPIService.roleDelete(id)
+      .then((response) => {
+        // Check the response structure and map data accordingly
+        setLoading(false);
+
+        setSnackData({
+          show: true,
+          message:
+            response?.message || API_SUCCESS_MESSAGE.ROLE_DELETED,
+          type: "success",
+        });
+        fetchData();
+      })
+      .catch((errResponse) => {
+        setLoading(false);
+        setSnackData({
+          show: true,
+          message:
+          errResponse.response?.data?.message ==="This role is in use" ? "Can't delete this role, it is associated with a user" :
+            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          type: "error",
+        });
+      });
+
+  };
   return (
     <Spin tip="Loading" size="large" spinning={loading}>
       <ConfigProvider

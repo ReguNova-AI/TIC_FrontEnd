@@ -51,6 +51,12 @@ const _roleDetails = () => {
   return BaseApiService.get(`/api/v1/roles`, null, null);
 };
 
+const _userAccess = (id,active)=>{
+  const payload = {id:id}
+  return BaseApiService.post(`/api/v1/users/${id}/updateActive?is_active=${active}`, null, payload);
+  
+}
+
 export const UserApiService = {
   userCreate: _userCreate,
   userUpdate: _userUpdate,
@@ -61,4 +67,5 @@ export const UserApiService = {
   industryDetails: _industryDetails,
   userEmailCheck: _userEmailCheck,
   roleDetails: _roleDetails,
+  userAccess:_userAccess,
 };

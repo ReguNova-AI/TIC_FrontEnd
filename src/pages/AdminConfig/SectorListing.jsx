@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Space, Table, ConfigProvider, Empty, Button, Spin } from "antd";
+import { Space, Table, ConfigProvider, Empty, Button, Spin, Tooltip,Popconfirm } from "antd";
 import FormControl from "@mui/material/FormControl";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import InputLabel from "@mui/material/InputLabel";
 import InputAdornment from "@mui/material/InputAdornment";
-import { DeleteFilled, SearchOutlined } from "@ant-design/icons";
+import { CloseCircleOutlined, DeleteFilled, SearchOutlined } from "@ant-design/icons";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
@@ -15,6 +15,7 @@ import {
   GENERIC_DATA_LABEL,
   FORM_LABEL,
 } from "shared/constants";
+import trashIcon from "../../assets/images/icons/trash4.svg";
 
 const SectorListing = () => {
   const [data, setData] = useState([]);
@@ -44,6 +45,7 @@ const SectorListing = () => {
             sector_name: sector.sector_name, // Ensure sector_name is included
           }));
           setData(newData);
+          setCurrentPage(1);
           setFilteredData(newData);
         }
         setLoading(false);
@@ -89,6 +91,11 @@ const SectorListing = () => {
     setPageSize(pageSize);
   };
 
+  const cancel = (e) => {
+    console.log(e);
+    // message.error('Click on No');
+  };
+
   // Pagination logic
   const paginatedData = filteredData.slice(
     (currentPage - 1) * pageSize,
@@ -106,24 +113,71 @@ const SectorListing = () => {
       onFilter: (value, record) =>
         record.sector_name.toLowerCase().includes(value.toLowerCase()),
     },
-    // {
-    //   title: LISTING_PAGE.ACTION,
-    //   key: "action",
-    //   render: (_, record) => (
-    //     <Button
-    //       style={{ border: "none" }}
-    //       onClick={() => handleDelete(record.sector_id)}
-    //     >
-    //       <DeleteFilled />
-    //     </Button>
-    //   ),
-    // },
+    {
+      title: LISTING_PAGE.ACTION,
+      key: "action",
+      render: (_, record) => (
+        // <Button
+        //   style={{ border: "none" }}
+        //   onClick={() => handleDelete(record.sector_id)}
+        // >
+        //   <DeleteFilled />
+        // </Button>
+        <Popconfirm
+          title={`Delete  ${record.sector_name} Sector`}
+          description="Are you sure you want to delete?"
+          onConfirm={(e) => handleDelete(record.sector_id)}
+          onCancel={cancel}
+          okText="Confirm"
+          cancelText="Cancel"
+          icon={
+              <CloseCircleOutlined
+                style={{
+                  color: "red",
+                }}
+              />
+          }
+        >
+          <Tooltip title="Delete Sector" >
+          <img src={trashIcon} width="22px"/>
+        </Tooltip>
+        </Popconfirm>
+
+        
+      ),
+    },
   ];
 
   // Handle delete action
-  const handleDelete = (sectorId) => {
+  const handleDelete = (id) => {
     // Implement your delete logic here
-    console.log("Delete sector with id:", sectorId);
+    console.log("Delete sector with id:", id);
+    AdminConfigAPIService.sectorDelete(id)
+      .then((response) => {
+        // Check the response structure and map data accordingly
+        console.log("response",response)
+        setLoading(false);
+
+        setSnackData({
+          show: true,
+          message:
+            response?.message || API_SUCCESS_MESSAGE.SECTOR_DELETED,
+          type: "success",
+        });
+        fetchData();
+      })
+      .catch((errResponse) => {
+        setLoading(false);
+        console.log("errResponse",errResponse.response?.data?.message)
+        setSnackData({
+          show: true,
+          message:
+          errResponse.response?.data?.message ==="This sector is in use" ? "Can't delete this sector it is already used for user/organization/project creation" :
+            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          type: "error",
+        });
+      });
+
   };
 
   return (
