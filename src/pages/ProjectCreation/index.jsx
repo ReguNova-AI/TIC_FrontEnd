@@ -58,7 +58,7 @@ const MyForm = () => {
     UserApiService.userListing()
       .then((response) => {
         if (response && response?.data) {
-          setUserData(response?.data?.details); // Assuming response.data contains the user list
+          setUserData(response?.data?.activeUsers ); // Assuming response.data contains the user list
           setSnackData({
             show: true,
             message: response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,

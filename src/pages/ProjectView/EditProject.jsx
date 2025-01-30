@@ -21,7 +21,7 @@ const EditProject = ({ data, onHandleClose, editDetails, type }) => {
   const [userData, setUserData] = useState([]);
   const selectedIds = [];
 
-  data.invite_members.map((user) => {
+  data?.invite_members?.map((user) => {
     selectedIds.push(user.user_id);
   });
   const [formData, setFormData] = useState({
@@ -73,8 +73,7 @@ const EditProject = ({ data, onHandleClose, editDetails, type }) => {
   };
 
   const handleMultiple = (selectedIds) => {
-    const selectedMembers = selectedIds
-      .map((userId) => {
+    const selectedMembers = selectedIds?.map((userId) => {
         const member = userData.find((user) => user?.user_id === userId);
         return member
           ? {
@@ -190,7 +189,7 @@ const EditProject = ({ data, onHandleClose, editDetails, type }) => {
                     onChange={handleSelectChange}
                     renderValue={(selected) => (
                       <Box sx={{ display: "flex", flexWrap: "wrap" }}>
-                        {selected.map((value) => {
+                        {selected?.map((value) => {
                           const member = userData.find(
                             (member) => member?.user_id === value
                           );
@@ -205,7 +204,7 @@ const EditProject = ({ data, onHandleClose, editDetails, type }) => {
                       </Box>
                     )}
                   >
-                    {userData.map((member) => (
+                    {userData?.map((member) => (
                       <MenuItem key={member.user_id} value={member.user_id}>
                         {member.user_first_name} {member.user_last_name} -{" "}
                         {member.user_email}
@@ -216,7 +215,7 @@ const EditProject = ({ data, onHandleClose, editDetails, type }) => {
               </Grid>
               <Grid item xs={12} sm={12}>
                 <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
-                  {formData.invite_Users.map((selectedId) => {
+                  {formData?.invite_Users?.map((selectedId) => {
                     const member = userData.find(
                       (user) => user.user_id === selectedId.user_id
                     );

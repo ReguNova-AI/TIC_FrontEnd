@@ -187,8 +187,7 @@ export default function OrgCreation({ onHandleClose }) {
         setSnackData({
           show: true,
           message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+            errResponse?.error?.message || errResponse.response.data.message === "Primary contact email is already in use" ? "Email Id is already in use, please try adding different email id" : API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
       });
@@ -706,6 +705,20 @@ export default function OrgCreation({ onHandleClose }) {
           )}
         </Grid>
       </Grid>
+      <Snackbar
+        style={{top:"80px"}}
+          anchorOrigin={{ vertical: "top", horizontal: "right" }}
+          open={snackData.show}
+          autoHideDuration={3000}
+          onClose={() => setSnackData({ show: false })}
+        >
+          <Alert
+            onClose={() => setSnackData({ show: false })}
+            severity={snackData.type}
+          >
+            {snackData.message}
+          </Alert>
+        </Snackbar>
     </Box>
   );
 }
