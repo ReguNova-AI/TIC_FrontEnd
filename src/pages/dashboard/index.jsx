@@ -247,7 +247,7 @@ export default function DashboardDefault() {
                   <Box sx={{ p: 3, pb: 0 }}>
                     <Stack spacing={2}>
                       <Typography variant="h6" color="text.secondary">
-                        This Week Statistics
+                        Last 10 days Statistics
                       </Typography>
                       {/* <Typography variant="h3">$7,650</Typography> */}
                     </Stack>
