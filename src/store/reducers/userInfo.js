@@ -7,7 +7,8 @@ const initialState = {
   loading: true,
   resourcePermissions: [],
   solutionPermissions:new Map(),
-  subFeaturePermissions:new Map()
+  subFeaturePermissions:new Map(),
+  roles:[]
 };
 
 const userInfoStart = (state, action) => {
@@ -34,6 +35,12 @@ const userInfoFail = (state, action) => {
   });
 };
 
+const saveRole = (state,action)=>{
+  return updateObject(state,{
+    roles:action,
+  });
+}
+
 const saveSolutionPermissions = (state,action) => {
   return updateObject(state,{
     solutionPermissions:action.solutionPermissions,
@@ -50,7 +57,9 @@ const reducer = (state = initialState, action) => {
     case actionTypes.USER_INFO_FETCH_FAILURE:
       return userInfoFail(state, action);
     case actionTypes.SAVE_SOLUTION_PERMISSIONS:
-      return saveSolutionPermissions(state,action)
+      return saveSolutionPermissions(state,action);
+      case actionTypes.AUTH_ROLE:
+        return saveRole(state,action);
     default:
       return state;
   }

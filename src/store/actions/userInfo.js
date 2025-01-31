@@ -23,6 +23,12 @@ const userInfoFetchStart = () => {
   };
 };
 
+const authRole =()=>{
+  return {
+    type: actionTypes.AUTH_ROLE,
+  };
+}
+
 // const fetchPermissions = async (roleId,dispatch) => {
 //   await PermissionApi.getRolePermissionForSolutions({ roleId })
 //     .then(permissionsResponse => {

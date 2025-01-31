@@ -11,7 +11,7 @@ import ListItemText from "@mui/material/ListItemText";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
-
+import { useDispatch } from "react-redux";
 // project import
 import MainCard from "components/MainCard";
 import AnalyticEcommerce from "components/cards/statistics/AnalyticEcommerce";
@@ -37,6 +37,11 @@ import { useEffect, useState } from "react";
 import UserWeeklyBarChart from "./UserWeeklyBarChart";
 import { DashboardApiService } from "services/api/DashboardAPIService";
 import PieChart from "./PieChart";
+import { UserApiService } from "services/api/UserAPIService";
+import * as actions from "../../store/actions";
+import { useSelector } from 'react-redux';
+import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
+
 
 // import ChatBotView from 'components/chatbot/ChatbotView';
 
@@ -63,7 +68,7 @@ export default function DashboardDefault() {
   let info = JSON.parse(sessionStorage.getItem("userDetails"));
   const userRole = info?.[0]?.role_name;
   const userId = info?.[0]?.user_id;
-
+  const dispatch = useDispatch();
   sessionStorage.removeItem("resetFlow");
 
   const [updatedCardsValue, setUpdatedCardsValue] = useState([]);
@@ -71,13 +76,6 @@ export default function DashboardDefault() {
   const [orgCount, setOrgCount] = useState("");
   const [userCount, setUserCount] = useState("");
   const [inactiveUserCount, setInactiveUserCount] = useState("");
-
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-
   const [chartData,setChartData] = useState([]);
   const [pieChartData,setPieChartData]= useState([]);
 
@@ -122,9 +120,26 @@ export default function DashboardDefault() {
         });
         setUpdatedCardsValue([...content.cards1]);
       });
-  };
 
-  
+      UserApiService.roleDetails()
+      .then((response) => {
+        sessionStorage.setItem('roleDetails',JSON.stringify(response?.data?.details))
+      })
+      .catch((errResponse) => {
+       console.log('errResponse',errResponse);
+      });
+
+      AdminConfigAPIService.permissionListing()
+      .then((response) => {
+        sessionStorage.setItem('permissionDetails',JSON.stringify(response?.data?.details))
+      })
+      .catch((errResponse) => {
+       console.log('errResponse',errResponse);
+      });
+  };
+  const roleDetails = useSelector(state => console.log("state",state));
+
+  // console.log("const roleDetails = useSelector(state => state.roleDetails);",roleDetails)
   return (
     <Grid container rowSpacing={4.5} columnSpacing={2.75}>
       {/* row 1 */}

@@ -38,6 +38,12 @@ export const logout = () => {
   };
 };
 
+export const authRole = () => {
+  return {
+    type: actionTypes.AUTH_ROLE,
+  };
+};
+
 export const checkAuthTimeout = expirationTime => {
   return dispatch => {
     setTimeout(() => {
