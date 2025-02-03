@@ -206,7 +206,7 @@ const ProjectView = () => {
 
 
   const runComplianceAssessmenet = async (query) =>{
-    setLoading(true);
+   
     let file=null;
     projectData?.documents.forEach((document) => {
       let { documenttype, name, path } = document;
@@ -229,6 +229,9 @@ const ProjectView = () => {
 
     const data = parseApiResponse(query);
 
+    if(match !== undefined && match?.length >0)
+    {
+      setLoading(true);
     ProjectApiService.projectDocumentUpload(payload)
       .then((response) => {
         // setLoading(false);
@@ -292,7 +295,16 @@ const ProjectView = () => {
         });
         setLoading(false);
       });
-
+    }
+    else
+    {
+      setLoading(false);
+      setSnackData({
+        show: true,
+        message:API_ERROR_MESSAGE.DOCUMENT_NOT_FOUND,
+        type: "error",
+      });
+    }
 
     
   };

@@ -243,7 +243,7 @@ const Listing = () => {
   const filterData = (type) => {
     if(type==="created")
     {
-    let filteredData = data.filter((item) => {
+    let filteredData = data?.filter((item) => {
       const matchesStatus =
         statusFilter.length === 0 ||
         statusFilter[0] === "Total Projects" ||
@@ -259,16 +259,16 @@ const Listing = () => {
 
     // Sorting logic based on sortBy state
     if (sortOrder === "ascend") {
-      filteredData.sort((a, b) => a.project_name.localeCompare(b.project_name));
+      filteredData?.sort((a, b) => a.project_name?.localeCompare(b.project_name));
     } else if (sortOrder === "descend") {
-      filteredData.sort((a, b) => b.project_name.localeCompare(a.project_name));
+      filteredData?.sort((a, b) => b.project_name?.localeCompare(a.project_name));
     }
 
     return filteredData;
   }
   else
   {
-    let filteredData = dataInvited.filter((item) => {
+    let filteredData = dataInvited?.filter((item) => {
     const matchesStatus =
       statusFilter.length === 0 ||
       statusFilter[0] === "Total Projects" ||
@@ -284,9 +284,9 @@ const Listing = () => {
 
   // Sorting logic based on sortBy state
   if (sortOrder === "ascend") {
-    filteredData.sort((a, b) => a.project_name.localeCompare(b.project_name));
+    filteredData?.sort((a, b) => a.project_name?.localeCompare(b.project_name));
   } else if (sortOrder === "descend") {
-    filteredData.sort((a, b) => b.project_name.localeCompare(a.project_name));
+    filteredData?.sort((a, b) => b.project_name?.localeCompare(a.project_name));
   }
 
   return filteredData;
@@ -324,12 +324,12 @@ const Listing = () => {
     setPageInvitedSize(pageSize);
   };
 
-  const paginatedData = filteredData.slice(
+  const paginatedData = filteredData?.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
 
-  const paginatedInvitedData = filteredInvitedData.slice(
+  const paginatedInvitedData = filteredInvitedData?.slice(
     (currentInvitedPage - 1) * pageInvitedSize,
     currentInvitedPage * pageInvitedSize
   );
