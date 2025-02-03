@@ -61,8 +61,8 @@ const AvatarSection = (props) => (
 
 const CardView = ({ data,gridValue }) => {
   const navigate = useNavigate();
-  const handleNavigateToProject = (projectNo) => {
-    navigate(`/projectView/${projectNo}`, { state: { projectNo } });
+  const handleNavigateToProject = (projectNo,type) => {
+    navigate(`/projectView/${projectNo}`, { state: { projectNo,runAssessmentState:type } });
   };
 
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
@@ -178,7 +178,7 @@ const userRole = userdetails?.[0]?.role_name;
               <Box sx={{ display: "flex", gap: "8px" }}>
                 <Button
                   size="small"
-                  onClick={() => handleNavigateToProject(item.index)}
+                  onClick={() => handleNavigateToProject(item.index,"view")}
                   startIcon={<EyeOutlined />}
                   variant="outlined"
                 >
@@ -188,7 +188,7 @@ const userRole = userdetails?.[0]?.role_name;
                   size="small"
                   variant="contained"
                   style={{ background: "#003a8c" }}
-                  onClick={() => handleNavigateToProject(item.index)}
+                  onClick={() => handleNavigateToProject(item.index,"run")}
                 >
                   {BUTTON_LABEL.RUN_PROJECT}
                 </Button>

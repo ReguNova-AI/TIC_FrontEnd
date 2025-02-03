@@ -310,8 +310,8 @@ const Listing = () => {
     setViewMode(newViewMode);
   };
 
-  const handleNavigateToProject = (projectNo) => {
-    navigate(`/projectView/${projectNo}`, { state: { projectNo } });
+  const handleNavigateToProject = (projectNo,type) => {
+    navigate(`/projectView/${projectNo}`, { state: { projectNo,runAssessmentState:type }});
   };
 
   const handlePaginationChange = (page, pageSize) => {
@@ -400,7 +400,7 @@ const Listing = () => {
             style={{ verticalAlign: "middle", marginRight: "10px" }}
           />
           <a
-            onClick={() => handleNavigateToProject(record.index)}
+            onClick={() => handleNavigateToProject(record.index,"view")}
             style={{ color: "#2ba9bc", cursor: "pointer" }}
           >
             {text}
@@ -513,8 +513,8 @@ const Listing = () => {
             background: status === "In Progress" ? "#dcdfdf" : "#003a8c",
             color: status === "In Progress" ? "#959191" : "#ffffff",
           }}
-          disabled={status === "In Progress" ? true : false}
-          onClick={()=>handleNavigateToProject(record.index)}
+          // disabled={status === "In Progress" ? true : false}
+          onClick={()=>handleNavigateToProject(record.index,"run")}
         >
           {BUTTON_LABEL.RUN_PROJECT}
         </Button>

@@ -57,7 +57,7 @@ const ProjectView = () => {
   const navigate = useNavigate();
   const [value, setValue] = React.useState(0);
   const location = useLocation();
-  const { projectName } = location.state || {};
+  const { projectName,runAssessmentState } = location.state || {};
   const { id } = useParams();
   const [loading, setLoading] = useState(true);
   const [projectData, SetProjectData] = useState([]);
@@ -92,6 +92,12 @@ const ProjectView = () => {
     {
       runChecklistAPI();
     }
+
+    if(runAssessmentState === "run")
+        {
+          projectData?.checkListResponse ? runComplianceAssessmenet(projectData?.checkListResponse) : runChecklkistCRT();
+        }
+
   },[projectData,standardData])
 
   const fetchDetails = (id) => {
@@ -209,7 +215,7 @@ const ProjectView = () => {
    
     const regex = /\/([^/]+)$/; // Match the part after the last "/"
     let file=null;
-    projectData?.documents.forEach((document) => {
+    projectData?.documents?.forEach((document) => {
       let { documenttype, name, path } = document;
       if(documenttype === FORM_LABEL.PROJECT_DOCUMENT)
       {

@@ -56,8 +56,8 @@ const AvatarSection = () => (
 
 const CardView = ({ data,gridValue }) => {
   const navigate = useNavigate();
-  const handleNavigateToProject = (org_id) => {
-    navigate(`/projectView/${org_id}`, { state: { org_id } });
+  const handleNavigateToProject = (org_id,type) => {
+    navigate(`/projectView/${org_id}`, { state: { org_id,runAssessmentState:type } });
   };
 
   return (
@@ -168,7 +168,7 @@ const CardView = ({ data,gridValue }) => {
               <Box sx={{ display: "flex", gap: "8px" }}>
                 <Button
                   size="small"
-                  onClick={() => handleNavigateToProject(item.index)}
+                  onClick={() => handleNavigateToProject(item.index,"view")}
                   startIcon={<EyeOutlined />}
                   variant="outlined"
                 >
@@ -178,7 +178,7 @@ const CardView = ({ data,gridValue }) => {
                   size="small"
                   variant="contained"
                   style={{ background: "#003a8c" }}
-                  onClick={() => handleNavigateToProject(item.index)}
+                  onClick={() => handleNavigateToProject(item.index,"run")}
                 >
                   {BUTTON_LABEL.RUN_PROJECT}
                 </Button>
