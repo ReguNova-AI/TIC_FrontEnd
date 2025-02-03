@@ -64,11 +64,11 @@ const RecentHistory = ({data}) => {
         description:<span style={{ fontSize: '11px' }}>{data.complianceAssesment ? "Generated" : "Not generated"}</span>,
         status: data.complianceAssesment ? `${STEPPER_LABEL.FINISH_STATUS}` : `${STEPPER_LABEL.PROCESS_STATUS}`, 
       }, 
-      {
-        title:<span style={{ fontSize: '12px',fontWeight:"600" }}>{STEPPER_LABEL.FINAL_STEP}</span>,
-        status: `${STEPPER_LABEL.PROCESS_STATUS}`, 
-        // description,
-      }
+      // {
+      //   title:<span style={{ fontSize: '12px',fontWeight:"600" }}>{STEPPER_LABEL.FINAL_STEP}</span>,
+      //   status: `${STEPPER_LABEL.PROCESS_STATUS}`, 
+      //   // description,
+      // }
     ]}
   />
 )};

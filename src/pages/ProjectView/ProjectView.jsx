@@ -262,7 +262,7 @@ const ProjectView = () => {
         updatedResponse.complianceAssesment = {data:response?.data?.data};
         updatedResponse.no_of_runs = updatedResponse?.no_of_runs + 1;
         updatedResponse.success_count= updatedResponse?.success_count + 1;
-        updatedResponse.status = "In Progress";
+        updatedResponse.status = "Completed";
 
         const newHistory = createHistoryObject(projectData, previousData,"assessmentRun");
         setHistoryData((prevState) => {
