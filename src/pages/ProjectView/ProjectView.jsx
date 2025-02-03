@@ -207,6 +207,7 @@ const ProjectView = () => {
 
   const runComplianceAssessmenet = async (query) =>{
    
+    const regex = /\/([^/]+)$/; // Match the part after the last "/"
     let file=null;
     projectData?.documents.forEach((document) => {
       let { documenttype, name, path } = document;
@@ -216,8 +217,7 @@ const ProjectView = () => {
       }
     });
 
-    const regex = /\/([^/]+)$/; // Match the part after the last "/"
-
+   
     const match = file?.match(regex);
 
     const payload = new FormData();
@@ -255,6 +255,7 @@ const ProjectView = () => {
         const previousData = {...projectData};
         updatedResponse.complianceAssesment = {data:response?.data?.data};
         updatedResponse.no_of_runs = updatedResponse?.no_of_runs + 1;
+        updatedResponse.success_count= updatedResponse?.success_count + 1;
         updatedResponse.status = "In Progress";
 
         const newHistory = createHistoryObject(projectData, previousData,"assessmentRun");
@@ -282,6 +283,25 @@ const ProjectView = () => {
           type: "error",
         });
         setLoading(false);
+        const updatedResponse = { ...projectData };
+        const previousData = {...projectData};
+        updatedResponse.no_of_runs = updatedResponse?.no_of_runs + 1;
+        updatedResponse.fail_count= updatedResponse?.fail_count + 1;
+        updatedResponse.status = "In Progress";
+
+        const newHistory = createHistoryObject(projectData, previousData,"assessmentRun");
+        setHistoryData((prevState) => {
+          const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
+          // After the state update, include the updated history in the updatedResponse
+          const updatedResponseWithHistory = { ...updatedResponse, history: updatedHistory };
+          
+          // You can also call UpdateProjectDetails here, using the updated response with history
+          // setLoading(true);
+          UpdateProjectDetails(updatedResponseWithHistory, false);
+      
+          return { history: updatedHistory };
+        });
+
       });
         // UpdateProjectDetails(updatedResponse, true);
       })
@@ -294,6 +314,24 @@ const ProjectView = () => {
           type: "error",
         });
         setLoading(false);
+        const updatedResponse = { ...projectData };
+        const previousData = {...projectData};
+        updatedResponse.no_of_runs = updatedResponse?.no_of_runs + 1;
+        updatedResponse.fail_count= updatedResponse?.fail_count + 1;
+        updatedResponse.status = "In Progress";
+
+        const newHistory = createHistoryObject(projectData, previousData,"assessmentRun");
+        setHistoryData((prevState) => {
+          const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
+          // After the state update, include the updated history in the updatedResponse
+          const updatedResponseWithHistory = { ...updatedResponse, history: updatedHistory };
+          
+          // You can also call UpdateProjectDetails here, using the updated response with history
+          // setLoading(true);
+          UpdateProjectDetails(updatedResponseWithHistory, false);
+      
+          return { history: updatedHistory };
+        });
       });
     }
     else
