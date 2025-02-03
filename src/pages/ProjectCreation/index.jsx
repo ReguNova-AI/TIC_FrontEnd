@@ -46,7 +46,10 @@ const MyForm = () => {
     invite_Users:[],
     document: {},
     status: "",
+    invited_user_list:[]
   });
+
+  const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
 
   // Fetch the user data when the component mounts
   useEffect(() => {
@@ -58,7 +61,12 @@ const MyForm = () => {
     UserApiService.userListing()
       .then((response) => {
         if (response && response?.data) {
-          setUserData(response?.data?.activeUsers ); // Assuming response.data contains the user list
+          const userEmailToExclude = userdetails?.[0]?.user_email;
+          const filteredUsers = response?.data?.activeUsers?.filter(user => user.user_email !== userEmailToExclude);
+  
+          setUserData(filteredUsers); //
+         
+          // setUserData(response?.data?.activeUsers ); // Assuming response.data contains the user list
           setSnackData({
             show: true,
             message: response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
@@ -130,13 +138,19 @@ const MyForm = () => {
   };
 
   const handleMultiple = (selectedIds)=>{
+    const invitedId=formData.invited_user_list;
     const selectedMembers = selectedIds?.map((userId) => {
       const member = userData.find((user) => user.user_id === userId);
+      if(member)
+      {
+        invitedId.push(member.user_id);
+      }
       return member ? { user_id: member.user_id, user_name: `${member.user_first_name} ${member.user_last_name}`, user_email: member.user_email, user_profile: member.user_profile } : null;
     }).filter(Boolean);      
     setFormData({
       ...formData,
       invite_Users: selectedMembers,
+      invited_user_list:invitedId,
     });
     return selectedMembers;
   }
@@ -170,6 +184,7 @@ const MyForm = () => {
       project_description: formData.projectDesc,
       regulatory_standard: formData.regulatory,
       invite_members: selectedUserData,
+      invited_user_list:formData.invited_user_list,
       documents: formData.document, 
       org_id: userdetails?.[0]?.org_id,
       org_name: userdetails?.[0]?.org_name,
@@ -193,7 +208,7 @@ const MyForm = () => {
       payload.last_run = formatDateToCustomFormat(new Date());
     }
 
-
+    
     ProjectApiService.projectCreate(payload)
       .then((response) => {
         setSnackData({
@@ -319,40 +334,46 @@ const MyForm = () => {
             </Grid>
 
             <Grid item xs={12} sm={8}>
-              <FormControl fullWidth>
-                <InputLabel id="teamMembers-label">
-                  {FORM_LABEL.INVITE_MEMBERS}
-                </InputLabel>
-                <Select
-                  labelId="teamMembers-label"
-                  id="teamMembers"
-                  multiple
-                  value={formData.teamMembers}
-                  onChange={handleSelectChange}
-                  renderValue={(selected) => (
-                    <Box sx={{ display: "flex", flexWrap: "wrap" }}>
-                      {selected?.map((value) => {
-                        const member = userData.find(
-                          (member) => member.user_id === value
-                        );
-                        return (
-                          <Chip
-                            key={value}
-                            label={member.user_email}
-                            sx={{ margin: 0.5 }}
-                          />
-                        );
-                      })}
-                    </Box>
-                  )}
-                >
-                  {userData?.map((member) => (
-                    <MenuItem key={member.user_id} value={member.user_id}>
-                      {member.user_first_name} {member.user_last_name} - {member.user_email}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+            <FormControl fullWidth>
+  <InputLabel id="teamMembers-label">
+    {FORM_LABEL.INVITE_MEMBERS}
+  </InputLabel>
+  <Select
+    labelId="teamMembers-label"
+    id="teamMembers"
+    multiple
+    value={formData.teamMembers}
+    onChange={handleSelectChange}
+    renderValue={(selected) => (
+      <Box sx={{ display: "flex", flexWrap: "wrap" }}>
+        {selected?.map((value) => {
+          const member = userData.find(
+            (member) => member.user_id === value
+          );
+          return (
+            <Chip
+              key={value}
+              label={member.user_email}
+              sx={{ margin: 0.5 }}
+            />
+          );
+        })}
+      </Box>
+    )}
+  >
+    {/* Conditionally render "No data found" if userData is empty */}
+    {userData?.length === 0 ? (
+      <MenuItem disabled>No data found</MenuItem>
+    ) : (
+      userData?.map((member) => (
+        <MenuItem key={member.user_id} value={member.user_id}>
+          {member.user_first_name} {member.user_last_name} - {member.user_email}
+        </MenuItem>
+      ))
+    )}
+  </Select>
+</FormControl>
+
             </Grid>
 
             {/* Render Profile Cards for Selected Team Members */}

@@ -38,23 +38,66 @@ import NestedListing from "./NestedListing";
 import AdminOrgNestedListing from "./AdminOrgNestedListing";
 import projectIcon from "../../assets/images/icons/projectIcon3.svg";
 import addProjectIcon from "../../assets/images/icons/addProject.svg";
+import PropTypes from "prop-types";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import Box from "@mui/material/Box";
+
+function CustomTabPanel(props) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+    </div>
+  );
+}
+
+CustomTabPanel.propTypes = {
+  children: PropTypes.node,
+  index: PropTypes.number.isRequired,
+  value: PropTypes.number.isRequired,
+};
+
+function a11yProps(index) {
+  return {
+    id: `simple-tab-${index}`,
+    "aria-controls": `simple-tabpanel-${index}`,
+  };
+}
 
 const Listing = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { filterStatusValue } = location.state || {}; // Receive initial status filter
   const [data, setData] = useState([]);
+  const [dataInvited, setDataInvited] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [filteredData, setFilteredData] = useState([]);
+  const [filteredInvitedData, setFilteredInvitedData] = useState([]);
   const [statusFilter, setStatusFilter] = useState([]);
-  const [statusData, setStatusData] = useState(["In Progress","Draft","Success","Failed"]);
+  const [statusData, setStatusData] = useState([
+    "In Progress",
+    "Draft",
+    "Success",
+    "Failed",
+  ]);
   const [industryFilter, setIndustryFilter] = useState([]);
   const [popoverVisible, setPopoverVisible] = useState(false); // Control popover visibility
   const [viewMode, setViewMode] = useState("list"); // 'list' or 'card'
   const [currentPage, setCurrentPage] = useState(1); // Track the current page
+  const [currentInvitedPage, setCurrentInvitedPage] = useState(1); // Track the current page
   const [pageSize, setPageSize] = useState(10); // Number of rows per page
+  const [pageInvitedSize, setPageInvitedSize] = useState(10); // Number of rows per page
   const [loading, setLoading] = useState(true);
   const [orgLevelData, setOrgLevelData] = useState([]);
+  const [value, setValue] = React.useState(0);
 
   const [snackData, setSnackData] = useState({
     show: false,
@@ -72,10 +115,14 @@ const Listing = () => {
   useEffect(() => {
     if (filterStatusValue && filterStatusValue != "Total Project") {
       setStatusFilter([filterStatusValue]); // Set the statusFilter if status is passed
-      setFilteredData(filterData());
+      setFilteredData(filterData("created"));
+      setFilteredInvitedData(filterData("invited"))
     }
-    
   }, [filterStatusValue]);
+
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
+  };
 
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
   const userRole = userdetails?.[0]?.role_name;
@@ -90,7 +137,8 @@ const Listing = () => {
     regulatory_standard,
     start_date,
     last_run,
-    status
+    status,
+    invite_members,
   ) => {
     return {
       index,
@@ -103,6 +151,7 @@ const Listing = () => {
       start_date,
       last_run,
       status,
+      invite_members,
     };
   };
 
@@ -137,12 +186,39 @@ const Listing = () => {
               project.last_run !== ""
               ? formatDate(project.last_run)
               : "", // last_run
-            project.status // status
+            project.status, // status
+            project.invite_members
+          );
+        });
+
+        const newInvitedData = response?.data?.invited_projects?.map((project, index) => {
+          return createData(
+            project.project_id, // index
+            project.project_no, // project_no
+            project.project_name, // project_name
+            project.no_of_runs, // runs
+            project.industry_name, // industry
+            project.mapping_standards, // mapping_no
+            project.regulatory_standard,
+            project.created_at !== "null" &&
+              project.created_at !== null &&
+              project.created_at !== ""
+              ? formatDate(project.created_at)
+              : "", // start_date
+            project.last_run !== "null" &&
+              project.last_run !== null &&
+              project.last_run !== ""
+              ? formatDate(project.last_run)
+              : "", // last_run
+            project.status, // status
+            project.invite_members
           );
         });
 
         setData(newData);
         setFilteredData(newData);
+        setDataInvited(newInvitedData);
+        setFilteredInvitedData(newInvitedData);
         setLoading(false);
       })
       .catch((errResponse) => {
@@ -164,11 +240,14 @@ const Listing = () => {
 
   const debouncedSearchText = useDebounce(searchText, 500);
 
-  const filterData = () => {
-    
+  const filterData = (type) => {
+    if(type==="created")
+    {
     let filteredData = data.filter((item) => {
       const matchesStatus =
-        statusFilter.length === 0 || statusFilter[0] === "Total Projects" || statusFilter?.includes(item.status);
+        statusFilter.length === 0 ||
+        statusFilter[0] === "Total Projects" ||
+        statusFilter?.includes(item.status);
       const matchesIndustry =
         industryFilter.length === 0 || industryFilter?.includes(item.industry);
       const matchesSearchText =
@@ -186,19 +265,46 @@ const Listing = () => {
     }
 
     return filteredData;
+  }
+  else
+  {
+    let filteredData = dataInvited.filter((item) => {
+    const matchesStatus =
+      statusFilter.length === 0 ||
+      statusFilter[0] === "Total Projects" ||
+      statusFilter?.includes(item.status);
+    const matchesIndustry =
+      industryFilter.length === 0 || industryFilter?.includes(item.industry);
+    const matchesSearchText =
+      item?.project_name?.toLowerCase()?.includes(debouncedSearchText) ||
+      item?.project_no?.toString()?.includes(debouncedSearchText);
+
+    return matchesStatus && matchesIndustry && matchesSearchText;
+  });
+
+  // Sorting logic based on sortBy state
+  if (sortOrder === "ascend") {
+    filteredData.sort((a, b) => a.project_name.localeCompare(b.project_name));
+  } else if (sortOrder === "descend") {
+    filteredData.sort((a, b) => b.project_name.localeCompare(a.project_name));
+  }
+
+  return filteredData;
+
+  }
   };
 
   useEffect(() => {
-    setFilteredData(filterData());
+    setFilteredData(filterData("created"));
+    setFilteredInvitedData(filterData("invited"));
   }, [statusFilter, industryFilter, debouncedSearchText, sortBy, sortOrder]);
 
   useEffect(() => {
-    if(filteredData && filterStatusValue !== "Total Project")
-    {
-      setFilteredData(filterData());
-
+    if (filteredData && filterStatusValue !== "Total Project") {
+      setFilteredData(filterData("created"));
+      setFilteredInvitedData(filterData("invited"));
     }
-  }, [data]);
+  }, [data,dataInvited]);
 
   const handleViewModeChange = (newViewMode) => {
     setViewMode(newViewMode);
@@ -213,10 +319,21 @@ const Listing = () => {
     setPageSize(pageSize);
   };
 
+  const handleInvitedPaginationChange = (page, pageSize) => {
+    setCurrentInvitedPage(page);
+    setPageInvitedSize(pageSize);
+  };
+
   const paginatedData = filteredData.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
+
+  const paginatedInvitedData = filteredInvitedData.slice(
+    (currentInvitedPage - 1) * pageInvitedSize,
+    currentInvitedPage * pageInvitedSize
+  );
+
   const filterPopoverContent = (
     <div>
       <MultiSelectWithChip
@@ -239,15 +356,26 @@ const Listing = () => {
       )}
 
       <div style={{ marginTop: "10px" }}>
-        <label><b>Sort Project Name by:</b></label>
+        <label>
+          <b>Sort Project Name by:</b>
+        </label>
         <br />
         <br />
         <Space direction="horizontal">
-          <Button onClick={() => setSortOrder("ascend")} type={sortOrder === "ascend" ? "primary" : "default"}>Ascending</Button>
-          <Button onClick={() => setSortOrder("descend")} type={sortOrder === "descend" ? "primary" : "default"}>Descending</Button>
+          <Button
+            onClick={() => setSortOrder("ascend")}
+            type={sortOrder === "ascend" ? "primary" : "default"}
+          >
+            Ascending
+          </Button>
+          <Button
+            onClick={() => setSortOrder("descend")}
+            type={sortOrder === "descend" ? "primary" : "default"}
+          >
+            Descending
+          </Button>
         </Space>
       </div>
-
 
       {/* <Button
         type="primary"
@@ -378,7 +506,7 @@ const Listing = () => {
       title: LISTING_PAGE.ACTION,
       key: "action",
       dataIndex: "status",
-      render: (_, { status }) => (
+      render: (status,record) => (
         <Button
           variant="contained"
           style={{
@@ -386,6 +514,7 @@ const Listing = () => {
             color: status === "In Progress" ? "#959191" : "#ffffff",
           }}
           disabled={status === "In Progress" ? true : false}
+          onClick={()=>handleNavigateToProject(record.index)}
         >
           {BUTTON_LABEL.RUN_PROJECT}
         </Button>
@@ -435,8 +564,7 @@ const Listing = () => {
 
             {/* Search Input and Popover Filter */}
             <Space>
-              {
-                userRole !== "Super Admin" &&
+              {userRole !== "Super Admin" &&
                 userRole !== "Org Super Admin" &&
                 userRole !== "Admin" && (
                   <>
@@ -481,26 +609,58 @@ const Listing = () => {
           </Space>
           {/* Displaying Table or Card View */}
 
-          {viewMode === "list" ? (
-            userRole === "Super Admin" ? (
-              <AdminOrgNestedListing data={orgLevelData} />
-            ) : userRole === "Org Super Admin" || userRole === "Admin" ? (
-              <NestedListing data={orgLevelData} />
-            ) : (
-              <Table
-                columns={columns}
-                dataSource={filteredData}
-                rowKey="index"
-                pagination={{
-                  current: currentPage,
-                  pageSize,
-                  total: filteredData?.length,
-                  onChange: handlePaginationChange,
-                }}
-              />
-            )
+          {userRole === "Super Admin" ? (
+            <AdminOrgNestedListing data={orgLevelData} />
+          ) : userRole === "Org Super Admin" || userRole === "Admin" ? (
+            <NestedListing data={orgLevelData} />
           ) : (
-            <CardView data={paginatedData} />
+            <>
+              <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+                <Tabs
+                  value={value}
+                  onChange={handleChange}
+                  aria-label="basic tabs example"
+                >
+                  <Tab label="Created Projects" {...a11yProps(0)} />
+                  <Tab label="Invited Projects" {...a11yProps(1)} />
+                </Tabs>
+              </Box>
+              <CustomTabPanel value={value} index={0}>
+                {viewMode === "list" ? (
+                  <Table
+                    columns={columns}
+                    dataSource={filteredData}
+                    rowKey="index"
+                    pagination={{
+                      current: currentPage,
+                      pageSize,
+                      total: filteredData?.length,
+                      onChange: handlePaginationChange,
+                    }}
+                  />
+                ) : (
+                  <CardView data={paginatedData} />
+                )}
+              </CustomTabPanel>
+              <CustomTabPanel value={value} index={1}>
+                
+                {viewMode === "list" ? (
+                  <Table
+                    columns={columns}
+                    dataSource={filteredInvitedData}
+                    rowKey="index"
+                    pagination={{
+                      current: currentInvitedPage,
+                      pageInvitedSize,
+                      total: filteredInvitedData?.length,
+                      onChange: handleInvitedPaginationChange,
+                    }}
+                  />
+                ) : (
+                  <CardView data={paginatedInvitedData} />
+                )}
+              </CustomTabPanel>
+            </>
           )}
         </Space>
         <Snackbar

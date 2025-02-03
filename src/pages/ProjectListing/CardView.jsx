@@ -4,7 +4,7 @@ import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
-import { Chip, Grid, Box } from "@mui/material";
+import { Chip, Grid, Box, Tooltip } from "@mui/material";
 import Avatar from "@mui/material/Avatar";
 import AvatarGroup from "@mui/material/AvatarGroup";
 import avatar1 from "../../assets/images/users/avatar-1.png";
@@ -47,11 +47,15 @@ const getStatusChip = (status) => {
 };
 
 // Function to render the Avatar Group
-const AvatarSection = () => (
+const AvatarSection = (props) => (
+ 
   <AvatarGroup spacing="medium">
-    <Avatar alt="Remy Sharp" src={avatar1} sx={{ width: 30, height: 30 }} />
-    <Avatar alt="Travis Howard" src={avatar2} sx={{ width: 30, height: 30 }} />
-    <Avatar alt="Cindy Baker" src={avatar3} sx={{ width: 30, height: 30 }} />
+    {props?.data?.map(item=>(
+      <Tooltip title={item?.user_name}>
+      <Avatar alt={item?.user_name} src={item?.user_profile || avatar1} sx={{ width: 30, height: 30 }} />
+      </Tooltip>
+      ))
+    }
   </AvatarGroup>
 );
 
@@ -167,7 +171,7 @@ const userRole = userdetails?.[0]?.role_name;
             >
               {/* Avatar Section on the Left */}
               <Box sx={{ display: "flex" }}>
-                <AvatarSection />
+                <AvatarSection data={item.invite_members}/>
               </Box>
 
               {/* Action Buttons on the Right */}
