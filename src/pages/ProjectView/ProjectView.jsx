@@ -262,7 +262,7 @@ const ProjectView = () => {
         updatedResponse.complianceAssesment = {data:response?.data?.data};
         updatedResponse.no_of_runs = updatedResponse?.no_of_runs + 1;
         updatedResponse.success_count= updatedResponse?.success_count + 1;
-        updatedResponse.status = "Completed";
+        updatedResponse.status = "Success";
 
         const newHistory = createHistoryObject(projectData, previousData,"assessmentRun");
         setHistoryData((prevState) => {
@@ -293,7 +293,7 @@ const ProjectView = () => {
         const previousData = {...projectData};
         updatedResponse.no_of_runs = updatedResponse?.no_of_runs + 1;
         updatedResponse.fail_count= updatedResponse?.fail_count + 1;
-        updatedResponse.status = "In Progress";
+        updatedResponse.status = "Failed";
         updatedResponse.last_run = formatDateToCustomFormat(new Date());
         const newHistory = createHistoryObject(projectData, previousData,"assessmentRun");
         setHistoryData((prevState) => {
@@ -324,7 +324,8 @@ const ProjectView = () => {
         const previousData = {...projectData};
         updatedResponse.no_of_runs = updatedResponse?.no_of_runs + 1;
         updatedResponse.fail_count= updatedResponse?.fail_count + 1;
-        updatedResponse.status = "In Progress";
+        updatedResponse.status = "Failed";
+        updatedResponse.last_run = formatDateToCustomFormat(new Date());
 
         const newHistory = createHistoryObject(projectData, previousData,"assessmentRun");
         setHistoryData((prevState) => {

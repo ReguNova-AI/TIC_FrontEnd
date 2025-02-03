@@ -87,6 +87,7 @@ const Listing = () => {
     "Draft",
     "Success",
     "Failed",
+    "Completed"
   ]);
   const [industryFilter, setIndustryFilter] = useState([]);
   const [popoverVisible, setPopoverVisible] = useState(false); // Control popover visibility
