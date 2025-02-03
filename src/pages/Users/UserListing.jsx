@@ -495,7 +495,7 @@ const UserListing = () => {
               ? "Are you sure you want to disable the user's access?"
               : "Are you sure you want to enable the user's access?"
           }
-          onConfirm={(e) => handleDelete(record?.index, record?.isActive)}
+          onConfirm={(e) =>{ e.preventDefault(); handleDelete(record?.index, record?.isActive)}}
           onCancel={cancel}
           okText="Confirm"
           cancelText="Cancel"

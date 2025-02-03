@@ -126,7 +126,7 @@ const SectorListing = () => {
         <Popconfirm
           title={`Delete  ${record.sector_name} Sector`}
           description="Are you sure you want to delete?"
-          onConfirm={(e) => handleDelete(record.sector_id)}
+          onConfirm={(e) => { e.preventDefault(); handleDelete(record.sector_id)}}
           onCancel={cancel}
           okText="Confirm"
           cancelText="Cancel"

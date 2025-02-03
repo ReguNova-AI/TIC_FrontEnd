@@ -361,7 +361,7 @@ const DropZoneFileUpload = (props) => {
             <Popconfirm
           title={`Delete file`}
           description="Are you sure you want to delete?"
-          onConfirm={(e) => removeFile(file)}
+          onConfirm={(e) => {e.preventDefault();removeFile(file)}}
           onCancel={cancel}
           okText="Confirm"
           cancelText="Cancel"
@@ -373,7 +373,7 @@ const DropZoneFileUpload = (props) => {
               />
           }
         >
-            <button
+            <button type="button"
               style={{ background: "transparent", border: "none" }}
               // onClick={() => removeFile(file)}
             >
@@ -439,7 +439,7 @@ const DropZoneFileUpload = (props) => {
             <Popconfirm
           title={`Delete file`}
           description="Are you sure you want to delete?"
-          onConfirm={(e) => removeFile(file)}
+          onConfirm={(e) => {e.preventDefault(); removeFile(file)}}
           onCancel={cancel}
           okText="Confirm"
           cancelText="Cancel"

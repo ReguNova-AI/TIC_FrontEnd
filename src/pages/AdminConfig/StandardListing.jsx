@@ -121,7 +121,7 @@ const StandardListing = () => {
         <Popconfirm
           title={`Delete  ${record.standard_name} Standard`}
           description="Are you sure you want to delete?"
-          onConfirm={(e) => handleDelete(record.standard_id)}
+          onConfirm={(e) => {e.preventDefault(); handleDelete(record.standard_id)}}
           onCancel={cancel}
           okText="Confirm"
           cancelText="Cancel"

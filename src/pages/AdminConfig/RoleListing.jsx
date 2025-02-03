@@ -125,7 +125,7 @@ const RoleListing = () => {
         <Popconfirm
           title={`Delete ${record.role_name} Role`}
           description="Are you sure you want to delete?"
-          onConfirm={(e) => handleDelete(record.role_id)}
+          onConfirm={(e) => { e.preventDefault(); handleDelete(record.role_id)}}
           onCancel={cancel}
           okText="Confirm"
           cancelText="Cancel"
