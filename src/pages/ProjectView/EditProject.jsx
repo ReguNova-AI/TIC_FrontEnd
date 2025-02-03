@@ -19,6 +19,7 @@ import UserProfileCard from "../ProjectCreation/UserProfileCard";
 const EditProject = ({ data, onHandleClose, editDetails, type }) => {
   const [changeFlag, setChangeFlag] = useState(false);
   const [userData, setUserData] = useState([]);
+  const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
   const selectedIds = [];
 
   data?.invite_members?.map((user) => {
@@ -30,6 +31,7 @@ const EditProject = ({ data, onHandleClose, editDetails, type }) => {
     projectDesc: data.project_description || "",
     teamMembers: selectedIds,
     invite_Users: data.invite_members,
+    invited_user_list : data.invited_user_list,
   });
   useEffect(() => {
     if (type !== "Edit") {
@@ -41,7 +43,10 @@ const EditProject = ({ data, onHandleClose, editDetails, type }) => {
     UserApiService.userListing()
       .then((response) => {
         if (response && response?.data) {
-          setUserData(response?.data?.details); // Assuming response.data contains the user list
+          const userEmailToExclude = userdetails?.[0]?.user_email;
+          const filteredUsers = response?.data?.activeUsers?.filter(user => user.user_email !== userEmailToExclude);
+          setUserData(filteredUsers); //
+          // setUserData(response?.data?.activeUsers); // Assuming response.data contains the user list
         }
       })
       .catch((errResponse) => {
@@ -72,9 +77,18 @@ const EditProject = ({ data, onHandleClose, editDetails, type }) => {
     });
   };
 
+  useEffect(()=>{
+    handleMultiple(formData.teamMembers)
+  },[formData.teamMembers])
+
   const handleMultiple = (selectedIds) => {
+    const invitedId=formData.invited_user_list;
+    setChangeFlag(true);
     const selectedMembers = selectedIds?.map((userId) => {
         const member = userData.find((user) => user?.user_id === userId);
+      if (member && !invitedId?.includes(member.user_id)) {
+        invitedId.push(member.user_id);
+      }
         return member
           ? {
               user_id: member?.user_id,
@@ -88,6 +102,7 @@ const EditProject = ({ data, onHandleClose, editDetails, type }) => {
     setFormData({
       ...formData,
       invite_Users: selectedMembers,
+      invited_user_list:invitedId,
     });
     return selectedMembers;
   };

@@ -591,7 +591,8 @@ const ProjectView = () => {
     updatedResponse.project_name = data.projectName;
     updatedResponse.project_description = data.projectDesc;
     updatedResponse.project_no = data.projectNo;
-
+    updatedResponse.invite_members = data.invite_Users;
+    updatedResponse.invited_user_list = data.invited_user_list;
     const newHistory = createHistoryObject(data, previousData,"projectDetails");
     setHistoryData((prevState) => {
       const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
