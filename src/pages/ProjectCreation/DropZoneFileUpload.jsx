@@ -240,6 +240,7 @@ const DropZoneFileUpload = (props) => {
               type: "success",
             });
           }
+          setTempFiles([])
 
           return {
             relativePath: file.relativePath,
@@ -272,10 +273,6 @@ const DropZoneFileUpload = (props) => {
     onDrop: (newFiles) => {
       const allFiles = [...uploadedFiles, ...newFiles];
       const totalSize = getTotalSize(allFiles);
-      console.log("selectedType",selectedType,"sdfsd",FORM_LABEL.CUSTOM_REGULATORY)
-
-      
-
        // Read files as binary and process them
        const checklistfile = document.getElementById("fileInput").files;
    
@@ -307,7 +304,10 @@ const DropZoneFileUpload = (props) => {
   },
 });
 
-  const files = uploadedFiles?.length >0 && uploadedFiles?.map((file) => (
+  let files = null;
+  if(uploadedFiles?.length >0)
+  {
+    files =uploadedFiles?.length >0 && uploadedFiles?.map((file) => (
           <li
             key={file.name}
             style={{
@@ -382,6 +382,80 @@ const DropZoneFileUpload = (props) => {
             </Popconfirm>
           </li>
         ));
+  }
+  else{
+
+    files = tempFiles?.length >0 && tempFiles?.map((file) => (
+          <li
+            key={file.name}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              marginBottom: "10px",
+            }}
+          >
+            <span style={{ marginRight: "10px" }}>{getFileIcon(file)}</span>
+            <span style={{ flex: 1, width: "90%" }}>
+              <Tooltip title={file.name} arrow>
+                <span
+                  style={{
+                    width: "62%",
+                    overflow: "hidden",
+                    display: "inline-block",
+                    whiteSpace: "nowrap",
+                    textOverflow: "ellipsis",
+                    marginBottom:"-10px"
+                  }}
+                >
+                  {file.name}{" "}
+                </span>
+              </Tooltip>
+              <span
+                style={{
+                  color: "grey",
+                  padding: "10px",
+                  fontSize: "10px",
+                }}
+              >
+                {formatFileSize(file.size)}
+              </span>{" "}
+              <span
+                style={{ marginLeft: "10px", fontSize: "12px", color: "#2ba9bc" }}
+              >
+                {file.documenttype && `(${file.documenttype})`}
+              </span>
+              
+              {/* Progress Bar */}
+              
+                <Progress
+                  percent={0}
+                  size="small"
+                  style={{ width: "90%", marginTop: "5px" }}
+                  // format={(percent) => `${percent}%`}
+                />
+              
+            </span>
+
+            <Popconfirm
+          title={`Delete file`}
+          description="Are you sure you want to delete?"
+          onConfirm={(e) => removeFile(file)}
+          onCancel={cancel}
+          okText="Confirm"
+          cancelText="Cancel"
+          icon={
+              <CloseCircleOutlined
+                style={{
+                  color: "red",
+                }}
+              />
+          }
+        >
+            
+            </Popconfirm>
+          </li>
+        ));
+  }
   const totalFileSize = getTotalSize(uploadedFiles);
   const formattedTotalFileSize = formatFileSize(totalFileSize);
   return (
