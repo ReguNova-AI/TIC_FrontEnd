@@ -22,6 +22,7 @@ const getStatusChip = (status) => {
       title = 'In Progress';
       break;
     case 'Success':
+    case "Completed":
       color = '#f6ffed';
       borderColor = 'success';
       title = 'Success';

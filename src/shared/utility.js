@@ -50,6 +50,7 @@ export const getStatusChipProps = (status) => {
       title = 'Draft';
       break;
     case 'Success':
+      case 'Completed':
     case 'Active':
       color = '#f6ffed';
       borderColor = 'success';
