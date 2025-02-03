@@ -50,7 +50,7 @@ import chatLoadingicon3 from "../../assets/images/icons/chatLoadingIcon3.svg";
 import checklistfile from "../../assets/IEC-61400-12-2022.pdf";
 import axios from "axios";
 import Icon, { SmileOutlined } from "@ant-design/icons";
-import { formatDate } from "shared/utility";
+import { formatDate, formatDateToCustomFormat } from "shared/utility";
 import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
 
 const ProjectView = () => {
@@ -294,7 +294,7 @@ const ProjectView = () => {
         updatedResponse.no_of_runs = updatedResponse?.no_of_runs + 1;
         updatedResponse.fail_count= updatedResponse?.fail_count + 1;
         updatedResponse.status = "In Progress";
-
+        updatedResponse.last_run = formatDateToCustomFormat(new Date());
         const newHistory = createHistoryObject(projectData, previousData,"assessmentRun");
         setHistoryData((prevState) => {
           const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
@@ -402,6 +402,7 @@ const ProjectView = () => {
     updatedResponse.checkListResponse = response?.data?.data;
     updatedResponse.no_of_runs = updatedResponse.no_of_runs + 1;
     updatedResponse.status = "In Progress";
+    updatedResponse.last_run = formatDateToCustomFormat(new Date());
 
     const newHistory = createHistoryObject(projectData, previousData,"checklistRun");
     setHistoryData((prevState) => {

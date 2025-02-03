@@ -69,8 +69,8 @@ const NestedListing = ({ data }) => {
     },
     {
       title: LISTING_PAGE.NO_OF_RUNS,
-      dataIndex: 'runs',
-      key: 'runs',
+      dataIndex: 'no_of_runs',
+      key: 'no_of_runs',
     },
     {
       title: LISTING_PAGE.REGULATORY_SANTARDS,
@@ -87,7 +87,10 @@ const NestedListing = ({ data }) => {
       title: LISTING_PAGE.LAST_RUN,
       dataIndex: 'last_run',
       key: 'last_run',
-      render: (last_run) => last_run ? formatDate(last_run) : "",
+      render: (last_run) => last_run !== "null" &&
+      last_run !== null &&
+      last_run !== ""
+      ? formatDate(last_run) : "",
     },
     {
       title: LISTING_PAGE.STATUS,
