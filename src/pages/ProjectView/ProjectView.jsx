@@ -302,9 +302,13 @@ const ProjectView = () => {
           status = "error";
         }
 
+        const array = response?.data?.data;
+        const delimiter = "|,|";  // You can use any delimiter you want
+        const result = array.join(delimiter);
+
         const updatedResponse = { ...projectData };
         const previousData = {...projectData};
-        updatedResponse.complianceAssesment = {data:response?.data?.data};
+        updatedResponse.complianceAssesment = `${result}`;
         updatedResponse.no_of_runs = updatedResponse?.no_of_runs + 1;
         if(status === "error")
         {
@@ -854,12 +858,16 @@ const ProjectView = () => {
                     {projectData?.checkListResponse && (
                       <FileCard
                         fileName={PROJECT_DETAIL_PAGE.CHECKLIST_REPORT}
-                        data={projectData?.checkListResponse}
+                        data={projectData?.checkListResponse}   
                       />
                     )}
-                    <FileCard
-                      fileName={PROJECT_DETAIL_PAGE.ASSESSMENT_REPORT}
-                    />
+                    {projectData?.complianceAssesment && (
+                      <FileCard
+                        fileName={PROJECT_DETAIL_PAGE.ASSESSMENT_REPORT}
+                        data1={projectData?.complianceAssesment}
+                        data={projectData?.checkListResponse}
+                      />
+                    )}    
                   </Box>
 
                   <Box

@@ -230,7 +230,7 @@ export const FORM_LABEL = Object.freeze({
 export const STEPPER_LABEL = Object.freeze({
   PROJECT_CREATION: "Project Creation",
   PROJECT_DOCUMENT:"Project Document",
-  STANDARD_DOCUMENT:"Standard Document",
+  STANDARD_DOCUMENT:"Regulatory Standards",
   CUSTOM_STANDARD_DOCUMENT: "Custom Standard Document",
   IN_PROGRESS: "In Progress",
   CHECKLIST_REPORT: "Checklist Report",
