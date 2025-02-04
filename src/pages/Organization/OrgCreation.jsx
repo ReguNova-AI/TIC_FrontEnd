@@ -62,7 +62,7 @@ export default function OrgCreation({ onHandleClose }) {
     industries: "",
     industry_names:"",
     org_name: "",
-    org_email: "",
+    org_email: "test@test.test",
     org_logo: "",
     org_url: "",
     org_address: {
@@ -219,6 +219,15 @@ export default function OrgCreation({ onHandleClose }) {
       if (field === "first" || field === "last") {
         formattedField = field + "_name"; // 'first_name' or 'last_name'
       }
+      // console.log("formattedField",formattedField,value)
+
+      if(formattedField === "email")
+      {
+        setFormData({
+          ...formData,
+          org_email:value,
+        });
+      }
 
       setFormData({
         ...formData,
@@ -336,7 +345,7 @@ export default function OrgCreation({ onHandleClose }) {
     // Validate required fields for Step 1
     const requiredFields = [
       "org_name",
-      "org_email",
+      // "org_email",
       "sector_name",
       "industries",
     ];
@@ -392,7 +401,7 @@ export default function OrgCreation({ onHandleClose }) {
                   }}
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              {/* <Grid item xs={12} sm={6}>
                 <TextField
                   label={FORM_LABEL.ORG_EMAIL}
                   variant="outlined"
@@ -405,7 +414,7 @@ export default function OrgCreation({ onHandleClose }) {
                     maxLength: 30, // Restrict input to 40 characters
                   }}
                 />
-              </Grid>
+              </Grid> */}
               <Grid item xs={12} sm={6}>
                 <TextField
                   label={FORM_LABEL.ORG_WEBSITE}

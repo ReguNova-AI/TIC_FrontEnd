@@ -110,6 +110,7 @@ export const LISTING_PAGE = Object.freeze({
   DATE_OF_EXPIRE: "Expires",
   ORG_NAME: "Organization Name",
   ORG_EMAIL:"Email ID",
+  ORG_PRIMARY_EMAIL:"Primary Email ID",
   ORG_WEBSITE:"Website",
   ORG_ADDRESS:"Address",
   ROLE:"Role",

@@ -121,7 +121,7 @@ const OrganizationListing = () => {
 
           return createData(
             org.org_id, // index
-            org.org_email,
+            org?.contact_json?.primary_contact?.email,
             org.org_logo,
             org.org_name,
             org.org_url,
@@ -320,13 +320,6 @@ const OrganizationListing = () => {
         record.org_name.toLowerCase().includes(value.toLowerCase()),
     },
     {
-      title: LISTING_PAGE.ORG_EMAIL,
-      dataIndex: "org_email",
-      key: "org_email",
-      filterSearch: true,
-      onFilter: (value, record) => record.org_email.toString().includes(value),
-    },
-    {
       title: LISTING_PAGE.ORG_WEBSITE,
       dataIndex: "org_url",
       key: "org_url",
@@ -353,6 +346,13 @@ const OrganizationListing = () => {
       dataIndex: "org_address",
       key: "org_address",
       render: (address) => <span>{address || GENERIC_DATA_LABEL.NO_DATA}</span>,
+    },
+    {
+      title: LISTING_PAGE.ORG_PRIMARY_EMAIL,
+      dataIndex: "org_email",
+      key: "org_email",
+      filterSearch: true,
+      onFilter: (value, record) => record?.contact_json?.primary_contact?.email.toString().includes(value),
     },
   ];
 
