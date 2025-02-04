@@ -163,30 +163,29 @@ const ProjectView = () => {
   };
 
   const parseApiResponse = (response) => {
-    // Split the response by '---' to separate sections
-    const sections = response.split('---').slice(1); // Skip the first "Title" section
-    // console.log("sections",sections)
-  
-    // Check if the last section is the Summary and ensure it's handled correctly
-    const lastSection = sections[sections.length - 1]?.trim();
-  
-    // If the last section starts with "Summary:", we explicitly name it
-    if (lastSection?.startsWith("Summary:")) {
-      // Set the last section as Summary with a defined title
-      sections[sections.length - 1] = `**Summary**\n${lastSection}`;
-    }
-    let dataArray=[];
-    // Now process all sections
-    sections.map((section, index) => {
-      let lines = section?.trim()?.split('\n'); // Split the section into lines
-  
-      // Extract and clean the title of the section
-      let title = lines[0]
-        .replace('**', '')      // Remove asterisks around the title
-        .replace(':', '')       // Remove colon after section title
-        .trim();
-        title= title.replace("**","");
-      if(title?.startsWith("Summary"))
+
+    // Check if the response contains '---' and '**' (first format)
+    if (response.includes('---') || response.includes('**')) {
+        // Handle the first format (with '**' and '---')
+        const sections = response.split('---').slice(1); // Skip the first "Title" section
+        const lastSection = sections[sections.length - 1]?.trim();
+
+        // If the last section starts with "Summary:", explicitly name it
+        if (lastSection?.startsWith("Summary:")) {
+            sections[sections.length - 1] = `**Summary**\n${lastSection}`;
+        }
+
+        let dataArray = [];
+
+        // Now process all sections
+        sections.map((section, index) => {
+            let lines = section?.trim()?.split('\n'); // Split the section into lines
+
+            // Extract and clean the title of the section
+            let title = lines[0].replace('**', '').replace(':', '').trim();
+            title= title.replace("**","");
+            // Handle scenarios where the title might include "Section X:" or just the section heading
+            if(title?.startsWith("Summary"))
       {
         lines.push(title.replace("Summary",`${index}.`))
         lines[0] = title.replace("Summary** ",`${index}.`);
@@ -196,19 +195,58 @@ const ProjectView = () => {
       else{
         title = title.replace(`Section ${index + 1}`, '')?.trim();
       }   
-     
-      // Process the remaining lines as "points" and clean the list
-      const points = lines.slice(1).map(line => line !== "" && line !== null && dataArray.push(line.replace(/^\d+\./, '')?.trim()));
-      
-  
-      // console.log("title",title);
-      // console.log("points",points);x
-  
-      return { title, points };
-    });
 
-    return dataArray;
-  };
+            // Clean remaining lines into 'points'
+            const points = lines.slice(1).map(line => line !== "" && line !== null && dataArray.push(line.replace(/^\d+\./, '')?.trim()));
+     
+            // Return the formatted section data
+            return { title, points };
+        });
+
+        return dataArray;
+    }
+
+    // If the response contains '###' but not '---' (second format)
+    else if (response.includes('###')) {
+        // Handle the second format (with '###')
+        const sections = response.split('###').slice(1); // Skip the first part (Title)
+
+        let dataArray = [];
+
+        sections.forEach((section, index) => {
+            let lines = section.trim().split('\n');
+
+            // Extract and clean the title of the section
+            let title = lines[0].replace(':', '').trim();
+
+            if(title?.startsWith("Summary"))
+            {
+              lines.push(title.replace("Summary",`${index}.`))
+              lines[0] = title.replace("Summary** ",`${index}.`);
+              
+              title = "Summary";
+            } 
+            else{
+              title = title.replace(`Section ${index + 1}`, '')?.trim();
+            }   
+            // Clean the remaining lines as points (handling numbered list items)
+            const points = lines.slice(1).map(line => line !== "" && line !== null && dataArray.push(line.replace(/^\d+\./, '')?.trim()));
+     
+            return { title, points };
+            // Return the formatted section data
+            // dataArray.push({ title, points });
+        });
+
+        return dataArray;
+    }
+
+    // Default case (if the response doesn't match either format)
+    else {
+        console.error("Unknown response format");
+        return [];
+    }
+};
+
 
 
   const runComplianceAssessmenet = async (query) =>{
@@ -235,6 +273,7 @@ const ProjectView = () => {
 
     const data = parseApiResponse(query);
 
+
     if(match !== undefined && match?.length >0)
     {
       setLoading(true);
@@ -256,19 +295,41 @@ const ProjectView = () => {
         // });
         // SetProjectData(response?.data?.details[0]);
         setLoading(false);
+        let status = null;
+
+        if(response?.data?.success === false || response?.data?.error ==="An error occurred while fetching data")
+        {
+          status = "error";
+        }
 
         const updatedResponse = { ...projectData };
         const previousData = {...projectData};
         updatedResponse.complianceAssesment = {data:response?.data?.data};
         updatedResponse.no_of_runs = updatedResponse?.no_of_runs + 1;
+        if(status === "error")
+        {
+          updatedResponse.fail_count= updatedResponse?.fail_count + 1;
+        }
+        else{
+          updatedResponse.success_count= updatedResponse?.success_count + 1;
+        }
         updatedResponse.success_count= updatedResponse?.success_count + 1;
-        updatedResponse.status = "Success";
-
+        updatedResponse.status = status === "error" ? "Failed" : "Success";
+        updatedResponse.last_run = formatDateToCustomFormat(new Date());
         const newHistory = createHistoryObject(projectData, previousData,"assessmentRun");
         setHistoryData((prevState) => {
           const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
           // After the state update, include the updated history in the updatedResponse
           const updatedResponseWithHistory = { ...updatedResponse, history: updatedHistory };
+
+          if(status === "error")
+          {
+            setSnackData({
+              show: true,
+              message:API_ERROR_MESSAGE.FAILED_TO_RUN_ASSESSMENT,
+              type: "error",
+            });
+          }
           
           // You can also call UpdateProjectDetails here, using the updated response with history
           // setLoading(true);
@@ -401,7 +462,7 @@ const ProjectView = () => {
     const updatedResponse = { ...projectData };
     const previousData ={...projectData};
     updatedResponse.checkListResponse = response?.data?.data;
-    updatedResponse.no_of_runs = updatedResponse.no_of_runs + 1;
+    // updatedResponse.no_of_runs = updatedResponse.no_of_runs + 1;
     updatedResponse.status = "In Progress";
     updatedResponse.last_run = formatDateToCustomFormat(new Date());
 

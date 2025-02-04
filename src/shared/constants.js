@@ -46,6 +46,7 @@ export const API_ERROR_MESSAGE = {
   VERIFY_OTP:"Error occurred while verifying OTP.",
   CUSTOM_REGULATORY_SINGLE_FILE_ONLY : "You can upload only one Standard document",
   DOCUMENT_NOT_FOUND: "Please add Project documents to run the assessment",
+  FAILED_TO_RUN_ASSESSMENT : "Failed to run assessment"
 
 };
 

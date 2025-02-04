@@ -23,49 +23,91 @@ import { saveAs } from 'file-saver';
 
 // Function to parse the API response into a structured format (skipping the title)
 const parseApiResponse = (response) => {
-  // Split the response by '---' to separate sections
-  const sections = response.split('---').slice(1); // Skip the first "Title" section
-  // console.log("sections",sections)
+  // Check if the response contains '---' and '**' (first format)
+  if (response.includes('---') || response.includes('**')) {
+      // Handle the first format (with '**' and '---')
+      const sections = response.split('---').slice(1); // Skip the first "Title" section
+      const lastSection = sections[sections.length - 1]?.trim();
 
-  // Check if the last section is the Summary and ensure it's handled correctly
-  const lastSection = sections[sections.length - 1]?.trim();
+      // If the last section starts with "Summary:", explicitly name it
+      if (lastSection?.startsWith("Summary:")) {
+          sections[sections.length - 1] = `**Summary**\n${lastSection}`;
+      }
 
-  // If the last section starts with "Summary:", we explicitly name it
-  if (lastSection?.startsWith("Summary:")) {
-    // Set the last section as Summary with a defined title
-    sections[sections.length - 1] = `**Summary**\n${lastSection}`;
+      // Now process all sections
+      return sections?.map((section, index) => {
+          let lines = section?.trim()?.split('\n'); // Split the section into lines
+
+          // Extract and clean the title of the section
+          let title = lines[0]?.replace('**', '')?.replace(':', '')?.trim();
+          title= title?.replace("**","");
+        if(title?.startsWith("Summary"))
+        {
+          lines.push(title?.replace("Summary",`${index}.`))
+          lines[0] = title?.replace("Summary** ",`${index}.`);
+          
+          title = "Summary";
+        } 
+        else{
+          title = title?.replace(`Section ${index + 1}`, '')?.trim();
+        }   
+       
+        // Process the remaining lines as "points" and clean the list
+        const points = lines?.slice(1).map(line => line.replace(/^\d+\./, '')?.trim());
+    
+        // console.log("title",title);
+        // console.log("points",points);x
+    
+    
+          return { title, points };
+      });
   }
 
-  // Now process all sections
-  return sections.map((section, index) => {
-    let lines = section?.trim()?.split('\n'); // Split the section into lines
+  // If the response contains '###' but not '---' (second format)
+  else if (response.includes('###')) {
+      // Handle the second format (with '###')
+      const sections = response.split('###').slice(1); // Skip the first part (Title)
+      return sections.map((section, index) => {
+          let lines = section.trim().split('\n');
 
-    // Extract and clean the title of the section
-    let title = lines[0]
-      .replace('**', '')      // Remove asterisks around the title
-      .replace(':', '')       // Remove colon after section title
-      .trim();
-      title= title.replace("**","");
-    if(title?.startsWith("Summary"))
-    {
-      lines.push(title.replace("Summary",`${index}.`))
-      lines[0] = title.replace("Summary** ",`${index}.`);
+          // Extract and clean the title of the section
+          let title = lines[0].replace(':', '').trim();
+
+          if (title.startsWith("Section") || title.startsWith("Summary")) {
+            // Clean up titles that include 'Section X'
+            title = title.replace(/^Section \d+:?/, '').trim();
+        }
+
+          // Special handling for "Summary" in the title
+          if(title?.startsWith("Summary"))
+          {
+            lines.push(title?.replace("Summary",`${index}.`))
+            lines[0] = title?.replace("Summary** ",`${index}.`);
+            
+            title = "Summary";
+          } 
+          else{
+            title = title?.replace(`Section ${index + 1}`, '')?.trim();
+          }   
+         
+          // Process the remaining lines as "points" and clean the list
+          const points = lines?.slice(1).map(line => line.replace(/^\d+\./, '')?.trim());
       
-      title = "Summary";
-    } 
-    else{
-      title = title.replace(`Section ${index + 1}`, '')?.trim();
-    }   
-   
-    // Process the remaining lines as "points" and clean the list
-    const points = lines.slice(1).map(line => line.replace(/^\d+\./, '')?.trim());
+          // console.log("title",title);
+          // console.log("points",points);x
+      
+      
+            return { title, points };
+      });
+  }
 
-    // console.log("title",title);
-    // console.log("points",points);x
-
-    return { title, points };
-  });
+  // Default case (if the response doesn't match either format)
+  else {
+      console.error("Unknown response format");
+      return [];
+  }
 };
+
 
 const FileCard = ({ fileName, onDownload, onView, apiResponse,data }) => {
   // Modal open state and active tab state

@@ -33,6 +33,10 @@ const AdminOrgNestedListing = ({data}) => {
     navigate(`/projectView/${projectNo}`, { state: { projectNo } });
   };
 
+  useEffect(()=>{
+    filterData(data)
+  },[searchText]);
+
 
   const projectColumns = [
     {
