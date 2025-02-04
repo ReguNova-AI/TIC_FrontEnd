@@ -18,7 +18,7 @@ const AvatarSection = ({ userData }) => (
     {userData?.map((user) => {
       return (
         <Tooltip key={user?.user_id} title={user?.user_name} arrow>
-          {user?.user_profile ?
+          {user?.user_profile  && user?.user_profile !== "null" ?
             <img src={user?.user_profile} alt={user?.user_name} style={{borderRadius: '50%',width:"40px",height:"40px",border:"1px solid grey" }} />
           :
           <Avatar
