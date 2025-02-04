@@ -21,6 +21,10 @@ import checklist from '../../assets/images/checklist3.jpg';
 import assessment from '../../assets/images/assessment2.jpg';
 import AssessmentView from './AssessmentView';
 import { saveAs } from 'file-saver';
+import { Document, Packer, Paragraph, TextRun, AlignmentType } from 'docx';
+import { Table as DocxTable, TableRow as DocxTableRow, TableCell as DocxTableCell } from "docx";
+
+
 
 // Function to parse the API response into a structured format (skipping the title)
 const parseApiResponse = (response) => {
@@ -106,7 +110,7 @@ const parseApiResponse = (response) => {
 };
 
 
-const FileCard = ({ fileName, onDownload, onView, apiResponse,data,data1 }) => {
+const FileCard = ({ fileName, onDownload, onView, apiResponse,data,data1,projectData }) => {
   // Modal open state and active tab state
   const [openModal, setOpenModal] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
@@ -179,18 +183,235 @@ apiResponse = data;
     setActiveTab(newValue);
   };
 
-  const downloadChecklistFile = ()=>{
-    const content = data;
-    const blob = new Blob([content], { type: 'application/msword' });
-    saveAs(blob, 'IEC_Power_Performance_Standard.doc');
-  }
+  // const downloadChecklistFile = ()=>{
+  //   const content = data;
+  //   const blob = new Blob([content], { type: 'application/msword' });
+  //   saveAs(blob, 'IEC_Power_Performance_Standard.doc');
+  // }
+
+  const downloadChecklistFile = () => {
+
+    const inviteData = [];
+    projectData?.invite_members?.map(idata=>{
+      inviteData.push(idata?.user_name);
+    });
+
+    const extraInfo = {
+      projectName: projectData?.project_name,
+      projectNo: projectData?.project_no,
+      regulatory: projectData?.regulatory_standard,
+      invitedMembers: inviteData.join(","),
+
+    };
+  
+    const content = data; // Assuming this is your existing content
+    
+    // Split content by new lines, preserving individual lines
+    const contentLines = content.split("\n");
+  
+    // Create the table with two columns using aliased imports
+    const extraInfoTable = new DocxTable({
+      rows: [
+        new DocxTableRow({
+          children: [
+            new DocxTableCell({
+              children: [new Paragraph("Project Name")],
+              width: { size: 50, type: "pct" },
+              verticalAlign: "center",
+            }),
+            new DocxTableCell({
+              children: [new Paragraph(extraInfo.projectName)],
+              width: { size: 50, type: "pct" },
+              verticalAlign: "center",
+            }),
+          ],
+        }),
+        new DocxTableRow({
+          children: [
+            new DocxTableCell({
+              children: [new Paragraph("Project No.")],
+              width: { size: 50, type: "pct" },
+              verticalAlign: "center",
+            }),
+            new DocxTableCell({
+              children: [new Paragraph(extraInfo.projectNo)],
+              width: { size: 50, type: "pct" },
+              verticalAlign: "center",
+            }),
+          ],
+        }),
+        new DocxTableRow({
+          children: [
+            new DocxTableCell({
+              children: [new Paragraph("Regulatory")],
+              width: { size: 50, type: "pct" },
+              verticalAlign: "center",
+            }),
+            new DocxTableCell({
+              children: [new Paragraph(extraInfo.regulatory)],
+              width: { size: 50, type: "pct" },
+              verticalAlign: "center",
+            }),
+          ],
+        }),
+        new DocxTableRow({
+          children: [
+            new DocxTableCell({
+              children: [new Paragraph("Invited Members")],
+              width: { size: 50, type: "pct" },
+              verticalAlign: "center",
+            }),
+            new DocxTableCell({
+              children: [new Paragraph(extraInfo.invitedMembers)],
+              width: { size: 50, type: "pct" },
+              verticalAlign: "center",
+            }),
+          ],
+        }),
+      ],
+    });
+  
+     // Compliance data table (only if complianceData exists)
+  const complianceTable = complianceData?.length > 0 ? new DocxTable({
+    rows: [
+      // Table header row
+      new DocxTableRow({
+        children: [
+          new DocxTableCell({
+            children: [new Paragraph("Requirement")],
+            width: { size: 50, type: "pct" },
+            verticalAlign: "center",
+          }),
+          new DocxTableCell({
+            children: [new Paragraph("Fulfilled or Not")],
+            width: { size: 20, type: "pct" },
+            verticalAlign: "center",
+          }),
+          new DocxTableCell({
+            children: [new Paragraph("Explanation")],
+            width: { size: 30, type: "pct" },
+            verticalAlign: "center",
+          }),
+        ],
+      }),
+
+      // Table content rows
+      ...complianceData?.map(item => new DocxTableRow({
+        children: [
+          new DocxTableCell({
+            children: [new Paragraph(item.question)],
+            width: { size: 50, type: "pct" },
+            verticalAlign: "center",
+            alignment: AlignmentType.CENTER,
+          }),
+          new DocxTableCell({
+            children: [new Paragraph(item.answer)],
+            width: { size: 20, type: "pct" },
+            verticalAlign: "center",
+            alignment: AlignmentType.CENTER,
+          }),
+          new DocxTableCell({
+            children: [new Paragraph(item.explanation)],
+            width: { size: 30, type: "pct" },
+            verticalAlign: "center",
+            alignment: AlignmentType.CENTER,
+          }),
+        ],
+      })),
+    ],
+  }) : null;  // Only create table if complianceData exists
 
   
+    // Create a new document
+    const doc = fileName === 'Assessment Report' ? new Document({
+      sections: [
+        {
+          properties: {},
+          children: [
+            // Heading "Checklist Report" in a larger font size, centered horizontally and vertically
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Assessment Report",
+                  size: 48, // Size 48 (larger than normal text size)
+                  bold: true,
+                }),
+              ],
+              alignment: AlignmentType.CENTER,
+              spacing: { after: 800 }, // Adds space after the heading to push the table below
+            }),
+  
+            // Add a table with extra information
+            extraInfoTable,
+  
+            // Add a page break after the table (move to the next page)
+            new Paragraph({
+              children: [],
+              pageBreakBefore: true,
+            }),
+
+            complianceTable && complianceTable,
+  
+          ],
+        },
+      ],
+    })
+    :
+    new Document({
+      sections: [
+        {
+          properties: {},
+          children: [
+            // Heading "Checklist Report" in a larger font size, centered horizontally and vertically
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Checklist Report",
+                  size: 48, // Size 48 (larger than normal text size)
+                  bold: true,
+                }),
+              ],
+              alignment: AlignmentType.CENTER,
+              spacing: { after: 800 }, // Adds space after the heading to push the table below
+            }),
+  
+            // Add a table with extra information
+            extraInfoTable,
+  
+            // Add a page break after the table (move to the next page)
+            new Paragraph({
+              children: [],
+              pageBreakBefore: true,
+            }),
+            // Loop through content lines and add each one as a separate TextRun
+            ...contentLines.map((line) => {
+              return new Paragraph({
+                children: [
+                  new TextRun({
+                    text: line?.replace("**","")?.replace("---","")?.replace("###","")?.replace("**",""),
+                  }),
+                ],
+              });
+            }),
+          ],
+        },
+      ],
+    }); 
+  
+    // Create a blob and download the file
+    Packer.toBlob(doc).then((blob) => {
+      saveAs(blob, "IEC_Power_Performance_Standard.docx");
+    });
+  };
+  
+
   const renderAnswerIcon = (answer) => {
-    return answer === "YES" ? <CheckCircleOutlined style={{ color: "green" }} /> : <CloseCircleOutlined style={{ color: "red" }} />;
-};
-
-
+    return answer === "YES" ? (
+      <CheckCircleOutlined style={{ color: "green" }} />
+    ) : (
+      <CloseCircleOutlined style={{ color: "red" }} />
+    );
+  };
 
   return (
     <>

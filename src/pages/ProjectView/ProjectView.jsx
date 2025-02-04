@@ -859,6 +859,7 @@ const ProjectView = () => {
                       <FileCard
                         fileName={PROJECT_DETAIL_PAGE.CHECKLIST_REPORT}
                         data={projectData?.checkListResponse}   
+                        projectData={projectData}
                       />
                     )}
                     {projectData?.complianceAssesment && (
@@ -866,6 +867,7 @@ const ProjectView = () => {
                         fileName={PROJECT_DETAIL_PAGE.ASSESSMENT_REPORT}
                         data1={projectData?.complianceAssesment}
                         data={projectData?.checkListResponse}
+                        projectData={projectData}
                       />
                     )}    
                   </Box>
