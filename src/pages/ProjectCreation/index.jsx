@@ -411,7 +411,7 @@ const MyForm = () => {
               {sData.standard_name}
             </MenuItem>
           ))}
-           <MenuItem value="">
+           <MenuItem >
             <Button
               variant="outlined"
               component="label"
