@@ -73,16 +73,27 @@ export default function AuthLogin() {
             message: response.message,
             type: "success",
           });
-          dispatch(actions.setAuthentication(response));
- 
-          navigate("/dashboard/default");
+
+          if(response?.data?.userDetails?.[0].password_updated_date === null)
+          {
+            sessionStorage.setItem("email",response?.data?.userDetails?.[0]?.user_email);
+            sessionStorage.setItem("resetFlow",true);
+            navigate("/passwordReset", { state: { showPage: true } });
+          }
+          else{
+             dispatch(actions.setAuthentication(response)); 
+             navigate("/dashboard/default");
+          }
+
+
+          
         }
       })
       .catch((errResponse) => {
         // On failure, reset the button to enable again
         setSnackData({
           show: true,
-          message: errResponse?.response?.data?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          message: errResponse?.response?.data?.message === "User password has expired." ? API_ERROR_MESSAGE.PASSWORD_EXPIRED : errResponse?.response?.data?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
 
