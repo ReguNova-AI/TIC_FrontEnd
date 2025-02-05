@@ -21,7 +21,7 @@ import checklist from '../../assets/images/checklist3.jpg';
 import assessment from '../../assets/images/assessment2.jpg';
 import AssessmentView from './AssessmentView';
 import { saveAs } from 'file-saver';
-import { Document, Packer, Paragraph, TextRun, AlignmentType } from 'docx';
+import { Document, Packer, Paragraph, TextRun, AlignmentType,Header } from 'docx';
 import { Table as DocxTable, TableRow as DocxTableRow, TableCell as DocxTableCell } from "docx";
 import { OrganisationApiService } from 'services/api/OrganizationAPIService';
 
@@ -204,9 +204,9 @@ apiResponse = data;
     return date.toLocaleDateString('en-US', options);
   };
 
-  const downloadChecklistFile = async() => {
+  const downloadChecklistFile = async () => {
     const OrgData = await fetchOrgDetails(projectData?.org_id);
-
+  
     const inviteData = [];
     projectData?.invite_members?.map(idata => {
       inviteData.push(idata?.user_name);
@@ -216,49 +216,49 @@ apiResponse = data;
       projectName: projectData?.project_name,
       projectNo: projectData?.project_no,
       regulatory: projectData?.regulatory_standard,
-      projectDescription:projectData?.project_description,
+      projectDescription: projectData?.project_description,
       invitedMembers: inviteData.join(","),
-      organizationName: projectData?.org_name, // Assuming you have this field
-      city: OrgData?.org_address?.city, // Assuming you have this field
-      country: OrgData?.org_address?.country, // Assuming you have this field
+      organizationName: projectData?.org_name, 
+      city: OrgData?.org_address?.city, 
+      country: OrgData?.org_address?.country,
       street: OrgData?.org_address?.street,
-      zipCode: OrgData?.org_address?.zip, // Assuming you have this field
-      email: OrgData?.contact_json?.primary_contact?.email, // Assuming you have this field
-      submittedByName:"Regunova AI",
-      submittedByZip:"PO Box 375,", 
-      submittedByAddress:"Frisco, TX 75034, US",
-      submittedByEmail:"Email support@regunova.ai",
+      zipCode: OrgData?.org_address?.zip, 
+      email: OrgData?.contact_json?.primary_contact?.email, 
+      submittedByName: "Regunova AI",
+      submittedByZip: "PO Box 375,", 
+      submittedByAddress: "Frisco, TX 75034, US",
+      submittedByEmail: "Email support@regunova.ai",
     };
   
     const content = data; // Assuming this is your existing content
-    
+  
     // Split content by new lines, preserving individual lines
     const contentLines = content.split("\n");
   
     // Create the "Prepared for" details section with label-value pairs
-
+    
     const projectParagraphs = [
       { label: "Project Name:", value: extraInfo.projectName },
-      { label: "", value: getFormattedDate()},
+      { label: "", value: getFormattedDate() },
       { label: "Project No:", value: extraInfo.projectNo },
       { label: "Regulatory Standards:", value: extraInfo.regulatory },
       { label: "Project Description:", value: extraInfo.projectDescription },
       { label: "Invited Members:", value: extraInfo.invitedMembers },     
     ];
-
+  
     const preparedForParagraphs = [
       { label: "Organization Name:", value: extraInfo.organizationName },
       { label: "City, State, Zip:", value: `${extraInfo.street} ${extraInfo.city}, ${extraInfo.country} ${extraInfo.zipCode}` },
       { label: "Email:", value: extraInfo.email }
     ];
-
+  
     const submittedByParagraphs = [
       { label: "Organization Name:", value: extraInfo.submittedByName },
       { label: "submittedByZip:", value: extraInfo.submittedByZip },
       { label: "submittedByAddress:", value: extraInfo.submittedByAddress },
       { label: "submittedByEmail:", value: extraInfo.submittedByEmail },     
     ];
-
+  
     const projectContent = projectParagraphs.map(info => {
       return new Paragraph({
         children: [
@@ -270,7 +270,7 @@ apiResponse = data;
         spacing: { after: 100 }, // Add space after each line
       });
     });
-
+  
     // Generate paragraphs for the "Prepared for" section
     const preparedForContent = preparedForParagraphs.map(info => {
       return new Paragraph({
@@ -283,7 +283,7 @@ apiResponse = data;
         spacing: { after: 100 }, // Add space after each line
       });
     });
-
+  
     const submittedByContent = submittedByParagraphs.map(info => {
       return new Paragraph({
         children: [
@@ -295,140 +295,161 @@ apiResponse = data;
         spacing: { after: 100 }, // Add space after each line
       });
     });
-  
-    // Create the table with extra information (project details)
-    const extraInfoTable = new DocxTable({
-      rows: [
-        new DocxTableRow({
-          children: [
-            new DocxTableCell({
-              children: [new Paragraph("Project Name:")],
-              width: { size: 50, type: "pct" },
-              verticalAlign: "center",
-            }),
-            new DocxTableCell({
-              children: [new Paragraph(extraInfo.projectName)],
-              width: { size: 50, type: "pct" },
-              verticalAlign: "center",
-            }),
-          ],
+
+// Create the table with extra information (project details)
+const extraInfoTable = new DocxTable({
+  rows: [
+    new DocxTableRow({
+      children: [
+        new DocxTableCell({
+          children: [new Paragraph("Project Name:")],
+          width: { size: 50, type: "pct" },
+          verticalAlign: "center",
         }),
-        new DocxTableRow({
-          children: [
-            new DocxTableCell({
-              children: [new Paragraph("Project No.:")],
-              width: { size: 50, type: "pct" },
-              verticalAlign: "center",
-            }),
-            new DocxTableCell({
-              children: [new Paragraph(extraInfo.projectNo)],
-              width: { size: 50, type: "pct" },
-              verticalAlign: "center",
-            }),
-          ],
-        }),
-        new DocxTableRow({
-          children: [
-            new DocxTableCell({
-              children: [new Paragraph("Regulatory:")],
-              width: { size: 50, type: "pct" },
-              verticalAlign: "center",
-            }),
-            new DocxTableCell({
-              children: [new Paragraph(extraInfo.regulatory)],
-              width: { size: 50, type: "pct" },
-              verticalAlign: "center",
-            }),
-          ],
-        }),
-        new DocxTableRow({
-          children: [
-            new DocxTableCell({
-              children: [new Paragraph("Invited Members:")],
-              width: { size: 50, type: "pct" },
-              verticalAlign: "center",
-            }),
-            new DocxTableCell({
-              children: [new Paragraph(extraInfo.invitedMembers)],
-              width: { size: 50, type: "pct" },
-              verticalAlign: "center",
-            }),
-          ],
+        new DocxTableCell({
+          children: [new Paragraph(extraInfo.projectName)],
+          width: { size: 50, type: "pct" },
+          verticalAlign: "center",
         }),
       ],
-    });
-  
-    // Compliance data table (only if complianceData exists)
-    const complianceTable = complianceData?.length > 0 ? new DocxTable({
-      rows: [
-        // Table header row
-        new DocxTableRow({
-          children: [
-            new DocxTableCell({
-              children: [new Paragraph("Requirement")],
-              width: { size: 50, type: "pct" },
-              verticalAlign: "center",
-            }),
-            new DocxTableCell({
-              children: [new Paragraph("Fulfilled or Not")],
-              width: { size: 20, type: "pct" },
-              verticalAlign: "center",
-            }),
-            new DocxTableCell({
-              children: [new Paragraph("Explanation")],
-              width: { size: 30, type: "pct" },
-              verticalAlign: "center",
-            }),
-          ],
+    }),
+    new DocxTableRow({
+      children: [
+        new DocxTableCell({
+          children: [new Paragraph("Project No.:")],
+          width: { size: 50, type: "pct" },
+          verticalAlign: "center",
         }),
-  
-        // Table content rows
-        ...complianceData?.map(item => new DocxTableRow({
-          children: [
-            new DocxTableCell({
-              children: [new Paragraph(item.question)],
-              width: { size: 50, type: "pct" },
-              verticalAlign: "center",
-              alignment: AlignmentType.CENTER,
-            }),
-            new DocxTableCell({
-              children: [new Paragraph(item.answer)],
-              width: { size: 20, type: "pct" },
-              verticalAlign: "center",
-              alignment: AlignmentType.CENTER,
-            }),
-            new DocxTableCell({
-              children: [new Paragraph(item.explanation)],
-              width: { size: 30, type: "pct" },
-              verticalAlign: "center",
-              alignment: AlignmentType.CENTER,
-            }),
-          ],
-        })),
+        new DocxTableCell({
+          children: [new Paragraph(extraInfo.projectNo)],
+          width: { size: 50, type: "pct" },
+          verticalAlign: "center",
+        }),
       ],
-    }) : null;  // Only create table if complianceData exists
-  
+    }),
+    new DocxTableRow({
+      children: [
+        new DocxTableCell({
+          children: [new Paragraph("Regulatory:")],
+          width: { size: 50, type: "pct" },
+          verticalAlign: "center",
+        }),
+        new DocxTableCell({
+          children: [new Paragraph(extraInfo.regulatory)],
+          width: { size: 50, type: "pct" },
+          verticalAlign: "center",
+        }),
+      ],
+    }),
+    new DocxTableRow({
+      children: [
+        new DocxTableCell({
+          children: [new Paragraph("Invited Members:")],
+          width: { size: 50, type: "pct" },
+          verticalAlign: "center",
+        }),
+        new DocxTableCell({
+          children: [new Paragraph(extraInfo.invitedMembers)],
+          width: { size: 50, type: "pct" },
+          verticalAlign: "center",
+        }),
+      ],
+    }),
+  ],
+});
+
+       // Compliance data table (only if complianceData exists)
+       const complianceTable = complianceData?.length > 0 ? new DocxTable({
+        rows: [
+          // Table header row
+          new DocxTableRow({
+            children: [
+              new DocxTableCell({
+                children: [new Paragraph("Requirement")],
+                width: { size: 50, type: "pct" },
+                verticalAlign: "center",
+              }),
+              new DocxTableCell({
+                children: [new Paragraph("Fulfilled or Not")],
+                width: { size: 20, type: "pct" },
+                verticalAlign: "center",
+              }),
+              new DocxTableCell({
+                children: [new Paragraph("Explanation")],
+                width: { size: 30, type: "pct" },
+                verticalAlign: "center",
+              }),
+            ],
+          }),
     
+          // Table content rows
+          ...complianceData?.map(item => new DocxTableRow({
+            children: [
+              new DocxTableCell({
+                children: [new Paragraph(item.question)],
+                width: { size: 50, type: "pct" },
+                verticalAlign: "center",
+                alignment: AlignmentType.CENTER,
+              }),
+              new DocxTableCell({
+                children: [new Paragraph(item.answer)],
+                width: { size: 20, type: "pct" },
+                verticalAlign: "center",
+                alignment: AlignmentType.CENTER,
+              }),
+              new DocxTableCell({
+                children: [new Paragraph(item.explanation)],
+                width: { size: 30, type: "pct" },
+                verticalAlign: "center",
+                alignment: AlignmentType.CENTER,
+              }),
+            ],
+          })),
+        ],
+      }) : null;  // Only create table if complianceData exists
+    
+  
     // Create a new document
     const doc = fileName === 'Assessment Report' ? new Document({
       sections: [
         {
-          properties: {},
+          properties: {
+            // Define the header with project name and page number
+          },
           children: [
+            // Add header with project name and page number
+            new Header({
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: `${extraInfo.projectName} - Page `,
+                    }),
+                    new TextRun({
+                      text: "PAGE ",  // This is the placeholder for the page number
+                      fieldCode: "PAGE", // Field code for the page number in Word
+                      font: "Times New Roman",  // Set the font of the page number
+                      size: 24,  // Font size for the page number
+                      bold: true  // Make the page number bold (optional)
+                    }),
+                  ],
+                  alignment: AlignmentType.LEFT, // Align to the left
+                }),
+              ],
+            }),
+  
+            // Add content sections
             new Paragraph({
               children: [],
               spacing: { after:600 },
             }),
-        
-            // Add a table with extra information
-            // extraInfoTable,
-
+  
             ...projectContent,
             new Paragraph({
               children: [],
               spacing: { after:400 },
             }),
-        
+  
             // "Prepared for" details
             new Paragraph({
               children: [
@@ -441,12 +462,12 @@ apiResponse = data;
               spacing: { after:50 },
             }),
             ...preparedForContent,
-
+  
             new Paragraph({
               children: [],
               spacing: { after:400 },
             }),
-
+  
             new Paragraph({
               children: [
                 new TextRun({
@@ -458,14 +479,15 @@ apiResponse = data;
               spacing: { after:50 },
             }),
             ...submittedByContent,
-  
+    
             // Add a page break after the table (move to the next page)
             new Paragraph({
               children: [],
               pageBreakBefore: true,
             }),
   
-            complianceTable && complianceTable,
+            // Loop through content lines and add each one as a separate TextRun
+            complianceTable
           ],
         },
       ],
@@ -475,19 +497,38 @@ apiResponse = data;
         {
           properties: {},
           children: [
+            // Add header with project name and page number
+            new Header({
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: `${extraInfo.projectName} - Page `,
+                    }),
+                    new TextRun({
+                      text: "PAGE ", // Placeholder for page number
+                      fieldCode: "PAGE", // Correct way to include page number
+                      font: "Times New Roman", // Set the font for page number
+                      size: 24, // Font size for page number
+                      bold: true  // Optional: Make the page number bold
+                    }),
+                  ],
+                  alignment: AlignmentType.LEFT,  // You can change this to Right or Center as needed
+                }),
+              ],
+            }),
+  
+            // Add content sections
             new Paragraph({
               children: [],
               spacing: { after:600 },
             }),
-            // Add a table with extra information
-            // extraInfoTable,
             ...projectContent,
-
             new Paragraph({
               children: [],
               spacing: { after:400 },
             }),
-
+  
             // "Prepared for" details
             new Paragraph({
               children: [
@@ -500,12 +541,12 @@ apiResponse = data;
               spacing: { after: 50 },
             }),
             ...preparedForContent,
-
+  
             new Paragraph({
               children: [],
               spacing: { after:400 },
             }),
-
+  
             new Paragraph({
               children: [
                 new TextRun({
@@ -517,7 +558,7 @@ apiResponse = data;
               spacing: { after:50 },
             }),
             ...submittedByContent,
-  
+    
             // Add a page break after the table (move to the next page)
             new Paragraph({
               children: [],
