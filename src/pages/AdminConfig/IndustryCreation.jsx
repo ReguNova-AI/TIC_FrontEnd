@@ -35,12 +35,12 @@ const IndustryCreation = ({onHandleClose}) => {
   const [formData, setFormData] = useState({
     industry_name: "",
     industry_description: "d",
-    sector_id: null,
-    sector_name: "",
+    sector_id: 1,
+    sector_name: "Nil",
   });
 
   useEffect(() => {
-    fetchSectorDetails();
+    // fetchSectorDetails();
   }, []);
 
   const fetchSectorDetails = () => {
@@ -137,7 +137,7 @@ const IndustryCreation = ({onHandleClose}) => {
           <Grid container spacing={2}>
             {/* First row - 3 items */}
            
-            <Grid item xs={12} sm={6}>
+            {/* <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel>
                   {FORM_LABEL.SECTOR}
@@ -149,9 +149,7 @@ const IndustryCreation = ({onHandleClose}) => {
                   name="sector_name"
                   // disabled={sectorData.length === 0}
                 >
-                  {/* <MenuItem value="">
-                      <em>None</em>
-                    </MenuItem> */}
+                  
                   {sectorData.map((sector) => (
                     <MenuItem key={sector.sector_id} value={sector.sector_name}>
                       {sector.sector_name}
@@ -159,8 +157,8 @@ const IndustryCreation = ({onHandleClose}) => {
                   ))}
                 </Select>
               </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={6}>
+            </Grid> */}
+            <Grid item xs={12} sm={12}>
               <TextField
                 label={FORM_LABEL.INDUSTRY_NAME}
                 variant="outlined"

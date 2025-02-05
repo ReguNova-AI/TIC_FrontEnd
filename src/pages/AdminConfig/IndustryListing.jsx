@@ -110,15 +110,15 @@ const IndustriesListing = () => {
       onFilter: (value, record) =>
         record.industry_name.toLowerCase().includes(value.toLowerCase()),
     },
-    {
-        title: LISTING_PAGE.SECTOR,
-        dataIndex: "sector_name",
-        key: "sector_name",
-        render: (text) => text, // Directly display the sector_name
-        filterSearch: true,
-        onFilter: (value, record) =>
-          record.sector_name.toLowerCase().includes(value.toLowerCase()),
-      },
+    // {
+    //     title: LISTING_PAGE.SECTOR,
+    //     dataIndex: "sector_name",
+    //     key: "sector_name",
+    //     render: (text) => text, // Directly display the sector_name
+    //     filterSearch: true,
+    //     onFilter: (value, record) =>
+    //       record.sector_name.toLowerCase().includes(value.toLowerCase()),
+    //   },
   
     
       {

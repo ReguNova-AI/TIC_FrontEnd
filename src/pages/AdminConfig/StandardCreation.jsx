@@ -50,32 +50,36 @@ const StandardCreation = ({ onHandleClose }) => {
   }, []);
 
   const fetchSectorDetails = () => {
-    AdminConfigAPIService.sectorListing()
-      .then((response) => {
-        // setSnackData({
-        //   show: true,
-        //   message:
-        //     response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-        //   type: "success",
-        // });
 
-        const sectors = response?.data?.details || []; // Use an empty array as fallback
-        setSectorData(sectors);
-      })
-      .catch((errResponse) => {
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
-      });
+    // uncomment this code if sector listing is required
+
+    // AdminConfigAPIService.sectorListing()
+    //   .then((response) => {
+    //     // setSnackData({
+    //     //   show: true,
+    //     //   message:
+    //     //     response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+    //     //   type: "success",
+    //     // });
+
+    //     const sectors = response?.data?.details || []; // Use an empty array as fallback
+    //     setSectorData(sectors);
+    //   })
+    //   .catch((errResponse) => {
+    //     setSnackData({
+    //       show: true,
+    //       message:
+    //         errResponse?.error?.message ||
+    //         API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+    //       type: "error",
+    //     });
+    //   });
 
     AdminConfigAPIService.industryListing()
       .then((response) => {
         // Check the response structure and map data accordingly
         if (response?.data?.details) {
+          setFilteredIndustries(response?.data?.details);   //remove this line when sector selection is required
           setIndustryData(response?.data?.details);
           setFilteredData(newData);
         }
@@ -206,7 +210,7 @@ const StandardCreation = ({ onHandleClose }) => {
               />
             </Grid>
 
-            <Grid item xs={12} sm={6}>
+            {/* <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel>
                   {FORM_LABEL.SECTOR}
@@ -218,9 +222,6 @@ const StandardCreation = ({ onHandleClose }) => {
                   name="sector_name"
                   // disabled={sectorData.length === 0}
                 >
-                  {/* <MenuItem value="">
-                      <em>None</em>
-                    </MenuItem> */}
                   {sectorData.map((sector) => (
                     <MenuItem key={sector.sector_id} value={sector.sector_name}>
                       {sector.sector_name}
@@ -228,7 +229,7 @@ const StandardCreation = ({ onHandleClose }) => {
                   ))}
                 </Select>
               </FormControl>
-            </Grid>
+            </Grid> */}
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel>
