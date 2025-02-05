@@ -149,11 +149,11 @@ const AdminOrgNestedListing = ({data}) => {
         </>
       ),
     },
-    {
-      title: 'Sector',
-      dataIndex: 'sector_name',
-      key: 'sector_name',
-    },
+    // {
+    //   title: 'Sector',
+    //   dataIndex: 'sector_name',
+    //   key: 'sector_name',
+    // },
     {
         title: 'Total Industries',
         dataIndex: 'industries',

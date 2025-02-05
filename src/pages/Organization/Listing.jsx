@@ -259,7 +259,7 @@ const OrganizationListing = () => {
 
   const filterPopoverContent = (
     <div style={{ padding: "10px", minWidth: "200px" }}>
-      <div>
+      {/* <div>
         <label><b>Sector</b></label>
         <MultiSelectWithChip
           value={sectorFilter}
@@ -267,7 +267,7 @@ const OrganizationListing = () => {
           options={sectorData}
           placeholder="Select Sector"
         />
-      </div>
+      </div> */}
       <div style={{ marginTop: "10px" }}>
         <label><b>Industry</b></label>
         <MultiSelectWithChip
@@ -324,11 +324,11 @@ const OrganizationListing = () => {
       dataIndex: "org_url",
       key: "org_url",
     },
-    {
-      title: LISTING_PAGE.SECTOR,
-      dataIndex: "sector",
-      key: "sector",
-    },
+    // {
+    //   title: LISTING_PAGE.SECTOR,
+    //   dataIndex: "sector",
+    //   key: "sector",
+    // },
     {
       title: LISTING_PAGE.INDUSTRY,
       dataIndex: "industry",

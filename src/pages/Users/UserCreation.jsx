@@ -70,8 +70,8 @@ export default function UserCreation({ onHandleClose }) {
       state: "",
       zip: "",
     },
-    sector_id: "",
-    sector_name: "",
+    sector_id: 1,
+    sector_name: "Nil",
     org_id: "",
     org_name: "",
     industry_id: "",
@@ -234,7 +234,7 @@ export default function UserCreation({ onHandleClose }) {
         "user_last_name",
         "user_email",
         "user_phone_no",
-        "sector_id",
+        // "sector_id",
         "org_id",
         "industry_id",
       ];
@@ -516,7 +516,7 @@ export default function UserCreation({ onHandleClose }) {
     else{
       industryIds = JSON.parse(selectedOrganization?.industries || "[]");
     }
-    console.log("industryIds",industryIds)
+    // console.log("industryIds",industryIds)
 
     const sectors = Array.isArray(selectedOrganization?.sector_id)
       ? selectedOrganization.sector_id
@@ -532,7 +532,7 @@ export default function UserCreation({ onHandleClose }) {
     );
 
 
-console.log("availableIndustries",availableIndustries)
+// console.log("availableIndustries",availableIndustries)
     setFilteredIndustries(availableIndustries);
     setSelectedIndustry(""); // Reset selected industry
 
@@ -759,7 +759,7 @@ console.log("availableIndustries",availableIndustries)
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} sm={6}>
+              {/* <Grid item xs={12} sm={6}>
                 <FormControl fullWidth>
                   <InputLabel>
                     {FORM_LABEL.SECTOR}
@@ -771,9 +771,6 @@ console.log("availableIndustries",availableIndustries)
                     name="sector_name"
                     disabled={filteredSectors.length === 0}
                   >
-                    {/* <MenuItem value="">
-                      <em>None</em>
-                    </MenuItem> */}
                     {filteredSectors.map((sector) => (
                       <MenuItem
                         key={sector.sector_id}
@@ -784,7 +781,7 @@ console.log("availableIndustries",availableIndustries)
                     ))}
                   </Select>
                 </FormControl>
-              </Grid>
+              </Grid> */}
               <Grid item xs={12} sm={6}>
                 <FormControl fullWidth>
                   <InputLabel>

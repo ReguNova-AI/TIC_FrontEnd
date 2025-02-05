@@ -57,8 +57,8 @@ export default function OrgCreation({ onHandleClose }) {
 
   // Updated formData structure to match the desired format
   const [formData, setFormData] = React.useState({
-    sector_id: "",
-    sector_name: "",
+    sector_id: 1,
+    sector_name: "Nil",
     industries: "",
     industry_names:"",
     org_name: "",
@@ -272,6 +272,7 @@ export default function OrgCreation({ onHandleClose }) {
           type: "success",
         });
         setIndustryData(response?.data?.details || []); // Use an empty array as fallback
+        setFilteredIndustries(response?.data?.details || []); //added this logic to skip sector selection in future remove this logic if sector selection is required
       })
       .catch((errResponse) => {
         setSnackData({
@@ -346,7 +347,7 @@ export default function OrgCreation({ onHandleClose }) {
     const requiredFields = [
       "org_name",
       // "org_email",
-      "sector_name",
+      // "sector_name",
       "industries",
     ];
 
@@ -428,7 +429,7 @@ export default function OrgCreation({ onHandleClose }) {
                   }}
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              {/* <Grid item xs={12} sm={6}>
                 <FormControl fullWidth>
                   <InputLabel>{FORM_LABEL.SECTOR}</InputLabel>
                   <Select
@@ -447,14 +448,15 @@ export default function OrgCreation({ onHandleClose }) {
                     ))}
                   </Select>
                 </FormControl>
-              </Grid>
+              </Grid> */}
               <Grid item xs={12} sm={6}>
                 <FormControl fullWidth>
-                  <InputLabel>{FORM_LABEL.INDUSTRY}</InputLabel>
+                  <InputLabel>{FORM_LABEL.INDUSTRY}*</InputLabel>
                   <Select
                     value={selectedIndustry}
                     onChange={handleIndustryChange}
                     multiple
+                    required
                     renderValue={(selected) => {
                       const selectedIndustries = filteredIndustries.filter(
                         (industry) => selected.includes(industry.industry_id)

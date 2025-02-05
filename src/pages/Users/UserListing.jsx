@@ -466,11 +466,11 @@ const UserListing = () => {
       dataIndex: "org_name",
       key: "org_name",
     },
-    {
-      title: LISTING_PAGE.SECTOR,
-      dataIndex: "sector",
-      key: "sector",
-    },
+    // {
+    //   title: LISTING_PAGE.SECTOR,
+    //   dataIndex: "sector",
+    //   key: "sector",
+    // },
     {
       title: LISTING_PAGE.INDUSTRY,
       dataIndex: "industry",

@@ -146,9 +146,9 @@ const ProfileDetails = () => {
                     <Descriptions.Item label="Industry">
                       {profileData?.industry_name}
                     </Descriptions.Item>
-                    <Descriptions.Item label="Sector">
+                    {/* <Descriptions.Item label="Sector">
                       {profileData?.sector_name}
-                    </Descriptions.Item>
+                    </Descriptions.Item> */}
                     <Descriptions.Item label="Role">
                       {profileData?.role_name}
                     </Descriptions.Item>
