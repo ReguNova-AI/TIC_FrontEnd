@@ -222,13 +222,13 @@ export default function Profile() {
                               sx={{ width: 32, height: 32 }}
                             />
                           )}
-                          <Stack>
-                            <Typography variant="h6">
+                          <Stack style={{width:"80%"}}>
+                            <Typography variant="h6" style={{wordBreak:"break-word"}}>
                               {" "}
                               {userdetails?.[0]?.user_first_name}{" "}
                               {userdetails?.[0]?.user_last_name}
                             </Typography>
-                            <Typography variant="body2" color="text.secondary">
+                            <Typography variant="body2" color="text.secondary" style={{wordBreak:"break-word"}}>
                               {userdetails?.[0]?.user_email}
                             </Typography>
                           </Stack>
