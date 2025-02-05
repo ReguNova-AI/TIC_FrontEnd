@@ -10,6 +10,7 @@ import {
   Box,
   Chip,
   Typography,
+  Input
 } from "@mui/material";
 
 import DropZoneFileUpload from "./DropZoneFileUpload";
@@ -24,6 +25,8 @@ import { formatDateToCustomFormat } from "shared/utility";
 import { API_ERROR_MESSAGE, API_SUCCESS_MESSAGE, BUTTON_LABEL, FORM_LABEL, HEADING } from "shared/constants";
 import { UserApiService } from "services/api/UserAPIService";
 import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
+import { FileUploadApiService } from "services/api/FileUploadAPIService";
+import { Spin } from "antd";
 
 const MyForm = () => {
   const [submissionStatus, setSubmissionStatus] = useState("");
@@ -31,6 +34,7 @@ const MyForm = () => {
   const [userData, setUserData] = useState([]); // Initially, set userData as an empty array
   const [standardData,setStandardData] = useState([]);
   const [loading,setLoading] = useState(false);
+  const [file, setFile] = useState(null);
   const [snackData, setSnackData] = useState({
     show: false,
     message: "",
@@ -46,7 +50,8 @@ const MyForm = () => {
     invite_Users:[],
     document: {},
     status: "",
-    invited_user_list:[]
+    invited_user_list:[],
+    mapping_standards:""
   });
 
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
@@ -112,6 +117,68 @@ const MyForm = () => {
       });
   };
 
+  const renderFileData = async (files) => {
+    const filesArray = Array.isArray(files) ? files : Array.from(files);
+
+    setLoading(true);
+    const processedFiles = await Promise.all(
+      filesArray && filesArray?.map(async (file) => {
+        let uploadedLink = null;
+
+        // Create a new FileReader to read the file as Base64
+        const reader = new FileReader();
+
+        const fileDataUrl = await new Promise((resolve, reject) => {
+          reader.onloadend = () => resolve(reader.result);
+          reader.onerror = reject; // Handle any errors while reading the file
+          reader.readAsDataURL(file); // Start reading the file
+        });
+
+        // Now that the file is read, upload the Base64 data to the API
+        try {
+          const fileType = file.name.split(".").pop();
+          const filepayload = {
+            documents: [fileDataUrl],
+            type: fileType,
+          };
+
+          const response = await FileUploadApiService.fileUpload(filepayload);
+
+          if (response) {
+            setSnackData({
+              show: true,
+              message:
+                response?.message || API_SUCCESS_MESSAGE.UPLOADED_SUCCESSFULLY,
+              type: "success",
+            });
+            setLoading(false);
+            setFormData({
+              ...formData,
+              mapping_standards: response.data.details[0], // Set file name in the select field
+              regulatory:files?.[0]?.name,
+            });
+          }
+          
+        } catch (errResponse) {
+          console.log("errResponse", errResponse);
+          return null;
+        }
+      })
+    );
+  };
+
+  const handleFileUpload = (e) => {
+    const uploadedFile = e.target.files[0];
+    if (uploadedFile) {
+      setFile(uploadedFile);
+      setFormData({
+        ...formData,
+        regulatory: uploadedFile.name, // Set file name in the select field
+      });
+      renderFileData(e.target.files);
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -121,8 +188,6 @@ const MyForm = () => {
   };
 
   const handleFileChange = (file) => {
-
-
     setFormData({
       ...formData,
       document: file,
@@ -201,7 +266,7 @@ const MyForm = () => {
       success_count: 0,
       fail_count: 0,
       // last_run: submissionStatus === 'Draft' ? null : formatDateToCustomFormat(new Date()),
-      mapping_standards: "",
+      mapping_standards: formData.mapping_standards,
       summary_report: {},
       history:[historyItem],
     };
@@ -236,9 +301,16 @@ const MyForm = () => {
     });
   };
 
+  const checklistfile = document.getElementById("fileInput")?.files;
+
+  const handleAddFileClick = () => {
+    document.getElementById("fileInput").click(); // Trigger the file input field
+  };
+
   return (
     <>
       <BreadcrumbsView currentPage="Create Project"/>
+      <Spin tip="Uploading Regulatory Standard" size="large" spinning={loading}>
       <Box
         sx={{
           margin: "auto",
@@ -311,27 +383,54 @@ const MyForm = () => {
 
             {/* Second row - 2 items */}
             <Grid item xs={12} sm={4}>
-              <FormControl fullWidth>
-                <InputLabel id="regulatory-label">
-                  {FORM_LABEL.REGULATORY_STANDARDS}
-                </InputLabel>
-                <Select
-                  labelId="regulatory-label"
-                  id="regulatory"
-                  value={formData.regulatory}
-                  label={FORM_LABEL.REGULATORY}
-                  name="regulatory"
-                  onChange={handleInputChange}
-                  required
-                >
-                  {standardData?.map(sData=>{
-                    return <MenuItem value={sData.standard_name}>{sData.standard_name}</MenuItem>
-                  })}
-                  
-                  {/* <MenuItem value="Reg2">Regulatory 2</MenuItem>
-                  <MenuItem value="Reg3">Regulatory 3</MenuItem> */}
-                </Select>
-              </FormControl>
+            <FormControl fullWidth>
+        <InputLabel id="regulatory-label">
+        {FORM_LABEL.REGULATORY_STANDARDS}
+        </InputLabel>
+        <Select
+          labelId="regulatory-label"
+          id="regulatory"
+          value={formData.regulatory}
+          label={FORM_LABEL.REGULATORY}
+          name="regulatory"
+          onChange={(e) => setFormData({ ...formData, regulatory: e.target.value })}
+          required
+        >
+         
+
+          {/* Show the file name if a file is selected */}
+          {file && (
+            <MenuItem key={file.name} value={file.name}>
+              {file.name}
+            </MenuItem>
+          )}
+
+          {/* Other options for standard data */}
+          {standardData?.map(sData => (
+            <MenuItem key={sData.standard_name} value={sData.standard_name}>
+              {sData.standard_name}
+            </MenuItem>
+          ))}
+           <MenuItem value="">
+            <Button
+              variant="outlined"
+              component="label"
+              size="small"
+              style={{ textTransform: 'none' }}
+              onClick={handleAddFileClick} // Open the popover when clicked
+            >
+              Add Regulatory
+            </Button>
+          </MenuItem>
+        </Select>
+      </FormControl>
+{/* hidden input field to handle custom file upload */}
+      <input
+        type="file"
+        id="fileInput"
+        style={{ display: "none" }}
+        onChange={handleFileUpload}
+      />
             </Grid>
 
             <Grid item xs={12} sm={8}>
@@ -400,7 +499,7 @@ const MyForm = () => {
 
             {/* Upload File */}
             <Grid item xs={12} sm={8}>
-              <DropZoneFileUpload label={FORM_LABEL.DOCUMENT_UPLOAD} typeSelect={true} handleSubmitDocument={handleFileChange} maxFile={0}/>
+              <DropZoneFileUpload label={FORM_LABEL.DOCUMENT_UPLOAD} typeSelect={false} handleSubmitDocument={handleFileChange} maxFile={0}/>
             </Grid>
 
             <Grid item xs={12} sm={12}>
@@ -436,6 +535,7 @@ const MyForm = () => {
           </Grid>
         </form>
       </Box>
+      </Spin>
       <Snackbar
       style={{top:"80px"}}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}

@@ -317,7 +317,7 @@ const ProjectView = () => {
         else{
           updatedResponse.success_count= updatedResponse?.success_count + 1;
         }
-        updatedResponse.success_count= updatedResponse?.success_count + 1;
+        // updatedResponse.success_count= updatedResponse?.success_count + 1;
         updatedResponse.status = status === "error" ? "Failed" : "Success";
         updatedResponse.last_run = formatDateToCustomFormat(new Date());
         const newHistory = createHistoryObject(projectData, previousData,"assessmentRun");
@@ -421,10 +421,16 @@ const ProjectView = () => {
 
   const runChecklkistCRT = async () => {
 
-    let fileName= standardData.find((data) => data?.standard_name === projectData?.regulatory_standard).standard_url;
-    let customFileName = projectData?.documents?.filter(f => f.documenttype === FORM_LABEL.CUSTOM_REGULATORY).map(f => f.path);
+    let fileName= standardData.find((data) => data?.standard_name === projectData?.regulatory_standard)?.standard_url;
+    let customFileName = projectData?.documents?.filter(f => f.documenttype === FORM_LABEL.CUSTOM_REGULATORY)?.map(f => f.path);
+    
+    if((fileName === undefined || fileName === null) && customFileName?.length<=0)
+    {
+      fileName = projectData?.mapping_standards;
+    }
+    
     const regex = /\/([^/]+)$/; // Match the part after the last "/"
-    const match = customFileName?.length > 0 ? customFileName?.[0].match(regex) : fileName.match(regex);
+    const match = customFileName?.length > 0 ? customFileName?.[0].match(regex) : fileName?.match(regex);
 
     const payload = new FormData();
     payload.append("imageKey", match?.[1]);
@@ -487,6 +493,10 @@ const ProjectView = () => {
   const runChecklistAPI = async () => {
 
     const fileName= standardData.find((data) => data?.standard_name === projectData?.regulatory_standard)?.standard_url;
+    if(fileName === undefined || fileName === null)
+    {
+      fileName = projectData?.mapping_standards;
+    }
    
     const regex = /\/([^/]+)$/; // Match the part after the last "/"
 

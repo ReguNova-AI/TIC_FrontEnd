@@ -24,9 +24,9 @@ const PieChart = ({data}) => {
         trigger: 'item'
       },
       legend: {
-        // top: '5%',
+        type: 'scroll',
         orient: 'vertical',
-        left: 'right'
+        left: 'right',
       },
       series: [
         {

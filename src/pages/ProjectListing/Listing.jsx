@@ -626,7 +626,7 @@ const Listing = () => {
                   onChange={handleChange}
                   aria-label="basic tabs example"
                 >
-                  <Tab label="Created Projects" {...a11yProps(0)} />
+                  <Tab label="Your Projects" {...a11yProps(0)} />
                   <Tab label="Invited Projects" {...a11yProps(1)} />
                 </Tabs>
               </Box>
