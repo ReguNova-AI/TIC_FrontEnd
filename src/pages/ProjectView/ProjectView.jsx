@@ -423,12 +423,14 @@ const ProjectView = () => {
 
     let fileName= standardData.find((data) => data?.standard_name === projectData?.regulatory_standard)?.standard_url;
     let customFileName = projectData?.documents?.filter(f => f.documenttype === FORM_LABEL.CUSTOM_REGULATORY)?.map(f => f.path);
-    
+
     if((fileName === undefined || fileName === null) && customFileName?.length<=0)
     {
       fileName = projectData?.mapping_standards;
     }
     
+    if(fileName !== undefined)
+    {
     const regex = /\/([^/]+)$/; // Match the part after the last "/"
     const match = customFileName?.length > 0 ? customFileName?.[0].match(regex) : fileName?.match(regex);
 
@@ -466,6 +468,7 @@ const ProjectView = () => {
         });
         setLoading(false);
       });
+    }
   };
 
   const handleCRTUpdate = (response)=>{
@@ -490,7 +493,7 @@ const ProjectView = () => {
     });
   }
 
-  const runChecklistAPI = async () => {
+  const runChecklistAPI = async () => { 
 
     const fileName= standardData.find((data) => data?.standard_name === projectData?.regulatory_standard)?.standard_url;
     if(fileName === undefined || fileName === null)
@@ -498,6 +501,8 @@ const ProjectView = () => {
       fileName = projectData?.mapping_standards;
     }
    
+    if(fileName !== undefined)
+    {
     const regex = /\/([^/]+)$/; // Match the part after the last "/"
 
     const match = fileName.match(regex);
@@ -529,6 +534,7 @@ const ProjectView = () => {
         // });
         setChatloading(false);
       });
+    }
   };
 
   const handlestandardChatUploadUpdate = () => {
