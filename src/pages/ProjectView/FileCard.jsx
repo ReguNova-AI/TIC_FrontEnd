@@ -23,8 +23,7 @@ import AssessmentView from './AssessmentView';
 import { saveAs } from 'file-saver';
 import { Document, Packer, Paragraph, TextRun, AlignmentType } from 'docx';
 import { Table as DocxTable, TableRow as DocxTableRow, TableCell as DocxTableCell } from "docx";
-
-
+import { OrganisationApiService } from 'services/api/OrganizationAPIService';
 
 // Function to parse the API response into a structured format (skipping the title)
 const parseApiResponse = (response) => {
@@ -189,19 +188,46 @@ apiResponse = data;
   //   saveAs(blob, 'IEC_Power_Performance_Standard.doc');
   // }
 
-  const downloadChecklistFile = () => {
+  const fetchOrgDetails = async (id) => {
+    try {
+      const response = await OrganisationApiService.organisationDetails(id);
+      return response?.data?.details?.[0]; // Returning the relevant organization details
+    } catch (errResponse) {
+      console.log("Error fetching org details:", errResponse);
+      return null; // Return null if there's an error to handle gracefully
+    }
+  }
+
+  const getFormattedDate = () => {
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    const date = new Date();
+    return date.toLocaleDateString('en-US', options);
+  };
+
+  const downloadChecklistFile = async() => {
+    const OrgData = await fetchOrgDetails(projectData?.org_id);
 
     const inviteData = [];
-    projectData?.invite_members?.map(idata=>{
+    projectData?.invite_members?.map(idata => {
       inviteData.push(idata?.user_name);
     });
-
+  
     const extraInfo = {
       projectName: projectData?.project_name,
       projectNo: projectData?.project_no,
       regulatory: projectData?.regulatory_standard,
+      projectDescription:projectData?.project_description,
       invitedMembers: inviteData.join(","),
-
+      organizationName: projectData?.org_name, // Assuming you have this field
+      city: OrgData?.org_address?.city, // Assuming you have this field
+      country: OrgData?.org_address?.country, // Assuming you have this field
+      street: OrgData?.org_address?.street,
+      zipCode: OrgData?.org_address?.zip, // Assuming you have this field
+      email: OrgData?.contact_json?.primary_contact?.email, // Assuming you have this field
+      submittedByName:"Regunova AI",
+      submittedByZip:"PO Box 375,", 
+      submittedByAddress:"Frisco, TX 75034, US",
+      submittedByEmail:"Email support@regunova.ai",
     };
   
     const content = data; // Assuming this is your existing content
@@ -209,13 +235,74 @@ apiResponse = data;
     // Split content by new lines, preserving individual lines
     const contentLines = content.split("\n");
   
-    // Create the table with two columns using aliased imports
+    // Create the "Prepared for" details section with label-value pairs
+
+    const projectParagraphs = [
+      { label: "Project Name:", value: extraInfo.projectName },
+      { label: "", value: getFormattedDate()},
+      { label: "Project No:", value: extraInfo.projectNo },
+      { label: "Regulatory Standards:", value: extraInfo.regulatory },
+      { label: "Project Description:", value: extraInfo.projectDescription },
+      { label: "Invited Members:", value: extraInfo.invitedMembers },     
+    ];
+
+    const preparedForParagraphs = [
+      { label: "Organization Name:", value: extraInfo.organizationName },
+      { label: "City, State, Zip:", value: `${extraInfo.street} ${extraInfo.city}, ${extraInfo.country} ${extraInfo.zipCode}` },
+      { label: "Email:", value: extraInfo.email }
+    ];
+
+    const submittedByParagraphs = [
+      { label: "Organization Name:", value: extraInfo.submittedByName },
+      { label: "submittedByZip:", value: extraInfo.submittedByZip },
+      { label: "submittedByAddress:", value: extraInfo.submittedByAddress },
+      { label: "submittedByEmail:", value: extraInfo.submittedByEmail },     
+    ];
+
+    const projectContent = projectParagraphs.map(info => {
+      return new Paragraph({
+        children: [
+          new TextRun({
+            text: `${info.label} ${info.value}`,
+          }),
+        ],
+        alignment: AlignmentType.LEFT,
+        spacing: { after: 100 }, // Add space after each line
+      });
+    });
+
+    // Generate paragraphs for the "Prepared for" section
+    const preparedForContent = preparedForParagraphs.map(info => {
+      return new Paragraph({
+        children: [
+          new TextRun({
+            text: `${info.value}`,
+          }),
+        ],
+        alignment: AlignmentType.LEFT,
+        spacing: { after: 100 }, // Add space after each line
+      });
+    });
+
+    const submittedByContent = submittedByParagraphs.map(info => {
+      return new Paragraph({
+        children: [
+          new TextRun({
+            text: `${info.value}`,
+          }),
+        ],
+        alignment: AlignmentType.LEFT,
+        spacing: { after: 100 }, // Add space after each line
+      });
+    });
+  
+    // Create the table with extra information (project details)
     const extraInfoTable = new DocxTable({
       rows: [
         new DocxTableRow({
           children: [
             new DocxTableCell({
-              children: [new Paragraph("Project Name")],
+              children: [new Paragraph("Project Name:")],
               width: { size: 50, type: "pct" },
               verticalAlign: "center",
             }),
@@ -229,7 +316,7 @@ apiResponse = data;
         new DocxTableRow({
           children: [
             new DocxTableCell({
-              children: [new Paragraph("Project No.")],
+              children: [new Paragraph("Project No.:")],
               width: { size: 50, type: "pct" },
               verticalAlign: "center",
             }),
@@ -243,7 +330,7 @@ apiResponse = data;
         new DocxTableRow({
           children: [
             new DocxTableCell({
-              children: [new Paragraph("Regulatory")],
+              children: [new Paragraph("Regulatory:")],
               width: { size: 50, type: "pct" },
               verticalAlign: "center",
             }),
@@ -257,7 +344,7 @@ apiResponse = data;
         new DocxTableRow({
           children: [
             new DocxTableCell({
-              children: [new Paragraph("Invited Members")],
+              children: [new Paragraph("Invited Members:")],
               width: { size: 50, type: "pct" },
               verticalAlign: "center",
             }),
@@ -271,124 +358,178 @@ apiResponse = data;
       ],
     });
   
-     // Compliance data table (only if complianceData exists)
-  const complianceTable = complianceData?.length > 0 ? new DocxTable({
-    rows: [
-      // Table header row
-      new DocxTableRow({
-        children: [
-          new DocxTableCell({
-            children: [new Paragraph("Requirement")],
-            width: { size: 50, type: "pct" },
-            verticalAlign: "center",
-          }),
-          new DocxTableCell({
-            children: [new Paragraph("Fulfilled or Not")],
-            width: { size: 20, type: "pct" },
-            verticalAlign: "center",
-          }),
-          new DocxTableCell({
-            children: [new Paragraph("Explanation")],
-            width: { size: 30, type: "pct" },
-            verticalAlign: "center",
-          }),
-        ],
-      }),
-
-      // Table content rows
-      ...complianceData?.map(item => new DocxTableRow({
-        children: [
-          new DocxTableCell({
-            children: [new Paragraph(item.question)],
-            width: { size: 50, type: "pct" },
-            verticalAlign: "center",
-            alignment: AlignmentType.CENTER,
-          }),
-          new DocxTableCell({
-            children: [new Paragraph(item.answer)],
-            width: { size: 20, type: "pct" },
-            verticalAlign: "center",
-            alignment: AlignmentType.CENTER,
-          }),
-          new DocxTableCell({
-            children: [new Paragraph(item.explanation)],
-            width: { size: 30, type: "pct" },
-            verticalAlign: "center",
-            alignment: AlignmentType.CENTER,
-          }),
-        ],
-      })),
-    ],
-  }) : null;  // Only create table if complianceData exists
-
+    // Compliance data table (only if complianceData exists)
+    const complianceTable = complianceData?.length > 0 ? new DocxTable({
+      rows: [
+        // Table header row
+        new DocxTableRow({
+          children: [
+            new DocxTableCell({
+              children: [new Paragraph("Requirement")],
+              width: { size: 50, type: "pct" },
+              verticalAlign: "center",
+            }),
+            new DocxTableCell({
+              children: [new Paragraph("Fulfilled or Not")],
+              width: { size: 20, type: "pct" },
+              verticalAlign: "center",
+            }),
+            new DocxTableCell({
+              children: [new Paragraph("Explanation")],
+              width: { size: 30, type: "pct" },
+              verticalAlign: "center",
+            }),
+          ],
+        }),
   
+        // Table content rows
+        ...complianceData?.map(item => new DocxTableRow({
+          children: [
+            new DocxTableCell({
+              children: [new Paragraph(item.question)],
+              width: { size: 50, type: "pct" },
+              verticalAlign: "center",
+              alignment: AlignmentType.CENTER,
+            }),
+            new DocxTableCell({
+              children: [new Paragraph(item.answer)],
+              width: { size: 20, type: "pct" },
+              verticalAlign: "center",
+              alignment: AlignmentType.CENTER,
+            }),
+            new DocxTableCell({
+              children: [new Paragraph(item.explanation)],
+              width: { size: 30, type: "pct" },
+              verticalAlign: "center",
+              alignment: AlignmentType.CENTER,
+            }),
+          ],
+        })),
+      ],
+    }) : null;  // Only create table if complianceData exists
+  
+    
     // Create a new document
     const doc = fileName === 'Assessment Report' ? new Document({
       sections: [
         {
           properties: {},
           children: [
-            // Heading "Checklist Report" in a larger font size, centered horizontally and vertically
+            new Paragraph({
+              children: [],
+              spacing: { after:600 },
+            }),
+        
+            // Add a table with extra information
+            // extraInfoTable,
+
+            ...projectContent,
+            new Paragraph({
+              children: [],
+              spacing: { after:400 },
+            }),
+        
+            // "Prepared for" details
             new Paragraph({
               children: [
                 new TextRun({
-                  text: "Assessment Report",
-                  size: 48, // Size 48 (larger than normal text size)
+                  text: "PREPARED FOR:",
+                  size: 30, // Size 48 (larger than normal text size)
                   bold: true,
                 }),
               ],
-              alignment: AlignmentType.CENTER,
-              spacing: { after: 800 }, // Adds space after the heading to push the table below
+              spacing: { after:50 },
             }),
-  
-            // Add a table with extra information
-            extraInfoTable,
+            ...preparedForContent,
+
+            new Paragraph({
+              children: [],
+              spacing: { after:400 },
+            }),
+
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "SUBMITTED BY:",
+                  size: 30, // Size 48 (larger than normal text size)
+                  bold: true,
+                }),
+              ],
+              spacing: { after:50 },
+            }),
+            ...submittedByContent,
   
             // Add a page break after the table (move to the next page)
             new Paragraph({
               children: [],
               pageBreakBefore: true,
             }),
-
-            complianceTable && complianceTable,
   
+            complianceTable && complianceTable,
           ],
         },
       ],
-    })
-    :
+    }) :
     new Document({
       sections: [
         {
           properties: {},
           children: [
-            // Heading "Checklist Report" in a larger font size, centered horizontally and vertically
+            new Paragraph({
+              children: [],
+              spacing: { after:600 },
+            }),
+            // Add a table with extra information
+            // extraInfoTable,
+            ...projectContent,
+
+            new Paragraph({
+              children: [],
+              spacing: { after:400 },
+            }),
+
+            // "Prepared for" details
             new Paragraph({
               children: [
                 new TextRun({
-                  text: "Checklist Report",
-                  size: 48, // Size 48 (larger than normal text size)
+                  text: "PREPARED FOR:",
+                  size: 30, // Size 48 (larger than normal text size)
                   bold: true,
                 }),
               ],
-              alignment: AlignmentType.CENTER,
-              spacing: { after: 800 }, // Adds space after the heading to push the table below
+              spacing: { after: 50 },
             }),
-  
-            // Add a table with extra information
-            extraInfoTable,
+            ...preparedForContent,
+
+            new Paragraph({
+              children: [],
+              spacing: { after:400 },
+            }),
+
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "SUBMITTED BY:",
+                  size: 30, // Size 48 (larger than normal text size)
+                  bold: true,
+                }),
+              ],
+              spacing: { after:50 },
+            }),
+            ...submittedByContent,
   
             // Add a page break after the table (move to the next page)
             new Paragraph({
               children: [],
               pageBreakBefore: true,
             }),
+  
             // Loop through content lines and add each one as a separate TextRun
             ...contentLines.map((line) => {
               return new Paragraph({
                 children: [
                   new TextRun({
-                    text: line?.replace("**","")?.replace("---","")?.replace("###","")?.replace("**",""),
+                    text: line?.replace("**", "")?.replace("---", "")?.replace("###", "")?.replace("**", ""),
                   }),
                 ],
               });
@@ -396,7 +537,7 @@ apiResponse = data;
           ],
         },
       ],
-    }); 
+    });
   
     // Create a blob and download the file
     Packer.toBlob(doc).then((blob) => {

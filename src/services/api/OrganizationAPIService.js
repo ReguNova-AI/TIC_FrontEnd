@@ -9,8 +9,9 @@ const _organisationListing = (userid) => {
 };
 
 const _organisationDetails = (id) => {
-  return BaseApiService.get(`/api/v1/organisations/${id}`, null, null);
+  return BaseApiService.get(`/api/v1/organizations/${id}`, null, null);
 };
+
 
 export const OrganisationApiService = {
   organisationCreate: _organisationCreate,
