@@ -46,13 +46,13 @@ const AdminConfig = () => {
 
 
   const tabs = [
-    {
-      title: 'Sectors',
-      icon: <AppstoreAddOutlined />,
-      description: 'Manage different business sectors.',
-      listing:'true',
-      creation:'true',
-    },
+    // {
+    //   title: 'Sectors',
+    //   icon: <AppstoreAddOutlined />,
+    //   description: 'Manage different business sectors.',
+    //   listing:'true',
+    //   creation:'true',
+    // },
     {
       title: 'Industries',
       icon: <DatabaseOutlined />,
@@ -67,19 +67,20 @@ const AdminConfig = () => {
       listing:'true',
       creation:'true',
     },
-    {
-      title: 'Permissions',
-      icon: <LockOutlined />,
-      description: 'Configure permissions for different roles.',
-      listing:'true',
-      creation:'false',
-    },
+    
     {
       title: 'Regulatory Standards',
       icon: <img src={standardsIcon} width="30px" />,
       description: 'Manage Standards for each industry.',
       listing:'true',
       creation:'true',
+    },
+    {
+      title: 'Permissions',
+      icon: <LockOutlined />,
+      description: 'Configure permissions for different roles.',
+      listing:'true',
+      creation:'false',
     },
   ];
 
