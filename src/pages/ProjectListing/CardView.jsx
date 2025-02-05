@@ -24,6 +24,7 @@ import {
 } from "shared/constants";
 import { getStatusChipProps } from "shared/utility";
 import { useLocation, useNavigate } from "react-router-dom";
+import { Empty } from "antd";
 
 // Function to generate the status chip for each status
 const getStatusChip = (status) => {
@@ -70,10 +71,10 @@ const CardView = ({ data, gridValue }) => {
 
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
   const userRole = userdetails?.[0]?.role_name;
-
+  
   return (
     <Grid container spacing={3} style={{ marginTop: "20px" }}>
-      {data.map((item) => {
+      {data.length > 0 ? data.map((item) => {
         const statusArray = Array.isArray(item.status)
           ? item.status
           : [item.status];
@@ -226,7 +227,11 @@ const CardView = ({ data, gridValue }) => {
             </Card>
           </Grid>
         );
-      })}
+      }) : 
+      <div style={{margin:"auto"}}>
+      <Empty description={GENERIC_DATA_LABEL.NO_DATA} />
+      </div>
+      }
     </Grid>
   );
 };
