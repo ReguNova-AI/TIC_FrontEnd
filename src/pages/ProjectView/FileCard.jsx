@@ -582,7 +582,7 @@ const extraInfoTable = new DocxTable({
   
     // Create a blob and download the file
     Packer.toBlob(doc).then((blob) => {
-      saveAs(blob, "IEC_Power_Performance_Standard.docx");
+      saveAs(blob, `${fileName}.docx`);
     });
   };
   
