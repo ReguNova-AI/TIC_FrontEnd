@@ -81,6 +81,7 @@ const ProjectView = () => {
   const [historyData, setHistoryData] = useState({ history: [] });
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
   const userName = userdetails?.[0].user_first_name + " " + userdetails?.[0].user_last_name;
+  const [runState,setRunState]=useState(true);
 
   useEffect(() => {
     fetchDetails(id);
@@ -93,9 +94,10 @@ const ProjectView = () => {
       runChecklistAPI();
     }
 
-    if(runAssessmentState === "run")
+    if(runAssessmentState === "run" && runState)
         {
           projectData?.checkListResponse ? runComplianceAssessmenet(projectData?.checkListResponse) : runChecklkistCRT();
+          setRunState(false);
         }
 
   },[projectData,standardData])
@@ -500,6 +502,7 @@ const ProjectView = () => {
     {
       fileName = projectData?.mapping_standards;
     }
+    console.log("fileName",fileName)
    
     if(fileName !== undefined)
     {
