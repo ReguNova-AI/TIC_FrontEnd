@@ -120,6 +120,9 @@ const FileCard = ({ fileName, onDownload, onView, apiResponse,data,data1,project
 const [ complianceData , setComplianceData] = useState([]);
 apiResponse = data;
 
+const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
+const userEmail = userdetails?.[0]?.user_email;
+
   useEffect(() => {
     if (apiResponse) {
       const parsedSections = parseApiResponse(apiResponse);
@@ -223,7 +226,8 @@ apiResponse = data;
       country: OrgData?.org_address?.country,
       street: OrgData?.org_address?.street,
       zipCode: OrgData?.org_address?.zip, 
-      email: OrgData?.contact_json?.primary_contact?.email, 
+      // email: OrgData?.contact_json?.primary_contact?.email, 
+      email : userEmail,
       submittedByName: "Regunova AI",
       submittedByZip: "PO Box 375,", 
       submittedByAddress: "Frisco, TX 75034, US",
@@ -239,7 +243,7 @@ apiResponse = data;
     
     const projectParagraphs = [
       { label: "Project Name:", value: extraInfo.projectName },
-      { label: "", value: getFormattedDate() },
+      { label: "Date:", value: getFormattedDate() },
       { label: "Project No:", value: extraInfo.projectNo },
       { label: "Regulatory Standards:", value: extraInfo.regulatory },
       { label: "Project Description:", value: extraInfo.projectDescription },
@@ -441,12 +445,12 @@ const extraInfoTable = new DocxTable({
             // Add content sections
             new Paragraph({
               children: [new TextRun({
-                text: "ASSESSMENT REPORT:",
+                text: "ASSESSMENT REPORT",
                 size: 60, // Size 48 (larger than normal text size)
                 bold: true,
               }),],
-              spacing: { after:600 },
-              alignment:CENTER
+              spacing: { after:1200,before : 1200  },
+              alignment: AlignmentType.CENTER
             }),
 
             new Paragraph({
@@ -457,14 +461,14 @@ const extraInfoTable = new DocxTable({
                   bold: true,
                 }),
               ],
-              spacing: { after:50 },
+              spacing: { after:200 },
             }),
   
             ...projectContent,
 
             new Paragraph({
               children: [],
-              spacing: { after:400 },
+              spacing: { after:600 },
             }),
   
             // "Prepared for" details
@@ -476,13 +480,13 @@ const extraInfoTable = new DocxTable({
                   bold: true,
                 }),
               ],
-              spacing: { after:50 },
+              spacing: { after:200 },
             }),
             ...preparedForContent,
   
             new Paragraph({
               children: [],
-              spacing: { after:400 },
+              spacing: { after:600 },
             }),
   
             new Paragraph({
@@ -493,7 +497,7 @@ const extraInfoTable = new DocxTable({
                   bold: true,
                 }),
               ],
-              spacing: { after:50 },
+              spacing: { after:200 },
             }),
             ...submittedByContent,
     
@@ -538,12 +542,12 @@ const extraInfoTable = new DocxTable({
             // Add content sections
             new Paragraph({
               children: [new TextRun({
-                text: "CHECKLIST REPORT:",
+                text: "CHECKLIST REPORT",
                 size: 60, // Size 48 (larger than normal text size)
                 bold: true,
               }),],
-              spacing: { after:600 },
-              alignment:CENTER
+              spacing: { after:1200, before : 1200 },
+              alignment: AlignmentType.CENTER
             }),
 
             new Paragraph({
@@ -554,14 +558,14 @@ const extraInfoTable = new DocxTable({
                   bold: true,
                 }),
               ],
-              spacing: { after:50 },
+              spacing: { after:200 },
             }),
 
             ...projectContent,
 
             new Paragraph({
               children: [],
-              spacing: { after:400 },
+              spacing: { after:600 },
             }),
   
             // "Prepared for" details
@@ -573,13 +577,13 @@ const extraInfoTable = new DocxTable({
                   bold: true,
                 }),
               ],
-              spacing: { after: 50 },
+              spacing: { after: 200 },
             }),
             ...preparedForContent,
   
             new Paragraph({
               children: [],
-              spacing: { after:400 },
+              spacing: { after:600 },
             }),
   
             new Paragraph({
@@ -590,7 +594,7 @@ const extraInfoTable = new DocxTable({
                   bold: true,
                 }),
               ],
-              spacing: { after:50 },
+              spacing: { after:200 },
             }),
             ...submittedByContent,
     
