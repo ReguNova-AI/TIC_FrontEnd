@@ -527,36 +527,37 @@ const submittedbyTable = new DocxTable({
         ],
       }) : null;  // Only create table if complianceData exists
     
+
+      const header = new Header({
+        children: [
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `${extraInfo.projectName} - Page `,
+              }),
+              new TextRun({
+                text: "PAGE ",  // This is the placeholder for the page number
+                fieldCode: "PAGE",  // This field code is used for page number
+                font: "Times New Roman",  // Set the font of the page number
+                size: 24,  // Font size for the page number
+                bold: true,  // Make the page number bold (optional)
+              }),
+            ],
+            alignment: AlignmentType.LEFT,  // Align to the left
+          }),
+        ],
+      });
+
   
     // Create a new document
     const doc = fileName === 'Assessment Report' ? new Document({
       sections: [
         {
           properties: {
-            // Define the header with project name and page number
+            header: header,// Define the header with project name and page number
           },
           children: [
-            // Add header with project name and page number
-            new Header({
-              children: [
-                new Paragraph({
-                  children: [
-                    new TextRun({
-                      text: `${extraInfo.projectName} - Page `,
-                    }),
-                    new TextRun({
-                      text: "PAGE ",  // This is the placeholder for the page number
-                      fieldCode: "PAGE", // Field code for the page number in Word
-                      font: "Times New Roman",  // Set the font of the page number
-                      size: 24,  // Font size for the page number
-                      bold: true  // Make the page number bold (optional)
-                    }),
-                  ],
-                  alignment: AlignmentType.LEFT, // Align to the left
-                }),
-              ],
-            }),
-  
+            
             // Add content sections
             new Paragraph({
               children: [new TextRun({
@@ -636,28 +637,12 @@ const submittedbyTable = new DocxTable({
     new Document({
       sections: [
         {
-          properties: {},
+          properties: {
+            header: header,
+          },
           children: [
             // Add header with project name and page number
-            new Header({
-              children: [
-                new Paragraph({
-                  children: [
-                    new TextRun({
-                      text: `${extraInfo.projectName} - Page `,
-                    }),
-                    new TextRun({
-                      text: "PAGE ", // Placeholder for page number
-                      fieldCode: "PAGE", // Correct way to include page number
-                      font: "Times New Roman", // Set the font for page number
-                      size: 24, // Font size for page number
-                      bold: true  // Optional: Make the page number bold
-                    }),
-                  ],
-                  alignment: AlignmentType.LEFT,  // You can change this to Right or Center as needed
-                }),
-              ],
-            }),
+           
   
             // Add content sections
             new Paragraph({
