@@ -82,6 +82,7 @@ const ProjectView = () => {
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
   const userName = userdetails?.[0].user_first_name + " " + userdetails?.[0].user_last_name;
   const [runState,setRunState]=useState(true);
+  const [standardChatState,setStandardChatState] = useState(true);
 
   useEffect(() => {
     fetchDetails(id);
@@ -89,8 +90,9 @@ const ProjectView = () => {
   }, [id]);
 
   useEffect(()=>{
-    if(projectData?.standardUploaded === false || projectData?.standardUploaded === 0 || projectData?.standardUploaded === "false" || projectData.standardUploaded === null || projectData.standardUploaded === "null" || projectData?.standardUploaded === undefined)
-    {      
+    if(standardChatState && projectData?.standardUploaded === false || projectData?.standardUploaded === 0 || projectData?.standardUploaded === "false" || projectData.standardUploaded === null || projectData.standardUploaded === "null" || projectData?.standardUploaded === undefined)
+    { 
+      setStandardChatState(false);     
       runChecklistAPI();
     }
 
