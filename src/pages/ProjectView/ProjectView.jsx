@@ -179,7 +179,12 @@ const ProjectView = () => {
     // Check if the response contains '---' and '**' (first format)
     if (response.includes('---') || response.includes('**')) {
         // Handle the first format (with '**' and '---')
-        const sections = response.split('---').slice(1); // Skip the first "Title" section
+        let sections = response.split('---').slice(1); // Skip the first "Title" section
+        if(sections.length === 0)
+        {
+          sections = response.split('\n\n').slice(1);
+        }
+        
         const lastSection = sections[sections.length - 1]?.trim();
 
         // If the last section starts with "Summary:", explicitly name it
