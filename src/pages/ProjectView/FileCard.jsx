@@ -440,11 +440,28 @@ const extraInfoTable = new DocxTable({
   
             // Add content sections
             new Paragraph({
-              children: [],
+              children: [new TextRun({
+                text: "ASSESSMENT REPORT:",
+                size: 60, // Size 48 (larger than normal text size)
+                bold: true,
+              }),],
               spacing: { after:600 },
+              alignment:CENTER
+            }),
+
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "PROJECT DETAILS:",
+                  size: 30, // Size 48 (larger than normal text size)
+                  bold: true,
+                }),
+              ],
+              spacing: { after:50 },
             }),
   
             ...projectContent,
+
             new Paragraph({
               children: [],
               spacing: { after:400 },
@@ -471,7 +488,7 @@ const extraInfoTable = new DocxTable({
             new Paragraph({
               children: [
                 new TextRun({
-                  text: "SUBMITTED BY:",
+                  text: "PREPARED BY:",
                   size: 30, // Size 48 (larger than normal text size)
                   bold: true,
                 }),
@@ -520,10 +537,28 @@ const extraInfoTable = new DocxTable({
   
             // Add content sections
             new Paragraph({
-              children: [],
+              children: [new TextRun({
+                text: "CHECKLIST REPORT:",
+                size: 60, // Size 48 (larger than normal text size)
+                bold: true,
+              }),],
               spacing: { after:600 },
+              alignment:CENTER
             }),
+
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "CHECKLIST DETAILS:",
+                  size: 30, // Size 48 (larger than normal text size)
+                  bold: true,
+                }),
+              ],
+              spacing: { after:50 },
+            }),
+
             ...projectContent,
+
             new Paragraph({
               children: [],
               spacing: { after:400 },
@@ -550,7 +585,7 @@ const extraInfoTable = new DocxTable({
             new Paragraph({
               children: [
                 new TextRun({
-                  text: "SUBMITTED BY:",
+                  text: "PREPARED BY:",
                   size: 30, // Size 48 (larger than normal text size)
                   bold: true,
                 }),

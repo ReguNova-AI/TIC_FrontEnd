@@ -90,12 +90,7 @@ const ProjectView = () => {
   }, [id]);
 
   useEffect(()=>{
-    if(standardChatState && projectData?.standardUploaded === false || projectData?.standardUploaded === 0 || projectData?.standardUploaded === "false" || projectData.standardUploaded === null || projectData.standardUploaded === "null" || projectData?.standardUploaded === undefined)
-    { 
-      setStandardChatState(false);     
-      runChecklistAPI();
-    }
-
+   
     if(runAssessmentState === "run" && runState)
         {
           projectData?.checkListResponse ? runComplianceAssessmenet(projectData?.checkListResponse) : runChecklkistCRT();
@@ -103,6 +98,19 @@ const ProjectView = () => {
         }
 
   },[projectData,standardData])
+
+  useEffect(()=>{
+
+    if(projectData?.standardUploaded === false || projectData?.standardUploaded === 0 || projectData?.standardUploaded === "false" || projectData.standardUploaded === null || projectData.standardUploaded === "null" || projectData?.standardUploaded === undefined)
+    { 
+      
+      if(standardChatState)
+      {
+        runChecklistAPI();
+      }
+    }
+
+  },[standardData])
 
   const fetchDetails = (id) => {
     ProjectApiService.projectDetails(id)
@@ -516,6 +524,7 @@ const ProjectView = () => {
     //   imageKey :match[1]
     // };
     setChatloading(true);
+    setStandardChatState(false);
     ProjectApiService.projectUploadStandardChat(payload)
       .then((response) => {
         // console.log("response",response)
@@ -527,6 +536,7 @@ const ProjectView = () => {
         // SetProjectData(response?.data?.details[0]);
         setChatloading(false);
         handlestandardChatUploadUpdate();
+        setStandardChatState(false);     
 
       })
       .catch((errResponse) => {
