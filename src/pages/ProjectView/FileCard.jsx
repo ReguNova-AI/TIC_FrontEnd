@@ -21,9 +21,10 @@ import checklist from '../../assets/images/checklist3.jpg';
 import assessment from '../../assets/images/assessment2.jpg';
 import AssessmentView from './AssessmentView';
 import { saveAs } from 'file-saver';
-import { Document, Packer, Paragraph, TextRun, AlignmentType,Header } from 'docx';
+import { Document, Packer, Paragraph, TextRun, AlignmentType,Header,ImageRun } from 'docx';
 import { Table as DocxTable, TableRow as DocxTableRow, TableCell as DocxTableCell } from "docx";
 import { OrganisationApiService } from 'services/api/OrganizationAPIService';
+import logo from "../../assets/images/logo1.jpeg";
 
 // Function to parse the API response into a structured format (skipping the title)
 const parseApiResponse = (response) => {
@@ -209,6 +210,47 @@ const userEmail = userdetails?.[0]?.user_email;
 
   const downloadChecklistFile = async () => {
     const OrgData = await fetchOrgDetails(projectData?.org_id);
+    const imagePath = logo;
+
+    let imageBlob;
+    try {
+        const response = await fetch(imagePath);
+        if (!response.ok) throw new Error("Image fetch failed");
+        imageBlob = await response.blob();
+    } catch (error) {
+        console.error("Error fetching image:", error);
+        imageBlob = null;
+    }
+
+    const imageLogo = imageBlob ? new Paragraph({
+        children: [
+            new ImageRun({
+                data: imageBlob,  // Pass the image blob directly
+                transformation: {
+                    width: 100,  // Set the desired width of the image
+                    height: 100, // Set the desired height of the image
+                },
+            }),
+        ],
+        alignment: AlignmentType.CENTER,  // Center the image on the page
+        spacing: { after: 200 },  // Add space after the image
+    }) : null;
+
+
+    const orgLogo = new Paragraph({
+      children: [
+          new ImageRun({
+              data: OrgData?.org_logo,  // Pass the image blob directly
+              transformation: {
+                  width: 100,  // Set the desired width of the image
+                  height: 100, // Set the desired height of the image
+              },
+          }),
+      ],
+      alignment: AlignmentType.CENTER,  // Center the image on the page
+      spacing: { after: 200 },  // Add space after the image
+  });
+
   
     const inviteData = [];
     projectData?.invite_members?.map(idata => {
@@ -362,6 +404,79 @@ const extraInfoTable = new DocxTable({
   ],
 });
 
+
+const preparedforTable = new DocxTable({
+  properties: {
+    tableLayout: "fixed", // Ensures fixed width of columns
+  },
+  rows: [
+    // Table header row
+    new DocxTableRow({
+      children: [
+        new DocxTableCell({
+          children: [...preparedForContent],
+          width: { size: 50, type: "pct" },
+          verticalAlign: "center",
+          borders: {
+            top: { style: "none", size: 0 },
+            left: { style: "none", size: 0 },
+            bottom: { style: "none", size: 0 },
+            right: { style: "none", size: 0 },
+          },
+        }),
+        new DocxTableCell({
+          children: [orgLogo],
+          width: { size: 20, type: "pct" },
+          verticalAlign: "center",
+          borders: {
+            top: { style: "none", size: 0 },
+            left: { style: "none", size: 0 },
+            bottom: { style: "none", size: 0 },
+            right: { style: "none", size: 0 },
+          },
+        }),
+      ],
+    }),
+  ],
+});
+
+
+
+const submittedbyTable = new DocxTable({
+  properties: {
+    tableLayout: "fixed", // Ensures fixed width of columns
+  },
+  rows: [
+    // Table header row
+    new DocxTableRow({
+      children: [
+        new DocxTableCell({
+          children: [...submittedByContent],
+          width: { size: 50, type: "pct" },
+          verticalAlign: "center",
+          borders: {
+            top: { style: "none", size: 0 },
+            left: { style: "none", size: 0 },
+            bottom: { style: "none", size: 0 },
+            right: { style: "none", size: 0 },
+          },
+        }),
+        new DocxTableCell({
+          children: [imageLogo],
+          width: { size: 20, type: "pct" },
+          verticalAlign: "center",
+          borders: {
+            top: { style: "none", size: 0 },
+            left: { style: "none", size: 0 },
+            bottom: { style: "none", size: 0 },
+            right: { style: "none", size: 0 },
+          },
+        }),
+      ],
+    }),
+  ],
+});
+
        // Compliance data table (only if complianceData exists)
        const complianceTable = complianceData?.length > 0 ? new DocxTable({
         rows: [
@@ -482,7 +597,8 @@ const extraInfoTable = new DocxTable({
               ],
               spacing: { after:200 },
             }),
-            ...preparedForContent,
+            // ...preparedForContent,
+            preparedforTable,
   
             new Paragraph({
               children: [],
@@ -499,7 +615,11 @@ const extraInfoTable = new DocxTable({
               ],
               spacing: { after:200 },
             }),
-            ...submittedByContent,
+            // ...submittedByContent,
+
+            submittedbyTable,
+
+            // imageParagraph,
     
             // Add a page break after the table (move to the next page)
             new Paragraph({
@@ -579,7 +699,8 @@ const extraInfoTable = new DocxTable({
               ],
               spacing: { after: 200 },
             }),
-            ...preparedForContent,
+            // ...preparedForContent,
+            preparedforTable,
   
             new Paragraph({
               children: [],
@@ -596,7 +717,8 @@ const extraInfoTable = new DocxTable({
               ],
               spacing: { after:200 },
             }),
-            ...submittedByContent,
+            // ...submittedByContent,
+            submittedbyTable,
     
             // Add a page break after the table (move to the next page)
             new Paragraph({
