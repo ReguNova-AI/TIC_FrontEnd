@@ -225,7 +225,7 @@ const Listing = () => {
     fetchData();
   };
 
-  const downloadFile=(url)=>{
+  const downloadFile=(url,fileName)=>{
 
     const regex = /\/([^/]+)$/;  // Match the part after the last "/"
 
@@ -234,11 +234,11 @@ const d=[]
 const filepayload = {
   imageKeys:[match[1]],
 }
+const extension = match?.[1].split('.').pop();
 
 FileUploadApiService.fileget(filepayload).then((response) => {
 
   const base64FileData = response?.data[0]?.response; // The Base64 string from the response
-  console.log("base64FileData",base64FileData)
   if (!base64FileData) {
     // Handle error if the response doesn't contain Base64 data
     setSnackData({
@@ -272,7 +272,7 @@ FileUploadApiService.fileget(filepayload).then((response) => {
   // Create a link element and set the download attributes
   const link = document.createElement('a');
   link.href = url;
-  link.download = 'downloaded_file'; // You can dynamically set this to the desired filename
+  link.download = `${fileName}`; // You can dynamically set this to the desired filename
 
   // Append the link to the document body and simulate a click to trigger the download
   document.body.appendChild(link);
@@ -357,7 +357,7 @@ FileUploadApiService.fileget(filepayload).then((response) => {
         // Return the mapped JSX elements
         return (
           <>
-          <span style={{display: "display",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",width:"70%",  marginRight:"10px"}}>{value}</span> <DownloadOutlined onClick={(e)=>downloadFile(record.file_url)}/>
+          <span style={{display: "display",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",width:"70%",  marginRight:"10px"}}>{value}</span> <DownloadOutlined onClick={(e)=>downloadFile(record.file_url,value)}/>
           </>
         );
       }
