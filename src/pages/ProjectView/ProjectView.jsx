@@ -177,10 +177,10 @@ const ProjectView = () => {
   const parseApiResponse = (response) => {
 
     // Check if the response contains '---' and '**' (first format)
-    if (response.includes('---') || response.includes('**')) {
-        // Handle the first format (with '**' and '---')
+    if (response.includes('---') || response.includes('**') || response.includes('\n\n')) {
+      // Handle the first format (with '**' and '---')
         let sections = response.split('---').slice(1); // Skip the first "Title" section
-        if(sections.length === 0)
+        if(sections.length === 0 || sections.length < 4)
         {
           sections = response.split('\n\n').slice(1);
         }
@@ -199,7 +199,7 @@ const ProjectView = () => {
             let lines = section?.trim()?.split('\n'); // Split the section into lines
 
             // Extract and clean the title of the section
-            let title = lines[0].replace('**', '').replace(':', '').trim();
+            let title = lines[0]?.replace('**', '')?.replace('###', '')?.replace("---")?.replace(':', '')?.trim();
             title= title.replace("**","");
             // Handle scenarios where the title might include "Section X:" or just the section heading
             if(title?.startsWith("Summary"))

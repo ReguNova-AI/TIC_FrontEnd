@@ -29,11 +29,11 @@ import logo from "../../assets/images/logo1.jpeg";
 // Function to parse the API response into a structured format (skipping the title)
 const parseApiResponse = (response) => {
   // Check if the response contains '---' and '**' (first format)
-  if (response.includes('---') || response.includes('**')) {
+  if (response.includes('---') || response.includes('**') || response.includes('\n\n')) {
       // Handle the first format (with '**' and '---')
       let sections = response.split('---').slice(1); // Skip the first "Title" section
 
-      if(sections.length === 0)
+      if(sections.length === 0 || sections.length < 4)
       {
         sections = response.split('\n\n').slice(1);
       }
@@ -50,7 +50,7 @@ const parseApiResponse = (response) => {
           let lines = section?.trim()?.split('\n'); // Split the section into lines
 
           // Extract and clean the title of the section
-          let title = lines[0]?.replace('**', '')?.replace(':', '')?.trim();
+          let title = lines[0]?.replace('**', '')?.replace('###', '')?.replace("---")?.replace(':', '')?.trim();
           title= title?.replace("**","");
         if(title?.startsWith("Summary"))
         {
@@ -813,7 +813,7 @@ const submittedbyTable = new DocxTable({
                 <Tabs value={activeTab} onChange={handleTabChange} aria-label="file-tabs">
                   {/* Dynamically generate tabs */}
                   {sections.map((section, index) => (
-                    <Tab key={index} label={section.title} />
+                    section !== undefined && section !== "" && section !== null && <Tab key={index} label={section.title} />
                   ))}
                 </Tabs>
 
