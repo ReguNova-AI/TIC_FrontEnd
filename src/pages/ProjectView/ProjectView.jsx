@@ -89,8 +89,8 @@ const ProjectView = () => {
   }, [id]);
 
   useEffect(()=>{
-    if(projectData.standardUploaded === false || projectData.standardUploaded === 0 || projectData.standardUploaded === "false" || projectData.standardUploaded === null || projectData.standardUploaded === "null")
-    {
+    if(projectData?.standardUploaded === false || projectData?.standardUploaded === 0 || projectData?.standardUploaded === "false" || projectData.standardUploaded === null || projectData.standardUploaded === "null" || projectData?.standardUploaded === undefined)
+    {      
       runChecklistAPI();
     }
 
@@ -423,7 +423,7 @@ const ProjectView = () => {
 
   const runChecklkistCRT = async () => {
 
-    let fileName= standardData.find((data) => data?.standard_name === projectData?.regulatory_standard)?.standard_url;
+    let fileName= standardData?.find((data) => data?.standard_name === projectData?.regulatory_standard)?.standard_url;
     let customFileName = projectData?.documents?.filter(f => f.documenttype === FORM_LABEL.CUSTOM_REGULATORY)?.map(f => f.path);
 
     if((fileName === undefined || fileName === null) && customFileName?.length<=0)
@@ -496,13 +496,11 @@ const ProjectView = () => {
   }
 
   const runChecklistAPI = async () => { 
-
-    const fileName= standardData.find((data) => data?.standard_name === projectData?.regulatory_standard)?.standard_url;
+    let fileName= standardData?.find((data) => data?.standard_name === projectData?.regulatory_standard)?.standard_url;
     if(fileName === undefined || fileName === null)
     {
       fileName = projectData?.mapping_standards;
     }
-    console.log("fileName",fileName)
    
     if(fileName !== undefined)
     {
