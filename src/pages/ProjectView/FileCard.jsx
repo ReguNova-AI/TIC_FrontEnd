@@ -158,10 +158,10 @@ const userEmail = userdetails?.[0]?.user_email;
   
       if (normalizedItem.includes("yes")) {
         answer = "YES";
-        explanation = item.replace(/yes/i, "").trim();  // Remove "YES" (case insensitive)
+        explanation = item.replace(/\byes\b/i, "").trim();  // Remove only the first "yes" (case insensitive)
       } else if (normalizedItem.includes("no")) {
         answer = "NO";
-        explanation = item.replace(/no/i, "").trim();  // Remove "NO" (case insensitive)
+        explanation = item.replace(/\bno\b/i, "").trim();  // Remove only the first "no" (case insensitive)
       }
   
       // Remove unwanted punctuation (., -) from the start or end of the explanation
