@@ -89,9 +89,26 @@ const Listing = () => {
 
   // Check if the expiry date is greater than today
   const expiryDate = new Date(date_of_expiry);
+  expiryDate.setHours(0, 0,  0, 0);
   
-  // If the expiry date is in the past, set status to 'Expired'
-  const finalStatus = expiryDate < today ? 'Expired' : certificate_status;
+  // // If the expiry date is in the past, set status to 'Expired'
+  // console.log("expiryDate",expiryDate,"today",today)
+  // const finalStatus = expiryDate < today ? 'Expired' : certificate_status;
+
+  function formatDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');  // Months are zero-based
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+  
+  const todayString = formatDate(today);
+  const expiryDateString = formatDate(expiryDate);
+
+// Compare the dates (now they are just "YYYY-MM-DD")
+const finalStatus = expiryDateString < todayString ? 'Expired' : certificate_status;
+
+
 
     return {
       index,

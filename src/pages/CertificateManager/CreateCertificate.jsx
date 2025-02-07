@@ -92,7 +92,7 @@ const CreateCertificate = ({onHandleClose}) => {
     const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
     const today = new Date().toISOString().split("T")[0];
     const updatedStatus =
-      formData.date_of_expiry && formData.date_of_expiry > today
+      formData.date_of_expiry && formData.date_of_expiry >= today
         ? STATUS.VALID
         : STATUS.EXPIRED;
 
