@@ -45,6 +45,9 @@ import DropZoneFileUpload from "pages/ProjectCreation/DropZoneFileUpload";
 import chatLoadingicon from "../../assets/images/icons/chatLoadingIcon.svg";
 import chatLoadingicon2 from "../../assets/images/icons/chatLoadingIcon2.svg";
 import chatLoadingicon3 from "../../assets/images/icons/chatLoadingIcon3.svg";
+import successIcon from "../../assets/images/icons/successIcon.svg";
+import failedIcon from "../../assets/images/icons/failedIcon.svg";
+import runIcon from "../../assets/images/icons/runIcon.svg";
 
 
 import checklistfile from "../../assets/IEC-61400-12-2022.pdf";
@@ -270,26 +273,28 @@ const ProjectView = () => {
    
     const regex = /\/([^/]+)$/; // Match the part after the last "/"
     let file=null;
+    let docArray=[];
+    let match = null;
     projectData?.documents?.forEach((document) => {
       let { documenttype, name, path } = document;
       if(documenttype === FORM_LABEL.PROJECT_DOCUMENT)
       {
        file = path;
+       match = file?.match(regex);
+       docArray.push(match?.[1])
       }
     });
 
-   
-    const match = file?.match(regex);
+    // const match = file?.match(regex);
 
-    const payload = new FormData();
-    payload.append("imageKey", match?.[1]);
+    // const payload = new FormData();
+    // payload.append("imageKey", docArray);
 
-    // const payload = {
-    //   imageKey :match?.[1]
-    // };
+    const payload = {
+      imageKey :docArray
+    };
 
     const data = parseApiResponse(query);
-
 
     if(match !== undefined && match?.length >0)
     {
@@ -779,6 +784,8 @@ const ProjectView = () => {
                             title={COUNT_CARD_LABELS.NO_OF_RUNS}
                             count={projectData.no_of_runs}
                             graphic={false}
+                            customIcon={true}
+                            icon={runIcon}
                           />
                         </Grid>
                         <Grid item xs={12} sm={6} md={4} lg={4}>
@@ -787,6 +794,8 @@ const ProjectView = () => {
                             count={projectData.success_count}
                             color="success"
                             graphic={false}
+                            customIcon={true}
+                            icon={successIcon}
                           />
                         </Grid>
 
@@ -796,6 +805,8 @@ const ProjectView = () => {
                             count={projectData.fail_count}
                             color="error"
                             graphic={false}
+                            customIcon={true}
+                            icon={failedIcon}
                           />
                         </Grid>
                       </Grid>

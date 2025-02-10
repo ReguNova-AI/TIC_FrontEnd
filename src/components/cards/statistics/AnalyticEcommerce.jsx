@@ -36,6 +36,7 @@ export default function AnalyticEcommerce({
   graphic,
   iconRender,
   icon,
+  customIcon
 }) {
   let colorValue = "primary.main";
   let bgcolorValue = "primary.lighter";
@@ -84,8 +85,8 @@ export default function AnalyticEcommerce({
         </Typography>
         <Grid container alignItems="center">
           <Grid item>
-            {iconRender ? (
-              <img src={icon} width="60px" />
+            {iconRender || customIcon ? (
+              <img src={icon} width={customIcon ? "34px" :"60px"} />
             ) : (
               <Avatar sx={{ color: colorValue, bgcolor: bgcolorValue }}>
                 {getIcon(title)}
