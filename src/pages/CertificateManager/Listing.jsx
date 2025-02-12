@@ -490,9 +490,9 @@ FileUploadApiService.fileget(filepayload).then((response) => {
                   onChange={(e) => handleSearch(e.target.value)}
                 />
               </FormControl>
-              <Button>
+              {/* <Button>
                 <DownloadOutlined />
-              </Button>
+              </Button> */}
             </Space>
           </Space>
           <Table
