@@ -53,8 +53,14 @@ export default function OrgCreation({ onHandleClose }) {
     type: "error",
   });
 
-  const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
+  const [errorValue, setErrorValue] = useState({
+    emailError: "",
+    phoneError: "",
+  });
 
+  const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
+  const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+  const phoneRegex = /^[0-9]{10}$/; // For a 10-digit phone number (adjust as needed)
   // Updated formData structure to match the desired format
   const [formData, setFormData] = React.useState({
     sector_id: 1,
@@ -91,7 +97,7 @@ export default function OrgCreation({ onHandleClose }) {
 
  
   const handleNext = () => {
-    if (activeStep === 0 && !validateStep()) {
+    if (activeStep === 0 && !validateStep(0)) {
       return; // Stop if validation fails
     }
     setError("");
@@ -118,6 +124,17 @@ export default function OrgCreation({ onHandleClose }) {
 
 
   const handleSubmit = () => {
+
+    if (activeStep === 1 && !validateStep(1)) {
+      return; // Stop if validation fails
+    }
+
+    if((errorValue.emailError !== "" && errorValue.emailError !== null) || (errorValue.phoneError !== "" && errorValue.phoneError !== null)){
+      return;
+    }
+
+    setError("");
+
     // let filepayload = { documents: [uploadedFileData], type: "jpg" };
     // FileUploadApiService.fileUpload(filepayload)
     //   .then((response) => {
@@ -151,8 +168,8 @@ export default function OrgCreation({ onHandleClose }) {
         });
         setFormData({
           ...formData,
-          sector_id: "",
-          sector_name:"",
+          sector_id: 1,
+          sector_name: "Nil",
           industries: "",
           industry_names:"",
           org_name: "",
@@ -223,11 +240,41 @@ export default function OrgCreation({ onHandleClose }) {
 
       if(formattedField === "email")
       {
+        if (!emailRegex.test(value)) {
+          setErrorValue({
+            ...errorValue,
+            emailError: "Please enter a valid email address.",
+          });
+        } else {
+          setErrorValue({
+            ...errorValue,
+            emailError: "",
+          });
+  
+          checkEmailAvailablity(value);
+        }
+
         setFormData({
           ...formData,
           org_email:value,
         });
       }
+      console.log("formattedField",formattedField)
+
+      if(formattedField === "phone")
+      {
+      if (!phoneRegex.test(value)) {
+        setErrorValue({
+          ...errorValue,
+          phoneError: "Phone number should be 10 digits.",
+        });
+      } else {
+        setErrorValue({
+          ...errorValue,
+          phoneError: "",
+        });
+      }
+    }
 
       setFormData({
         ...formData,
@@ -342,21 +389,79 @@ export default function OrgCreation({ onHandleClose }) {
     });
   };
 
-  const validateStep = () => {
+  const checkEmailAvailablity = (value)=>{
+    UserApiService.userEmailCheck(value)
+    .then((response) => {
+      
+      if(response?.data?.message === "User exist")
+      {
+        setErrorValue({
+          ...errorValue,
+          emailError: "Email Id already exists. Please add another email id",
+        });
+        return false;
+      }
+      else
+      {
+        setErrorValue({
+          ...errorValue,
+          emailError: "",
+        });
+        return true;
+      }
+     
+    })
+    .catch((errResponse) => {
+      setSnackData({
+        show: true,
+        message:
+          errResponse?.error?.message ||
+          API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+        type: "error",
+      });
+    });
+
+    setErrorValue({
+      ...errorValue,
+      emailError: "",
+    });
+    return true;
+  }
+
+  const validateStep = (step) => {
     // Validate required fields for Step 1
-    const requiredFields = [
+    let requiredFields = []; 
+    if(step === 0)
+    {requiredFields = [
       "org_name",
       // "org_email",
       // "sector_name",
       "industries",
     ];
-
     for (const field of requiredFields) {
       if (!formData[field] || formData[field].length === 0) {
+        setError("Please fill all the required fields")
+        console.log("field",field)
+        return false;
+      }
+    }
+  }
+  else
+  {
+    requiredFields = [
+      "first_name",
+      "last_name",
+      "email",
+      "phone"
+    ];
+
+    for (const field of requiredFields) {
+      if (!formData?.contact_json.primary_contact[field] || formData?.contact_json.primary_contact[field].length === 0) {
         setError("Please fill all the required fields")
         return false;
       }
     }
+  }
 
     return true;
   };
@@ -587,6 +692,8 @@ export default function OrgCreation({ onHandleClose }) {
                         fullWidth
                         name="primary_contact_email"
                         value={formData.contact_json.primary_contact.email}
+                        error={!!errorValue.emailError}
+                        helperText={errorValue.emailError}
                         onChange={handleInputChange}
                         required
                         inputProps={{
@@ -602,6 +709,8 @@ export default function OrgCreation({ onHandleClose }) {
                         name="primary_contact_phone"
                         value={formData.contact_json.primary_contact.phone}
                         onChange={handleInputChange}
+                        error={!!errorValue.phoneError}
+                        helperText={errorValue.phoneError}
                         required
                         inputProps={{
                           maxLength: 10, // Restrict input to 40 characters
@@ -688,8 +797,9 @@ export default function OrgCreation({ onHandleClose }) {
           ) : null}
 
           {activeStep <= 2 && (
+            <>
+            <span style={{color:"red"}}>{error}</span>
             <Box sx={{ display: "flex", flexDirection: "row", pt: 2, mt: 5 }}>
-                <span style={{color:"red"}}>{error}</span>
               {activeStep !== 0 && (
                 <Button
                   disabled={activeStep === 0}
@@ -713,6 +823,7 @@ export default function OrgCreation({ onHandleClose }) {
                   : BUTTON_LABEL.NEXT}
               </Button>
             </Box>
+            </>
           )}
         </Grid>
       </Grid>
