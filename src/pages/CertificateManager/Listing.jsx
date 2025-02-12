@@ -374,7 +374,7 @@ FileUploadApiService.fileget(filepayload).then((response) => {
         // Return the mapped JSX elements
         return (
           <>
-          <span style={{display: "display",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",width:"70%",  marginRight:"10px"}}>{value}</span> <DownloadOutlined onClick={(e)=>downloadFile(record.file_url,value)}/>
+          <span style={{display: "inline-block",whiteSpace:"break-spaces",overflow:"hidden",textOverflow:"ellipsis",width:"90%",  marginRight:"10px"}}>{value}</span> <DownloadOutlined onClick={(e)=>downloadFile(record.file_url,value)}/>
           </>
         );
       }

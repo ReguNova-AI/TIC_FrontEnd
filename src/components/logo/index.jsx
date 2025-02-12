@@ -18,7 +18,7 @@ const LogoSection = ({ sx, to }) => {
     <ButtonBase disableRipple component={Link} to={!to ? config.defaultPath : to} sx={sx}>
       <Stack direction="row" spacing={1} alignItems="center">
         {/* <Logo /> */}
-        <img src={logo } width='100px'/>
+        <img src={logo } width='60px'/>
       </Stack>
     </ButtonBase>
   );
