@@ -419,19 +419,19 @@ FileUploadApiService.fileget(filepayload).then((response) => {
           </>
         );
       },
-      filters: [
-        { text: "In Progress", value: "In Progress" },
-        { text: "Active", value: "Active" },
-        { text: "Success", value: "Success" },
-        { text: "Failed", value: "Failed" },
-      ],
-      onFilter: (value, record) => {
-        // Modify the filter logic if status is an array or single value
-        const statusArray = Array.isArray(record.status)
-          ? record.status
-          : [record.status];
-        return statusArray.includes(value);
-      },
+      // filters: [
+      //   { text: "In Progress", value: "In Progress" },
+      //   { text: "Active", value: "Active" },
+      //   { text: "Success", value: "Success" },
+      //   { text: "Failed", value: "Failed" },
+      // ],
+      // onFilter: (value, record) => {
+      //   // Modify the filter logic if status is an array or single value
+      //   const statusArray = Array.isArray(record.status)
+      //     ? record.status
+      //     : [record.status];
+      //   return statusArray.includes(value);
+      // },
     },
   ];
 

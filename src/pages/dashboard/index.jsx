@@ -318,7 +318,7 @@ export default function DashboardDefault() {
             textAlignLast: "end",
           }}
         >
-          <ChatBotView />
+          {/* <ChatBotView /> */}
         </Box>
       </Grid>
 

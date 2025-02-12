@@ -882,7 +882,8 @@ const ProjectView = () => {
                         <Button
                           variant="contained"
                           sx={{ mt: 2 }}
-                          disabled={projectData.documents?.length > 0 && projectData?.regulatory_standard ? false : true}
+                          // disabled={projectData.documents?.length > 0 && projectData?.regulatory_standard ? false : true}
+                          disabled={projectData?.regulatory_standard ? projectData.checkListResponse ? projectData.documents?.length > 0 ? false : true : false: true}
                           onClick={() => projectData.checkListResponse ? runComplianceAssessmenet(projectData.checkListResponse) : runChecklkistCRT() }
                         >
                          {projectData.checkListResponse ? BUTTON_LABEL.RUN_PROJECT : BUTTON_LABEL.RUN_CHECKLIST} 
