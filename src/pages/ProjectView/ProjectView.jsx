@@ -615,6 +615,8 @@ const ProjectView = () => {
     // Handle the file upload logic here
     const updatedResponse = { ...projectData };
 
+    if(uploadedDocument)
+    {
     // Append the new documents to the existing documents array
     updatedResponse.documents = [
       ...updatedResponse.documents,
@@ -637,7 +639,7 @@ const ProjectView = () => {
   
       return { history: updatedHistory }; // Update state with the new history array
     });
-
+  }
 
     // UpdateProjectDetails(updatedResponse, false);
   };
@@ -880,6 +882,7 @@ const ProjectView = () => {
                         <Button
                           variant="contained"
                           sx={{ mt: 2 }}
+                          disabled={projectData.documents?.length > 0 && projectData?.regulatory_standard ? false : true}
                           onClick={() => projectData.checkListResponse ? runComplianceAssessmenet(projectData.checkListResponse) : runChecklkistCRT() }
                         >
                          {projectData.checkListResponse ? BUTTON_LABEL.RUN_PROJECT : BUTTON_LABEL.RUN_CHECKLIST} 
