@@ -62,7 +62,7 @@ export default function OrgCreation({ onHandleClose }) {
   const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
   const phoneRegex = /^[0-9]{10}$/; // For a 10-digit phone number (adjust as needed)
   // Updated formData structure to match the desired format
-  const [formData, setFormData] = React.useState({
+  const [formData, setFormData] = useState({
     sector_id: 1,
     sector_name: "Nil",
     industries: "",
@@ -173,7 +173,7 @@ export default function OrgCreation({ onHandleClose }) {
           industries: "",
           industry_names:"",
           org_name: "",
-          org_email: "",
+          org_email: "test@test.test",
           org_logo: "",
           org_url: "",
           org_address: {
@@ -197,6 +197,7 @@ export default function OrgCreation({ onHandleClose }) {
             },
           },
         });
+        setSelectedIndustry([]);
         setActiveStep(0);
         onHandleClose(true);
       })
