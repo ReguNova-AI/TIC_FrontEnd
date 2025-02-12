@@ -419,7 +419,7 @@ const MyForm = () => {
               style={{ textTransform: 'none' }}
               onClick={handleAddFileClick} // Open the popover when clicked
             >
-              Add Regulatory
+              Add Standard
             </Button>
           </MenuItem>
         </Select>
@@ -503,7 +503,7 @@ const MyForm = () => {
             </Grid>
 
             <Grid item xs={12} sm={12}>
-              <Button
+              {/* <Button
                 type="submit"
                 variant="contained"
                 onClick={() => {
@@ -516,20 +516,20 @@ const MyForm = () => {
                 }}
               >
                {BUTTON_LABEL.RUN_PROJECT}
-              </Button>
+              </Button> */}
               <Button
                 type="submit"
-                variant="outlined"
+                variant="contained"
                 onClick={() => {
                   setSubmissionStatus("Draft");
                 }}
                 style={{
+                  background: "#003a8c",
                   float: "right",
-                  marginRight: "10px",
                   textTransform: "none",
                 }}
               >
-                {BUTTON_LABEL.SAVE_DRAFT}
+                {BUTTON_LABEL.SAVE_PROJECT}
               </Button>
             </Grid>
           </Grid>
