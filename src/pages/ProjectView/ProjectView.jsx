@@ -70,7 +70,7 @@ const ProjectView = () => {
   const [chatLoading, setChatloading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false); // To control modal visibility
   const [historyValue,setHistoryValue] = useState([]);
-  
+
   // const chatLoadingIcon = (props) => <Icon component={chatLoadingicon} {...props} />;
 
   const [snackData, setSnackData] = useState({
@@ -871,7 +871,7 @@ const ProjectView = () => {
                           variant="outlined"
                           onClick={() => setOpenModal(true)} // Open modal on button click
                         >
-                          {BUTTON_LABEL.UPLOAD_DOCUMENTS}
+                          {BUTTON_LABEL.UPLOAD_ADDITIONAL_DOCUMENTS}
                         </Button>
                         {/* <Button variant="contained" sx={{ mt: 2 }} onClick={()=>runChecklistAPI()}>
                          
@@ -989,7 +989,7 @@ const ProjectView = () => {
             <Button onClick={() => setOpenModal(false)} color="primary">
               Cancel
             </Button>
-            <Button onClick={handleFileUpload} color="primary">
+            <Button variant="contained" disabled={uploadedDocument?.length >0 ? false : true} onClick={handleFileUpload} color="primary">
               Upload
             </Button>
           </DialogActions>

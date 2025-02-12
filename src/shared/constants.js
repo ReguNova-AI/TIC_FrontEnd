@@ -160,6 +160,7 @@ export const BUTTON_LABEL = Object.freeze({
   CREATE_PROJECT: "Add New Project",
   VIEW: "View",
   UPLOAD_DOCUMENTS: "Upload Documents",
+  UPLOAD_ADDITIONAL_DOCUMENTS:"Upload additional project documents",
   CREATE_USER: "Add New User",
   UPLOAD_CERTIFICATE: "Upload Certificate",
   SUBMIT: "Submit",
