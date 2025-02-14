@@ -18,7 +18,6 @@ import Popper from "@mui/material/Popper";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
-
 // project import
 import MainCard from "components/MainCard";
 import Transitions from "components/@extended/Transitions";
@@ -37,7 +36,7 @@ import {
   UserAddOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { Empty } from "antd";
+import { Empty,Modal } from "antd";
 
 // sx styles
 const avatarSX = {
@@ -69,6 +68,8 @@ export default function Notification() {
   const [notificationData, setNotificationData] = useState([]);
   const [allNotification, setAllNotification] = useState([]);
   const [arrayId, setArrayId] = useState([]);
+  const [visible, setVisible] = useState(false);
+  const [modalContent, setModalContent] = useState({});
 
   const handleToggle = () => {
     setOpen((prevOpen) => !prevOpen);
@@ -77,6 +78,19 @@ export default function Notification() {
   useEffect(() => {
     fetchNotification();
   }, []);
+
+  const handleButtonClick = (e, tab) => {
+    handleClose(e);
+    setModalContent({});
+    setVisible(true);
+  };
+
+  const handleModalClose = () => {
+    setVisible(false);
+    setModalContent({});
+  };
+
+
 
   const handleClose = (event) => {
     if (anchorRef.current && anchorRef.current.contains(event.target)) {
@@ -113,6 +127,7 @@ export default function Notification() {
       .then((response) => {
         fetchNotification();
         if (projectId) {
+          handleModalClose();
           navigate(`/projectView/${projectId}`, {
             state: { project_id: projectId },
           });
@@ -315,9 +330,9 @@ export default function Notification() {
                         </>
                       );
                     })}
-                    {notificationData?.length > 4 && (
+                    {allNotification?.length > 4 && (
                       <ListItemButton
-                        sx={{ textAlign: "center", py: `${12}px !important` }}
+                        sx={{ textAlign: "center", py: `${12}px !important` }} onClick={(e)=>handleButtonClick(e)}
                       >
                         <ListItemText
                           primary={
@@ -335,6 +350,116 @@ export default function Notification() {
           </Transitions>
         )}
       </Popper>
+      <Modal
+        title={"Notifications"}
+        visible={visible}
+        onCancel={handleModalClose}
+        footer={null}
+        width={600}
+      > 
+      <MainCard
+                  title="Notification"
+                  elevation={0}
+                  border={false}
+                  content={false}
+                  secondary={
+                    <>
+                      {read > 0 && (
+                        <Tooltip title="Mark as all read">
+                          <IconButton
+                            color="success"
+                            size="small"
+                            style={{ width: "110%" }}
+                            onClick={() => handleRead("0", "all")}
+                          >
+                            <CheckCircleOutlined
+                              style={{ fontSize: "1.15rem" }}
+                            />
+                            <span style={{ color: "black", width: "100%" }}>
+                              Mark all as read
+                            </span>
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                    </>
+                  }
+                ></MainCard>
+          <List
+                    component="nav"
+                    style={{ height: allNotification?.length === 0 ? "160px" :"375px", overflowY: "scroll" }}
+                    sx={{
+                      p: 0,
+                      "& .MuiListItemButton-root": {
+                        py: 0.5,
+                        "&.Mui-selected": {
+                          bgcolor: "grey.50",
+                          color: "text.primary",
+                        },
+                        "& .MuiAvatar-root": avatarSX,
+                        "& .MuiListItemSecondaryAction-root": {
+                          ...actionSX,
+                          position: "relative",
+                        },
+                      },
+                    }}
+                  >
+                    
+                    {allNotification?.map((item) => {
+                      return (
+                        <>
+                          <ListItemButton
+                            selected={!item?.is_read}
+                            style={{
+                              background: !item?.is_read ? "white" : "#f1f1f0",
+                            }}
+                            onClick={(e) =>
+                              handleRead(
+                                item?.notification_id,
+                                "single",
+                                item?.project_id
+                              )
+                            }
+                          >
+                            <ListItemAvatar>
+                              <Avatar
+                                sx={{
+                                  color: "success.main",
+                                  bgcolor: "success.lighter",
+                                }}
+                              >
+                                {item?.type === "USER_CREATION" ? (
+                                  <UserAddOutlined />
+                                ) : item?.type === "INVITE_USER" ? (
+                                  <ShareAltOutlined />
+                                ) : (
+                                  <FileAddOutlined />
+                                )}
+                              </Avatar>
+                            </ListItemAvatar>
+                            <ListItemText
+                              primary={
+                                <Typography variant="h6">
+                                  {item?.notification_message}
+                                </Typography>
+                              }
+                              secondary={getTimeDifference(item?.created_date)}
+                            />
+                            <ListItemSecondaryAction>
+                              <Typography variant="caption" noWrap>
+                                {getDate(item?.created_date)}
+                              </Typography>
+                            </ListItemSecondaryAction>
+                          </ListItemButton>
+                          <Divider />
+                        </>
+                      );
+                    })}
+                   
+                  </List>
+       
+      </Modal>
     </Box>
+
+    
   );
 }
