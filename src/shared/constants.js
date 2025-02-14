@@ -30,6 +30,8 @@ export const API_SUCCESS_MESSAGE = {
   SECTOR_DELETED:"Sector deleted successfully",
   USER_DISABLED:"User access is disabled successfully",
   USER_ENABLED:"User access is enabled successfully",
+  ORG_DISABLED:"Organization access is disabled successfully",
+  ORG_ENABLED:"Organization access is enabled successfully",
   INDUSTRY_DELETED:"Industry deleted successfully",
   ROLE_DELETED:"Role deleted successfully",
   STANDARD_DELETED:"Standard deleted successfully",

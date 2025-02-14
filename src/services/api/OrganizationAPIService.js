@@ -12,11 +12,16 @@ const _organisationDetails = (id) => {
   return BaseApiService.get(`/api/v1/organizations/${id}`, null, null);
 };
 
+const _orgAccess = (orgId,active) => {
+  let payload = {}
+  return BaseApiService.post(`/api/v1/organizations/${orgId}/users/toggle-active?is_active=${active}`, null, payload);
+};
+
 
 export const OrganisationApiService = {
   organisationCreate: _organisationCreate,
   organisationListing: _organisationListing,
   organisationDetails: _organisationDetails,
-
+  orgAccess:_orgAccess,
 
 };

@@ -349,9 +349,7 @@ const UserListing = () => {
         setSnackData({
           show: true,
           message:
-            errResponse.response?.data?.message === "This sector is in use"
-              ? "Can't delete this sector it is already used for user/organization creation"
-              : API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+            errResponse.response?.data?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
       });
