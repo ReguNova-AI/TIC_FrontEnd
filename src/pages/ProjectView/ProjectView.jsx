@@ -199,7 +199,7 @@ const ProjectView = () => {
 
         // Now process all sections
         sections.map((section, index) => {
-            let lines = section?.trim()?.split('\n'); // Split the section into lines
+            let lines = section?.trim()?.replace('\n\n','\n')?.split('\n'); // Split the section into lines
 
             // Extract and clean the title of the section
             let title = lines[0]?.replace('**', '')?.replace('###', '')?.replace("---")?.replace(':', '')?.trim();
