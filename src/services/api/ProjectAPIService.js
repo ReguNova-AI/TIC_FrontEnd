@@ -66,9 +66,9 @@ const _projectCounts = (id) => {
   }
 };
 
-const _projectChat = (query) => {
+const _projectChat = (query,projectId) => {
   return BaseApiService.get(
-    `/api/v1/chat/askQuestion?user_question=${query}`,
+    `/api/v1/chat/askQuestion?user_question=${query}&project_id=${projectId}`,
     null,
     null
   );

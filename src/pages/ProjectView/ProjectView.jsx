@@ -96,7 +96,7 @@ const ProjectView = () => {
    
     if(runAssessmentState === "run" && runState)
         {
-          projectData?.checkListResponse ? runComplianceAssessmenet(projectData?.checkListResponse) : runChecklkistCRT();
+          projectData?.checkListResponse ? runComplianceAssessmenet(projectData?.checkListResponse,projectData?.project_id) : runChecklkistCRT();
           setRunState(false);
         }
 
@@ -269,7 +269,7 @@ const ProjectView = () => {
 
 
 
-  const runComplianceAssessmenet = async (query) =>{
+  const runComplianceAssessmenet = async (query,projectId) =>{
    
     const regex = /\/([^/]+)$/; // Match the part after the last "/"
     let file=null;
@@ -291,7 +291,8 @@ const ProjectView = () => {
     // payload.append("imageKey", docArray);
 
     const payload = {
-      imageKey :docArray
+      imageKey :docArray,
+      project_id:projectId
     };
 
     const data = parseApiResponse(query);
@@ -305,6 +306,7 @@ const ProjectView = () => {
 
         let payload1 = {
           "requirements":data,
+          project_id:projectId
         }
 
         ProjectApiService.projectComplianceAssessment(payload1)
@@ -530,6 +532,7 @@ const ProjectView = () => {
 
     const payload = new FormData();
     payload.append("imageKey", match?.[1]);
+    payload.append("project_id",projectData?.project_id)
     // const payload = {
     //   imageKey :match[1]
     // };
@@ -884,7 +887,7 @@ const ProjectView = () => {
                           sx={{ mt: 2 }}
                           // disabled={projectData.documents?.length > 0 && projectData?.regulatory_standard ? false : true}
                           disabled={projectData?.regulatory_standard ? projectData.checkListResponse ? projectData.documents?.length > 0 ? false : true : false: true}
-                          onClick={() => projectData.checkListResponse ? runComplianceAssessmenet(projectData.checkListResponse) : runChecklkistCRT() }
+                          onClick={() => projectData.checkListResponse ? runComplianceAssessmenet(projectData.checkListResponse,projectData?.project_id) : runChecklkistCRT() }
                         >
                          {projectData.checkListResponse ? BUTTON_LABEL.RUN_PROJECT : BUTTON_LABEL.RUN_CHECKLIST} 
                         </Button>
@@ -964,6 +967,7 @@ const ProjectView = () => {
                       <ChatAIView
                         onSubmit={(e) => handlechatUpdate(e)}
                         data={projectData?.chatResponse?.data}
+                        projectId={projectData?.project_id}
                         responseValue={chatResponse}
                       />
                     )}

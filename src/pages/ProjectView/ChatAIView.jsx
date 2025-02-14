@@ -7,7 +7,7 @@ import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import { ProjectApiService } from 'services/api/ProjectAPIService';
 
-const ChatAIView = ({data,onSubmit,responseValue}) => {
+const ChatAIView = ({data,onSubmit,responseValue,projectId}) => {
   
   if(responseValue.length === 0)
   {
@@ -35,7 +35,7 @@ const ChatAIView = ({data,onSubmit,responseValue}) => {
   
     setLoading(true);
     try {
-      const response = await ProjectApiService.projectChat(query);
+      const response = await ProjectApiService.projectChat(query,projectId);
       const newHistory = { question: query?.replace("'"," "), answer: response.data.data.output_text };
       setHistory(prevHistory => [...prevHistory, newHistory]);
       setResponse(response.data.data.output_text);
