@@ -245,17 +245,18 @@ const userEmail = userdetails?.[0]?.user_email;
 
     const orgLogo = new Paragraph({
       children: [
+        OrgData?.org_logo ? 
           new ImageRun({
-              data: OrgData?.org_logo,  // Pass the image blob directly
+              data: OrgData?.org_logo || "",  // Pass the image blob directly
               transformation: {
                   width: 100,  // Set the desired width of the image
                   height: 100, // Set the desired height of the image
               },
-          }),
+          }): "",
       ],
       alignment: AlignmentType.CENTER,  // Center the image on the page
       spacing: { after: 200 },  // Add space after the image
-  });
+  }) ;
 
   
     const inviteData = [];
@@ -431,7 +432,7 @@ const preparedforTable = new DocxTable({
           },
         }),
         new DocxTableCell({
-          children: [orgLogo],
+          children: [orgLogo || ""],
           width: { size: 20, type: "pct" },
           verticalAlign: "center",
           borders: {
