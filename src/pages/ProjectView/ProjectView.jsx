@@ -291,13 +291,15 @@ const ProjectView = () => {
     // const payload = new FormData();
     // payload.append("imageKey", docArray);
 
-    const payload = {
-      imageKey :docArray,
-      project_id:projectId
-    };
-
     const data = parseApiResponse(query);
 
+    const payload = {
+      imageKey :docArray,
+      project_id:projectId,
+      requirements:data,
+    };
+
+   
     if(match !== undefined && match?.length >0)
     {
       setLoading(true);
