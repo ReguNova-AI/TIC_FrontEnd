@@ -269,6 +269,7 @@ export const HEADING = Object.freeze({
   CREATE_ORG:"Create Organization",
   EDIT_PROJECT:"Edit Project Details",
   INVITE_USERS:"Invite users",
+  PROGRESS:""
 });
 
 export const CLOSE_ALERT_DESCRIPTION =

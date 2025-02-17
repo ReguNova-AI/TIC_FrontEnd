@@ -48,8 +48,7 @@ import chatLoadingicon3 from "../../assets/images/icons/chatLoadingIcon3.svg";
 import successIcon from "../../assets/images/icons/successIcon.svg";
 import failedIcon from "../../assets/images/icons/failedIcon.svg";
 import runIcon from "../../assets/images/icons/runIcon.svg";
-
-
+import reportIcon from "../../assets/images/icons/report1.png";
 import checklistfile from "../../assets/IEC-61400-12-2022.pdf";
 import axios from "axios";
 import Icon, { SmileOutlined } from "@ant-design/icons";
@@ -69,6 +68,7 @@ const ProjectView = () => {
   const [chatResponse, setChatResponse] = useState([]);
   const [chatLoading, setChatloading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false); // To control modal visibility
+  const [isProgressModalVisible, setIsProgressModalVisible] = useState(false); // To control modal visibility
   const [historyValue,setHistoryValue] = useState([]);
 
   // const chatLoadingIcon = (props) => <Icon component={chatLoadingicon} {...props} />;
@@ -460,23 +460,27 @@ const ProjectView = () => {
 
     const payload = new FormData();
     payload.append("imageKey", match?.[1]);
+    payload.append("project_id",projectData?.project_id)
     // const payload = {
     //   imageKey :match[1]
     // };
-    setLoading(true);
+    // setLoading(true);
 
     ProjectApiService.projectStandardChecklist(payload)
       .then((response) => {
         console.log("response", response);
-        setSnackData({
-          show: true,
-          message:
-            response?.data?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-          type: "success",
-        });
+        // setSnackData({
+        //   show: true,
+        //   message:
+        //     response?.data?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+        //   type: "success",
+        // });
         // SetProjectData(response?.data?.details[0]);
-        setLoading(false);
-        handleCRTUpdate(response);
+        // setLoading(false);
+
+        handleprogressModalOpen();
+
+        // handleCRTUpdate(response);
        
 
 
@@ -490,7 +494,7 @@ const ProjectView = () => {
             API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
-        setLoading(false);
+        // setLoading(false);
       });
     }
   };
@@ -678,6 +682,20 @@ const ProjectView = () => {
   };
   const handleClose = () => {
     setIsModalVisible(false);
+    // fetchData();
+  };
+
+  const handleprogressModalOpen = (type) => {
+    setModalType(type);
+    setIsProgressModalVisible(true);
+  };
+
+  const handleprogressModalClose = () => {
+    setIsProgressModalVisible(false);
+    // fetchData();
+  };
+  const handleprogressClose = () => {
+    setIsProgressModalVisible(false);
     // fetchData();
   };
 
@@ -886,10 +904,19 @@ const ProjectView = () => {
                           variant="contained"
                           sx={{ mt: 2 }}
                           // disabled={projectData.documents?.length > 0 && projectData?.regulatory_standard ? false : true}
-                          disabled={projectData?.regulatory_standard ? projectData.checkListResponse ? projectData.documents?.length > 0 ? false : true : false: true}
-                          onClick={() => projectData.checkListResponse ? runComplianceAssessmenet(projectData.checkListResponse,projectData?.project_id) : runChecklkistCRT() }
+                          disabled={projectData?.regulatory_standard ? projectData.checkListResponse ? true: false : true}
+                          onClick={() => runChecklkistCRT() }
                         >
-                         {projectData.checkListResponse ? BUTTON_LABEL.RUN_PROJECT : BUTTON_LABEL.RUN_CHECKLIST} 
+                         {BUTTON_LABEL.RUN_CHECKLIST} 
+                        </Button>
+                        <Button
+                          variant="contained"
+                          sx={{ mt: 2 }}
+                          // disabled={projectData.documents?.length > 0 && projectData?.regulatory_standard ? false : true}
+                          // disabled={projectData?.regulatory_standard ? projectData.checkListResponse ? projectData.documents?.length > 0 ? false : true : false: true}
+                          onClick={() => runComplianceAssessmenet(projectData.checkListResponse,projectData?.project_id)}
+                        >
+                         {BUTTON_LABEL.RUN_PROJECT} 
                         </Button>
                       </Box>
                     </Grid>
@@ -1016,6 +1043,20 @@ const ProjectView = () => {
             editDetails={(e) => updateDetails(e)}
             type={modalType}
           />
+        </Modal>
+
+        <Modal
+          title=""
+          visible={isProgressModalVisible}
+          onCancel={handleprogressModalClose}
+          footer={null}
+          width={500}
+        >
+          <Box style={{justifyItems:"center"}}>
+          <img src={reportIcon}  width={"100px"}/>
+         <Typography style={{margin:"27px 5px"}}>We got your request and will notify you once it is ready.</Typography>
+         <Button variant="contained" onClick={()=>handleprogressModalClose()}>Close</Button>
+         </Box>
         </Modal>
 
         {/* Snackbar */}
