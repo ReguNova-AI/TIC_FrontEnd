@@ -12,6 +12,7 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
+  Tooltip,
 } from "@mui/material";
 import PropTypes from "prop-types";
 import TimelineView from "./TimelineView";
@@ -439,8 +440,6 @@ const ProjectView = () => {
         type: "error",
       });
     }
-
-    
   };
 
   const runChecklkistCRT = async () => {
@@ -900,6 +899,7 @@ const ProjectView = () => {
                         </Button> */}
 
                         {/* <input type="file" id="fileInput" /> */}
+                        <Tooltip title="It will generate the checklist report">
                         <Button
                           variant="contained"
                           sx={{ mt: 2 }}
@@ -909,6 +909,9 @@ const ProjectView = () => {
                         >
                          {BUTTON_LABEL.RUN_CHECKLIST} 
                         </Button>
+                        </Tooltip>
+                        <Tooltip title={projectData.checkListResponse ? "It will generate the assessment report" :"It will generate the checklist report and assessment report"
+                        }>
                         <Button
                           variant="contained"
                           sx={{ mt: 2 }}
@@ -916,8 +919,9 @@ const ProjectView = () => {
                           // disabled={projectData?.regulatory_standard ? projectData.checkListResponse ? projectData.documents?.length > 0 ? false : true : false: true}
                           onClick={() => runComplianceAssessmenet(projectData.checkListResponse,projectData?.project_id)}
                         >
-                         {BUTTON_LABEL.RUN_PROJECT} 
+                         {projectData.checkListResponse ? BUTTON_LABEL.RUN_PROJECT : BUTTON_LABEL.RUN_FULL_PROJECT} 
                         </Button>
+                        </Tooltip>
                       </Box>
                     </Grid>
                   </Grid>

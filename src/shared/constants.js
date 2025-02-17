@@ -156,6 +156,7 @@ export const BUTTON_LABEL = Object.freeze({
   FILTER: "Filter",
   SEARCH: "Search",
   RUN_PROJECT: "Run Assessment",
+  RUN_FULL_PROJECT: "Run Full Assessment",
   RUN_CHECKLIST:"Run Checklist",
   SAVE_DRAFT: "Save as Draft",
   SAVE_PROJECT:"Save Project",
