@@ -302,7 +302,7 @@ const ProjectView = () => {
    
     if(match !== undefined && match?.length >0)
     {
-      setLoading(true);
+      // setLoading(true);
     ProjectApiService.projectDocumentUpload(payload)
       .then((response) => {
         // setLoading(false);
@@ -311,96 +311,97 @@ const ProjectView = () => {
           "requirements":data,
           project_id:projectId
         }
+        handleprogressModalOpen();
 
-        ProjectApiService.projectComplianceAssessment(payload1)
-      .then((response) => {
-        // setSnackData({
-        //   show: true,
-        //   message:
-        //     response?.data?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-        //   type: "success",
-        // });
-        // SetProjectData(response?.data?.details[0]);
-        setLoading(false);
-        let status = null;
+      //   ProjectApiService.projectComplianceAssessment(payload1)
+      // .then((response) => {
+      //   // setSnackData({
+      //   //   show: true,
+      //   //   message:
+      //   //     response?.data?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+      //   //   type: "success",
+      //   // });
+      //   // SetProjectData(response?.data?.details[0]);
+      //   setLoading(false);
+      //   let status = null;
 
-        if(response?.data?.success === false || response?.data?.error ==="An error occurred while fetching data")
-        {
-          status = "error";
-        }
+      //   if(response?.data?.success === false || response?.data?.error ==="An error occurred while fetching data")
+      //   {
+      //     status = "error";
+      //   }
 
-        const array = response?.data?.data;
-        const delimiter = "|,|";  // You can use any delimiter you want
-        const result = array.join(delimiter);
+      //   const array = response?.data?.data;
+      //   const delimiter = "|,|";  // You can use any delimiter you want
+      //   const result = array.join(delimiter);
 
-        const updatedResponse = { ...projectData };
-        const previousData = {...projectData};
-        updatedResponse.complianceAssesment = `${result}`;
-        updatedResponse.no_of_runs = updatedResponse?.no_of_runs + 1;
-        if(status === "error")
-        {
-          updatedResponse.fail_count= updatedResponse?.fail_count + 1;
-        }
-        else{
-          updatedResponse.success_count= updatedResponse?.success_count + 1;
-        }
-        // updatedResponse.success_count= updatedResponse?.success_count + 1;
-        updatedResponse.status = status === "error" ? "Failed" : "Success";
-        updatedResponse.last_run = formatDateToCustomFormat(new Date());
-        const newHistory = createHistoryObject(projectData, previousData,"assessmentRun");
-        setHistoryData((prevState) => {
-          const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
-          // After the state update, include the updated history in the updatedResponse
-          const updatedResponseWithHistory = { ...updatedResponse, history: updatedHistory };
+      //   const updatedResponse = { ...projectData };
+      //   const previousData = {...projectData};
+      //   updatedResponse.complianceAssesment = `${result}`;
+      //   updatedResponse.no_of_runs = updatedResponse?.no_of_runs + 1;
+      //   if(status === "error")
+      //   {
+      //     updatedResponse.fail_count= updatedResponse?.fail_count + 1;
+      //   }
+      //   else{
+      //     updatedResponse.success_count= updatedResponse?.success_count + 1;
+      //   }
+      //   // updatedResponse.success_count= updatedResponse?.success_count + 1;
+      //   updatedResponse.status = status === "error" ? "Failed" : "Success";
+      //   updatedResponse.last_run = formatDateToCustomFormat(new Date());
+      //   const newHistory = createHistoryObject(projectData, previousData,"assessmentRun");
+      //   setHistoryData((prevState) => {
+      //     const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
+      //     // After the state update, include the updated history in the updatedResponse
+      //     const updatedResponseWithHistory = { ...updatedResponse, history: updatedHistory };
 
-          if(status === "error")
-          {
-            setSnackData({
-              show: true,
-              message:API_ERROR_MESSAGE.FAILED_TO_RUN_ASSESSMENT,
-              type: "error",
-            });
-          }
+      //     if(status === "error")
+      //     {
+      //       setSnackData({
+      //         show: true,
+      //         message:API_ERROR_MESSAGE.FAILED_TO_RUN_ASSESSMENT,
+      //         type: "error",
+      //       });
+      //     }
           
-          // You can also call UpdateProjectDetails here, using the updated response with history
-          // setLoading(true);
-          UpdateProjectDetails(updatedResponseWithHistory, false);
+      //     // You can also call UpdateProjectDetails here, using the updated response with history
+      //     // setLoading(true);
+      //     UpdateProjectDetails(updatedResponseWithHistory, false);
       
-          return { history: updatedHistory }; // Update state with the new history array
-        });
+      //     return { history: updatedHistory }; // Update state with the new history array
+      //   });
 
 
-        // UpdateProjectDetails(updatedResponse, true);
-      })
-      .catch((errResponse) => {
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
-        setLoading(false);
-        const updatedResponse = { ...projectData };
-        const previousData = {...projectData};
-        updatedResponse.no_of_runs = updatedResponse?.no_of_runs + 1;
-        updatedResponse.fail_count= updatedResponse?.fail_count + 1;
-        updatedResponse.status = "Failed";
-        updatedResponse.last_run = formatDateToCustomFormat(new Date());
-        const newHistory = createHistoryObject(projectData, previousData,"assessmentRun");
-        setHistoryData((prevState) => {
-          const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
-          // After the state update, include the updated history in the updatedResponse
-          const updatedResponseWithHistory = { ...updatedResponse, history: updatedHistory };
+      //   // UpdateProjectDetails(updatedResponse, true);
+      // })
+      // .catch((errResponse) => {
+      //   setSnackData({
+      //     show: true,
+      //     message:
+      //       errResponse?.error?.message ||
+      //       API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+      //     type: "error",
+      //   });
+      //   setLoading(false);
+      //   const updatedResponse = { ...projectData };
+      //   const previousData = {...projectData};
+      //   updatedResponse.no_of_runs = updatedResponse?.no_of_runs + 1;
+      //   updatedResponse.fail_count= updatedResponse?.fail_count + 1;
+      //   updatedResponse.status = "Failed";
+      //   updatedResponse.last_run = formatDateToCustomFormat(new Date());
+      //   const newHistory = createHistoryObject(projectData, previousData,"assessmentRun");
+      //   setHistoryData((prevState) => {
+      //     const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
+      //     // After the state update, include the updated history in the updatedResponse
+      //     const updatedResponseWithHistory = { ...updatedResponse, history: updatedHistory };
           
-          // You can also call UpdateProjectDetails here, using the updated response with history
-          // setLoading(true);
-          UpdateProjectDetails(updatedResponseWithHistory, false);
+      //     // You can also call UpdateProjectDetails here, using the updated response with history
+      //     // setLoading(true);
+      //     UpdateProjectDetails(updatedResponseWithHistory, false);
       
-          return { history: updatedHistory };
-        });
+      //     return { history: updatedHistory };
+      //   });
 
-      });
+      // });
         // UpdateProjectDetails(updatedResponse, true);
       })
       .catch((errResponse) => {
