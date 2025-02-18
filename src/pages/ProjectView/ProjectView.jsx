@@ -562,8 +562,9 @@ const ProjectView = () => {
         //   type: "success",
         // });
         // SetProjectData(response?.data?.details[0]);
-        setChatloading(false);
-        handlestandardChatUploadUpdate();
+        
+        // setChatloading(false);
+        // handlestandardChatUploadUpdate();
         setStandardChatState(false);     
 
       })
