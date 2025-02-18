@@ -31,10 +31,10 @@ export default function ProgressBarView() {
   const [progress, setProgress] = React.useState(10);
   const [messageIndex, setMessageIndex] = React.useState(0);
   const messages = [
-    "We have Initialized the process...",
-    "Step 1: Processing data...",
-    "Step 2: Analyzing data...",
-    "Step 3: Finalizing process...",
+    "We have initialized the process...",
+    "Please wait while we process the data...",
+    "Data analysis is in progress...",
+    "Finalizing the data process...",
   ];
 
   React.useEffect(() => {
@@ -54,10 +54,10 @@ export default function ProgressBarView() {
   }, []);
 
   return (
-    <Box sx={{ width: '100%'}}>
+    <Box sx={{ width: '100%',marginTop:"10px"}} style={{justifyItems:"center"}}>
       <Typography>{messages[messageIndex]}</Typography>
 
-      <LinearProgressWithLabel value={progress} />
+      {/* <LinearProgressWithLabel value={progress} /> */}
     </Box>
   );
 }

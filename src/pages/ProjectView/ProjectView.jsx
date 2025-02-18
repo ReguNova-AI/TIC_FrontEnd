@@ -867,8 +867,8 @@ const ProjectView = () => {
                               {PROJECT_DETAIL_PAGE.CURRENT_PROGRESS_STATUS}
                             </Typography> */}
                             
-                            <ProgressBarView />
                             <img src={processIcon} width="150px" />
+                            <ProgressBarView />
                           </Grid>
                         }
                       </Grid>
