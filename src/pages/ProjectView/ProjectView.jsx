@@ -50,6 +50,7 @@ import successIcon from "../../assets/images/icons/successIcon.svg";
 import failedIcon from "../../assets/images/icons/failedIcon.svg";
 import runIcon from "../../assets/images/icons/runIcon.svg";
 import reportIcon from "../../assets/images/icons/report1.png";
+import processIcon from "../../assets/images/process.png";
 import checklistfile from "../../assets/IEC-61400-12-2022.pdf";
 import axios from "axios";
 import Icon, { SmileOutlined } from "@ant-design/icons";
@@ -128,6 +129,7 @@ const ProjectView = () => {
         SetProjectData(response?.data?.details[0]);
         setHistoryData({history:response?.data?.details[0].history || [] })
         setHistoryValue(response?.data?.details[0].history);
+        setChatloading(response?.data?.details[0]?.standardUploaded? false : true)
         setLoading(false);
       })
       .catch((errResponse) => {
@@ -542,7 +544,7 @@ const ProjectView = () => {
     // const payload = {
     //   imageKey :match[1]
     // };
-    setChatloading(true);
+    // setChatloading(true);
     setStandardChatState(false);
     ProjectApiService.projectUploadStandardChat(payload)
       .then((response) => {
@@ -694,7 +696,8 @@ const ProjectView = () => {
 
   const handleprogressModalClose = () => {
     setIsProgressModalVisible(false);
-    // fetchData();
+    fetchDetails(projectData?.project_id);
+    fetchStandardData();
   };
   const handleprogressClose = () => {
     setIsProgressModalVisible(false);
@@ -836,12 +839,6 @@ const ProjectView = () => {
                         </Grid>
                       </Grid>
                       <Grid container style={{ marginTop: "20px" }}>
-                        {/* <Grid item xs={12} sm={12} md={12} lg={12}>
-                          <Typography>
-                            {PROJECT_DETAIL_PAGE.CURRENT_PROGRESS_STATUS}
-                          </Typography>
-                          <ProgressBarView />
-                        </Grid> */}
                         <Grid item xs={12} sm={12} md={12} lg={12}>
                           <Box
                             style={{
@@ -857,6 +854,16 @@ const ProjectView = () => {
                             <FileStructureView data={projectData} />
                           </Box>
                         </Grid>
+                        {projectData?.status === "Processing" &&
+                          <Grid item xs={12} sm={12} md={12} lg={12} style={{justifyItems:"center",marginTop:"40px"}}>
+                            {/* <Typography>
+                              {PROJECT_DETAIL_PAGE.CURRENT_PROGRESS_STATUS}
+                            </Typography> */}
+                            
+                            <ProgressBarView />
+                            <img src={processIcon} width="150px" />
+                          </Grid>
+                        }
                       </Grid>
                     </Grid>
                     <Grid item xs={12} sm={4} md={4} lg={4}>
@@ -907,7 +914,7 @@ const ProjectView = () => {
                           variant="contained"
                           sx={{ mt: 2 }}
                           // disabled={projectData.documents?.length > 0 && projectData?.regulatory_standard ? false : true}
-                          disabled={projectData?.regulatory_standard ? projectData.checkListResponse ? true: false : true}
+                          disabled={projectData?.regulatory_standard ? projectData.checkListResponse ? true: projectData?.status === "Processing" ? true : false : true}
                           onClick={() => runChecklkistCRT() }
                         >
                          {BUTTON_LABEL.RUN_CHECKLIST} 
@@ -919,7 +926,7 @@ const ProjectView = () => {
                           variant="contained"
                           sx={{ mt: 2 }}
                           // disabled={projectData.documents?.length > 0 && projectData?.regulatory_standard ? false : true}
-                          // disabled={projectData?.regulatory_standard ? projectData.checkListResponse ? projectData.documents?.length > 0 ? false : true : false: true}
+                          disabled={projectData?.status === "Processing" ? true : false}
                           onClick={() => runComplianceAssessmenet(projectData.checkListResponse,projectData?.project_id)}
                         >
                          {projectData.checkListResponse ? BUTTON_LABEL.RUN_PROJECT : BUTTON_LABEL.RUN_FULL_PROJECT} 
@@ -941,21 +948,26 @@ const ProjectView = () => {
                       border: "1px solid #e4e4e4",
                     }}
                   >
-                    {projectData?.checkListResponse && (
+                    {projectData?.checkListResponse ? (
                       <FileCard
                         fileName={PROJECT_DETAIL_PAGE.CHECKLIST_REPORT}
                         data={projectData?.checkListResponse}   
                         projectData={projectData}
                       />
-                    )}
-                    {projectData?.complianceAssesment && (
+                    ): projectData?.status === "Processing" && 
+                    <img src={processIcon} width="100px"  height="100px" style={{alignSelf:"center"}} />
+                  }
+                    {projectData?.complianceAssesment ? (
                       <FileCard
                         fileName={PROJECT_DETAIL_PAGE.ASSESSMENT_REPORT}
                         data1={projectData?.complianceAssesment}
                         data={projectData?.checkListResponse}
                         projectData={projectData}
                       />
-                    )}    
+                    ): projectData?.status === "Processing" && projectData?.checkListResponse && 
+                    <img src={processIcon} width="100px"  height="100px" style={{alignSelf:"center"}}/>
+                    }    
+                    
                   </Box>
 
                   <Box

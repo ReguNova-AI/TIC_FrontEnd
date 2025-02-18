@@ -29,18 +29,34 @@ LinearProgressWithLabel.propTypes = {
 
 export default function ProgressBarView() {
   const [progress, setProgress] = React.useState(10);
+  const [messageIndex, setMessageIndex] = React.useState(0);
+  const messages = [
+    "We have Initialized the process...",
+    "Step 1: Processing data...",
+    "Step 2: Analyzing data...",
+    "Step 3: Finalizing process...",
+  ];
 
   React.useEffect(() => {
     const timer = setInterval(() => {
-      setProgress((prevProgress) => (prevProgress >= 100 ? 10 : prevProgress + 10));
-    }, 800);
+      setProgress((prevProgress) => (prevProgress >= 100 ? 10 : prevProgress == 70 ? prevProgress : prevProgress+ 10));
+        setMessageIndex((prevIndex) => {
+          // Loop back to the first message when it reaches the end
+          return (prevIndex + 1) % messages.length;
+        });
+       // Cleanup interval when the component unmounts
+    
+    }, 5000);
     return () => {
       clearInterval(timer);
+      return () => clearInterval(messageInterval);
     };
   }, []);
 
   return (
-    <Box sx={{ width: '100%' }}>
+    <Box sx={{ width: '100%'}}>
+      <Typography>{messages[messageIndex]}</Typography>
+
       <LinearProgressWithLabel value={progress} />
     </Box>
   );
