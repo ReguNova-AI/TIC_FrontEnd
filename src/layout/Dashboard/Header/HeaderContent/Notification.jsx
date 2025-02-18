@@ -104,7 +104,7 @@ export default function Notification() {
   const fetchNotification = () => {
     NotificationApiService.notification()
       .then((response) => {
-        setNotificationData(response?.data?.details?.slice(-4));
+        setNotificationData(response?.data?.details?.slice(4));
         setAllNotification(response?.data?.details);
         let count = 0;
         response?.data?.details?.map((item) => {

@@ -483,8 +483,8 @@ const ProjectView = () => {
         handleprogressModalOpen();
 
         // handleCRTUpdate(response);
-       
 
+       
 
         // UpdateProjectDetails(updatedResponse, true);
       })
@@ -506,7 +506,7 @@ const ProjectView = () => {
     const previousData ={...projectData};
     updatedResponse.checkListResponse = response?.data?.data;
     // updatedResponse.no_of_runs = updatedResponse.no_of_runs + 1;
-    updatedResponse.status = "In Progress";
+    updatedResponse.status = "Processing";
     updatedResponse.last_run = formatDateToCustomFormat(new Date());
 
     const newHistory = createHistoryObject(projectData, previousData,"checklistRun");
@@ -713,8 +713,8 @@ const ProjectView = () => {
         description: heading === "projectDetails" ? data?.projectDesc !== previousData.project_description ? data.projectDesc : '':"",
         invite: '', 
         documents: heading === "documentUpload" ? data ? data : '':"", 
-        checklistRun: heading === "checklistRun" ? "Checklist generated" :'', 
-        assessmentRun: heading === "assessmentRun" ? "Compliance Assessment run" :'',
+        checklistRun: heading === "checklistRun" ? "Run to generated checklist report" :'', 
+        assessmentRun: heading === "assessmentRun" ? "Run to generate Assessment report" :'',
         standardUplaoded: heading === "StandardUpdates" ? data.standardUploaded !== previousData.standardUploaded ? data.standardUploaded : '':"",
         status: previousData.status, 
       },
