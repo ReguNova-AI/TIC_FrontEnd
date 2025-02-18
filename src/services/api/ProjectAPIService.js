@@ -8,6 +8,10 @@ const _projectUpdate = (payload) => {
   return BaseApiService.put(`/api/v1/project/update`, null, payload);
 };
 
+const _projectChatUpdate = (payload) => {
+  return BaseApiService.post(`/api/v2/chat/updateChatResponse`, null, payload);
+};
+
 const _projectListing = () => {
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
   const user_id = userdetails?.[0]?.user_id;
@@ -106,6 +110,7 @@ export const ProjectApiService = {
   projectDetails: _projectDetails,
   projectCounts: _projectCounts,
   projectUpdate: _projectUpdate,
+  projectChatUpdate:_projectChatUpdate,
   projectChat: _projectChat,
   projectUploadStandardChat: _projectUploadStandardChat,
   projectStandardChecklist: _projectStandardChecklist,

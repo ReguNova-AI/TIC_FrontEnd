@@ -188,7 +188,7 @@ const ProjectView = () => {
 
     // updatedResponse.chatResponse = { data: data };
     setChatResponse(data[data.length - 1]?.answer);
-    UpdateProjectDetails(updatedResponse, false);
+    UpdateProjectChatDetails(updatedResponse, false);
   };
 
   const parseApiResponse = (response) => {
@@ -605,6 +605,30 @@ const ProjectView = () => {
 
   };
 
+
+  const UpdateProjectChatDetails = (payload, countUpdate = false) => {
+    ProjectApiService.projectChatUpdate(payload)
+      .then((response) => {
+        setSnackData({
+          show: true,
+          message:
+            response?.message || API_SUCCESS_MESSAGE.UPDATED_SUCCESSFULLY,
+          type: "success",
+        });
+        // SetProjectData(response?.data?.details[0]);
+        setLoading(false);
+      })
+      .catch((errResponse) => {
+        setSnackData({
+          show: true,
+          message:
+            errResponse?.error?.message ||
+            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          type: "error",
+        });
+        setLoading(false);
+      });
+  };
 
   const UpdateProjectDetails = (payload, countUpdate = false) => {
     ProjectApiService.projectUpdate(payload)
