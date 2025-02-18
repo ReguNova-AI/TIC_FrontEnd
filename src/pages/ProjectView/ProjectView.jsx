@@ -136,7 +136,7 @@ const ProjectView = () => {
         SetProjectData(response?.data?.details[0]);
         setHistoryData({history:response?.data?.details[0].history || [] })
         setHistoryValue(response?.data?.details[0].history);
-        setChatloading(response?.data?.details[0]?.standardUploaded? false : true)
+        setChatloading(response?.data?.details[0]?.standardUploaded !== null ? false : true)
         setLoading(false);
       })
       .catch((errResponse) => {
@@ -562,7 +562,7 @@ const ProjectView = () => {
         //   type: "success",
         // });
         // SetProjectData(response?.data?.details[0]);
-        
+
         // setChatloading(false);
         // handlestandardChatUploadUpdate();
         setStandardChatState(false);     
