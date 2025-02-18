@@ -32,6 +32,7 @@ const CountView = ({data}) => {
     "In Progress": "in_progress_count",
     "Success": "success_count",
     "Failed": "failed_count",
+    "Processing" : "processing_count",
   };
 
   useEffect(() => {

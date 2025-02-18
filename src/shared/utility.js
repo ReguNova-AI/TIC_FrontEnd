@@ -44,6 +44,11 @@ export const getStatusChipProps = (status) => {
       borderColor = 'warning';
       title = 'In Progress';
       break;
+    case 'Processing':
+        color = '#e6f7ff';
+        borderColor = 'primary';
+        title = 'Processing';
+        break;
     case 'Draft':
       color = '#e6f7ff';
       borderColor = 'primary';
