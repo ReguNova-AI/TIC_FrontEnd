@@ -77,7 +77,14 @@ export default function Notification() {
 
   useEffect(() => {
     fetchNotification();
-  }, []);
+    const intervalId = setInterval(() => {
+      fetchNotification();
+    }, 120000); // 120000 ms = 2 minutes
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(intervalId);
+  
+  },[]);
 
   const handleButtonClick = (e, tab) => {
     handleClose(e);

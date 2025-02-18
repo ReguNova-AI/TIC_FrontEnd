@@ -92,6 +92,13 @@ const ProjectView = () => {
   useEffect(() => {
     fetchDetails(id);
     fetchStandardData();
+
+    const intervalId = setInterval(() => {
+      fetchDetails(id);
+    }, 120000); // 120000 ms = 2 minutes
+
+      // Cleanup interval on component unmount
+  return () => clearInterval(intervalId);
   }, [id]);
 
   useEffect(()=>{
