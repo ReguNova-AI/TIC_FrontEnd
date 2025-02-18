@@ -181,8 +181,12 @@ const ProjectView = () => {
 
 
   const handlechatUpdate = (data) => {
-    const updatedResponse = { ...projectData };
-    updatedResponse.chatResponse = { data: data };
+    const updatedResponse = { 
+      project_id:projectData.project_id,
+      chatResponse:{ data: data }
+    };
+
+    // updatedResponse.chatResponse = { data: data };
     setChatResponse(data[data.length - 1]?.answer);
     UpdateProjectDetails(updatedResponse, false);
   };
