@@ -173,8 +173,10 @@ const AdminOrgNestedListing = ({ data,  }) => {
   ];
 
   // Filter function based on search text and selected statuses
-  const filterData = (data) => {
-    return data.filter((org) => {
+const filterData = (data) => {
+  return data
+    .filter((org) => {
+      // Check if organization or industry names match the search text
       const orgMatches = org.org_name.toLowerCase().includes(searchText.toLowerCase());
       const industryMatches = org.industries.some(industry =>
         industry.industry_name.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -183,7 +185,7 @@ const AdminOrgNestedListing = ({ data,  }) => {
         ))
       );
 
-      // Check if any projects in the organization match the selected statuses
+      // Filter projects by status within industries
       const filteredIndustries = org?.industries?.map(industry => ({
         ...industry,
         projects: industry?.projects?.filter(project => {
@@ -191,7 +193,7 @@ const AdminOrgNestedListing = ({ data,  }) => {
         }),
       }));
 
-      // Only include organizations that have industries with filtered projects
+      // Only include industries with projects matching the selected statuses
       const industriesWithFilteredProjects = filteredIndustries?.filter(industry => industry?.projects?.length > 0);
 
       return (orgMatches || industryMatches) && industriesWithFilteredProjects.length > 0;
@@ -201,7 +203,7 @@ const AdminOrgNestedListing = ({ data,  }) => {
         return selectedStatuses?.length === 0 || selectedStatuses?.some(status => project?.status?.includes(status));
       }))
     }));
-  };
+};
 
   // Handle search input change
   const handleSearchChange = (e) => {
@@ -228,26 +230,39 @@ const AdminOrgNestedListing = ({ data,  }) => {
   );
 
   // Expanded row render for organization level, showing industries
-  const expandedRowRenderForOrg = (record) => {
-    return (
-      <Table
-        columns={industryColumns}
-        dataSource={record.industries}
-        rowKey="industry_id"
-        expandable={{
-          expandedRowRender: (industry) => (
-            <Table
-              columns={projectColumns}
-              dataSource={industry.projects || []}
-              pagination={false}
-              rowKey="project_id"
-            />
-          ),
-        }}
-        pagination={false}
-      />
-    );
-  };
+const expandedRowRenderForOrg = (record) => {
+  return (
+    <Table
+      columns={industryColumns}
+      dataSource={record.industries}
+      rowKey="industry_id"
+      expandable={{
+        expandedRowRender: (industry) => {
+          const industryProjects = industry?.projects?.filter((project) => {
+            // Filter by project status if any status is selected
+            const matchesStatus =
+            selectedStatuses?.length === 0 ||
+            selectedStatuses?.includes(project.status);
+      
+            // Filter by project name or user name search text
+            const matchesSearchText =
+              project?.project_name?.toLowerCase()?.includes(searchText?.toLowerCase()) ||
+              record?.name?.toLowerCase()?.includes(searchText?.toLowerCase());
+      
+            return matchesStatus && matchesSearchText;
+          });
+          return (<Table
+            columns={projectColumns}
+            dataSource={industryProjects || []} 
+            pagination={false}
+            rowKey="project_id"
+          />);
+        },
+      }}
+      pagination={false}
+    />
+  );
+};
 
   return (
     <>
