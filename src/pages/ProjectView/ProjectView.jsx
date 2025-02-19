@@ -310,6 +310,7 @@ const ProjectView = () => {
       imageKey :docArray,
       project_id:projectId,
       requirements:data,
+      user_name:userName,
     };
 
    
@@ -476,6 +477,7 @@ const ProjectView = () => {
     const payload = new FormData();
     payload.append("imageKey", match?.[1]);
     payload.append("project_id",projectData?.project_id)
+    payload.append("user_name",userName)
     // const payload = {
     //   imageKey :match[1]
     // };
@@ -551,7 +553,8 @@ const ProjectView = () => {
 
     const payload = new FormData();
     payload.append("imageKey", match?.[1]);
-    payload.append("project_id",projectData?.project_id)
+    payload.append("project_id",projectData?.project_id);
+    payload.append("user_name",userName);
     // const payload = {
     //   imageKey :match[1]
     // };
