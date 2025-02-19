@@ -83,8 +83,9 @@ const Listing = () => {
   const [filteredInvitedData, setFilteredInvitedData] = useState([]);
   const [statusFilter, setStatusFilter] = useState([]);
   const [statusData, setStatusData] = useState([
-    "In Progress",
     "Draft",
+    "In Progress",
+    "Processing",
     "Success",
     "Failed",
     "Completed"
