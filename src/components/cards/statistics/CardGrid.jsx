@@ -5,7 +5,7 @@ import Card from "./Card";
 const StyledCardGrid = styled.div`
   position: relative;
   display: grid;
-  grid-gap: 30px;
+  grid-gap: 3%;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   margin: 16px 0;
 `;
