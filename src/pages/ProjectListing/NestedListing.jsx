@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { DownOutlined } from '@ant-design/icons';
-import { Badge, Button, Dropdown, Space, Table, Avatar, Input } from 'antd';
+import { Badge, Button, Dropdown, Space, Table, Avatar, Input, Select,Popover } from 'antd';
 import { BUTTON_LABEL, LISTING_PAGE ,FORM_LABEL } from 'shared/constants';
 import { formatDate, getStatusChipProps } from "shared/utility";
 import Stack from "@mui/material/Stack";
@@ -14,13 +14,22 @@ import InputAdornment from "@mui/material/InputAdornment";
 import {SearchOutlined} from "@ant-design/icons";
 import projectIcon from "../../assets/images/icons/projectIcon3.svg"
 import userListingIcon from "../../assets/images/icons/userListingicon2.svg";
-
+import MultiSelectWithChip from 'components/form/MultiSelectWithChip';
 
 const NestedListing = ({ data }) => {
   const navigate = useNavigate();
   const [dataSource, setDataSource] = useState([]);
-  const [expandDataSource, setExpandDataSource] = useState([]);
   const [searchText, setSearchText] = useState(''); // State for search input
+  const [selectedProjectStatuses, setSelectedProjectStatuses] = useState([]); // State for selected project statuses
+  const [popoverVisible, setPopoverVisible] = useState(false);
+  const [statusData, setStatusData] = useState([
+    "Draft",
+    "In Progress",
+    "Processing",
+    "Success",
+    "Failed",
+    "Completed"
+  ]);
 
   // Fetch data when the component mounts
   useEffect(() => {
@@ -144,17 +153,17 @@ const NestedListing = ({ data }) => {
               sx={{ width: 40, height: 40 }}
               alt={value.user_first_name}
             >
-             
-                <img src={avatarSrc} alt={value.user_first_name} style={{ borderRadius: '50%' }} />
-                </Avatar>
-              ) : (
-                <img
-                src={userListingIcon}
-                width="32px"
-                style={{ verticalAlign: "middle" }}
-              />
-              )} 
-            
+
+              <img src={avatarSrc} alt={value.user_first_name} style={{ borderRadius: '50%' }} />
+            </Avatar>
+          ) : (
+            <img
+              src={userListingIcon}
+              width="32px"
+              style={{ verticalAlign: "middle" }}
+            />
+          )}
+
             <span style={{ marginLeft: "20px" }}>{value.name}</span>
           </>
         );
@@ -178,12 +187,26 @@ const NestedListing = ({ data }) => {
   ];
 
   const expandedRowRender = (record) => {
-    const userProjects = record.projects.filter((project) =>
-      project.project_name.toLowerCase().includes(searchText.toLowerCase()) ||
-      record.name.toLowerCase().includes(searchText.toLowerCase())
-    );
+    // Filter projects based on project status
+    const userProjects = record.projects.filter((project) => {
+      // Filter by project status if any status is selected
+      const matchesStatus =
+        selectedProjectStatuses.length === 0 ||
+        selectedProjectStatuses.includes(project.status);
 
-    return <Table columns={expandColumns} dataSource={userProjects} pagination={false} />;
+      // Filter by project name or user name search text
+      const matchesSearchText =
+        project.project_name.toLowerCase().includes(searchText.toLowerCase()) ||
+        record.name.toLowerCase().includes(searchText.toLowerCase());
+
+      return matchesStatus && matchesSearchText;
+    });
+
+    return (
+      <>
+        <Table columns={expandColumns} dataSource={userProjects} pagination={false} />
+      </>
+    );
   };
 
   // Handle search input change
@@ -191,7 +214,19 @@ const NestedListing = ({ data }) => {
     setSearchText(e.target.value);
   };
 
-  // Filter function for both user and project data
+  const filterPopoverContent = (
+    <div style={{marginBottom:"20px"}}>
+
+<MultiSelectWithChip
+        label="Status"
+        value={selectedProjectStatuses}
+        options={statusData}
+        onChange={setSelectedProjectStatuses}
+      />
+    </div>
+  );
+
+
   const filterData = (data) => {
     return data.filter((user) => {
       const userMatches = user.name.toLowerCase().includes(searchText.toLowerCase());
@@ -206,31 +241,39 @@ const NestedListing = ({ data }) => {
     <>
       {/* Search input */}
       <Space style={{float:"right", marginTop:"-20px", marginBottom:"20px"}}>
-      <FormControl >
-                <InputLabel htmlFor="outlined-adornment-search">
-                Search by project name or user name
-                </InputLabel>
-                <OutlinedInput
-                  id="outlined-adornment-search"
-                  startAdornment={
-                    <InputAdornment position="start">
-                      <SearchOutlined />
-                    </InputAdornment>
-                  }
-                  label={FORM_LABEL.SEARCH}
-                  onChange={handleSearchChange}
-                  style={{width:"300px"}}
-                />
-              </FormControl>
-              </Space>
-
-      {/* <Input
-        placeholder="Search by project name or user name"
-        value={searchText}
-        onChange={handleSearchChange}
-        style={{ marginBottom: 16, width: 300 }}
-      /> */}
-
+        <FormControl >
+          <InputLabel htmlFor="outlined-adornment-search">
+            Search by project name or user name
+          </InputLabel>
+          <OutlinedInput
+            id="outlined-adornment-search"
+            startAdornment={
+              <InputAdornment position="start">
+                <SearchOutlined />
+              </InputAdornment>
+            }
+            label={FORM_LABEL.SEARCH}
+            onChange={handleSearchChange}
+            style={{width:"300px"}}
+          />
+        </FormControl>
+       
+              <Popover
+                content={filterPopoverContent}
+                title={BUTTON_LABEL.FILTER}
+                visible={popoverVisible}
+                onVisibleChange={setPopoverVisible}
+                trigger="click"
+              >
+                <Button
+                  type="primary"
+                  style={{ background: "#003a8c", color: "#ffffff" }}
+                >
+                  {BUTTON_LABEL.FILTER}
+                </Button>
+                </Popover>
+      </Space>
+     
       {/* Table rendering */}
       <Table
         columns={columns}
@@ -238,7 +281,7 @@ const NestedListing = ({ data }) => {
           expandedRowRender,
           defaultExpandedRowKeys: ['0'],
         }}
-        dataSource={filterData(dataSource)} // Apply the filter
+        dataSource={filterData(dataSource)}
         rowKey="key"
       />
     </>
