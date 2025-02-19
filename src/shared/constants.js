@@ -157,6 +157,8 @@ export const BUTTON_LABEL = Object.freeze({
   SEARCH: "Search",
   RUN_PROJECT: "Run Assessment",
   RUN_FULL_PROJECT: "Run Full Assessment",
+  PERFORM_COMPLETE_ASSESSMENT:"Perform Complete Compliance Assessment",
+  RUN_COMPLIANCE_ASSESSMENT:"Run Compliance Assessment",
   RUN_CHECKLIST:"Run Checklist",
   SAVE_DRAFT: "Save as Draft",
   SAVE_PROJECT:"Save Project",

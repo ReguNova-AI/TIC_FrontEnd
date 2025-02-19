@@ -948,7 +948,7 @@ const ProjectView = () => {
                         </Button> */}
 
                         {/* <input type="file" id="fileInput" /> */}
-                        <Tooltip title="It will generate the checklist report">
+                        <Tooltip title="It will create a checklist report">
                         <Button
                           variant="contained"
                           sx={{ mt: 2 }}
@@ -959,7 +959,7 @@ const ProjectView = () => {
                          {BUTTON_LABEL.RUN_CHECKLIST} 
                         </Button>
                         </Tooltip>
-                        <Tooltip title={projectData.checkListResponse ? "It will generate the assessment report" :"It will generate the checklist report and assessment report"
+                        <Tooltip title={projectData.checkListResponse ? "Use the requirements from the created check list to run a compliance assessment for the uploaded project document" :"End to end process of creating a check list, assessment of uploaded project documents based on the created check list"
                         }>
                         <Button
                           variant="contained"
@@ -968,7 +968,7 @@ const ProjectView = () => {
                           disabled={projectData?.status === "Processing" ? true : false}
                           onClick={() => runComplianceAssessmenet(projectData.checkListResponse,projectData?.project_id)}
                         >
-                         {projectData.checkListResponse ? BUTTON_LABEL.RUN_PROJECT : BUTTON_LABEL.RUN_FULL_PROJECT} 
+                         {projectData.checkListResponse ? BUTTON_LABEL.RUN_COMPLIANCE_ASSESSMENT : BUTTON_LABEL.PERFORM_COMPLETE_ASSESSMENT} 
                         </Button>
                         </Tooltip>
                       </Box>
