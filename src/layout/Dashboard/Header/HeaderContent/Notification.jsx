@@ -271,7 +271,7 @@ export default function Notification() {
                 >
                   <List
                     component="nav"
-                    style={{ height: notificationData?.length === 0 ? "160px" :"375px", overflowY: "scroll" }}
+                    style={{ height: notificationData?.length === 0 ? "160px" :"400px", overflowY: "scroll" }}
                     sx={{
                       p: 0,
                       "& .MuiListItemButton-root": {
@@ -337,7 +337,7 @@ export default function Notification() {
                               </Typography>
                             </ListItemSecondaryAction>
                           </ListItemButton>
-                          <Divider />
+                          <Divider style={{borderColor:"#ffffff",border:"1.2px solid #ffffff"}}/>
                         </>
                       );
                     })}
@@ -461,7 +461,7 @@ export default function Notification() {
                               </Typography>
                             </ListItemSecondaryAction>
                           </ListItemButton>
-                          <Divider />
+                          <Divider style={{borderColor:"#ffffff",border:"1.2px solid #ffffff"}}/>
                         </>
                       );
                     })}
