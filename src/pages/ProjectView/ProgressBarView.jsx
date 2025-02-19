@@ -35,6 +35,7 @@ export default function ProgressBarView() {
     "Please wait while we process the data...",
     "Data analysis is in progress...",
     "Finalizing the data process...",
+    "We will notify you once the process is complete"
   ];
 
   React.useEffect(() => {
