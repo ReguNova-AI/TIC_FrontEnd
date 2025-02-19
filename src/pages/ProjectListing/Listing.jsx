@@ -115,7 +115,7 @@ const Listing = () => {
 
   // Effect for initializing the status filter based on location state
   useEffect(() => {
-    if (filterStatusValue && filterStatusValue != "Total Project") {
+    if (filterStatusValue && filterStatusValue !== "Total Project" && filterStatusValue !=="Total Projects") {
       setStatusFilter([filterStatusValue]); // Set the statusFilter if status is passed
       setFilteredData(filterData("created"));
       setFilteredInvitedData(filterData("invited"))
