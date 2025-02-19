@@ -72,6 +72,7 @@ const ProjectView = () => {
   const [isModalVisible, setIsModalVisible] = useState(false); // To control modal visibility
   const [isProgressModalVisible, setIsProgressModalVisible] = useState(false); // To control modal visibility
   const [historyValue,setHistoryValue] = useState([]);
+  const [disableButton, setDisableButton] = useState(false);
 
   // const chatLoadingIcon = (props) => <Icon component={chatLoadingicon} {...props} />;
 
@@ -284,6 +285,7 @@ const ProjectView = () => {
 
 
   const runComplianceAssessmenet = async (query,projectId) =>{
+    setDisableButton(true);
    
     const regex = /\/([^/]+)$/; // Match the part after the last "/"
     let file=null;
@@ -443,6 +445,7 @@ const ProjectView = () => {
         // UpdateProjectDetails(updatedResponse, true);
       })
       .catch((errResponse) => {
+        setDisableButton(false);
         setSnackData({
           show: true,
           message:
@@ -474,6 +477,7 @@ const ProjectView = () => {
     }
     else
     {
+      setDisableButton(false);
       setLoading(false);
       setSnackData({
         show: true,
@@ -484,7 +488,7 @@ const ProjectView = () => {
   };
 
   const runChecklkistCRT = async () => {
-
+    setDisableButton(true);
     let fileName= standardData?.find((data) => data?.standard_name === projectData?.regulatory_standard)?.standard_url;
     let customFileName = projectData?.documents?.filter(f => f.documenttype === FORM_LABEL.CUSTOM_REGULATORY)?.map(f => f.path);
 
@@ -528,6 +532,7 @@ const ProjectView = () => {
         // UpdateProjectDetails(updatedResponse, true);
       })
       .catch((errResponse) => {
+        setDisableButton(false);
         setSnackData({
           show: true,
           message:
@@ -755,6 +760,7 @@ const ProjectView = () => {
   const handleprogressModalOpen = (type) => {
     setModalType(type);
     setIsProgressModalVisible(true);
+    setDisableButton(false);
   };
 
   const handleprogressModalClose = () => {
@@ -977,7 +983,7 @@ const ProjectView = () => {
                           variant="contained"
                           sx={{ mt: 2 }}
                           // disabled={projectData.documents?.length > 0 && projectData?.regulatory_standard ? false : true}
-                          disabled={projectData?.regulatory_standard ? projectData.checkListResponse ? true: projectData?.status === "Processing" ? true : false : true}
+                          disabled={projectData?.regulatory_standard ? projectData.checkListResponse ? true: projectData?.status === "Processing" ? true :  disableButton ? true : false : true}
                           onClick={() => runChecklkistCRT() }
                         >
                          {BUTTON_LABEL.RUN_CHECKLIST} 
@@ -989,7 +995,7 @@ const ProjectView = () => {
                           variant="contained"
                           sx={{ mt: 2 }}
                           // disabled={projectData.documents?.length > 0 && projectData?.regulatory_standard ? false : true}
-                          disabled={projectData?.status === "Processing" ? true : false}
+                          disabled={projectData?.status === "Processing" ? true : disableButton ? true : false}
                           onClick={() => runComplianceAssessmenet(projectData.checkListResponse,projectData?.project_id)}
                         >
                          {projectData.checkListResponse ? BUTTON_LABEL.RUN_COMPLIANCE_ASSESSMENT : BUTTON_LABEL.PERFORM_COMPLETE_ASSESSMENT} 
