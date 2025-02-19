@@ -28,7 +28,6 @@ const NestedListing = ({ data }) => {
     "Processing",
     "Success",
     "Failed",
-    "Completed"
   ]);
 
   // Fetch data when the component mounts

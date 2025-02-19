@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Avatar, Input, Space } from 'antd';
+import { Table, Avatar, Input, Space, Popover, Button } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import { Chip } from "@mui/material";
 import Stack from "@mui/material/Stack";
@@ -12,13 +12,22 @@ import InputLabel from "@mui/material/InputLabel";
 import InputAdornment from "@mui/material/InputAdornment";
 import Orgicon from "../../assets/images/icons/orgListing.svg";
 import projectIcon from "../../assets/images/icons/projectIcon3.svg";
+import MultiSelectWithChip from 'components/form/MultiSelectWithChip';
 
 // AdminOrgNestedListing Component
-const AdminOrgNestedListing = ({ data }) => {
+const AdminOrgNestedListing = ({ data,  }) => {
   const navigate = useNavigate();
   const [dataSource, setDataSource] = useState([]);
   const [searchText, setSearchText] = useState('');
-
+  const [selectedStatuses, setSelectedStatuses] = useState([]);
+  const [popoverVisible, setPopoverVisible] = useState(false);
+  const [projectStatuses, setprojectStatuses] = useState([
+    "Draft",
+    "In Progress",
+    "Processing",
+    "Success",
+    "Failed",
+  ]);
   // Fetch data when the component mounts
   useEffect(() => {
     setDataSource(data);
@@ -29,11 +38,11 @@ const AdminOrgNestedListing = ({ data }) => {
     navigate(`/projectView/${projectNo}`, { state: { projectNo } });
   };
 
-  // Update filtered data whenever searchText changes
+  // Update filtered data whenever searchText or selectedStatuses changes
   useEffect(() => {
     const filteredData = filterData(data);
     setDataSource(filteredData);
-  }, [searchText, data]);
+  }, [searchText, selectedStatuses, data]);
 
   // Columns for Project table
   const projectColumns = [
@@ -163,7 +172,7 @@ const AdminOrgNestedListing = ({ data }) => {
     },
   ];
 
-  // Filter function based on search text
+  // Filter function based on search text and selected statuses
   const filterData = (data) => {
     return data.filter((org) => {
       const orgMatches = org.org_name.toLowerCase().includes(searchText.toLowerCase());
@@ -173,14 +182,50 @@ const AdminOrgNestedListing = ({ data }) => {
           project.project_name.toLowerCase().includes(searchText.toLowerCase())
         ))
       );
-      return orgMatches || industryMatches;
-    });
+
+      // Check if any projects in the organization match the selected statuses
+      const filteredIndustries = org?.industries?.map(industry => ({
+        ...industry,
+        projects: industry?.projects?.filter(project => {
+          return selectedStatuses?.length === 0 || selectedStatuses?.some(status => project?.status?.includes(status));
+        }),
+      }));
+
+      // Only include organizations that have industries with filtered projects
+      const industriesWithFilteredProjects = filteredIndustries?.filter(industry => industry?.projects?.length > 0);
+
+      return (orgMatches || industryMatches) && industriesWithFilteredProjects.length > 0;
+    }).map(org => ({
+      ...org,
+      industries: org?.industries?.filter(industry => industry.projects?.some(project => {
+        return selectedStatuses?.length === 0 || selectedStatuses?.some(status => project?.status?.includes(status));
+      }))
+    }));
   };
 
   // Handle search input change
   const handleSearchChange = (e) => {
     setSearchText(e.target.value);
   };
+
+  // Handle status change
+  const handleStatusChange = (value) => {
+    setSelectedStatuses(value);
+  };
+
+
+  const filterPopoverContent = (
+    <div style={{marginBottom:"20px"}}>
+
+      <MultiSelectWithChip
+        label="Status"
+        value={selectedStatuses}
+        options={projectStatuses}
+        onChange={handleStatusChange}
+      />
+
+    </div>
+  );
 
   // Expanded row render for organization level, showing industries
   const expandedRowRenderForOrg = (record) => {
@@ -224,8 +269,24 @@ const AdminOrgNestedListing = ({ data }) => {
             style={{ width: "400px" }}
           />
         </FormControl>
-      </Space>
 
+        <Popover
+                content={filterPopoverContent}
+                title={BUTTON_LABEL.FILTER}
+                visible={popoverVisible}
+                onVisibleChange={setPopoverVisible}
+                trigger="click"
+              >
+                <Button
+                  type="primary"
+                  style={{ background: "#003a8c", color: "#ffffff" }}
+                >
+                  {BUTTON_LABEL.FILTER}
+                </Button>
+                </Popover>
+
+      </Space>
+     
       {/* Table rendering */}
       <Table
         columns={columns}
