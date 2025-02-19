@@ -50,7 +50,6 @@ const NestedListing = ({ data,filterStatusValue }) => {
   }, [data]);
 
   useEffect(()=>{
-    console.log(filterStatusValue)
     if(filterStatusValue && filterStatusValue !== "Total Projects")
     {
       setSelectedProjectStatuses(filterStatusValue);
