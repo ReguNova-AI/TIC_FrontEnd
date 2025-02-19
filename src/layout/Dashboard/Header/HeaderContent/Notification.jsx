@@ -175,17 +175,21 @@ export default function Notification() {
   const getTimeDifference = (date) => {
     const currentDate = new Date();
     const inputDate = new Date(date);
-
+  
     // Calculate the difference in milliseconds
     const timeDifference = currentDate - inputDate;
     const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
     const hoursDifference = Math.floor(timeDifference / (1000 * 60 * 60)) % 24;
-
+    const minutesDifference = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+    const secondsDifference = Math.floor((timeDifference % (1000 * 60)) / 1000);
+  
     // You can choose to show either days or exact time difference
     if (daysDifference > 0) {
       return `${daysDifference} day(s) ago`;
-    } else {
+    } else if (hoursDifference > 0) {
       return `${hoursDifference} hour(s) ago`;
+    } else {
+      return `${minutesDifference} minute(s) and ${secondsDifference} second(s) ago`;
     }
   };
 
@@ -358,7 +362,7 @@ export default function Notification() {
         )}
       </Popper>
       <Modal
-        title={"Notifications"}
+        title={""}
         visible={visible}
         onCancel={handleModalClose}
         footer={null}
