@@ -16,7 +16,7 @@ import projectIcon from "../../assets/images/icons/projectIcon3.svg"
 import userListingIcon from "../../assets/images/icons/userListingicon2.svg";
 import MultiSelectWithChip from 'components/form/MultiSelectWithChip';
 
-const NestedListing = ({ data }) => {
+const NestedListing = ({ data,filterStatusValue }) => {
   const navigate = useNavigate();
   const [dataSource, setDataSource] = useState([]);
   const [searchText, setSearchText] = useState(''); // State for search input
@@ -48,6 +48,13 @@ const NestedListing = ({ data }) => {
 
     fetchData();
   }, [data]);
+
+  useEffect(()=>{
+    if(filterStatusValue)
+    {
+      setSelectedProjectStatuses(filterStatusValue);
+    }
+  },[filterStatusValue]);
 
   const handleNavigateToProject = (projectNo) => {
     navigate(`/projectView/${projectNo}`, { state: { projectNo } });

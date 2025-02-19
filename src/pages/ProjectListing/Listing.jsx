@@ -616,9 +616,9 @@ const Listing = () => {
           {/* Displaying Table or Card View */}
 
           {userRole === "Super Admin" ? (
-            <AdminOrgNestedListing data={orgLevelData} />
+            <AdminOrgNestedListing data={orgLevelData} filterStatusValue={filterStatusValue}/>
           ) : userRole === "Org Super Admin" || userRole === "Admin" ? (
-            <NestedListing data={orgLevelData} />
+            <NestedListing data={orgLevelData} filterStatusValue={filterStatusValue}/>
           ) : (
             <>
               <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
