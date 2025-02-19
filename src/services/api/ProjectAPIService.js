@@ -25,7 +25,7 @@ const _projectListing = () => {
       return BaseApiService.get(`/api/v1/user/projects`, null, null);
     } else {
       let pathname = window.location.pathname;
-      console.log(pathname)
+      // console.log(pathname)
 
       // return BaseApiService.get(`/api/v1/org/projects?industry_id=${industry_id}`, null, null);
       if (pathname === "/dashboard/default" || pathname === "/dashboard") {
