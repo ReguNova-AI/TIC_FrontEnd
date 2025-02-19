@@ -304,13 +304,37 @@ const ProjectView = () => {
     // const payload = new FormData();
     // payload.append("imageKey", docArray);
 
-    const data = parseApiResponse(query);
+    let data = [];
+    if(query)
+    {
+     data= parseApiResponse(query);
+    }
+
+    let customImageKeyValue = null;
+
+    let fileName= standardData?.find((data) => data?.standard_name === projectData?.regulatory_standard)?.standard_url;
+    let customFileName = projectData?.documents?.filter(f => f.documenttype === FORM_LABEL.CUSTOM_REGULATORY)?.map(f => f.path);
+
+    if((fileName === undefined || fileName === null) && customFileName?.length<=0)
+    {
+      fileName = projectData?.mapping_standards;
+    }
+    
+    if(fileName !== undefined)
+    {
+    const regex1 = /\/([^/]+)$/; // Match the part after the last "/"
+    const match = customFileName?.length > 0 ? customFileName?.[0].match(regex1) : fileName?.match(regex1);
+
+    customImageKeyValue = match?.[1]
+    }
+    
 
     const payload = {
       imageKey :docArray,
       project_id:projectId,
       requirements:data,
       user_name:userName,
+      checkListImageKey:customImageKeyValue,
     };
 
    
