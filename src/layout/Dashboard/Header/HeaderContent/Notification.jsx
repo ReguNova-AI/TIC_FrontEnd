@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 // material-ui
 import { useTheme } from "@mui/material/styles";
@@ -21,6 +21,7 @@ import Box from "@mui/material/Box";
 // project import
 import MainCard from "components/MainCard";
 import Transitions from "components/@extended/Transitions";
+import { Tabs, Tab } from "@mui/material";
 
 // assets
 import BellOutlined from "@ant-design/icons/BellOutlined";
@@ -38,7 +39,7 @@ import {
   UserAddOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { Empty,Modal } from "antd";
+import { Empty, Modal } from "antd";
 
 // sx styles
 const avatarSX = {
@@ -72,7 +73,9 @@ export default function Notification() {
   const [arrayId, setArrayId] = useState([]);
   const [visible, setVisible] = useState(false);
   const [modalContent, setModalContent] = useState({});
-
+  const [selectedCategory, setSelectedCategory] = useState("PROJECT");
+  const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
+  const roleName = userdetails?.[0]?.role_name;
   const handleToggle = () => {
     setOpen((prevOpen) => !prevOpen);
   };
@@ -85,8 +88,7 @@ export default function Notification() {
 
     // Cleanup interval on component unmount
     return () => clearInterval(intervalId);
-  
-  },[]);
+  }, []);
 
   const handleButtonClick = (e, tab) => {
     handleClose(e);
@@ -98,8 +100,6 @@ export default function Notification() {
     setVisible(false);
     setModalContent({});
   };
-
-
 
   const handleClose = (event) => {
     if (anchorRef.current && anchorRef.current.contains(event.target)) {
@@ -113,7 +113,7 @@ export default function Notification() {
   const fetchNotification = () => {
     NotificationApiService.notification()
       .then((response) => {
-        setNotificationData(response?.data?.details?.slice(0,4));
+        setNotificationData(response?.data?.details?.slice(0, 4));
         setAllNotification(response?.data?.details);
         let count = 0;
         response?.data?.details?.map((item) => {
@@ -177,14 +177,14 @@ export default function Notification() {
   const getTimeDifference = (date) => {
     const currentDate = new Date();
     const inputDate = new Date(date);
-  
+
     // Calculate the difference in milliseconds
     const timeDifference = currentDate - inputDate;
     const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
     const hoursDifference = Math.floor(timeDifference / (1000 * 60 * 60)) % 24;
     const minutesDifference = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
     const secondsDifference = Math.floor((timeDifference % (1000 * 60)) / 1000);
-  
+
     // You can choose to show either days or exact time difference
     if (daysDifference > 0) {
       return `${daysDifference} day(s) ago`;
@@ -193,6 +193,22 @@ export default function Notification() {
     } else {
       return `${minutesDifference} minute(s) and ${secondsDifference} second(s) ago`;
     }
+  };
+
+  const filteredNotifications = allNotification.filter((item) => {
+    if (selectedCategory === "USER_CREATION") {
+      return item?.type === "USER_CREATION";
+    } else if (selectedCategory === "INVITE_USER") {
+      return item?.type === "INVITE_USER";
+    } else if (selectedCategory === "PROJECT") {
+      return item?.project_id != null;
+    }
+    return true;
+  });
+
+  // Handle tab change
+  const handleTabChange = (event, newValue) => {
+    setSelectedCategory(newValue);
   };
 
   return (
@@ -273,7 +289,7 @@ export default function Notification() {
                 >
                   <List
                     component="nav"
-                    style={{ height: notificationData?.length === 0 ? "160px" :"400px", overflowY: "scroll" }}
+                    style={{height: notificationData?.length === 0 ? "160px" : "400px", overflowY: "scroll" }}
                     sx={{
                       p: 0,
                       "& .MuiListItemButton-root": {
@@ -290,9 +306,9 @@ export default function Notification() {
                       },
                     }}
                   >
-                    {notificationData?.length === 0 &&
-                    <Empty description="No notification to show" />
-                    }
+                    {notificationData?.length === 0 && (
+                      <Empty description="No notification to show" />
+                    )}
                     {notificationData?.map((item) => {
                       return (
                         <>
@@ -311,18 +327,52 @@ export default function Notification() {
                           >
                             <ListItemAvatar>
                               <Avatar
-                                 sx={{
-                                  color: item?.type === "INVITE_USER" ? "warning.main" : item?.type === "USER_CREATION" ? "primary.main" : item?.notification_message?.includes("failed")? "error.main" : item?.notification_message?.includes("created successfully") ? "warning.main" :"success.main",
-                                  bgcolor: item?.type === "INVITE_USER"? "warning.lighter" : item?.type === "USER_CREATION" ? "primary.lighter" : item?.notification_message?.includes("failed") ? "error.lighter" : item?.notification_message?.includes("created successfully")?  "warning.lighter" :"success.lighter",
+                                sx={{
+                                  color:
+                                    item?.type === "INVITE_USER"
+                                      ? "warning.main"
+                                      : item?.type === "USER_CREATION"
+                                        ? "primary.main"
+                                        : item?.notification_message?.includes(
+                                              "failed"
+                                            )
+                                          ? "error.main"
+                                          : item?.notification_message?.includes(
+                                                "created successfully"
+                                              )
+                                            ? "warning.main"
+                                            : "success.main",
+                                  bgcolor:
+                                    item?.type === "INVITE_USER"
+                                      ? "warning.lighter"
+                                      : item?.type === "USER_CREATION"
+                                        ? "primary.lighter"
+                                        : item?.notification_message?.includes(
+                                              "failed"
+                                            )
+                                          ? "error.lighter"
+                                          : item?.notification_message?.includes(
+                                                "created successfully"
+                                              )
+                                            ? "warning.lighter"
+                                            : "success.lighter",
                                 }}
                               >
-                                 {item?.type === "USER_CREATION" ? (
+                                {item?.type === "USER_CREATION" ? (
                                   <UserAddOutlined />
                                 ) : item?.type === "INVITE_USER" ? (
                                   <ShareAltOutlined />
-                                ) : item?.notification_message?.includes("failed") ?(
+                                ) : item?.notification_message?.includes(
+                                    "failed"
+                                  ) ? (
                                   <ExclamationCircleOutlined />
-                                ) : item?.notification_message?.includes("created successfully") ? (<FileAddOutlined />) : (<FileDoneOutlined />)}
+                                ) : item?.notification_message?.includes(
+                                    "created successfully"
+                                  ) ? (
+                                  <FileAddOutlined />
+                                ) : (
+                                  <FileDoneOutlined />
+                                )}
                               </Avatar>
                             </ListItemAvatar>
                             <ListItemText
@@ -339,13 +389,19 @@ export default function Notification() {
                               </Typography>
                             </ListItemSecondaryAction>
                           </ListItemButton>
-                          <Divider style={{borderColor:"#ffffff",border:"1.2px solid #ffffff"}}/>
+                          <Divider
+                            style={{
+                              borderColor: "#ffffff",
+                              border: "1.2px solid #ffffff",
+                            }}
+                          />
                         </>
                       );
                     })}
                     {allNotification?.length > 4 && (
                       <ListItemButton
-                        sx={{ textAlign: "center", py: `${12}px !important` }} onClick={(e)=>handleButtonClick(e)}
+                        sx={{ textAlign: "center", py: `${12}px !important` }}
+                        onClick={(e) => handleButtonClick(e)}
                       >
                         <ListItemText
                           primary={
@@ -369,110 +425,140 @@ export default function Notification() {
         onCancel={handleModalClose}
         footer={null}
         width={600}
-      > 
-      <MainCard
-                  title="Notification"
-                  elevation={0}
-                  border={false}
-                  content={false}
-                  secondary={
-                    <>
-                      {read > 0 && (
-                        <Tooltip title="Mark as all read">
-                          <IconButton
-                            color="success"
-                            size="small"
-                            style={{ width: "110%" }}
-                            onClick={() => handleRead("0", "all")}
-                          >
-                            <CheckCircleOutlined
-                              style={{ fontSize: "1.15rem" }}
-                            />
-                            <span style={{ color: "black", width: "100%" }}>
-                              Mark all as read
-                            </span>
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                    </>
-                  }
-                ></MainCard>
-          <List
-                    component="nav"
-                    style={{ height: allNotification?.length === 0 ? "160px" :"375px", overflowY: "scroll" }}
+      >
+        <MainCard
+          title="Notification"
+          elevation={0}
+          border={false}
+          content={false}
+          secondary={
+            <>
+              {read > 0 && (
+                <Tooltip title="Mark as all read">
+                  <IconButton
+                    color="success"
+                    size="small"
+                    style={{ width: "110%" }}
+                    onClick={() => handleRead("0", "all")}
+                  >
+                    <CheckCircleOutlined style={{ fontSize: "1.15rem" }} />
+                    <span style={{ color: "black", width: "100%" }}>
+                      Mark all as read
+                    </span>
+                  </IconButton>
+                </Tooltip>
+              )}
+            </>
+          }
+        ></MainCard>
+        <List
+          component="nav"
+          style={{
+            height: allNotification?.length === 0 ? "160px" : "375px",
+            overflowY: "scroll",
+          }}
+          sx={{
+            p: 0,
+            "& .MuiListItemButton-root": {
+              py: 0.5,
+              "&.Mui-selected": {
+                bgcolor: "grey.50",
+                color: "text.primary",
+              },
+              "& .MuiAvatar-root": avatarSX,
+              "& .MuiListItemSecondaryAction-root": {
+                ...actionSX,
+                position: "relative",
+              },
+            },
+          }}
+        >
+          <Tabs value={selectedCategory} onChange={handleTabChange} centered style={{marginBottom:"10px"}}>
+            <Tab label="Projects" value="PROJECT" />
+            <Tab label="Project Invites" value="INVITE_USER" />
+           {roleName === "Super Admin" || roleName ==="Org Super Admin" || roleName ==="Admin" ? <Tab label="User Creation" value="USER_CREATION" />:""}
+          </Tabs>
+
+          {/* Notification List */}
+          {filteredNotifications.map((item) => (
+            <React.Fragment key={item?.notification_id}>
+              <ListItemButton
+                selected={!item?.is_read}
+                style={{
+                  background: !item?.is_read ? "white" : "#f1f1f0",
+                }}
+                onClick={(e) =>
+                  handleRead(item?.notification_id, "single", item?.project_id)
+                }
+              >
+                <ListItemAvatar>
+                  <Avatar
                     sx={{
-                      p: 0,
-                      "& .MuiListItemButton-root": {
-                        py: 0.5,
-                        "&.Mui-selected": {
-                          bgcolor: "grey.50",
-                          color: "text.primary",
-                        },
-                        "& .MuiAvatar-root": avatarSX,
-                        "& .MuiListItemSecondaryAction-root": {
-                          ...actionSX,
-                          position: "relative",
-                        },
-                      },
+                      color:
+                        item?.type === "INVITE_USER"
+                          ? "warning.main"
+                          : item?.type === "USER_CREATION"
+                            ? "primary.main"
+                            : item?.notification_message?.includes("failed")
+                              ? "error.main"
+                              : item?.notification_message?.includes(
+                                    "created successfully"
+                                  )
+                                ? "warning.main"
+                                : "success.main",
+                      bgcolor:
+                        item?.type === "INVITE_USER"
+                          ? "warning.lighter"
+                          : item?.type === "USER_CREATION"
+                            ? "primary.lighter"
+                            : item?.notification_message?.includes("failed")
+                              ? "error.lighter"
+                              : item?.notification_message?.includes(
+                                    "created successfully"
+                                  )
+                                ? "warning.lighter"
+                                : "success.lighter",
                     }}
                   >
-                    
-                    {allNotification?.map((item) => {
-                      return (
-                        <>
-                          <ListItemButton
-                            selected={!item?.is_read}
-                            style={{
-                              background: !item?.is_read ? "white" : "#f1f1f0",
-                            }}
-                            onClick={(e) =>
-                              handleRead(
-                                item?.notification_id,
-                                "single",
-                                item?.project_id
-                              )
-                            }
-                          >
-                            <ListItemAvatar>
-                              <Avatar
-                                sx={{
-                                  color: item?.type === "INVITE_USER" ? "warning.main" : item?.type === "USER_CREATION" ? "primary.main" : item?.notification_message?.includes("failed")? "error.main" : item?.notification_message?.includes("created successfully") ? "warning.main" :"success.main",
-                                  bgcolor: item?.type === "INVITE_USER"? "warning.lighter" : item?.type === "USER_CREATION" ? "primary.lighter" : item?.notification_message?.includes("failed") ? "error.lighter" : item?.notification_message?.includes("created successfully")?  "warning.lighter" :"success.lighter",
-                                }}
-                              >
-                                {item?.type === "USER_CREATION" ? (
-                                  <UserAddOutlined />
-                                ) : item?.type === "INVITE_USER" ? (
-                                  <ShareAltOutlined />
-                                ) : item?.notification_message?.includes("failed") ?(
-                                  <ExclamationCircleOutlined />
-                                ) : item?.notification_message?.includes("created successfully") ? (<FileAddOutlined />) : (<FileDoneOutlined />)}
-                              </Avatar>
-                            </ListItemAvatar>
-                            <ListItemText
-                              primary={
-                                <Typography variant="h6">
-                                  {item?.notification_message}
-                                </Typography>
-                              }
-                              secondary={getTimeDifference(item?.created_date)}
-                            />
-                            <ListItemSecondaryAction>
-                              <Typography variant="caption" noWrap>
-                                {getDate(item?.created_date)}
-                              </Typography>
-                            </ListItemSecondaryAction>
-                          </ListItemButton>
-                          <Divider style={{borderColor:"#ffffff",border:"1.2px solid #ffffff"}}/>
-                        </>
-                      );
-                    })}
-                   
-                  </List>
-       
+                    {item?.type === "USER_CREATION" ? (
+                      <UserAddOutlined />
+                    ) : item?.type === "INVITE_USER" ? (
+                      <ShareAltOutlined />
+                    ) : item?.notification_message?.includes("failed") ? (
+                      <ExclamationCircleOutlined />
+                    ) : item?.notification_message?.includes(
+                        "created successfully"
+                      ) ? (
+                      <FileAddOutlined />
+                    ) : (
+                      <FileDoneOutlined />
+                    )}
+                  </Avatar>
+                </ListItemAvatar>
+                <ListItemText
+                  primary={
+                    <Typography variant="h6">
+                      {item?.notification_message}
+                    </Typography>
+                  }
+                  secondary={getTimeDifference(item?.created_date)}
+                />
+                <ListItemSecondaryAction>
+                  <Typography variant="caption" noWrap>
+                    {getDate(item?.created_date)}
+                  </Typography>
+                </ListItemSecondaryAction>
+              </ListItemButton>
+              <Divider
+                style={{
+                  borderColor: "#ffffff",
+                  border: "1.2px solid #ffffff",
+                }}
+              />
+            </React.Fragment>
+          ))}
+        </List>
       </Modal>
     </Box>
-
-    
   );
 }
