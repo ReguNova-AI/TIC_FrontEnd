@@ -46,8 +46,8 @@ import DropZoneFileUpload from "pages/ProjectCreation/DropZoneFileUpload";
 import chatLoadingicon from "../../assets/images/icons/chatLoadingIcon.svg";
 import chatLoadingicon2 from "../../assets/images/icons/chatLoadingIcon2.svg";
 import chatLoadingicon3 from "../../assets/images/icons/chatLoadingIcon3.svg";
-import successIcon from "../../assets/images/icons/successIcon.svg";
-import failedIcon from "../../assets/images/icons/failedIcon.svg";
+import successIcon from "../../assets/images/icons/successIcon2.svg";
+import failedIcon from "../../assets/images/icons/failedIcon2.svg";
 import runIcon from "../../assets/images/icons/runIcon.svg";
 import reportIcon from "../../assets/images/icons/report1.png";
 import processIcon from "../../assets/images/process.png";
@@ -106,7 +106,7 @@ const ProjectView = () => {
    
     if(runAssessmentState === "run" && runState)
         {
-          projectData?.checkListResponse ? runComplianceAssessmenet(projectData?.checkListResponse,projectData?.project_id) : runChecklkistCRT();
+          projectData?.checkListResponse ? runComplianceAssessmenet(projectData?.checkListResponse,projectData?.project_id,"partial") : runChecklkistCRT();
           setRunState(false);
         }
 
@@ -284,7 +284,7 @@ const ProjectView = () => {
 
 
 
-  const runComplianceAssessmenet = async (query,projectId) =>{
+  const runComplianceAssessmenet = async (query,projectId,type) =>{
     setDisableButton(true);
    
     const regex = /\/([^/]+)$/; // Match the part after the last "/"
@@ -343,7 +343,7 @@ const ProjectView = () => {
     if(match !== undefined && match?.length >0)
     {
       // setLoading(true);
-    ProjectApiService.projectDocumentUpload(payload)
+    ProjectApiService.projectDocumentUpload(payload,type)
       .then((response) => {
         // setLoading(false);
 
@@ -996,7 +996,7 @@ const ProjectView = () => {
                           sx={{ mt: 2 }}
                           // disabled={projectData.documents?.length > 0 && projectData?.regulatory_standard ? false : true}
                           disabled={projectData?.status === "Processing" ? true : disableButton ? true : false}
-                          onClick={() => runComplianceAssessmenet(projectData.checkListResponse,projectData?.project_id)}
+                          onClick={() => runComplianceAssessmenet(projectData.checkListResponse,projectData?.project_id, projectData.checkListResponse? "partial":"full")}
                         >
                          {projectData.checkListResponse ? BUTTON_LABEL.RUN_COMPLIANCE_ASSESSMENT : BUTTON_LABEL.PERFORM_COMPLETE_ASSESSMENT} 
                         </Button>

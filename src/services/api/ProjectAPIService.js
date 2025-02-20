@@ -100,8 +100,16 @@ const _projectStandardChecklist = (payload) => {
   );
 };
 
-const _projectDocumentUpload = (payload) => {
-  return BaseApiService.post(`/api/v2/chat/uploadProjectDocs`, null, payload);
+const _projectDocumentUpload = (payload,type) => {
+  if(type === "full")
+  {
+    return BaseApiService.post(`/api/v2/chat/runFullAssessment`, null, payload);
+
+  }
+  else{
+    return BaseApiService.post(`/api/v2/chat/uploadProjectDocs`, null, payload);
+
+  }
 };
 
 export const ProjectApiService = {
