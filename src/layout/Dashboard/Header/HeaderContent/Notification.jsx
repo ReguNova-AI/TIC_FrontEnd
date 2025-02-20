@@ -31,7 +31,9 @@ import MessageOutlined from "@ant-design/icons/MessageOutlined";
 import SettingOutlined from "@ant-design/icons/SettingOutlined";
 import { NotificationApiService } from "services/api/NotificationAPIService";
 import {
+  ExclamationCircleOutlined,
   FileAddOutlined,
+  FileDoneOutlined,
   ShareAltOutlined,
   UserAddOutlined,
 } from "@ant-design/icons";
@@ -309,18 +311,18 @@ export default function Notification() {
                           >
                             <ListItemAvatar>
                               <Avatar
-                                sx={{
-                                  color: "success.main",
-                                  bgcolor: "success.lighter",
+                                 sx={{
+                                  color: item?.type === "INVITE_USER" ? "warning.main" : item?.type === "USER_CREATION" ? "primary.main" : item?.notification_message?.includes("failed")? "error.main" : item?.notification_message?.includes("created successfully") ? "warning.main" :"success.main",
+                                  bgcolor: item?.type === "INVITE_USER"? "warning.lighter" : item?.type === "USER_CREATION" ? "primary.lighter" : item?.notification_message?.includes("failed") ? "error.lighter" : item?.notification_message?.includes("created successfully")?  "warning.lighter" :"success.lighter",
                                 }}
                               >
-                                {item?.type === "USER_CREATION" ? (
+                                 {item?.type === "USER_CREATION" ? (
                                   <UserAddOutlined />
                                 ) : item?.type === "INVITE_USER" ? (
                                   <ShareAltOutlined />
-                                ) : (
-                                  <FileAddOutlined />
-                                )}
+                                ) : item?.notification_message?.includes("failed") ?(
+                                  <ExclamationCircleOutlined />
+                                ) : item?.notification_message?.includes("created successfully") ? (<FileAddOutlined />) : (<FileDoneOutlined />)}
                               </Avatar>
                             </ListItemAvatar>
                             <ListItemText
@@ -434,17 +436,17 @@ export default function Notification() {
                             <ListItemAvatar>
                               <Avatar
                                 sx={{
-                                  color: "success.main",
-                                  bgcolor: "success.lighter",
+                                  color: item?.type === "INVITE_USER" ? "warning.main" : item?.type === "USER_CREATION" ? "primary.main" : item?.notification_message?.includes("failed")? "error.main" : item?.notification_message?.includes("created successfully") ? "warning.main" :"success.main",
+                                  bgcolor: item?.type === "INVITE_USER"? "warning.lighter" : item?.type === "USER_CREATION" ? "primary.lighter" : item?.notification_message?.includes("failed") ? "error.lighter" : item?.notification_message?.includes("created successfully")?  "warning.lighter" :"success.lighter",
                                 }}
                               >
                                 {item?.type === "USER_CREATION" ? (
                                   <UserAddOutlined />
                                 ) : item?.type === "INVITE_USER" ? (
                                   <ShareAltOutlined />
-                                ) : (
-                                  <FileAddOutlined />
-                                )}
+                                ) : item?.notification_message?.includes("failed") ?(
+                                  <ExclamationCircleOutlined />
+                                ) : item?.notification_message?.includes("created successfully") ? (<FileAddOutlined />) : (<FileDoneOutlined />)}
                               </Avatar>
                             </ListItemAvatar>
                             <ListItemText
