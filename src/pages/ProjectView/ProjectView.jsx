@@ -969,6 +969,7 @@ const ProjectView = () => {
                         <Button
                           variant="outlined"
                           onClick={() => setOpenModal(true)} // Open modal on button click
+                          disabled={projectData?.status === "Processing" ? true : disableButton ? true : false}
                         >
                           {BUTTON_LABEL.UPLOAD_ADDITIONAL_DOCUMENTS}
                         </Button>
