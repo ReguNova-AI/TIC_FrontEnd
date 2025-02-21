@@ -56,6 +56,10 @@ const _standardDelete = (id) => {
   return BaseApiService.delete(`/api/v1/regulatories/${id}/delete`, null, payload);
 };
 
+const _standardChecklistUpdate = (payload) => {
+  return BaseApiService.post(`/api/v1/regulatories/update`, null, payload);
+};
+
 export const AdminConfigAPIService = {
   sectorCreate: _sectorCreate,
   sectorListing: _sectorListing,
@@ -70,4 +74,5 @@ export const AdminConfigAPIService = {
   standardCreate: _standardCreate,
   standardListing: _standardListing,
   standardDelete:_standardDelete,
+  standardChecklistUpdate:_standardChecklistUpdate,
 };

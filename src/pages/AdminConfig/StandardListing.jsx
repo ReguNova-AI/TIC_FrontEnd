@@ -4,7 +4,7 @@ import FormControl from "@mui/material/FormControl";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import InputLabel from "@mui/material/InputLabel";
 import InputAdornment from "@mui/material/InputAdornment";
-import { CloseCircleOutlined,DeleteFilled, SearchOutlined } from "@ant-design/icons";
+import {CheckCircleOutlined, CloseCircleOutlined,DeleteFilled, SearchOutlined, UploadOutlined } from "@ant-design/icons";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
@@ -94,6 +94,33 @@ const StandardListing = () => {
     currentPage * pageSize
   );
 
+  const runChecklistAPI =(file,id)=>{
+    let fileName = file;
+
+        if (fileName !== undefined) {
+          const regex = /\/([^/]+)$/; // Match the part after the last "/"
+          const match = fileName?.match(regex);
+
+          const payload = new FormData();
+          payload.append("imageKey", match?.[1]);
+          payload.append("standard_id",id);
+
+          AdminConfigAPIService.standardChecklistUpdate(payload)
+            .then((response) => {
+              console.log("response", response);
+            })
+            .catch((errResponse) => {
+              setSnackData({
+                show: true,
+                message:
+                  errResponse?.error?.message ||
+                  API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+                type: "error",
+              });
+            });
+          }
+  }
+
   // Table columns
   const columns = [
     {
@@ -115,10 +142,30 @@ const StandardListing = () => {
         record.standard_name.toLowerCase().includes(value.toLowerCase()),
     },
     {
+      title: LISTING_PAGE.CHECKLIST_GENERATED,
+      dataIndex: "checkListResponse",
+      key: "checkListResponse",
+      render: (text) => (
+        <Button style={{border:"none",background:"transparent",boxShadow:"none"}}>
+            {text ? <CheckCircleOutlined style={{ color: "green" }}/>:<CloseCircleOutlined style={{ color: "red" }}/>} 
+        </Button>
+      ), // Directly display the role_name
+      
+    },
+    {
       title: LISTING_PAGE.ACTION,
       key: "action",
-      render: (_, record) => (
-        <Popconfirm
+      render: (_, record) => {
+        return (
+       <> 
+       {/* {record?.checkListResponse === null || record?.checkListResponse === "" ? */}
+       <Tooltip title={record?.checkListResponse === null || record?.checkListResponse === ""?"Run checklist for this standard":"Checklist is available for the satndard"} >
+       <Button style={{border:"none",background:"transparent",boxShadow:"none",marginRight:"10px"}} disabled={record?.checkListResponse === null || record?.checkListResponse === ""?false:true } onClick={()=>runChecklistAPI(record.standard_url,record.standard_id)}>
+          <UploadOutlined />
+       </Button>
+       </Tooltip>
+       {/* :""} */}
+       <Popconfirm
           title={`Delete  ${record.standard_name} Standard`}
           description="Are you sure you want to delete?"
           onConfirm={(e) => {e.preventDefault(); handleDelete(record.standard_id)}}
@@ -138,8 +185,8 @@ const StandardListing = () => {
         </Tooltip>
         </Popconfirm>
 
-        
-      ),
+        </>
+      )},
     },
   ];
 

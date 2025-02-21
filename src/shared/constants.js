@@ -122,7 +122,8 @@ export const LISTING_PAGE = Object.freeze({
   PERMISSION_NAME:"Permission Name",
   PERMISSION_DESC:"Description",
   PERMISSION_CATEGORY: "Category",
-  STANDARD_NAME:"Standard Name"
+  STANDARD_NAME:"Standard Name",
+  CHECKLIST_GENERATED:"Checklist Generated",
 });
 
 export const TAB_LABEL = Object.freeze({

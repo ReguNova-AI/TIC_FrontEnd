@@ -79,7 +79,7 @@ const StandardCreation = ({ onHandleClose }) => {
       .then((response) => {
         // Check the response structure and map data accordingly
         if (response?.data?.details) {
-          setFilteredIndustries(response?.data?.details);   //remove this line when sector selection is required
+          setFilteredIndustries(response?.data?.details); //remove this line when sector selection is required
           setIndustryData(response?.data?.details);
           setFilteredData(newData);
         }
@@ -125,6 +125,34 @@ const StandardCreation = ({ onHandleClose }) => {
           file_name: "",
           file_url: "",
         });
+
+        let fileName = response?.data?.details?.[0]?.standard_url;
+
+        if (fileName !== undefined) {
+          const regex = /\/([^/]+)$/; // Match the part after the last "/"
+          const match = fileName?.match(regex);
+
+          const payload = new FormData();
+          payload.append("imageKey", match?.[1]);
+          payload.append(
+            "standard_id",
+            response?.data?.details?.[0]?.standard_id
+          );
+
+          AdminConfigAPIService.standardChecklistUpdate(payload)
+            .then((response) => {
+              console.log("response", response);
+            })
+            .catch((errResponse) => {
+              setSnackData({
+                show: true,
+                message:
+                  errResponse?.error?.message ||
+                  API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+                type: "error",
+              });
+            });
+        }
 
         onHandleClose(response?.data?.message);
       })
