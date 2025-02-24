@@ -4,7 +4,7 @@ import FormControl from "@mui/material/FormControl";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import InputLabel from "@mui/material/InputLabel";
 import InputAdornment from "@mui/material/InputAdornment";
-import {CheckCircleOutlined, CloseCircleOutlined,DeleteFilled, SearchOutlined, UploadOutlined } from "@ant-design/icons";
+import {CheckCircleOutlined, CloseCircleOutlined,CloudSyncOutlined,DeleteFilled, ReloadOutlined, SearchOutlined, UploadOutlined } from "@ant-design/icons";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
@@ -17,6 +17,7 @@ import {
 } from "shared/constants";
 import trashIcon from "../../assets/images/icons/trash4.svg";
 
+import { Modal } from 'antd';
 
 const StandardListing = () => {
   const [data, setData] = useState([]);
@@ -25,6 +26,10 @@ const StandardListing = () => {
   const [currentPage, setCurrentPage] = useState(1); // Track the current page
   const [pageSize, setPageSize] = useState(10); // Number of rows per page
   const [loading, setLoading] = useState(true);
+
+  const [viewModalVisible, setViewModalVisible] = useState(false);
+const [modalContent, setModalContent] = useState("");
+
   const [snackData, setSnackData] = useState({
     show: false,
     message: "",
@@ -66,6 +71,31 @@ const StandardListing = () => {
       });
   };
 
+  const handleViewText = (content) => {
+    setModalContent(content);  // Set the content to display in the modal
+    setViewModalVisible(true);  // Open the modal
+  };
+
+
+  const handleCopyText = () => {
+    navigator.clipboard.writeText(modalContent)
+      .then(() => {
+        setSnackData({
+          show: true,
+          message: "Text copied to clipboard!",
+          type: "success",
+        });
+      })
+      .catch((err) => {
+        setSnackData({
+          show: true,
+          message: "Failed to copy text.",
+          type: "error",
+        });
+      });
+  };
+  
+
   // Debounced search
   const handleSearch = (value) => {
     const searchText = value.toLowerCase();
@@ -94,7 +124,7 @@ const StandardListing = () => {
     currentPage * pageSize
   );
 
-  const runChecklistAPI =(file,id)=>{
+  const runChecklistAPI =(file,id,satndardName)=>{
     let fileName = file;
 
         if (fileName !== undefined) {
@@ -104,6 +134,8 @@ const StandardListing = () => {
           const payload = new FormData();
           payload.append("imageKey", match?.[1]);
           payload.append("standard_id",id);
+          payload.append("standard_name",satndardName);
+
 
           AdminConfigAPIService.standardChecklistUpdate(payload)
             .then((response) => {
@@ -146,9 +178,17 @@ const StandardListing = () => {
       dataIndex: "checkListResponse",
       key: "checkListResponse",
       render: (text) => (
+        <>
         <Button style={{border:"none",background:"transparent",boxShadow:"none"}}>
             {text ? <CheckCircleOutlined style={{ color: "green" }}/>:<CloseCircleOutlined style={{ color: "red" }}/>} 
         </Button>
+        <Button
+        style={{ border: "none", background: "transparent", boxShadow: "none" }}
+        onClick={() => handleViewText(text)} // Pass the text to display
+      >
+        View
+      </Button>
+      </>
       ), // Directly display the role_name
       
     },
@@ -159,9 +199,10 @@ const StandardListing = () => {
         return (
        <> 
        {/* {record?.checkListResponse === null || record?.checkListResponse === "" ? */}
-       <Tooltip title={record?.checkListResponse === null || record?.checkListResponse === ""?"Run checklist for this standard":"Checklist is available for the satndard"} >
-       <Button style={{border:"none",background:"transparent",boxShadow:"none",marginRight:"10px"}} disabled={record?.checkListResponse === null || record?.checkListResponse === ""?false:true } onClick={()=>runChecklistAPI(record.standard_url,record.standard_id)}>
-          <UploadOutlined />
+       <Tooltip title={record?.checkListResponse === null || record?.checkListResponse === ""?"Run checklist for this standard":"Re-Run the checklist for the satndard"} >
+       <Button style={{border:"none",background:"transparent",boxShadow:"none",}}  onClick={()=>runChecklistAPI(record.standard_url,record.standard_id,record.standard_name)}>
+          {/* <UploadOutlined /> */}
+          <CloudSyncOutlined style={{fontSize:"20px"}}/>
        </Button>
        </Tooltip>
        {/* :""} */}
@@ -279,6 +320,31 @@ const StandardListing = () => {
               onChange: handlePaginationChange,
             }}
           />
+
+<Modal
+          title="View Text"
+          visible={viewModalVisible}
+          onCancel={() => setViewModalVisible(false)}
+          footer={[
+            <Button key="copy" onClick={handleCopyText}>
+              Copy Text
+            </Button>,
+            <Button key="close" onClick={() => setViewModalVisible(false)}>
+              Close
+            </Button>,
+          ]}
+          width={"800px"}
+        >
+          <div
+            style={{
+              whiteSpace: 'pre-wrap', // Preserve whitespace and line breaks
+              wordWrap: 'break-word', // Allow long words to break and avoid overflow
+            }}
+          >
+            {modalContent}
+          </div>
+        </Modal>
+        
         </Space>
 
         <Snackbar

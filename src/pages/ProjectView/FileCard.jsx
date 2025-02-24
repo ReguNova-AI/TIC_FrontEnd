@@ -48,7 +48,7 @@ const parseApiResponse = (response) => {
       // Now process all sections
       return sections?.map((section, index) => {
           let lines = section?.trim()?.replace('\n\n',"\n")?.split('\n'); // Split the section into lines
-
+          
           // Extract and clean the title of the section
           let title = lines[0]?.replace('**', '')?.replace('###', '')?.replace("---")?.replace(':', '')?.trim();
           title= title?.replace("**","");
@@ -65,7 +65,7 @@ const parseApiResponse = (response) => {
        
         // Process the remaining lines as "points" and clean the list
         const points = lines?.slice(1).map(line => line.replace(/^\d+\./, '')?.trim());
-       
+
     
     
           return { title, points };
@@ -75,13 +75,13 @@ const parseApiResponse = (response) => {
   // If the response contains '###' but not '---' (second format)
   else if (response.includes('###')) {
       // Handle the second format (with '###')
-      const sections = response.split('###').slice(1); // Skip the first part (Title)
+      const sections = response?.replace(/\\n/g, '\n')?.replace('\n\n','\n')?.split('###').slice(1); // Skip the first part (Title)
       return sections.map((section, index) => {
-          let lines = section.trim().split('\n');
-
+          let lines = section?.trim()?.replace(/\\n/g, '\n')?.replace('\n\n', '\n')?.replace(/^\d+\./g, '\n')?.split('\n');
+          console.log("lines",lines)
           // Extract and clean the title of the section
-          let title = lines[0].replace(':', '').trim();
-
+          let title = lines[0]?.replace('**', '')?.replace('###', '')?.replace("---","")?.replace(':', '')?.trim();
+          
           if (title.startsWith("Section") || title.startsWith("Summary")) {
             // Clean up titles that include 'Section X'
             title = title.replace(/^Section \d+:?/, '').trim();
@@ -92,7 +92,7 @@ const parseApiResponse = (response) => {
           {
             lines.push(title?.replace("Summary",`${index}.`))
             lines[0] = title?.replace("Summary** ",`${index}.`);
-            
+
             title = "Summary";
           } 
           else{
@@ -101,7 +101,7 @@ const parseApiResponse = (response) => {
          
           // Process the remaining lines as "points" and clean the list
           const points = lines?.slice(1).map(line => line.replace(/^\d+\./, '')?.trim());
-          
+         
       
       
             return { title, points };
@@ -811,7 +811,7 @@ const submittedbyTable = new DocxTable({
 
             ) : (
               <>
-                <Tabs value={activeTab} onChange={handleTabChange} aria-label="file-tabs">
+                <Tabs value={activeTab} onChange={handleTabChange} aria-label="file-tabs" scrollButtons="auto" variant="scrollable" > 
                   {/* Dynamically generate tabs */}
                   {sections.map((section, index) => (
                     section !== undefined && section !== "" && section !== null && <Tab key={index} label={section.title} />

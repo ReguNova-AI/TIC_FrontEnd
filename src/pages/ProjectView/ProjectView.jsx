@@ -244,26 +244,32 @@ const ProjectView = () => {
     // If the response contains '###' but not '---' (second format)
     else if (response.includes('###')) {
         // Handle the second format (with '###')
-        const sections = response.split('###').slice(1); // Skip the first part (Title)
-
+        const sections = response?.replace(/\\n/g, '\n')?.replace('\n\n','\n')?.split('###').slice(1); // Skip the first part (Title)
+        
         let dataArray = [];
-
+        
         sections.forEach((section, index) => {
-            let lines = section.trim().split('\n');
+          let lines = section?.trim()?.replace(/\\n/g, '\n')?.replace('\n\n', '\n')?.split('\n');
+          
+          // Extract and clean the title of the section
+          let title = lines[0]?.replace('**', '')?.replace('###', '')?.replace("---","")?.replace(':', '')?.trim();
+          
+          if (title.startsWith("Section") || title.startsWith("Summary")) {
+            // Clean up titles that include 'Section X'
+            title = title.replace(/^Section \d+:?/, '').trim();
+        }
 
-            // Extract and clean the title of the section
-            let title = lines[0].replace(':', '').trim();
-
-            if(title?.startsWith("Summary"))
-            {
-              lines.push(title.replace("Summary",`${index}.`))
-              lines[0] = title.replace("Summary** ",`${index}.`);
-              
-              title = "Summary";
-            } 
-            else{
-              title = title.replace(`Section ${index + 1}`, '')?.trim();
-            }   
+          // Special handling for "Summary" in the title
+          if(title?.startsWith("Summary"))
+          {
+            lines.push(title?.replace("Summary",`${index}.`))
+            lines[0] = title?.replace("Summary** ",`${index}.`);
+            
+            title = "Summary";
+          } 
+          else{
+            title = title?.replace(`Section ${index + 1}`, '')?.trim();
+          }   
             // Clean the remaining lines as points (handling numbered list items)
             const points = lines.slice(1).map(line => line !== "" && line !== null && dataArray.push(line.replace(/^\d+\./, '')?.trim()));
      

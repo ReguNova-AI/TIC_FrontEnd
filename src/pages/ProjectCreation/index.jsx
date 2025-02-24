@@ -51,7 +51,8 @@ const MyForm = () => {
     document: {},
     status: "",
     invited_user_list:[],
-    mapping_standards:""
+    mapping_standards:"",
+    checkListResponse:""
   });
 
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
@@ -269,6 +270,7 @@ const MyForm = () => {
       mapping_standards: formData.mapping_standards,
       summary_report: {},
       history:[historyItem],
+      checkListResponse:formData?.checkListResponse,
     };
     if (submissionStatus !== 'Draft') {
       payload.last_run = formatDateToCustomFormat(new Date());
@@ -306,6 +308,13 @@ const MyForm = () => {
   const handleAddFileClick = () => {
     document.getElementById("fileInput").click(); // Trigger the file input field
   };
+
+
+  const checklistResponseCheck = (value)=>{
+   const result= standardData?.filter(data=> data.standard_name === value);
+    return result?.[0]?.checkListResponse;
+  //  setFormData({...formData , checkListResponse:result?.[0]?.checkListResponse})
+  }
 
   return (
     <>
@@ -393,7 +402,7 @@ const MyForm = () => {
           value={formData.regulatory}
           label={FORM_LABEL.REGULATORY}
           name="regulatory"
-          onChange={(e) => setFormData({ ...formData, regulatory: e.target.value })}
+          onChange={(e) => { setFormData({ ...formData, regulatory: e.target.value,checkListResponse:checklistResponseCheck(e.target.value) })}}
           required
         >
          

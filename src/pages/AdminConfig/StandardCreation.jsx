@@ -134,10 +134,8 @@ const StandardCreation = ({ onHandleClose }) => {
 
           const payload = new FormData();
           payload.append("imageKey", match?.[1]);
-          payload.append(
-            "standard_id",
-            response?.data?.details?.[0]?.standard_id
-          );
+          payload.append("standard_id",response?.data?.details?.[0]?.standard_id);
+          payload.append("standard_name",response?.data?.details?.[0]?.standard_name);
 
           AdminConfigAPIService.standardChecklistUpdate(payload)
             .then((response) => {
