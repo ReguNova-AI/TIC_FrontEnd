@@ -92,12 +92,19 @@ const _projectUploadStandardChat = (payload) => {
 };
 
 const _projectStandardChecklist = (payload) => {
-  // return BaseApiService.post(`/api/v1/chat/uploadStandardCheckList`, null, payload);
+//  old api // return BaseApiService.post(`/api/v1/chat/uploadStandardCheckList`, null, payload);
+// last implementation  // return BaseApiService.post(
+  //   `/api/v2/chat/uploadStandardCheckList`,
+  //   null,
+  //   payload
+  // );
+
+  // new api
   return BaseApiService.post(
-    `/api/v2/chat/uploadStandardCheckList`,
-    null,
-    payload
-  );
+      `/api/v2/chat/newUploadStandardCheckList?num_segments=0&chunksize=0&chunkoverlap=0`,
+      null,
+      payload
+    );
 };
 
 const _projectDocumentUpload = (payload,type) => {
