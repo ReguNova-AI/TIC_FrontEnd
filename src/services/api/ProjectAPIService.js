@@ -101,7 +101,7 @@ const _projectStandardChecklist = (payload) => {
 
   // new api
   return BaseApiService.post(
-      `/api/v2/chat/newUploadStandardCheckList?num_segments=0&chunksize=0&chunkoverlap=0`,
+      `/api/v2/chat/newUploadStandardCheckList?num_segments=7&chunksize=6000&chunkoverlap=200`,
       null,
       payload
     );

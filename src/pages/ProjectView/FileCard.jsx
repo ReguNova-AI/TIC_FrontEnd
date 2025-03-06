@@ -28,92 +28,154 @@ import logo from "../../assets/images/logo1.jpeg";
 
 // Function to parse the API response into a structured format (skipping the title)
 const parseApiResponse = (response) => {
-  // Check if the response contains '---' and '**' (first format)
+  // If the response contains 'checklist' (new checklist format)
+  if (response.checklist && Array.isArray(response.checklist)) {
+    let checklist = response.checklist;
+
+    // Process checklist into sections and annexes
+    const sections = [];
+    const annexes = [];
+
+    checklist.forEach((item) => {
+      // Split checklist items based on whether they contain a section or annex
+      if (item.includes('##')) {
+        // Check if it's an Annex or Section
+        if (item.toLowerCase().startsWith('## annex')) {
+          annexes.push({
+            title: item.split('##')[1]?.trim().replace(/^Annex\s*[:\-]?\s*/i, ''), // Remove "Annex"
+            points: []
+          });
+        } else {
+          sections.push({
+            title: item.split('##')[1]?.trim().replace(/^Section\s*[:\-]?\s*/i, '').replace(/^\d+\s*/, ''), // Remove "Section" and leading digits
+            points: []
+          });
+        }
+      } else if (item.includes('**')) {
+        // Check if it's an Annex or Section
+        if (item.toLowerCase().startsWith('** annex')) {
+          annexes.push({
+            title: item.split('**')[1]?.trim().replace(/^Annex\s*[:\-]?\s*/i, ''), // Remove "Annex"
+            points: []
+          });
+        } else {
+          sections.push({
+            title: item.split('**')[1]?.trim().replace(/^Section\s*[:\-]?\s*/i, '').replace(/^\d+\s*/, ''), // Remove "Section" and leading digits
+            points: []
+          });
+        }
+      }  else {
+        const lastSection = sections[sections.length - 1];
+        const lastAnnex = annexes[annexes.length - 1];
+
+        if (lastSection) {
+          lastSection.points.push(item.replace(/^\d+\.\s*/, '').trim());
+        } else if (lastAnnex) {
+          lastAnnex.points.push(item.replace(/^\d+\.\s*/, '').trim());
+        }
+      }
+    });
+
+    return [
+      ...sections.map((section, index) => ({
+        title: section.title,
+        points: section.points
+      })),
+      ...annexes.map((annex, index) => ({
+        title: annex.title,
+        points: annex.points
+      }))
+    ];
+  }
+
+  // If the response contains '---' or '**' (first format)
   if (response.includes('---') || response.includes('**') || response.includes('\n\n')) {
-      // Handle the first format (with '**' and '---')
-      let sections = response.split('---').slice(1); // Skip the first "Title" section
+    let sections = response.split('---').slice(1); // Skip the first "Title" section
 
-      if(sections.length === 0 || sections.length < 4)
-      {
-        sections = response.split('\n\n').slice(1);
-      }
+    if (sections.length === 0 || sections.length < 4) {
+      sections = response.split('\n\n').slice(1);
+    }
+
+    const lastSection = sections[sections.length - 1]?.trim();
+
+    if (lastSection?.startsWith("Summary:")) {
+      sections[sections.length - 1] = `**Summary**\n${lastSection}`;
+    }
+
+    const sectionPattern = /^(?:\*\*)?(?:Section\s*[:\-]?\s*|\#\#\s*)/i;
+    const annexPattern = /^Annex/i;
+
+    return sections.map((section, index) => {
+      let lines = section.trim().replace('\n\n', "\n").split('\n');
       
-      const lastSection = sections[sections.length - 1]?.trim();
+      let title = lines[0]?.replace('**', '')?.replace('###', '')?.replace("---")?.replace(':', '')?.trim();
+      title = title?.replace("**", "");
 
-      // If the last section starts with "Summary:", explicitly name it
-      if (lastSection?.startsWith("Summary:")) {
-          sections[sections.length - 1] = `**Summary**\n${lastSection}`;
+      // Match any Section or Annex as tabs
+      if (sectionPattern.test(title) || annexPattern.test(title)) {
+        // Check if it's a section or annex
+        if (sectionPattern.test(title)) {
+          title = title.replace(sectionPattern, '').trim();
+          title = title.replace(/^Section\s*[:\-]?\s*/i, '').replace(/^\d+\s*/, ''); // Remove "Section" and leading digits
+        } else if (annexPattern.test(title)) {
+          title = title.replace(annexPattern, '').trim();
+          title = title.replace(/^Annex\s*[:\-]?\s*/i, ''); // Remove "Annex"
+        }
+
+        return {
+          title: title,
+          points: lines.slice(1).map(line => line.replace(/^\d+\./, '').trim())
+        };
       }
 
-      // Now process all sections
-      return sections?.map((section, index) => {
-          let lines = section?.trim()?.replace('\n\n',"\n")?.split('\n'); // Split the section into lines
-          
-          // Extract and clean the title of the section
-          let title = lines[0]?.replace('**', '')?.replace('###', '')?.replace("---")?.replace(':', '')?.trim();
-          title= title?.replace("**","");
-        if(title?.startsWith("Summary"))
-        {
-          lines.push(title?.replace("Summary",`${index}.`))
-          lines[0] = title?.replace("Summary** ",`${index}.`);
-          
-          title = "Summary";
-        } 
-        else{
-          title = title?.replace(`Section ${index + 1}`, '')?.trim();
-        }   
-       
-        // Process the remaining lines as "points" and clean the list
-        const points = lines?.slice(1).map(line => line.replace(/^\d+\./, '')?.trim());
-
-    
-    
-          return { title, points };
-      });
+      return { title: `Section ${index + 1}`, points: lines.slice(1).map(line => line.trim()) };
+    });
   }
 
   // If the response contains '###' but not '---' (second format)
   else if (response.includes('###')) {
-      // Handle the second format (with '###')
-      const sections = response?.replace(/\\n/g, '\n')?.replace('\n\n','\n')?.split('###').slice(1); // Skip the first part (Title)
-      return sections.map((section, index) => {
-          let lines = section?.trim()?.replace(/\\n/g, '\n')?.replace('\n\n', '\n')?.replace(/^\d+\./g, '\n')?.split('\n');
-          console.log("lines",lines)
-          // Extract and clean the title of the section
-          let title = lines[0]?.replace('**', '')?.replace('###', '')?.replace("---","")?.replace(':', '')?.trim();
-          
-          if (title.startsWith("Section") || title.startsWith("Summary")) {
-            // Clean up titles that include 'Section X'
-            title = title.replace(/^Section \d+:?/, '').trim();
+    const sections = response?.replace(/\\n/g, '\n')?.replace('\n\n', '\n')?.split('###').slice(1);
+    
+    const sectionPattern = /^(?:\*\*)?(?:Section\s*[:\-]?\s*|\#\#\s*)/i;
+    const annexPattern = /^Annex/i;
+
+    return sections.map((section, index) => {
+      let lines = section?.trim()?.replace(/\\n/g, '\n')?.replace('\n\n', '\n')?.replace(/^\d+\./g, '\n')?.split('\n');
+
+      let title = lines[0]?.replace('**', '')?.replace('###', '')?.replace("---", "")?.replace(':', '')?.trim();
+      
+      // Match any Section or Annex as tabs
+      if (sectionPattern.test(title) || annexPattern.test(title)) {
+        // Check if it's a section or annex
+        if (sectionPattern.test(title)) {
+          title = title.replace(sectionPattern, '').trim();
+          title = title.replace(/^Section\s*[:\-]?\s*/i, '').replace(/^\d+\s*/, ''); // Remove "Section" and leading digits
+        } else if (annexPattern.test(title)) {
+          title = title.replace(annexPattern, '').trim();
+          title = title.replace(/^Annex\s*[:\-]?\s*/i, ''); // Remove "Annex"
         }
 
-          // Special handling for "Summary" in the title
-          if(title?.startsWith("Summary"))
-          {
-            lines.push(title?.replace("Summary",`${index}.`))
-            lines[0] = title?.replace("Summary** ",`${index}.`);
+        return {
+          title: title,
+          points: lines.slice(1).map(line => line.replace(/^\d+\./, '').trim())
+        };
+      }
 
-            title = "Summary";
-          } 
-          else{
-            title = title?.replace(`Section ${index + 1}`, '')?.trim();
-          }   
-         
-          // Process the remaining lines as "points" and clean the list
-          const points = lines?.slice(1).map(line => line.replace(/^\d+\./, '')?.trim());
-         
-      
-      
-            return { title, points };
-      });
+      return { title: `Section ${index + 1}`, points: lines.slice(1).map(line => line.trim()) };
+    });
   }
 
   // Default case (if the response doesn't match either format)
   else {
-      console.error("Unknown response format");
-      return [];
+    console.error("Unknown response format");
+    return [];
   }
 };
+
+
+
+
+
 
 
 const FileCard = ({ fileName, onDownload, onView, apiResponse,data,data1,projectData }) => {
@@ -126,6 +188,8 @@ const FileCard = ({ fileName, onDownload, onView, apiResponse,data,data1,project
   const [answersWithExplanation ,setAnswersWithExplanation] = useState([]);
 const [ complianceData , setComplianceData] = useState([]);
 apiResponse = data;
+
+
 
 const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
 const userEmail = userdetails?.[0]?.user_email;
