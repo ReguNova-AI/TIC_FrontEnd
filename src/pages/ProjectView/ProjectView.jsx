@@ -193,100 +193,66 @@ const ProjectView = () => {
   };
 
   const parseApiResponse = (response) => {
-
-    // Check if the response contains '---' and '**' (first format)
-    if (response.includes('---') || response.includes('**') || response.includes('\n\n')) {
-      // Handle the first format (with '**' and '---')
-        let sections = response.split('---').slice(1); // Skip the first "Title" section
-        if(sections.length === 0 || sections.length < 4)
-        {
-          sections = response.split('\n\n').slice(1);
+    let dataArray = [];
+    // If the response contains 'checklist' (new checklist format)
+    if (response.checklist && Array.isArray(response.checklist)) {
+      let checklist = response.checklist;
+  
+      // Process checklist into sections and annexes
+      const sections = [];
+      const annexes = [];
+  
+      checklist.forEach((item) => {
+        // Split checklist items based on whether they contain a section or annex
+        if (item.includes('##')) {
+          // Check if it's an Annex or Section
+          if (item.toLowerCase().startsWith('## annex')) {
+            annexes.push({
+              title: item.split('##')[1]?.trim().replace(/^Annex\s*[:\-]?\s*/i, ''), // Remove "Annex"
+              points: []
+            });
+          } else {
+            sections.push({
+              title: item.split('##')[1]?.trim().replace(/^Section\s*[:\-]?\s*/i, '').replace(/^\d+\s*/, ''), // Remove "Section" and leading digits
+              points: []
+            });
+          }
+        } else if (item.includes('**')) {
+          // Check if it's an Annex or Section
+          if (item.toLowerCase().startsWith('** annex')) {
+            annexes.push({
+              title: item.split('**')[1]?.trim().replace(/^Annex\s*[:\-]?\s*/i, ''), // Remove "Annex"
+              points: []
+            });
+          } else {
+            sections.push({
+              title: item.split('**')[1]?.trim().replace(/^Section\s*[:\-]?\s*/i, '').replace(/^\d+\s*/, ''), // Remove "Section" and leading digits
+              points: []
+            });
+          }
+        }  else {
+          const lastSection = sections[sections.length - 1];
+          const lastAnnex = annexes[annexes.length - 1];
+  
+          if (lastSection) {
+            dataArray.push(item.replace(/^\d+\.\s*/, '').trim());
+            lastSection.points.push(item.replace(/^\d+\.\s*/, '').trim());
+          } else if (lastAnnex) {
+            dataArray.push(item.replace(/^\d+\.\s*/, '').trim());
+            lastAnnex.points.push(item.replace(/^\d+\.\s*/, '').trim());
+          }
         }
-        
-        const lastSection = sections[sections.length - 1]?.trim();
-
-        // If the last section starts with "Summary:", explicitly name it
-        if (lastSection?.startsWith("Summary:")) {
-            sections[sections.length - 1] = `**Summary**\n${lastSection}`;
-        }
-
-        let dataArray = [];
-
-        // Now process all sections
-        sections.map((section, index) => {
-            let lines = section?.trim()?.replace('\n\n','\n')?.split('\n'); // Split the section into lines
-
-            // Extract and clean the title of the section
-            let title = lines[0]?.replace('**', '')?.replace('###', '')?.replace("---")?.replace(':', '')?.trim();
-            title= title.replace("**","");
-            // Handle scenarios where the title might include "Section X:" or just the section heading
-            if(title?.startsWith("Summary"))
-      {
-        lines.push(title.replace("Summary",`${index}.`))
-        lines[0] = title.replace("Summary** ",`${index}.`);
-        
-        title = "Summary";
-      } 
-      else{
-        title = title.replace(`Section ${index + 1}`, '')?.trim();
-      }   
-
-            // Clean remaining lines into 'points'
-            const points = lines.slice(1).map(line => line !== "" && line !== null && dataArray.push(line.replace(/^\d+\./, '')?.trim()));
-     
-            // Return the formatted section data
-            return { title, points };
-        });
-
-        return dataArray;
-    }
-
-    // If the response contains '###' but not '---' (second format)
-    else if (response.includes('###')) {
-        // Handle the second format (with '###')
-        const sections = response?.replace(/\\n/g, '\n')?.replace('\n\n','\n')?.split('###').slice(1); // Skip the first part (Title)
-        
-        let dataArray = [];
-        
-        sections.forEach((section, index) => {
-          let lines = section?.trim()?.replace(/\\n/g, '\n')?.replace('\n\n', '\n')?.split('\n');
-          
-          // Extract and clean the title of the section
-          let title = lines[0]?.replace('**', '')?.replace('###', '')?.replace("---","")?.replace(':', '')?.trim();
-          
-          if (title.startsWith("Section") || title.startsWith("Summary")) {
-            // Clean up titles that include 'Section X'
-            title = title.replace(/^Section \d+:?/, '').trim();
-        }
-
-          // Special handling for "Summary" in the title
-          if(title?.startsWith("Summary"))
-          {
-            lines.push(title?.replace("Summary",`${index}.`))
-            lines[0] = title?.replace("Summary** ",`${index}.`);
-            
-            title = "Summary";
-          } 
-          else{
-            title = title?.replace(`Section ${index + 1}`, '')?.trim();
-          }   
-            // Clean the remaining lines as points (handling numbered list items)
-            const points = lines.slice(1).map(line => line !== "" && line !== null && dataArray.push(line.replace(/^\d+\./, '')?.trim()));
-     
-            return { title, points };
-            // Return the formatted section data
-            // dataArray.push({ title, points });
-        });
-
-        return dataArray;
-    }
-
+      });
+      
+      return dataArray;
+    }  
+    
     // Default case (if the response doesn't match either format)
     else {
-        console.error("Unknown response format");
-        return [];
+      console.error("Unknown response format");
+      return [];
     }
-};
+  };
 
 
 

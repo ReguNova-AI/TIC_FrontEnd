@@ -28,13 +28,14 @@ import logo from "../../assets/images/logo1.jpeg";
 
 // Function to parse the API response into a structured format (skipping the title)
 const parseApiResponse = (response) => {
+  
   // If the response contains 'checklist' (new checklist format)
   if (response.checklist && Array.isArray(response.checklist)) {
     let checklist = response.checklist;
 
     // Process checklist into sections and annexes
     const sections = [];
-    const annexes = [];
+    const annexes = []; 
 
     checklist.forEach((item) => {
       // Split checklist items based on whether they contain a section or annex
