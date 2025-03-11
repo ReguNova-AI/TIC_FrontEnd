@@ -48,7 +48,7 @@ const parseApiResponse = (response) => {
           });
         } else {
           sections.push({
-            title: item.split('##')[1]?.trim().replace(/^Section\s*[:\-]?\s*/i, '').replace(/^\d+\s*/, ''), // Remove "Section" and leading digits
+            title: item.split('##')[1]?.trim().replace(/^Section\s*[:\-]?\s*/i, '').replace(/^\d+(\.\d+)?\s*/, ''), // Remove "Section" and leading digits
             points: []
           });
         }
@@ -61,7 +61,7 @@ const parseApiResponse = (response) => {
           });
         } else {
           sections.push({
-            title: item.split('**')[1]?.trim().replace(/^Section\s*[:\-]?\s*/i, '').replace(/^\d+\s*/, ''), // Remove "Section" and leading digits
+            title: item.split('**')[1]?.trim().replace(/^Section\s*[:\-]?\s*/i, '').replace(/^\d+(\.\d+)?\s*/, ''), // Remove "Section" and leading digits
             points: []
           });
         }
@@ -117,7 +117,7 @@ const parseApiResponse = (response) => {
         // Check if it's a section or annex
         if (sectionPattern.test(title)) {
           title = title.replace(sectionPattern, '').trim();
-          title = title.replace(/^Section\s*[:\-]?\s*/i, '').replace(/^\d+\s*/, ''); // Remove "Section" and leading digits
+          title = title.replace(/^Section\s*[:\-]?\s*/i, '').replace(/^\d+(\.\d+)?\s*/, ''); // Remove "Section" and leading digits
         } else if (annexPattern.test(title)) {
           title = title.replace(annexPattern, '').trim();
           title = title.replace(/^Annex\s*[:\-]?\s*/i, ''); // Remove "Annex"
@@ -125,7 +125,7 @@ const parseApiResponse = (response) => {
 
         return {
           title: title,
-          points: lines.slice(1).map(line => line.replace(/^\d+\./, '').trim())
+          points: lines.slice(1).map(line => line.replace(/^\d+(\.\d+)?\./, '').trim())
         };
       }
 
@@ -150,7 +150,7 @@ const parseApiResponse = (response) => {
         // Check if it's a section or annex
         if (sectionPattern.test(title)) {
           title = title.replace(sectionPattern, '').trim();
-          title = title.replace(/^Section\s*[:\-]?\s*/i, '').replace(/^\d+\s*/, ''); // Remove "Section" and leading digits
+          title = title.replace(/^Section\s*[:\-]?\s*/i, '').replace(/^\d+(\.\d+)?\s*/, ''); // Remove "Section" and leading digits
         } else if (annexPattern.test(title)) {
           title = title.replace(annexPattern, '').trim();
           title = title.replace(/^Annex\s*[:\-]?\s*/i, ''); // Remove "Annex"
@@ -158,7 +158,7 @@ const parseApiResponse = (response) => {
 
         return {
           title: title,
-          points: lines.slice(1).map(line => line.replace(/^\d+\./, '').trim())
+          points: lines.slice(1).map(line => line.replace(/^\d+(\.\d+)?\./, '').trim())
         };
       }
 
