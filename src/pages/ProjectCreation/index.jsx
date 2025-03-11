@@ -312,7 +312,14 @@ const MyForm = () => {
 
   const checklistResponseCheck = (value)=>{
    const result= standardData?.filter(data=> data.standard_name === value);
-    return result?.[0]?.checkListResponse;
+   const finalarray = [];
+
+   result?.[0]?.checkListResponse?.checklist?.map(item=>{
+    finalarray.push(item?.replace(/\\n/g,"")?.replace(/\n/g,"")?.replace(/\\"/g,"")?.replace(/\"/g,"")?.replace(/'/g,""));
+   })
+
+  //  console.log("result",result?.[0]?.checkListResponse)
+    return {checklist:finalarray};
   //  setFormData({...formData , checkListResponse:result?.[0]?.checkListResponse})
   }
 
