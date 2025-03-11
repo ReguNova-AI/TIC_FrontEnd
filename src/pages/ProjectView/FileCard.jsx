@@ -51,7 +51,7 @@ const parseApiResponse = (response) => {
           }
           else {
           sections.push({
-            title: item.split('##')[1]?.trim().replace(/^Section\s*[:\-]?\s*/i, '').replace(/^\d+(\.\d+)?\s*/, ''), // Remove "Section" and leading digits
+            title: item.split('##')[1]?.trim().replace(/^Section\s*[:\-]?\s*/i, '').replace(/^\d+(\.\d+)?\s*/, '').replace(/\**/g,""), // Remove "Section" and leading digits
             points: []
           });
         }
