@@ -46,7 +46,10 @@ const parseApiResponse = (response) => {
             title: item.split('##')[1]?.trim().replace(/^Annex\s*[:\-]?\s*/i, ''), // Remove "Annex"
             points: []
           });
-        } else {
+        } else if(item.toLowerCase().includes("title:"))
+          {
+          }
+          else {
           sections.push({
             title: item.split('##')[1]?.trim().replace(/^Section\s*[:\-]?\s*/i, '').replace(/^\d+(\.\d+)?\s*/, ''), // Remove "Section" and leading digits
             points: []
@@ -183,6 +186,8 @@ const FileCard = ({ fileName, onDownload, onView, apiResponse,data,data1,project
   // Modal open state and active tab state
   const [openModal, setOpenModal] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
+  const [activeTabflag, setActiveTabflag] = useState(false);
+
   const [sections, setSections] = useState([]);
   const [assessmentData,setAssessmentData]= useState([]);
   const [questions ,setQuestion] = useState([]);
@@ -879,6 +884,10 @@ const submittedbyTable = new DocxTable({
                 <Tabs value={activeTab} onChange={handleTabChange} aria-label="file-tabs" scrollButtons="auto" variant="scrollable" > 
                   {/* Dynamically generate tabs */}
                   {sections.map((section, index) => {
+                    if(section.title === "Title:" && !activeTabflag){
+                      setActiveTabflag(true);
+                      handleTabChange("",1)
+                    }
                     return(
                     section !== undefined && section !== "" && section !== null && <Tab key={index} label={section.title} style={{display:section.title === "Title:"? "none" :"block"}}/>
 )
