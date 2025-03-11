@@ -70,9 +70,9 @@ const parseApiResponse = (response) => {
         const lastAnnex = annexes[annexes.length - 1];
 
         if (lastSection) {
-            lastSection.points.push(item.replace(/^\d+\.\s*/, '').replace("---","").trim());
+            lastSection.points.push(item.replace(/^\d+\.\s*/, '').replace("---","").replace(/\\"/g,"").trim());
         } else if (lastAnnex) {
-          lastAnnex.points.push(item.replace(/^\d+\.\s*/, '').replace("---","").trim());
+          lastAnnex.points.push(item.replace(/^\d+\.\s*/, '').replace("---","").replace(/\\"/g,"").trim());
                   }
       }
     });

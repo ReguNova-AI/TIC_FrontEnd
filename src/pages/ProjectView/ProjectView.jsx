@@ -235,14 +235,14 @@ const ProjectView = () => {
           const lastAnnex = annexes[annexes.length - 1];
   
           if (lastSection) {
-            const raw = item.replace(/^\d+\.\s*/, '').replace("---","").trim();
+            const raw = item.replace(/^\d+\.\s*/, '').replace("---","").replace(/\\"/g,"").trim();
             if(raw !== "")
             {
               dataArray.push(raw);
             }
             lastSection.points.push(item.replace(/^\d+\.\s*/, '').trim());
           } else if (lastAnnex) {
-            const raw = item.replace(/^\d+\.\s*/, '').replace("---","").trim();
+            const raw = item.replace(/^\d+\.\s*/, '').replace("---","").replace(/\\"/g,"").trim();
             if(raw !== "")
               {
                 dataArray.push(raw);
