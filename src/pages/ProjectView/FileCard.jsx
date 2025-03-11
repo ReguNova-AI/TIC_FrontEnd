@@ -70,10 +70,10 @@ const parseApiResponse = (response) => {
         const lastAnnex = annexes[annexes.length - 1];
 
         if (lastSection) {
-          lastSection.points.push(item.replace(/^\d+\.\s*/, '').trim());
+            lastSection.points.push(item.replace(/^\d+\.\s*/, '').replace("---","").trim());
         } else if (lastAnnex) {
-          lastAnnex.points.push(item.replace(/^\d+\.\s*/, '').trim());
-        }
+          lastAnnex.points.push(item.replace(/^\d+\.\s*/, '').replace("---","").trim());
+                  }
       }
     });
 
@@ -351,7 +351,7 @@ const userEmail = userdetails?.[0]?.user_email;
     const content = data; // Assuming this is your existing content
   
     // Split content by new lines, preserving individual lines
-    const contentLines = content.split("\n");
+    const contentLines = content.checklist;
   
     // Create the "Prepared for" details section with label-value pairs
     
@@ -879,13 +879,14 @@ const submittedbyTable = new DocxTable({
                 <Tabs value={activeTab} onChange={handleTabChange} aria-label="file-tabs" scrollButtons="auto" variant="scrollable" > 
                   {/* Dynamically generate tabs */}
                   {sections.map((section, index) => (
+
                     section !== undefined && section !== "" && section !== null && <Tab key={index} label={section.title} />
                   ))}
                 </Tabs>
 
                 {/* Tab Content */}
                 <Box sx={{ padding: 2 }}>
-                  {sections.length > 0 && (
+                  {sections.length > 0&& (
                     <Typography>
                       <ul>
                         {sections[activeTab]?.points.map((point, index) => (
