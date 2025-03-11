@@ -326,9 +326,9 @@ const [modalContent, setModalContent] = useState("");
           visible={viewModalVisible}
           onCancel={() => setViewModalVisible(false)}
           footer={[
-            <Button key="copy" onClick={handleCopyText}>
-              Copy Text
-            </Button>,
+            // <Button key="copy" onClick={handleCopyText}>
+            //   Copy Text
+            // </Button>,
             <Button key="close" onClick={() => setViewModalVisible(false)}>
               Close
             </Button>,
@@ -341,7 +341,11 @@ const [modalContent, setModalContent] = useState("");
               wordWrap: 'break-word', // Allow long words to break and avoid overflow
             }}
           >
-            {modalContent}
+            {/* {modalContent} */}
+            {modalContent?.checklist?.map(data=>{
+              return (<div style={{margin:"10px 0px"}}>{data}</div>)
+            })
+            }
           </div>
         </Modal>
         

@@ -878,10 +878,11 @@ const submittedbyTable = new DocxTable({
               <>
                 <Tabs value={activeTab} onChange={handleTabChange} aria-label="file-tabs" scrollButtons="auto" variant="scrollable" > 
                   {/* Dynamically generate tabs */}
-                  {sections.map((section, index) => (
-
-                    section !== undefined && section !== "" && section !== null && <Tab key={index} label={section.title} />
-                  ))}
+                  {sections.map((section, index) => {
+                    return(
+                    section !== undefined && section !== "" && section !== null && <Tab key={index} label={section.title} style={{display:section.title === "Title:"? "none" :"block"}}/>
+)
+})}
                 </Tabs>
 
                 {/* Tab Content */}
