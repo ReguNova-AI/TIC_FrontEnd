@@ -409,7 +409,8 @@ const MyForm = () => {
           value={formData.regulatory}
           label={FORM_LABEL.REGULATORY}
           name="regulatory"
-          onChange={(e) => { setFormData({ ...formData, regulatory: e.target.value,checkListResponse:checklistResponseCheck(e.target.value) })}}
+          // onChange={(e) => { setFormData({ ...formData, regulatory: e.target.value,checkListResponse:checklistResponseCheck(e.target.value) })}}
+          onChange={(e) => { setFormData({ ...formData, regulatory: e.target.value })}}
           required
         >
          
