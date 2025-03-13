@@ -28,6 +28,7 @@ import {
   QuestionCircleOutlined,
   CloseCircleOutlined,
   CheckCircleOutlined,
+  EditOutlined,
 } from "@ant-design/icons";
 import { useLocation, useNavigate } from "react-router-dom";
 import { UserApiService } from "services/api/UserAPIService";
@@ -108,6 +109,8 @@ const UserListing = () => {
 
   const [loading, setLoading] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false); // To control modal visibility
+    const [modalType,setModalType] = useState("");
+    const [modalData,setModalData] = useState({});
   const [form] = Form.useForm(); // For form handling
 
   const [value, setValue] = React.useState(0);
@@ -145,7 +148,14 @@ const UserListing = () => {
     industry,
     org_name,
     profile_url,
-    isActive
+    isActive,
+    user_address,
+            sector_id,
+            org_id,
+            industry_id,
+            role_id,
+            role_name,
+            isActive
   ) => {
     return {
       index,
@@ -158,6 +168,13 @@ const UserListing = () => {
       org_name,
       profile_url,
       isActive,
+      user_address,
+            sector_id,
+            org_id,
+            industry_id,
+            role_id,
+            role_name,
+            isActive
     };
   };
 
@@ -184,7 +201,14 @@ const UserListing = () => {
             user.industry_name,
             user.org_name,
             user.user_profile,
-            user.is_active
+            user.is_active,
+            user.user_address,
+            user.sector_id,
+            user.org_id,
+            user.industry_id,
+            user.role_id,
+            user.role_name,
+            user.isActive
           );
         });
 
@@ -278,7 +302,7 @@ const UserListing = () => {
 
   // Handle project navigation
   const handleNavigateToUsers = (userId) => {
-    console.log("userclick", userId);
+
     // navigate(`/projectView/${projectNo}`, { state: { projectNo } });
   };
 
@@ -304,7 +328,9 @@ const UserListing = () => {
     currentPageforInactive * pageSizeinactive
   );
 
-  const handleModalOpen = () => {
+  const handleModalOpen = (type,data) => {
+    setModalData(data);
+    setModalType(type);
     setIsModalVisible(true);
   };
 
@@ -478,11 +504,17 @@ const UserListing = () => {
     {
       title: LISTING_PAGE.ACTION,
       key: "action",
-      render: (_, record) => {
-        console.log(userdetails?.[0]?.user_email,record.email)
+      render: (record) => {
+       
         if(userdetails?.[0]?.user_email !== record.email)
         {
-       return (<Popconfirm
+       return (
+       <>
+       <Tooltip title="Edit user details" >
+       <Button style={{border:"none",background:"transparent",boxShadow:"none",}}  onClick={()=>handleModalOpen("update",record)}>
+          <EditOutlined style={{fontSize:"20px"}}/>
+       </Button>
+       </Tooltip><Popconfirm
           title={
             record.isActive
               ? `Disable access for ${record.first_name}`
@@ -524,6 +556,7 @@ const UserListing = () => {
             />
           </Tooltip>
         </Popconfirm>
+        </>
         );}
       },
     },
@@ -554,7 +587,7 @@ const UserListing = () => {
           >
             <Button
               type="primary"
-              onClick={handleModalOpen}
+              onClick={()=>handleModalOpen('new',null)}
               style={{
                 background: "#2ba9bc",
                 display: "flex",
@@ -659,7 +692,7 @@ const UserListing = () => {
           footer={null}
           width={800}
         >
-          <UserCreation onHandleClose={(e) => handleClose()} />
+          <UserCreation onHandleClose={(e) => handleClose()} type={modalType} selecteddata={modalData}/>
         </Modal>
         <Snackbar
           style={{ top: "80px" }}

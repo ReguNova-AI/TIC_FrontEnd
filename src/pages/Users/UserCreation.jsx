@@ -34,7 +34,8 @@ const steps = [
   STEPPER_LABEL.ORG_DETAILS,
 ];
 
-export default function UserCreation({ onHandleClose }) {
+export default function UserCreation({ onHandleClose,type,selecteddata  }) {
+  console.log("selecteddata",selecteddata)
   const [activeStep, setActiveStep] = useState(0);
   const [skipped, setSkipped] = useState(new Set());
   const [orgData, setOrgData] = useState([]);
@@ -83,6 +84,8 @@ export default function UserCreation({ onHandleClose }) {
     emailError: "",
     phoneError: "",
   });
+
+  
 
   const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
   const phoneRegex = /^[0-9]{10}$/; // For a 10-digit phone number (adjust as needed)
@@ -181,6 +184,9 @@ export default function UserCreation({ onHandleClose }) {
     //   });
 
     let payload = formData;
+
+    if(type === "new")
+    {
     UserApiService.userCreate(payload)
       .then((response) => {
         setSnackData({
@@ -224,6 +230,53 @@ export default function UserCreation({ onHandleClose }) {
           type: "error",
         });
       });
+    }
+    else{
+      payload = {...formData, user_id: selecteddata.index,updated_by: userdetails?.[0]?.user_id,isActive:selecteddata?.isActive}
+      UserApiService.userUpdate(payload)
+      .then((response) => {
+        setSnackData({
+          show: true,
+          message: response?.message || API_SUCCESS_MESSAGE.USER_CREATED,
+          type: "success",
+        });
+        setValuetoNull()
+        setActiveStep(0);
+       setFormData({
+        ...formData,
+          role_id: "",
+          role_name:"",
+          user_first_name: "",
+          user_last_name: "",
+          user_profile: "", // URL for avatar upload
+          user_email: "",
+          user_phone_no: "",
+          user_address: {
+            street: "",
+            city: "",
+            state: "",
+            zip: "",
+          },
+          sector_id: "",
+          sector_name: "",
+          org_id: "",
+          org_name: "",
+          industry_id: "",
+          industry_name: "",
+          created_by: userdetails?.[0]?.user_id,
+        });
+        onHandleClose(true);
+      })
+      .catch((errResponse) => {
+        setSnackData({
+          show: true,
+          message:
+            errResponse?.error?.message ||
+            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          type: "error",
+        });
+      });
+    }
   };
 
   const validateStep = (key) => {
@@ -499,8 +552,71 @@ export default function UserCreation({ onHandleClose }) {
   }
 
   const handleOrgChange = (event) => {
-    const orgId = event.target.value;
-    setSelectedOrg(orgId);
+    let orgId = event?.target?.value;
+
+    if(selecteddata)
+    {
+      orgId = selecteddata?.org_id;
+      setSelectedOrg(selecteddata?.org_id);
+    }
+    else{
+      setSelectedOrg(orgId);
+    }
+    
+
+    
+
+    // Find the selected organization
+    const selectedOrganization = orgData.find((org) => org.org_id === orgId);
+
+    let industryIds = null;
+    if (selectedOrganization?.industries?.includes(",")) {
+      industryIds = selectedOrganization?.industries
+        .split(',')  // Split by comma
+        .map(industry => Number(industry.trim())); // Convert each string to a number
+    }
+    else{
+      industryIds = JSON.parse(selectedOrganization?.industries || "[]");
+    }
+    // console.log("industryIds",industryIds)
+
+    const sectors = Array.isArray(selectedOrganization?.sector_id)
+      ? selectedOrganization.sector_id
+      : [];
+
+      if (!Array.isArray(industryIds)) {
+        industryIds = [industryIds]; // Wrap in an array if it's not already an array
+    }
+
+    // Filter industries based on the organization's available industries
+    const availableIndustries = industryData.filter((industry) =>
+      industryIds.includes(industry.industry_id)
+    );
+
+
+// console.log("availableIndustries",availableIndustries)
+    setFilteredIndustries(availableIndustries);
+    setSelectedIndustry(""); // Reset selected industry
+
+    // Filter sectors based on the selected organization
+    const availableSectors = sectorData.filter(
+      (sector) => sector.sector_id === selectedOrganization?.sector_id
+    );
+
+    setFilteredSectors(availableSectors);
+
+    setFormData({
+      ...formData,
+      org_id: selectedOrganization?.org_id || "",
+      org_name: selectedOrganization?.org_name || "",
+    });
+  };
+
+  const handleOrgChangeForEdit = (selecteddata) => {
+     let orgId = selecteddata?.org_id;
+      setSelectedOrg(selecteddata?.org_id);
+   
+    
 
     
 
@@ -589,6 +705,40 @@ export default function UserCreation({ onHandleClose }) {
     });
   };
 
+
+  useEffect(()=>{
+  
+    setFormData({
+      ...formData,
+      role_id: selecteddata?.role_id || "",
+  role_name: selecteddata?.role_name || "",
+  user_first_name: selecteddata?.first_name || "",
+  user_last_name: selecteddata?.last_name ||"",
+  user_profile: selecteddata?.profile_url ||"", // URL for avatar upload
+  user_email: selecteddata?.email ||"",
+  user_phone_no: selecteddata?.phone_no ||"",
+  user_address: {
+    street: selecteddata?.user_address?.street ||"",
+    city: selecteddata?.user_address?.city ||"",
+    state: selecteddata?.user_address?.state ||"",
+    zip: selecteddata?.user_address?.zip ||"",
+  },
+  sector_id: 1,
+  sector_name: "Nil",
+  org_id: selecteddata?.org_id ||"",
+  org_name: selecteddata?.org_name ||"",
+  industry_id: selecteddata?.industry_id ||"",
+  industry_name: selecteddata?.industry ||"",
+  created_by: userdetails?.[0]?.user_id,
+    });
+
+    setSelectedIndustry([Number(selecteddata?.industry_id)]);
+    setSelectedOrg(selecteddata?.org_id);
+    // handleOrgChangeForEdit(selecteddata);
+
+  },[selecteddata]);
+
+
   return (
     <Box sx={{ width: "100%" }}>
       <Grid container spacing={2} style={{ padding: "10px 10px 10px 0px" }}>
@@ -662,6 +812,7 @@ export default function UserCreation({ onHandleClose }) {
                   error={!!errorValue.emailError}
                   helperText={errorValue.emailError}
                   required
+                  disabled={type !== "new" ? true : false}
                   inputProps={{
                     maxLength: 30, // Restrict input to 40 characters
                   }}
@@ -747,7 +898,7 @@ export default function UserCreation({ onHandleClose }) {
                     {FORM_LABEL.ORGANIZATION}
                     <span>*</span>
                   </InputLabel>
-                  <Select value={selectedOrg} onChange={handleOrgChange}>
+                  <Select value={selectedOrg} onChange={handleOrgChange} disabled={type !== "new" ? true : false}>
                     {/* <MenuItem value="">
                       <em>None</em>
                     </MenuItem> */}
@@ -791,7 +942,7 @@ export default function UserCreation({ onHandleClose }) {
                   <Select
                     value={selectedIndustry}
                     onChange={handleIndustryChange}
-                    disabled={filteredIndustries.length === 0}
+                    disabled={filteredIndustries.length === 0 || type !== "new"}
                   >
                     {/* <MenuItem value="">
                       <em>None</em>
