@@ -155,7 +155,6 @@ const UserListing = () => {
             industry_id,
             role_id,
             role_name,
-            isActive
   ) => {
     return {
       index,
@@ -174,7 +173,6 @@ const UserListing = () => {
             industry_id,
             role_id,
             role_name,
-            isActive
     };
   };
 
