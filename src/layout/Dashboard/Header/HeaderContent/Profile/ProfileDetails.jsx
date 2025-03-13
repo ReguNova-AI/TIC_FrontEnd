@@ -100,11 +100,13 @@ const ProfileDetails = () => {
                 marginBottom: "20px",
               }}
             >
-              {profileData?.user_profile ? (
+              <AvatarUpload onUpload={setUploadedFileData} uploadedImage={profileData?.user_profile || ""}/>
+       
+              {/* {profileData?.user_profile ? (
                 <Avatar size={100} src={profileData?.user_profile} />
               ) : (
-                <AvatarUpload onUpload={setUploadedFileData} />
-              )}
+                <AvatarUpload onUpload={setUploadedFileData} uploadedImage={profileData?.user_profile}/>
+              )} */}
             </div>
 
             {/* Personal Details Section */}

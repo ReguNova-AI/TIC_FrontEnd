@@ -24,6 +24,8 @@ import {
   FileFilled,
   CloseCircleOutlined,
   CheckCircleOutlined,
+  EditFilled,
+  EditOutlined,
 } from "@ant-design/icons";
 import { useLocation, useNavigate } from "react-router-dom";
 import Snackbar from "@mui/material/Snackbar";
@@ -106,6 +108,8 @@ const OrganizationListing = () => {
   const [value, setValue] = React.useState(0);
   const [loading, setLoading] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [modalType,setModalType] = useState("");
+  const [modalData,setModalData] = useState({});
 
   const [snackData, setSnackData] = useState({
     show: false,
@@ -131,7 +135,12 @@ const OrganizationListing = () => {
     org_url,
     org_address,
     sector,
-    industry
+    industry,
+    industryId,
+    sector_id,
+    contact_json,
+    address
+
   ) => {
     return {
       index,
@@ -142,6 +151,10 @@ const OrganizationListing = () => {
       org_address,
       sector,
       industry,
+      industryId,
+      sector_id,
+      contact_json,
+      address
     };
   };
 
@@ -175,7 +188,11 @@ const OrganizationListing = () => {
             org.org_url,
             address,
             org.sector_name,
-            org.industry_names
+            org.industry_names,
+            org.industries,
+            org.sector_id,
+            org?.contact_json,
+            org.org_address
           );
         });
 
@@ -362,7 +379,9 @@ const OrganizationListing = () => {
     inActiveCurrentPage * inactivePageSize
   );
 
-  const handleModalOpen = () => {
+  const handleModalOpen = (type,data) => {
+    setModalData(data);
+    setModalType(type);
     setIsModalVisible(true);
   };
 
@@ -539,8 +558,16 @@ const OrganizationListing = () => {
     {
       title: LISTING_PAGE.ACTION,
       key: "action",
+      width:"120px",
       render: (_, record) => {
-       return (<Popconfirm
+       return (
+       <>
+       <Tooltip title="Edit organization details" >
+       <Button style={{border:"none",background:"transparent",boxShadow:"none",}}  onClick={()=>handleModalOpen("update",record)}>
+          <EditOutlined style={{fontSize:"20px"}}/>
+       </Button>
+       </Tooltip>
+       <Popconfirm
           title={
             type === "Active"
               ? `Disable access for ${record?.org_name}`
@@ -582,6 +609,7 @@ const OrganizationListing = () => {
             />
           </Tooltip>
         </Popconfirm>
+        </>
         );
       },
     },
@@ -613,7 +641,7 @@ const OrganizationListing = () => {
           >
             <Button
               type="primary"
-              onClick={handleModalOpen}
+              onClick={()=>handleModalOpen("new",null)}
               style={{
                 background: "#2ba9bc",
                 display: "flex",
@@ -705,7 +733,7 @@ const OrganizationListing = () => {
           footer={null}
           width={800}
         >
-          <OrgCreation onHandleClose={(e) => handleClose()} />
+          <OrgCreation onHandleClose={(e) => handleClose()} type={modalType} selecteddata={modalData}/>
         </Modal>
         <Snackbar
           style={{ top: "80px" }}

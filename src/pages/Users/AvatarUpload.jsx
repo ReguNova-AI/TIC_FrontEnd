@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./style.scss";
 import userPhoto from "../../assets/images/users/userPhoto.jpg";
 import { API_ERROR_MESSAGE, FORM_LABEL } from "shared/constants";
@@ -103,9 +103,9 @@ const CameraSvg = () => (
   </svg>
 );
 
-const Custom = ({ onUpload }) => {
+const Custom = ({ onUpload,uploadedImage }) => {
   const [imageBase64, setImageBase64] = React.useState(null);
-
+  
   // Callback function to handle the base64 image from the child
   const handleImageChange = (base64) => {
     setImageBase64(base64);
@@ -122,7 +122,7 @@ const Custom = ({ onUpload }) => {
           type="text/css"
         />
         <Avatar
-          url={userPhoto} // Default image URL
+          url={uploadedImage !== undefined && uploadedImage!== null && uploadedImage!== "null" && uploadedImage  !== "" ? uploadedImage : userPhoto} // Default image URL
           onImageChange={handleImageChange} // Pass the callback to the Avatar component
         />
         {/* {imageBase64 && (

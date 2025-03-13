@@ -37,7 +37,7 @@ import { OrganisationApiService } from "services/api/OrganizationAPIService";
 // Steps for the stepper
 const steps = [STEPPER_LABEL.ORG_DETAILS, STEPPER_LABEL.ORG_CONTACT];
 
-export default function OrgCreation({ onHandleClose }) {
+export default function OrgCreation({ onHandleClose,type,selecteddata }) {
   const [activeStep, setActiveStep] = useState(0);
   const [skipped, setSkipped] = useState(new Set());
   const [industryData, setIndustryData] = useState([]);
@@ -159,7 +159,9 @@ export default function OrgCreation({ onHandleClose }) {
     //   });
 
     let payload = formData;
-    OrganisationApiService.organisationCreate(payload)
+    if(type === "new")
+    {
+      OrganisationApiService.organisationCreate(payload)
       .then((response) => {
         setSnackData({
           show: true,
@@ -209,7 +211,102 @@ export default function OrgCreation({ onHandleClose }) {
           type: "error",
         });
       });
+
+    }
+    else
+    {
+      payload ={...formData,org_id:selecteddata?.index}
+      OrganisationApiService.organisationUpdate(payload)
+      .then((response) => {
+        setSnackData({
+          show: true,
+          message: response?.message || API_SUCCESS_MESSAGE.USER_CREATED,
+          type: "success",
+        });
+        setFormData({
+          ...formData,
+          sector_id: 1,
+          sector_name: "Nil",
+          industries: "",
+          industry_names:"",
+          org_name: "",
+          org_email: "test@test.test",
+          org_logo: "",
+          org_url: "",
+          org_address: {
+            street: "",
+            city: "",
+            country: "",
+            zip: "",
+          },
+          contact_json: {
+            primary_contact: {
+              first_name: "",
+              last_name: "",
+              email: "",
+              phone: "",
+            },
+            secondary_contact: {
+              first_name: "",
+              last_name: "",
+              email: "",
+              phone: "",
+            },
+          },
+        });
+        setSelectedIndustry([]);
+        setActiveStep(0);
+        onHandleClose(true);
+      })
+      .catch((errResponse) => {
+        setSnackData({
+          show: true,
+          message:
+            errResponse?.error?.message || errResponse.response.data.message === "Primary contact email is already in use" ? "Email Id is already in use, please try adding different email id" : API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          type: "error",
+        });
+      });
+    }
+    
   };
+
+  useEffect(()=>{
+
+    setFormData({
+      ...formData,
+      sector_id: 1,
+          sector_name: selecteddata?.sector || "Nil",
+          industries: selecteddata?.industryId || "",
+          industry_names:selecteddata?.industry || "",
+          org_name: selecteddata?.org_name || "",
+          org_email: selecteddata?.org_email || "test@test.test",
+          org_logo: selecteddata?.org_logo || "",
+          org_url: selecteddata?.org_url || "",
+          org_address: {
+            street: selecteddata?.address?.street || "",
+            city: selecteddata?.address?.city || "",
+            country: selecteddata?.address?.country || "",
+            zip: selecteddata?.address?.zip || "",
+          },
+          contact_json: {
+            primary_contact: {
+              first_name: selecteddata?.contact_json?.primary_contact?.first_name || "",
+              last_name: selecteddata?.contact_json?.primary_contact?.last_name || "",
+              email: selecteddata?.contact_json?.primary_contact?.email || "",
+              phone: selecteddata?.contact_json?.primary_contact?.phone || "",
+            },
+            secondary_contact: {
+              first_name: selecteddata?.contact_json?.secondary_contact?.first_name || "",
+              last_name: selecteddata?.contact_json?.secondary_contact?.last_name || "",
+              email: selecteddata?.contact_json?.secondary_contact?.email || "",
+              phone: selecteddata?.contact_json?.secondary_contact?.phone || "",
+            },
+          },
+    });
+
+    setSelectedIndustry([Number(selecteddata?.industryId)]);
+
+  },[selecteddata]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -260,7 +357,6 @@ export default function OrgCreation({ onHandleClose }) {
           org_email:value,
         });
       }
-      console.log("formattedField",formattedField)
 
       if(formattedField === "phone")
       {
@@ -492,7 +588,7 @@ export default function OrgCreation({ onHandleClose }) {
           {activeStep === 0 ? (
             <Grid container spacing={2}>
               <Grid item xs={12} sm={12} style={{ padding: "18px" }}>
-                <AvatarUpload onUpload={setUpoadedFileData} />
+                <AvatarUpload onUpload={setUpoadedFileData} uploadedImage={formData.org_logo}/>
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField
@@ -571,7 +667,7 @@ export default function OrgCreation({ onHandleClose }) {
                         .map((industry) => industry.industry_name)
                         .join(", ");
                     }}
-                    disabled={filteredIndustries.length === 0}
+                    disabled={filteredIndustries.length === 0 || type !== "new"}
                   >
                     {filteredIndustries.map((industry) => (
                       <MenuItem
@@ -696,6 +792,7 @@ export default function OrgCreation({ onHandleClose }) {
                         error={!!errorValue.emailError}
                         helperText={errorValue.emailError}
                         onChange={handleInputChange}
+                        disabled={type !== "new" ?true : false}
                         required
                         inputProps={{
                           maxLength: 30, // Restrict input to 40 characters
