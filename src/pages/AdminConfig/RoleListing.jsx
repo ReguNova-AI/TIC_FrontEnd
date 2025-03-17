@@ -128,7 +128,7 @@ const RoleListing = () => {
       render: (_, record) => {
         return (
         <>
-        <Tooltip title="Edit industry details" >
+        <Tooltip title="Edit role details" >
         <Button style={{border:"none",background:"transparent",boxShadow:"none",}}  onClick={()=>handleModalOpen("update",record)}>
            <EditOutlined style={{fontSize:"20px"}}/>
         </Button>
