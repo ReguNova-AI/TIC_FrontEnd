@@ -214,15 +214,22 @@ const UserListing = () => {
           (user, index) => {
             return createData(
               user.user_id,
-              user.user_first_name,
-              user.user_last_name,
-              user.user_email,
-              user.user_phone_no,
-              user.sector_name,
-              user.industry_name,
-              user.org_name,
-              user.user_profile,
-              user.is_active
+            user.user_first_name,
+            user.user_last_name,
+            user.user_email,
+            user.user_phone_no,
+            user.sector_name,
+            user.industry_name,
+            user.org_name,
+            user.user_profile,
+            user.is_active,
+            user.user_address,
+            user.sector_id,
+            user.org_id,
+            user.industry_id,
+            user.role_id,
+            user.role_name,
+            user.isActive
             );
           }
         );

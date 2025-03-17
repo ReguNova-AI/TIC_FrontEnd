@@ -35,7 +35,7 @@ const steps = [
 ];
 
 export default function UserCreation({ onHandleClose,type,selecteddata  }) {
-  console.log("selecteddata",selecteddata)
+  // console.log("selecteddata",selecteddata)
   const [activeStep, setActiveStep] = useState(0);
   const [skipped, setSkipped] = useState(new Set());
   const [orgData, setOrgData] = useState([]);
@@ -612,14 +612,10 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
     });
   };
 
-  const handleOrgChangeForEdit = (selecteddata) => {
-     let orgId = selecteddata?.org_id;
-      setSelectedOrg(selecteddata?.org_id);
+  const handleOrgChangeForEdit = (data) => {
+     let orgId = data?.org_id;
+      setSelectedOrg(data?.org_id);
    
-    
-
-    
-
     // Find the selected organization
     const selectedOrganization = orgData.find((org) => org.org_id === orgId);
 
@@ -632,17 +628,12 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
     else{
       industryIds = JSON.parse(selectedOrganization?.industries || "[]");
     }
-    // console.log("industryIds",industryIds)
 
-    const sectors = Array.isArray(selectedOrganization?.sector_id)
-      ? selectedOrganization.sector_id
-      : [];
 
       if (!Array.isArray(industryIds)) {
         industryIds = [industryIds]; // Wrap in an array if it's not already an array
     }
 
-    // Filter industries based on the organization's available industries
     const availableIndustries = industryData.filter((industry) =>
       industryIds.includes(industry.industry_id)
     );
@@ -650,20 +641,8 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
 
 // console.log("availableIndustries",availableIndustries)
     setFilteredIndustries(availableIndustries);
-    setSelectedIndustry(""); // Reset selected industry
-
-    // Filter sectors based on the selected organization
-    const availableSectors = sectorData.filter(
-      (sector) => sector.sector_id === selectedOrganization?.sector_id
-    );
-
-    setFilteredSectors(availableSectors);
-
-    setFormData({
-      ...formData,
-      org_id: selectedOrganization?.org_id || "",
-      org_name: selectedOrganization?.org_name || "",
-    });
+    setSelectedIndustry(industryIds); // Reset selected industry
+   
   };
 
   const handleSectorChange = (event) => {
@@ -679,7 +658,7 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
   };
 
   const handleIndustryChange = (event) => {
-    const industryId = event.target.value;
+    const industryId = event.target.value;    
     setSelectedIndustry(industryId);
 
     const selectedIndustry = filteredIndustries.find(
@@ -732,9 +711,9 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
   created_by: userdetails?.[0]?.user_id,
     });
 
-    setSelectedIndustry([Number(selecteddata?.industry_id)]);
     setSelectedOrg(selecteddata?.org_id);
-    // handleOrgChangeForEdit(selecteddata);
+    setSelectedIndustry([Number(selecteddata?.industry_id)]);
+    handleOrgChangeForEdit(selecteddata);
 
   },[selecteddata]);
 
