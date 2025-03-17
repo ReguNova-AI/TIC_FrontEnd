@@ -749,7 +749,7 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
           {activeStep === 0 ? (
             <Grid container spacing={2}>
               <Grid item xs={12} sm={12} style={{ padding: "18px" }}>
-                <AvatarUpload onUpload={setUpoadedFileData} />
+                <AvatarUpload onUpload={setUpoadedFileData} uploadedImage={formData.user_profile}/>
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField
