@@ -37,8 +37,10 @@ const ProfileDetails = () => {
 
   useEffect(() => {
     if (uploadedFileData) {
+      console.log("profileData",profileData)
       let payload = {
         ...profileData,
+        user_id: userId,
         user_profile: uploadedFileData, // URL for avatar upload
       };
       updateProfile(payload);
