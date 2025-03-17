@@ -12,12 +12,20 @@ const _industryCreate = (payload) => {
   return BaseApiService.post(`/api/v1/industries/create`, null, payload);
 };
 
+const _industryUpdate = (payload) => {
+  return BaseApiService.put(`/api/v1/industries/update`, null, payload);
+};
+
 const _industryListing = (userid) => {
   return BaseApiService.get(`/api/v1/industries`, null, null);
 };
 
 const _roleCreate = (payload) => {
   return BaseApiService.post(`/api/v1/roles/create`, null, payload);
+};
+
+const _roleUpdate = (payload,id) => {
+  return BaseApiService.put(`/api/v1/roles/${id}/update`, null, payload);
 };
 
 const _roleListing = (userid) => {
@@ -65,9 +73,11 @@ export const AdminConfigAPIService = {
   sectorListing: _sectorListing,
   sectorDelete: _sectorDelete,
   industryCreate: _industryCreate,
+  industryUpdate:_industryUpdate,
   industryListing: _industryListing,
   industryDelete:_industryDelete,
   roleCreate:_roleCreate,
+  roleUpdate:_roleUpdate,
   roleListing: _roleListing,
   roleDelete:_roleDelete,
   permissionListing:_permissionListing,

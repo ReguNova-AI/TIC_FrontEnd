@@ -151,7 +151,7 @@ const AdminConfig = () => {
         visible={visible}
         onCancel={handleModalClose}
         footer={null}
-        width={(modalContent.action === "Create" && modalContent?.tab?.title === "Sectors" || modalContent.action === "Create" && modalContent?.tab?.title === "Industries") ? 400 :  modalContent.action === "Create" && modalContent?.tab?.title === "Roles" ||  modalContent?.tab?.title === "Regulatory Standards"  ? 800 :600}
+        width={(modalContent.action === "Create" && modalContent?.tab?.title === "Sectors" || modalContent.action === "Create" && modalContent?.tab?.title === "Industries") ? 400 :  modalContent?.tab?.title === "Roles" ||  modalContent?.tab?.title === "Regulatory Standards"  ? 800 :600}
       > 
           {modalContent.action === "List" && modalContent?.tab?.title === "Sectors" ? <SectorListing/>
           : modalContent.action === "List" && modalContent?.tab?.title === "Industries" ? <IndustriesListing/>

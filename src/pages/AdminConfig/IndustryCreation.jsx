@@ -23,7 +23,7 @@ import {
 import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
 import { UserApiService } from "services/api/UserAPIService";
 
-const IndustryCreation = ({onHandleClose}) => {
+const IndustryCreation = ({onHandleClose,type,selecteddata}) => {
   const navigate = useNavigate();
   const [sectorData, setSectorData] = useState([]);
   const [snackData, setSnackData] = useState({
@@ -39,9 +39,7 @@ const IndustryCreation = ({onHandleClose}) => {
     sector_name: "Nil",
   });
 
-  useEffect(() => {
-    // fetchSectorDetails();
-  }, []);
+
 
   const fetchSectorDetails = () => {
     AdminConfigAPIService.sectorListing()
@@ -84,6 +82,8 @@ const IndustryCreation = ({onHandleClose}) => {
       sector_name: formData.sector_name,
     };
 
+    if(type !== "edit"){
+
     AdminConfigAPIService.industryCreate(payload)
       .then((response) => {
         // On success, you can add any additional logic here
@@ -111,6 +111,44 @@ const IndustryCreation = ({onHandleClose}) => {
           type: "error",
         });
       });
+    }
+    else
+    {
+      const payload = {
+        industry_id: selecteddata.industry_id,
+        industry_name: formData.industry_name,
+        industry_description: "test description",
+        sector_id: formData.sector_id,
+        sector_name: formData.sector_name,
+      };
+      AdminConfigAPIService.industryUpdate(payload)
+      .then((response) => {
+        // On success, you can add any additional logic here
+        setSnackData({
+          show: true,
+          message: response?.data?.message,
+          type: "success",
+        });
+        setFormData({
+          ...formData,
+          industry_name: "",
+          sector_name: "",
+          sector_id: null,
+        });
+
+        onHandleClose(response?.data?.message);
+
+      })
+      .catch((errResponse) => {
+        setSnackData({
+          show: true,
+          message:
+            errResponse?.error?.message ||
+            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          type: "error",
+        });
+      });
+    }
   };
 
   const handleSectorChange = (event) => {
@@ -124,6 +162,17 @@ const IndustryCreation = ({onHandleClose}) => {
           ?.sector_id || "",
     });
   };
+
+  useEffect(() => {
+    setFormData({
+      ...formData,
+      industry_id: selecteddata?.industry_id,
+      industry_name: selecteddata?.industry_name,
+      industry_description: selecteddata?.industry_description,
+      sector_id: 1,
+      sector_name: "Nil",
+    });
+  }, [selecteddata]);
 
   return (
     <>

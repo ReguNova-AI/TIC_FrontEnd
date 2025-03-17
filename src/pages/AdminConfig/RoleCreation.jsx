@@ -13,7 +13,7 @@ import {
 import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
 import { Spin } from "antd";
 
-const RoleCreation = ({ onHandleClose }) => {
+const RoleCreation = ({ onHandleClose,type,selecteddata }) => {
   const navigate = useNavigate();
   const [permissionData, setPermissionData] = useState([]);
   const [selectedPermissions, setSelectedPermissions] = useState([]);
@@ -100,6 +100,8 @@ const RoleCreation = ({ onHandleClose }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if(type !== "edit"){
+
     const payload = {
       role_name: formData.role_name,
       role_desc: formData.role_desc,
@@ -124,7 +126,45 @@ const RoleCreation = ({ onHandleClose }) => {
           type: "error",
         });
       });
+    }
+    else{
+    const payload = {
+      role_name: formData.role_name,
+      role_desc: formData.role_desc,
+      permissions: selectedPermissions, // Send selected permissions as an array of IDs
+    };
+
+    const id= selecteddata?.role_id;
+    AdminConfigAPIService.roleUpdate(payload,id)
+      .then((response) => {
+        setSnackData({
+          show: true,
+          message: response?.data?.message,
+          type: "success",
+        });
+        onHandleClose(response?.data?.message);
+      })
+      .catch((errResponse) => {
+        setSnackData({
+          show: true,
+          message:
+            errResponse?.error?.message ||
+            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          type: "error",
+        });
+      });
+    }
   };
+
+
+    useEffect(() => {
+      setFormData({
+        ...formData,
+        role_name:selecteddata?.role_name,
+    role_desc: selecteddata?.role_desc,
+    permissions: selecteddata?.permissions,
+      });
+    }, [selecteddata]);
 
   return (
     <>

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Space, Table, ConfigProvider, Empty, Button, Spin, Tooltip,Popconfirm } from "antd";
+import { Space, Table, ConfigProvider, Empty, Button, Spin, Tooltip,Popconfirm, Modal } from "antd";
 import FormControl from "@mui/material/FormControl";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import InputLabel from "@mui/material/InputLabel";
 import InputAdornment from "@mui/material/InputAdornment";
-import { CloseCircleOutlined,DeleteFilled, SearchOutlined } from "@ant-design/icons";
+import { CloseCircleOutlined,DeleteFilled, EditOutlined, SearchOutlined } from "@ant-design/icons";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
@@ -16,6 +16,7 @@ import {
   FORM_LABEL,
 } from "shared/constants";
 import trashIcon from "../../assets/images/icons/trash4.svg";
+import IndustryCreation from "./IndustryCreation";
 
 
 const IndustriesListing = () => {
@@ -25,6 +26,9 @@ const IndustriesListing = () => {
   const [currentPage, setCurrentPage] = useState(1); // Track the current page
   const [pageSize, setPageSize] = useState(10); // Number of rows per page
   const [loading, setLoading] = useState(true);
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [modalType,setModalType] = useState("");
+    const [modalData,setModalData] = useState({});
   const [snackData, setSnackData] = useState({
     show: false,
     message: "",
@@ -99,6 +103,25 @@ const IndustriesListing = () => {
     currentPage * pageSize
   );
 
+  const handleModalOpen = (type,data) => {
+    console.log("data",data)
+    setModalData(data);
+    setModalType(type);
+    setIsModalVisible(true);
+  };
+
+
+  const handleModalClose = () => {
+    setIsModalVisible(false);
+    fetchData();
+  };
+
+  const handleClose = () => {
+    setIsModalVisible(false);
+    fetchData();
+  };
+
+
   // Table columns
   const columns = [
     {
@@ -120,11 +143,18 @@ const IndustriesListing = () => {
     //       record.sector_name.toLowerCase().includes(value.toLowerCase()),
     //   },
   
-    
+     
       {
         title: LISTING_PAGE.ACTION,
         key: "action",
-        render: (_, record) => (
+        render: (_, record) => {
+          return (
+          <>
+          <Tooltip title="Edit industry details" >
+          <Button style={{border:"none",background:"transparent",boxShadow:"none",}}  onClick={()=>handleModalOpen("update",record)}>
+             <EditOutlined style={{fontSize:"20px"}}/>
+          </Button>
+          </Tooltip>
           <Popconfirm
             title={`Delete  ${record.industry_name} Industry`}
             description="Are you sure you want to delete?"
@@ -144,9 +174,10 @@ const IndustriesListing = () => {
             <img src={trashIcon} width="22px"/>
           </Tooltip>
           </Popconfirm>
-  
+            </>
           
-        ),
+        )
+      }
       },
   ];
 
@@ -241,6 +272,17 @@ const IndustriesListing = () => {
             }}
           />
         </Space>
+
+        <Modal
+          title={"Industries"}
+          visible={isModalVisible}
+          onCancel={handleModalClose}
+          footer={null}
+          width={800}
+        >
+          <IndustryCreation onHandleClose={(e) => handleClose()} type={"edit"} selecteddata={modalData}/>
+        </Modal>
+
 
         <Snackbar
         style={{top:"80px"}}
