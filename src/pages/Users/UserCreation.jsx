@@ -232,7 +232,7 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
       });
     }
     else{
-      payload = {...formData, user_id: selecteddata.index,updated_by: userdetails?.[0]?.user_id,isActive:selecteddata?.isActive}
+      let payload = {...formData, user_id: selecteddata.index,updated_by: userdetails?.[0]?.user_id,isActive:selecteddata?.isActive}
       UserApiService.userUpdate(payload)
       .then((response) => {
         setSnackData({
@@ -686,6 +686,7 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
 
 
   useEffect(()=>{
+    console.log("selecteddata",selecteddata)
   
     setFormData({
       ...formData,

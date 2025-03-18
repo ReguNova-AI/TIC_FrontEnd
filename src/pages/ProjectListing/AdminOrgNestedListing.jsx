@@ -177,11 +177,11 @@ const filterData = (data) => {
   return data
     .filter((org) => {
       // Check if organization or industry names match the search text
-      const orgMatches = org.org_name.toLowerCase().includes(searchText.toLowerCase());
+      const orgMatches = org.org_name?.toLowerCase().includes(searchText?.toLowerCase());
       const industryMatches = org.industries.some(industry =>
-        industry.industry_name.toLowerCase().includes(searchText.toLowerCase()) ||
+        industry.industry_name?.toLowerCase().includes(searchText?.toLowerCase()) ||
         (industry.projects && industry.projects.some(project =>
-          project.project_name.toLowerCase().includes(searchText.toLowerCase())
+          project.project_name?.toLowerCase().includes(searchText?.toLowerCase())
         ))
       );
 
