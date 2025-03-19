@@ -1,0 +1,9 @@
+/* styles.css or your global stylesheet */
+.ellipsis-text {
+    display: block;
+    max-width: 170px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
