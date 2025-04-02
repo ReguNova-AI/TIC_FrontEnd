@@ -155,6 +155,7 @@ const UserListing = () => {
             industry_id,
             role_id,
             role_name,
+            industry_names,
   ) => {
     return {
       index,
@@ -173,6 +174,7 @@ const UserListing = () => {
             industry_id,
             role_id,
             role_name,
+            industry_names,
     };
   };
 
@@ -206,7 +208,7 @@ const UserListing = () => {
             user.industry_id,
             user.role_id,
             user.role_name,
-            user.isActive
+            user.industry_names,
           );
         });
 
@@ -229,7 +231,7 @@ const UserListing = () => {
             user.industry_id,
             user.role_id,
             user.role_name,
-            user.isActive
+            user.industry_names,
             );
           }
         );
@@ -502,8 +504,14 @@ const UserListing = () => {
     // },
     {
       title: LISTING_PAGE.INDUSTRY,
-      dataIndex: "industry",
-      key: "industry",
+      
+      key: "industry_names",
+      render: (record) => {
+        let industry_namearray = Array.isArray(record.industry_names) ? record.industry_names : [record.industry_names];
+       return industry_namearray?.map((name,index)=>{
+          return  index === 0 ? name : ", "+name;
+        })
+      }
     },
 
     {
