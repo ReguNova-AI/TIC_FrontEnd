@@ -12,6 +12,7 @@ import {
   Select,
   MenuItem,
   InputLabel,
+  Checkbox,
 } from "@mui/material";
 import AvatarUpload from "./AvatarUpload";
 import {
@@ -44,11 +45,11 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
   const [sectorData, setSectorData] = useState([]);
   const [selectedOrg, setSelectedOrg] = useState("");
   const [filteredIndustries, setFilteredIndustries] = useState([]);
-  const [selectedIndustry, setSelectedIndustry] = useState("");
+  const [selectedIndustry, setSelectedIndustry] = useState([]);
   const [filteredSectors, setFilteredSectors] = useState([]); // Holds sectors filtered by organization
   const [uploadedFileData, setUpoadedFileData] = useState("");
   const [mandatoryError, setMandatoryError] = useState("");
-
+console.log("selecteddata",selecteddata)
   const [snackData, setSnackData] = useState({
     show: false,
     message: "",
@@ -75,9 +76,11 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
     sector_name: "Nil",
     org_id: "",
     org_name: "",
-    industry_id: "",
-    industry_name: "",
+    industry_id: [],
+    industry_name: [],
     created_by: userdetails?.[0]?.user_id,
+    industries: [],
+    industry_names: [],
   });
 
   const [errorValue, setErrorValue] = React.useState({
@@ -303,6 +306,7 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
 
     for (const field of requiredFields) {
       if (!formData[field] || formData[field].length === 0) {
+        console.log(field)
         setMandatoryError("Please fill all the required fields");
         return false;
       }
@@ -384,7 +388,7 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
   useEffect(() => {
     fetchOrgDetails();
     fetchSectorDetails();
-    fetchIndustryDetails();
+    // fetchIndustryDetails();
     fetchRole();
   }, []);
 
@@ -596,7 +600,7 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
 
 // console.log("availableIndustries",availableIndustries)
     setFilteredIndustries(availableIndustries);
-    setSelectedIndustry(""); // Reset selected industry
+    setSelectedIndustry([]);
 
     // Filter sectors based on the selected organization
     const availableSectors = sectorData.filter(
@@ -658,17 +662,27 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
   };
 
   const handleIndustryChange = (event) => {
-    const industryId = event.target.value;    
-    setSelectedIndustry(industryId);
+    const industryId = event.target.value; 
+    const { value } = event.target;    
+    setSelectedIndustry(value);
 
-    const selectedIndustry = filteredIndustries.find(
-      (industry) => industry.industry_id === industryId
+    // const selectedIndustry = filteredIndustries.find(
+    //   (industry) => industry.industry_id === industryId
+    // );
+
+    const selectedIndustries = filteredIndustries.filter((industry) =>
+      industryId.includes(industry.industry_id)
     );
+  
+    const selectedIndustryNames = selectedIndustries.map(industry => industry.industry_name); // Get industry names for selected ids
+  
 
     setFormData({
       ...formData,
-      industry_id: selectedIndustry?.industry_id || "",
-      industry_name: selectedIndustry?.industry_name || "",
+      industries: value || [],
+      industry_names: selectedIndustryNames || [],
+      industry_id: value[0] || "",
+      industry_name: selectedIndustryNames[0] || "",
     });
   };
 
@@ -686,8 +700,6 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
 
 
   useEffect(()=>{
-    console.log("selecteddata",selecteddata)
-  
     setFormData({
       ...formData,
       role_id: selecteddata?.role_id || "",
@@ -710,6 +722,8 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
   industry_id: selecteddata?.industry_id ||"",
   industry_name: selecteddata?.industry ||"",
   created_by: userdetails?.[0]?.user_id,
+  industries: selecteddata?.industries || [],
+  industry_names: selecteddata?.industry_names || [],
     });
 
     setSelectedOrg(selecteddata?.org_id);
@@ -920,22 +934,41 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
                     <span>*</span>
                   </InputLabel>
                   <Select
-                    value={selectedIndustry}
-                    onChange={handleIndustryChange}
-                    disabled={filteredIndustries.length === 0 || type !== "new"}
-                  >
-                    {/* <MenuItem value="">
-                      <em>None</em>
-                    </MenuItem> */}
-                    {filteredIndustries.map((industry) => (
-                      <MenuItem
-                        key={industry.industry_id}
-                        value={industry.industry_id}
-                      >
-                        {industry.industry_name}
-                      </MenuItem>
-                    ))}
-                  </Select>
+                                      // value={selectedIndustry}
+                                      value={selecteddata.industry_names.join(", ")}
+                                      onChange={handleIndustryChange}
+                                      multiple
+                                      // renderValue={(selected) => {
+                                      //   console.log("selected data",selected)
+                                      //   const selectedIndustries = filteredIndustries.filter(
+                                      //     (industry) => selected.includes(industry.industry_id)
+                                      //   );
+                                      //   return selectedIndustries
+                                      //     .map((industry) => industry.industry_name)
+                                      //     .join(", ");
+                                      // }}
+                                      renderValue={(selected) => {
+                                      // Ensure selecteddata and industry_names exist
+                                      if (!selecteddata?.industry_names) return "";
+
+                                       return selecteddata.industry_names.join(", ");
+                                      }}                                        
+                                      disabled={filteredIndustries.length === 0 || type !== "new"}
+                                    >
+                                      {filteredIndustries.map((industry) => (
+                                        <MenuItem
+                                          key={industry.industry_id}
+                                          value={industry.industry_id}
+                                        >
+                                          <Checkbox
+                                            checked={selectedIndustry.includes(
+                                              industry.industry_id
+                                            )}
+                                          />
+                                          {industry.industry_name}
+                                        </MenuItem>
+                                      ))}
+                                    </Select>
                 </FormControl>
               </Grid>
               <Grid item xs={12} sm={6}>
