@@ -303,8 +303,10 @@ export default function OrgCreation({ onHandleClose,type,selecteddata }) {
             },
           },
     });
-
-    setSelectedIndustry([Number(selecteddata?.industryId)]);
+    if (selecteddata?.industryId)
+    {
+      setSelectedIndustry([Number(selecteddata?.industryId)]);
+    }
 
   },[selecteddata]);
 
