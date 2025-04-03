@@ -388,7 +388,7 @@ console.log("selecteddata",selecteddata)
   useEffect(() => {
     fetchOrgDetails();
     fetchSectorDetails();
-    // fetchIndustryDetails();
+    fetchIndustryDetails();
     fetchRole();
   }, []);
 
@@ -566,9 +566,6 @@ console.log("selecteddata",selecteddata)
     else{
       setSelectedOrg(orgId);
     }
-    
-
-    
 
     // Find the selected organization
     const selectedOrganization = orgData.find((org) => org.org_id === orgId);
@@ -597,8 +594,6 @@ console.log("selecteddata",selecteddata)
       industryIds.includes(industry.industry_id)
     );
 
-
-// console.log("availableIndustries",availableIndustries)
     setFilteredIndustries(availableIndustries);
     setSelectedIndustry([]);
 
@@ -676,7 +671,6 @@ console.log("selecteddata",selecteddata)
   
     const selectedIndustryNames = selectedIndustries.map(industry => industry.industry_name); // Get industry names for selected ids
   
-
     setFormData({
       ...formData,
       industries: value || [],
@@ -726,9 +720,17 @@ console.log("selecteddata",selecteddata)
   industry_names: selecteddata?.industry_names || [],
     });
 
-    setSelectedOrg(selecteddata?.org_id);
-    setSelectedIndustry([Number(selecteddata?.industry_id)]);
-    handleOrgChangeForEdit(selecteddata);
+    if(selecteddata?.org_id)
+    {
+      setSelectedOrg(selecteddata?.org_id);
+      handleOrgChangeForEdit(selecteddata);
+    }
+    if(selecteddata?.industry_id)
+    {
+      setSelectedIndustry([Number(selecteddata?.industry_id)]);
+    }
+    
+    
 
   },[selecteddata]);
 
@@ -892,7 +894,9 @@ console.log("selecteddata",selecteddata)
                     {FORM_LABEL.ORGANIZATION}
                     <span>*</span>
                   </InputLabel>
-                  <Select value={selectedOrg} onChange={handleOrgChange} disabled={type !== "new" ? true : false}>
+                  <Select value={selectedOrg} onChange={handleOrgChange} 
+                  // disabled={type !== "new" ? true : false}
+                  >
                     {/* <MenuItem value="">
                       <em>None</em>
                     </MenuItem> */}
@@ -934,8 +938,8 @@ console.log("selecteddata",selecteddata)
                     <span>*</span>
                   </InputLabel>
                   <Select
-                                      // value={selectedIndustry}
-                                      value={selecteddata.industry_names.join(", ")}
+                                      value={selectedIndustry}
+                                      // value={selecteddata?.industry_names.join(", ")}
                                       onChange={handleIndustryChange}
                                       multiple
                                       // renderValue={(selected) => {
@@ -949,11 +953,23 @@ console.log("selecteddata",selecteddata)
                                       // }}
                                       renderValue={(selected) => {
                                       // Ensure selecteddata and industry_names exist
-                                      if (!selecteddata?.industry_names) return "";
+                                      if (!selecteddata?.industry_names){
+                                        const selectedIndustries = filteredIndustries.filter(
+                                              (industry) => selected.includes(industry.industry_id)
+                                            );
+                                            if(selectedIndustries)
+                                            {
+                                              return selectedIndustries
+                                              .map((industry) => industry.industry_name)
+                                              .join(", ");
+                                            }
+                                            return "";
+                                            
+                                      } 
 
-                                       return selecteddata.industry_names.join(", ");
+                                       return selecteddata?.industry_names.join(", ");
                                       }}                                        
-                                      disabled={filteredIndustries.length === 0 || type !== "new"}
+                                      // disabled={filteredIndustries.length === 0 || type !== "new"}
                                     >
                                       {filteredIndustries.map((industry) => (
                                         <MenuItem
