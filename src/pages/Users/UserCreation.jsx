@@ -612,7 +612,7 @@ console.log("selecteddata",selecteddata)
    
     // Find the selected organization
     const selectedOrganization = orgData.find((org) => org.org_id === orgId);
-
+    
     console.log("selectedOrganization?.industries",selectedOrganization?.industries)
 
     let industryIds = null;
@@ -692,6 +692,8 @@ console.log("selecteddata",selecteddata)
 
 
   useEffect(()=>{
+    if(orgData)
+    {
     setFormData({
       ...formData,
       role_id: selecteddata?.role_id || "",
@@ -723,13 +725,18 @@ console.log("selecteddata",selecteddata)
         setSelectedOrg(selecteddata?.org_id);
         handleOrgChangeForEdit(selecteddata);
       }
-      if(selecteddata?.industry_id)
-      {
-        setSelectedIndustry([Number(selecteddata?.industry_id)]);
+      if (!selecteddata?.industry_id && selecteddata?.industry_names?.length > 0) {
+        const matchedIndustryIds = industryData
+          .filter((ind) => selecteddata.industry_names.includes(ind.industry_name))
+          .map((ind) => ind.industry_id);
+  
+        setSelectedIndustry(matchedIndustryIds);
+      } else if (selecteddata?.industry_id) {
+        setSelectedIndustry([Number(selecteddata.industry_id)]);
       }
-      
+    }
 
-  },[selecteddata]);
+  },[selecteddata,orgData,industryData]);
 
 
   return (
@@ -949,23 +956,11 @@ console.log("selecteddata",selecteddata)
                                       //     .join(", ");
                                       // }}
                                       renderValue={(selected) => {
-                                      // Ensure selecteddata and industry_names exist
-                                      if (!selecteddata?.industry_names){
                                         const selectedIndustries = filteredIndustries.filter(
-                                              (industry) => selected.includes(industry.industry_id)
-                                            );
-                                            if(selectedIndustries)
-                                            {
-                                              return selectedIndustries
-                                              .map((industry) => industry.industry_name)
-                                              .join(", ");
-                                            }
-                                            return "";
-                                            
-                                      } 
-
-                                       return selecteddata?.industry_names.join(", ");
-                                      }}                                          
+                                          (industry) => selected.includes(industry.industry_id)
+                                        );
+                                        return selectedIndustries.map((industry) => industry.industry_name).join(", ");
+                                      }}                               
                                       // disabled={filteredIndustries.length === 0 || type !== "new"}
                                     >
                                       {filteredIndustries.map((industry) => (
