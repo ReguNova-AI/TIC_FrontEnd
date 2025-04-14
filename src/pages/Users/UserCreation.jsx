@@ -558,14 +558,7 @@ console.log("selecteddata",selecteddata)
   const handleOrgChange = (event) => {
     let orgId = event?.target?.value;
 
-    if(selecteddata)
-    {
-      orgId = selecteddata?.org_id;
-      setSelectedOrg(selecteddata?.org_id);
-    }
-    else{
       setSelectedOrg(orgId);
-    }
     
     // Find the selected organization
     const selectedOrganization = orgData.find((org) => org.org_id === orgId);
@@ -620,6 +613,8 @@ console.log("selecteddata",selecteddata)
     // Find the selected organization
     const selectedOrganization = orgData.find((org) => org.org_id === orgId);
 
+    console.log("selectedOrganization?.industries",selectedOrganization?.industries)
+
     let industryIds = null;
     if (selectedOrganization?.industries?.includes(",")) {
       industryIds = selectedOrganization?.industries
@@ -630,6 +625,7 @@ console.log("selecteddata",selecteddata)
       industryIds = JSON.parse(selectedOrganization?.industries || "[]");
     }
 
+    console.log("industryIds",industryIds)
 
       if (!Array.isArray(industryIds)) {
         industryIds = [industryIds]; // Wrap in an array if it's not already an array
