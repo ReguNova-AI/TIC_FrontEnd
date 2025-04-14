@@ -291,7 +291,7 @@ const MyForm = () => {
       sector_id:  userdetails?.[0]?.sector_id,
       sector_name: userdetails?.[0]?.sector_name,
       industry_id: formData.industry_id || userdetails?.[0]?.industry_id|| userdetails?.[0]?.industries?.[0],
-      industry_name: formData.industry_name || userdetails?.[0]?.industry_name || userdetails?.[0]?.industries?.[0],
+      industry_name: formData.industry_name || userdetails?.[0]?.industry_names || userdetails?.[0]?.industries?.[0],
       status: updatedStatus,
       // no_of_runs: updatedStatus === "Draft" ? 0 : 1,
       no_of_runs:0,
@@ -306,7 +306,6 @@ const MyForm = () => {
     if (submissionStatus !== 'Draft') {
       payload.last_run = formatDateToCustomFormat(new Date());
     }
-    console.log(formData.industry_id, formData.industry_name, userdetails?.[0]?.industry_id, userdetails?.[0]?.industry_name);
     
     ProjectApiService.projectCreate(payload)
       .then((response) => {
