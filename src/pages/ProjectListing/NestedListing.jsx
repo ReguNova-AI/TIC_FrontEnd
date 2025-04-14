@@ -38,7 +38,7 @@ const NestedListing = ({ data,filterStatusValue }) => {
         name: `${user?.user_first_name} ${user?.user_last_name}`,
         profile: user?.user_profile,
         role_name: user?.role_name,
-        industry: user?.industry_name,
+        industry: user?.industry_names,
         project_count: user?.projects?.length,
         projects: user?.projects || [],
       }));
@@ -91,6 +91,11 @@ const NestedListing = ({ data,filterStatusValue }) => {
       title: LISTING_PAGE.REGULATORY_SANTARDS,
       dataIndex: 'regulatory_standard',
       key: 'regulatory_standard',
+    },
+    {
+      title: LISTING_PAGE.INDUSTRY,
+      dataIndex: 'industry_name',
+      key: 'industry_name',
     },
     {
       title: LISTING_PAGE.START_DATE,
@@ -177,8 +182,14 @@ const NestedListing = ({ data,filterStatusValue }) => {
     },
     {
       title: 'Industry',
-      dataIndex: 'industry',
+      // dataIndex: 'industry',
       key: 'industry',
+      render:(record)=>{
+        console.log("industry",record)
+        return record && record?.industry?.map((data,index)=>{
+          return index === 0 ? data : ", "+data;
+        })
+      }
     },
     {
       title: 'Role',
