@@ -566,7 +566,7 @@ console.log("selecteddata",selecteddata)
     else{
       setSelectedOrg(orgId);
     }
-
+    
     // Find the selected organization
     const selectedOrganization = orgData.find((org) => org.org_id === orgId);
 
@@ -594,6 +594,8 @@ console.log("selecteddata",selecteddata)
       industryIds.includes(industry.industry_id)
     );
 
+
+// console.log("availableIndustries",availableIndustries)
     setFilteredIndustries(availableIndustries);
     setSelectedIndustry([]);
 
@@ -670,7 +672,7 @@ console.log("selecteddata",selecteddata)
     );
   
     const selectedIndustryNames = selectedIndustries.map(industry => industry.industry_name); // Get industry names for selected ids
-  
+
     setFormData({
       ...formData,
       industries: value || [],
@@ -721,16 +723,15 @@ console.log("selecteddata",selecteddata)
     });
 
     if(selecteddata?.org_id)
-    {
-      setSelectedOrg(selecteddata?.org_id);
-      handleOrgChangeForEdit(selecteddata);
-    }
-    if(selecteddata?.industry_id)
-    {
-      setSelectedIndustry([Number(selecteddata?.industry_id)]);
-    }
-    
-    
+      {
+        setSelectedOrg(selecteddata?.org_id);
+        handleOrgChangeForEdit(selecteddata);
+      }
+      if(selecteddata?.industry_id)
+      {
+        setSelectedIndustry([Number(selecteddata?.industry_id)]);
+      }
+      
 
   },[selecteddata]);
 
@@ -968,7 +969,7 @@ console.log("selecteddata",selecteddata)
                                       } 
 
                                        return selecteddata?.industry_names.join(", ");
-                                      }}                                        
+                                      }}                                          
                                       // disabled={filteredIndustries.length === 0 || type !== "new"}
                                     >
                                       {filteredIndustries.map((industry) => (
