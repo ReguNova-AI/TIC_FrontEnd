@@ -303,11 +303,11 @@ export default function OrgCreation({ onHandleClose,type,selecteddata }) {
             },
           },
     });
-    if (selecteddata?.industryId)
-    {
-      setSelectedIndustry([Number(selecteddata?.industryId)]);
-    }
 
+    if(selecteddata?.industryId){
+      setSelectedIndustry([Number(selecteddata?.industryId)]);
+
+    }
   },[selecteddata]);
 
   const handleInputChange = (e) => {
@@ -669,7 +669,7 @@ export default function OrgCreation({ onHandleClose,type,selecteddata }) {
                         .map((industry) => industry.industry_name)
                         .join(", ");
                     }}
-                    disabled={filteredIndustries.length === 0 || type !== "new"}
+                    // disabled={filteredIndustries.length === 0 || type !== "new"}
                   >
                     {filteredIndustries.map((industry) => (
                       <MenuItem
