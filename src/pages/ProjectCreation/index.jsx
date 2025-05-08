@@ -35,6 +35,8 @@ const MyForm = () => {
   const [standardData,setStandardData] = useState([]);
   const [loading,setLoading] = useState(false);
   const [file, setFile] = useState(null);
+  const [industryData, setIndustryData] = useState([]);
+  const [selectedIndustry, setSelectedIndustry] = useState("");
   const [snackData, setSnackData] = useState({
     show: false,
     message: "",
@@ -52,16 +54,45 @@ const MyForm = () => {
     status: "",
     invited_user_list:[],
     mapping_standards:"",
-    checkListResponse:""
+    checkListResponse:"",
+    industry_id:"",
+    industry_name:"",
   });
 
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
+  const industryDetails = userdetails?.[0]?.industries;
 
   // Fetch the user data when the component mounts
   useEffect(() => {
     fetchUserData();
     fetchStandardData();
+    if(industryDetails?.length > 1)
+    {
+      fetchIndustryData();
+    }
   }, []);
+
+   const fetchIndustryData = () => {
+      UserApiService.industryDetails()
+        .then((response) => {
+          setSnackData({
+            show: true,
+            message:
+              response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+            type: "success",
+          });
+          setIndustryData(response?.data?.details?.filter(data => industryDetails?.includes(data.industry_id)) || []); // Use an empty array as fallback
+        })
+        .catch((errResponse) => {
+          setSnackData({
+            show: true,
+            message:
+              errResponse?.error?.message ||
+              API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+            type: "error",
+          });
+        });
+    };
 
   const fetchUserData = () => {
     UserApiService.userListing()
@@ -259,8 +290,8 @@ const MyForm = () => {
         userdetails?.[0]?.user_first_name + " " + userdetails?.[0]?.user_last_name,
       sector_id:  userdetails?.[0]?.sector_id,
       sector_name: userdetails?.[0]?.sector_name,
-      industry_id: userdetails?.[0]?.industry_id,
-      industry_name: userdetails?.[0]?.industry_name,
+      industry_id: formData.industry_id || userdetails?.[0]?.industry_id|| userdetails?.[0]?.industries?.[0],
+      industry_name: formData.industry_name || userdetails?.[0]?.industry_names || userdetails?.[0]?.industries?.[0],
       status: updatedStatus,
       // no_of_runs: updatedStatus === "Draft" ? 0 : 1,
       no_of_runs:0,
@@ -275,7 +306,6 @@ const MyForm = () => {
     if (submissionStatus !== 'Draft') {
       payload.last_run = formatDateToCustomFormat(new Date());
     }
-
     
     ProjectApiService.projectCreate(payload)
       .then((response) => {
@@ -284,6 +314,7 @@ const MyForm = () => {
           message: response.message,
           type: "success",
         });
+        console.log("payload",payload);
         const projectId= response?.data?.details?.[0].project_id;
         navigate(`/projectView/${projectId}`, { state: { projectId:projectId,projectName: formData.projectName } });
       })
@@ -322,6 +353,22 @@ const MyForm = () => {
     return {checklist:finalarray};
   //  setFormData({...formData , checkListResponse:result?.[0]?.checkListResponse})
   }
+
+
+  const handleIndustryChange = (event) => {
+    const industryId = event.target.value;
+    setSelectedIndustry(industryId);
+
+    const selectedIndustry = industryData.find(
+      (industry) => industry.industry_id === industryId
+    );
+
+    setFormData({
+      ...formData,
+      industry_id: selectedIndustry?.industry_id || "",
+      industry_name: selectedIndustry?.industry_name || "",
+    });
+  };
 
   return (
     <>
@@ -377,7 +424,7 @@ const MyForm = () => {
                 onChange={handleInputChange}
                 required
                 inputProps={{ maxLength: 200 }}
-                helperText={`${formData.projectDesc.length}/200`}
+                helperText={`${formData.projectDesc?.length}/200`}
                 FormHelperTextProps={{
                   sx: {
                     textAlign: "right",
@@ -449,8 +496,35 @@ const MyForm = () => {
         onChange={handleFileUpload}
       />
             </Grid>
+            {industryData?.length > 1 && 
+              <Grid item xs={12} sm={4}>
+                <FormControl fullWidth>
+                  <InputLabel>
+                    {FORM_LABEL.INDUSTRY}
+                    <span>*</span>
+                  </InputLabel>
+                  <Select
+                    value={selectedIndustry}
+                    onChange={handleIndustryChange}
+                  >
+                    {/* <MenuItem value="">
+                        <em>None</em>
+                      </MenuItem> */}
+                    {industryData.map((industry) => (
+                      <MenuItem
+                        key={industry.industry_id}
+                        value={industry.industry_id}
+                      >
+                        {industry.industry_name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+            }
 
-            <Grid item xs={12} sm={8}>
+
+            <Grid item xs={12} sm={industryData?.length > 1 ? 4 :8}>
             <FormControl fullWidth>
   <InputLabel id="teamMembers-label">
     {FORM_LABEL.INVITE_MEMBERS}

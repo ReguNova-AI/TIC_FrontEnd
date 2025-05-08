@@ -304,8 +304,10 @@ export default function OrgCreation({ onHandleClose,type,selecteddata }) {
           },
     });
 
-    setSelectedIndustry([Number(selecteddata?.industryId)]);
+    if(selecteddata?.industryId){
+      setSelectedIndustry([Number(selecteddata?.industryId)]);
 
+    }
   },[selecteddata]);
 
   const handleInputChange = (e) => {
@@ -659,15 +661,35 @@ export default function OrgCreation({ onHandleClose,type,selecteddata }) {
                     onChange={handleIndustryChange}
                     multiple
                     required
+                    // renderValue={(selected) => {
+                    //   console.log("selected",selected)
+                    //   const selectedIndustries = filteredIndustries.filter(
+                    //     (industry) => selected.includes(industry.industry_id)
+                    //   );
+                    //   return selectedIndustries
+                    //     .map((industry) => industry.industry_name)
+                    //     .join(", ");
+                    // }}
+
                     renderValue={(selected) => {
-                      const selectedIndustries = filteredIndustries.filter(
-                        (industry) => selected.includes(industry.industry_id)
-                      );
-                      return selectedIndustries
-                        .map((industry) => industry.industry_name)
-                        .join(", ");
-                    }}
-                    disabled={filteredIndustries.length === 0 || type !== "new"}
+                      // Ensure selecteddata and industry_names exist
+                      if (!selecteddata?.industry_names){
+                        const selectedIndustries = filteredIndustries.filter(
+                              (industry) => selected.includes(industry.industry_id)
+                            );
+                            if(selectedIndustries)
+                            {
+                              return selectedIndustries
+                              .map((industry) => industry.industry_name)
+                              .join(", ");
+                            }
+                            return "";
+                            
+                      } 
+
+                       return selecteddata?.industry_names.join(", ");
+                      }}       
+                    // disabled={filteredIndustries.length === 0 || type !== "new"}
                   >
                     {filteredIndustries.map((industry) => (
                       <MenuItem
