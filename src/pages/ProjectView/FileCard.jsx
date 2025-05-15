@@ -164,6 +164,65 @@ const parseApiResponse = (response) => {
         points: annex.points,
       })),
     ];
+
+    // const sections = [];
+    // const annexes = [];
+    // let currentSectionIndex = -1;
+    // let currentAnnexIndex = -1;
+    // let isAnnex = false;
+
+    // checklist.forEach((rawItem) => {
+    //   const lowerRaw = rawItem.toLowerCase().trim();
+
+    //   // Clean for storing
+    //   const item = rawItem
+    //     .replace(/^#+\s*|^#+(?=\S)/, "") // ✅ Removes markdown headings (with or without space)
+    //     .replace(/\*\*/g, "") // Remove bold markers **
+    //     .replace(/\#\#/g, "") // Remove bold markers **
+    //     .replace(/^\d+(\.\d+)*\.\s*/, "") // Remove indexes like 1., 1.1.2.
+    //     .trim();
+
+    //   if (lowerRaw.includes("title:")) {
+    //     sections.push({
+    //       title: item,
+    //       points: [],
+    //     });
+    //     currentSectionIndex = sections.length - 1;
+    //     isAnnex = false;
+    //   } else if (lowerRaw.includes("section:")) {
+    //     sections.push({
+    //       title: item.replace(/^section[:\-]?\s*/i, "").trim(), // ✅ Remove 'Section:'
+    //       points: [],
+    //     });
+    //     currentSectionIndex = sections.length - 1;
+    //     isAnnex = false;
+    //   } else if (lowerRaw.includes("annex")) {
+    //     annexes.push({
+    //       title: item.replace(/^annex[:\-]?\s*/i, "").trim(),
+    //       points: [],
+    //     });
+    //     currentAnnexIndex = annexes.length - 1;
+    //     isAnnex = true;
+    //   } else {
+    //     const point = item
+    //       .replace(/^[-–—]\s*/, "")
+    //       .replace(/\\"/g, "")
+    //       .trim();
+
+    //     if (isAnnex && currentAnnexIndex >= 0) {
+    //       annexes[currentAnnexIndex].points.push(point);
+    //     } else if (!isAnnex && currentSectionIndex >= 0) {
+    //       sections[currentSectionIndex].points.push(point);
+    //     }
+    //   }
+    // });
+
+    // const result = [
+    //   ...sections.map(({ title, points }) => ({ title, points })),
+    //   ...annexes.map(({ title, points }) => ({ title, points })),
+    // ];
+    // console.log("result", result);
+    // return result;
   }
   // If the response contains '---' or '**' (first format)
   if (
@@ -286,6 +345,16 @@ const parseApiResponse = (response) => {
   }
 };
 
+function cleanTitle(text, keyword, preserveLabel = false) {
+  let cleaned = text
+    .replace(new RegExp(`^(${keyword})\\s*[:\\-]?\\s*`, "i"), "") // Remove keyword label
+    .replace(/^\d+(\.\d+)?\s*/, "") // Remove leading numbers
+    .replace(/[^a-zA-Z0-9\s]/g, "") // Remove special characters
+    .trim();
+
+  return preserveLabel ? `${keyword}: ${cleaned}` : cleaned;
+}
+
 const FileCard = ({
   fileName,
   onDownload,
@@ -301,7 +370,7 @@ const FileCard = ({
   const [openModal, setOpenModal] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
   const [activeTabflag, setActiveTabflag] = useState(false);
-  const [editMode, setEditMode] = useState(true);
+  const [editMode, setEditMode] = useState(false);
 
   const [sections, setSections] = useState([]);
   const [assessmentData, setAssessmentData] = useState([]);
