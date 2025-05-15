@@ -21,7 +21,11 @@ const _projectListing = () => {
   if (role === "Super Admin") {
     return BaseApiService.get(`/api/v1/projects`, null, null);
   } else {
-    if (role !== "Super Admin" && role !== "Org Super Admin" && role !== "Admin") {
+    if (
+      role !== "Super Admin" &&
+      role !== "Org Super Admin" &&
+      role !== "Admin"
+    ) {
       return BaseApiService.get(`/api/v1/user/projects`, null, null);
     } else {
       let pathname = window.location.pathname;
@@ -29,7 +33,11 @@ const _projectListing = () => {
 
       // return BaseApiService.get(`/api/v1/org/projects?industry_id=${industry_id}`, null, null);
       if (pathname === "/dashboard/default" || pathname === "/dashboard") {
-        return BaseApiService.get(`/api/v1/org/recent-projects?limit=10`,null,null);
+        return BaseApiService.get(
+          `/api/v1/org/recent-projects?limit=10`,
+          null,
+          null
+        );
       } else {
         return BaseApiService.get(`/api/v1/org/projects`, null, null);
       }
@@ -70,7 +78,7 @@ const _projectCounts = (id) => {
   }
 };
 
-const _projectChat = (query,projectId) => {
+const _projectChat = (query, projectId) => {
   return BaseApiService.get(
     `/api/v1/chat/askQuestion?user_question=${query}&project_id=${projectId}`,
     null,
@@ -92,8 +100,8 @@ const _projectUploadStandardChat = (payload) => {
 };
 
 const _projectStandardChecklist = (payload) => {
-//  old api // return BaseApiService.post(`/api/v1/chat/uploadStandardCheckList`, null, payload);
-// last implementation  // return BaseApiService.post(
+  //  old api // return BaseApiService.post(`/api/v1/chat/uploadStandardCheckList`, null, payload);
+  // last implementation  // return BaseApiService.post(
   //   `/api/v2/chat/uploadStandardCheckList`,
   //   null,
   //   payload
@@ -101,22 +109,33 @@ const _projectStandardChecklist = (payload) => {
 
   // new api
   return BaseApiService.post(
-      `/api/v2/chat/newUploadStandardCheckList?num_segments=7&chunksize=6000&chunkoverlap=200`,
-      null,
-      payload
-    );
+    `/api/v2/chat/newUploadStandardCheckList?num_segments=7&chunksize=6000&chunkoverlap=200`,
+    null,
+    payload
+  );
 };
 
-const _projectDocumentUpload = (payload,type) => {
-  if(type === "full")
-  {
+const _projectDocumentUpload = (payload, type) => {
+  if (type === "full") {
     return BaseApiService.post(`/api/v2/chat/runFullAssessment`, null, payload);
-
-  }
-  else{
+  } else {
     return BaseApiService.post(`/api/v2/chat/uploadProjectDocs`, null, payload);
-
   }
+};
+
+const _projectUpdateComplianceAssessment = (payload) => {
+  return BaseApiService.put(
+    `/api/v2/project/update-compliance-assessment`,
+    null,
+    payload
+  );
+};
+const _projectUpdateChecklist = (payload) => {
+  return BaseApiService.put(
+    `/api/v2/project/update-checklist-response`,
+    null,
+    payload
+  );
 };
 
 export const ProjectApiService = {
@@ -125,10 +144,12 @@ export const ProjectApiService = {
   projectDetails: _projectDetails,
   projectCounts: _projectCounts,
   projectUpdate: _projectUpdate,
-  projectChatUpdate:_projectChatUpdate,
+  projectChatUpdate: _projectChatUpdate,
   projectChat: _projectChat,
   projectUploadStandardChat: _projectUploadStandardChat,
   projectStandardChecklist: _projectStandardChecklist,
   projectComplianceAssessment: _projectComplianceAssessment,
   projectDocumentUpload: _projectDocumentUpload,
+  projectUpdateComplianceAssessment: _projectUpdateComplianceAssessment,
+  projectUpdateChecklist: _projectUpdateChecklist,
 };

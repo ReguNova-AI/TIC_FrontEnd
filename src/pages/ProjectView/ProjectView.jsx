@@ -30,11 +30,10 @@ import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { ProjectApiService } from "services/api/ProjectAPIService";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
-import { Spin, Modal, Result ,Empty} from "antd";
+import { Spin, Modal, Result, Empty } from "antd";
 import {
   API_ERROR_MESSAGE,
   API_SUCCESS_MESSAGE,
-  STATUS,
   BUTTON_LABEL,
   TAB_LABEL,
   COUNT_CARD_LABELS,
@@ -43,17 +42,12 @@ import {
   FORM_LABEL,
 } from "shared/constants";
 import DropZoneFileUpload from "pages/ProjectCreation/DropZoneFileUpload";
-import chatLoadingicon from "../../assets/images/icons/chatLoadingIcon.svg";
 import chatLoadingicon2 from "../../assets/images/icons/chatLoadingIcon2.svg";
-import chatLoadingicon3 from "../../assets/images/icons/chatLoadingIcon3.svg";
 import successIcon from "../../assets/images/icons/successIcon2.svg";
 import failedIcon from "../../assets/images/icons/failedIcon2.svg";
 import runIcon from "../../assets/images/icons/runIcon.svg";
 import reportIcon from "../../assets/images/icons/report1.png";
 import processIcon from "../../assets/images/process.png";
-import checklistfile from "../../assets/IEC-61400-12-2022.pdf";
-import axios from "axios";
-import Icon, { SmileOutlined } from "@ant-design/icons";
 import { formatDate, formatDateToCustomFormat } from "shared/utility";
 import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
 
@@ -61,17 +55,17 @@ const ProjectView = () => {
   const navigate = useNavigate();
   const [value, setValue] = React.useState(0);
   const location = useLocation();
-  const { projectName,runAssessmentState } = location.state || {};
+  const { projectName, runAssessmentState } = location.state || {};
   const { id } = useParams();
   const [loading, setLoading] = useState(true);
   const [projectData, SetProjectData] = useState([]);
-  const [standardData,setStandardData] = useState([]);
+  const [standardData, setStandardData] = useState([]);
   const [uploadedDocument, setUploadedDocument] = useState([]);
   const [chatResponse, setChatResponse] = useState([]);
   const [chatLoading, setChatloading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false); // To control modal visibility
   const [isProgressModalVisible, setIsProgressModalVisible] = useState(false); // To control modal visibility
-  const [historyValue,setHistoryValue] = useState([]);
+  const [historyValue, setHistoryValue] = useState([]);
   const [disableButton, setDisableButton] = useState(false);
 
   // const chatLoadingIcon = (props) => <Icon component={chatLoadingicon} {...props} />;
@@ -83,12 +77,12 @@ const ProjectView = () => {
   });
   const [modalType, setModalType] = useState("");
   const [openModal, setOpenModal] = useState(false); // State to control modal visibility
-  const [fileName, setFileName] = useState(""); // State to store the uploaded file name
   const [historyData, setHistoryData] = useState({ history: [] });
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
-  const userName = userdetails?.[0].user_first_name + " " + userdetails?.[0].user_last_name;
-  const [runState,setRunState]=useState(true);
-  const [standardChatState,setStandardChatState] = useState(true);
+  const userName =
+    userdetails?.[0].user_first_name + " " + userdetails?.[0].user_last_name;
+  const [runState, setRunState] = useState(true);
+  const [standardChatState, setStandardChatState] = useState(true);
 
   useEffect(() => {
     fetchDetails(id);
@@ -98,32 +92,37 @@ const ProjectView = () => {
       fetchDetails(id);
     }, 120000); // 120000 ms = 2 minutes
 
-      // Cleanup interval on component unmount
-  return () => clearInterval(intervalId);
+    // Cleanup interval on component unmount
+    return () => clearInterval(intervalId);
   }, [id]);
 
-  useEffect(()=>{
-   
-    if(runAssessmentState === "run" && runState)
-        {
-          projectData?.checkListResponse ? runComplianceAssessmenet(projectData?.checkListResponse,projectData?.project_id,"partial") : runChecklkistCRT();
-          setRunState(false);
-        }
+  useEffect(() => {
+    if (runAssessmentState === "run" && runState) {
+      projectData?.checkListResponse
+        ? runComplianceAssessmenet(
+            projectData?.checkListResponse,
+            projectData?.project_id,
+            "partial"
+          )
+        : runChecklkistCRT();
+      setRunState(false);
+    }
+  }, [projectData, standardData]);
 
-  },[projectData,standardData])
-
-  useEffect(()=>{
-
-    if(projectData?.standardUploaded === false || projectData?.standardUploaded === 0 || projectData?.standardUploaded === "false" || projectData.standardUploaded === null || projectData.standardUploaded === "null" || projectData?.standardUploaded === undefined)
-    { 
-      
-      if(standardChatState)
-      {
+  useEffect(() => {
+    if (
+      projectData?.standardUploaded === false ||
+      projectData?.standardUploaded === 0 ||
+      projectData?.standardUploaded === "false" ||
+      projectData.standardUploaded === null ||
+      projectData.standardUploaded === "null" ||
+      projectData?.standardUploaded === undefined
+    ) {
+      if (standardChatState) {
         runChecklistAPI();
       }
     }
-
-  },[standardData])
+  }, [standardData]);
 
   const fetchDetails = (id) => {
     ProjectApiService.projectDetails(id)
@@ -135,9 +134,11 @@ const ProjectView = () => {
           type: "success",
         });
         SetProjectData(response?.data?.details[0]);
-        setHistoryData({history:response?.data?.details[0].history || [] })
+        setHistoryData({ history: response?.data?.details[0].history || [] });
         setHistoryValue(response?.data?.details[0].history);
-        setChatloading(response?.data?.details[0]?.standardUploaded !== null ? false : true)
+        setChatloading(
+          response?.data?.details[0]?.standardUploaded !== null ? false : true
+        );
         setLoading(false);
       })
       .catch((errResponse) => {
@@ -180,11 +181,10 @@ const ProjectView = () => {
       });
   };
 
-
   const handlechatUpdate = (data) => {
-    const updatedResponse = { 
-      project_id:projectData.project_id,
-      chatResponse:{ data: data }
+    const updatedResponse = {
+      project_id: projectData.project_id,
+      chatResponse: { data: data },
     };
 
     // updatedResponse.chatResponse = { data: data };
@@ -197,64 +197,84 @@ const ProjectView = () => {
     // If the response contains 'checklist' (new checklist format)
     if (response.checklist && Array.isArray(response.checklist)) {
       let checklist = response.checklist;
-  
+
       // Process checklist into sections and annexes
       const sections = [];
       const annexes = [];
-  
+
       checklist.forEach((item) => {
         // Split checklist items based on whether they contain a section or annex
-        if (item.includes('##')) {
+        if (item.includes("##")) {
           // Check if it's an Annex or Section
-          if (item.toLowerCase().startsWith('## annex')) {
+          if (item.toLowerCase().startsWith("## annex")) {
             annexes.push({
-              title: item.split('##')[1]?.trim().replace(/^Annex\s*[:\-]?\s*/i, ''), // Remove "Annex"
-              points: []
+              title: item
+                .split("##")[1]
+                ?.trim()
+                .replace(/^Annex\s*[:\-]?\s*/i, ""), // Remove "Annex"
+              points: [],
             });
           } else {
             sections.push({
-              title: item.split('##')[1]?.trim().replace(/^Section\s*[:\-]?\s*/i, '').replace(/^\d+\s*/, ''), // Remove "Section" and leading digits
-              points: []
+              title: item
+                .split("##")[1]
+                ?.trim()
+                .replace(/^Section\s*[:\-]?\s*/i, "")
+                .replace(/^\d+\s*/, ""), // Remove "Section" and leading digits
+              points: [],
             });
           }
-        } else if (item.includes('**')) {
+        } else if (item.includes("**")) {
           // Check if it's an Annex or Section
-          if (item.toLowerCase().startsWith('** annex')) {
+          if (item.toLowerCase().startsWith("** annex")) {
             annexes.push({
-              title: item.split('**')[1]?.trim().replace(/^Annex\s*[:\-]?\s*/i, ''), // Remove "Annex"
-              points: []
+              title: item
+                .split("**")[1]
+                ?.trim()
+                .replace(/^Annex\s*[:\-]?\s*/i, ""), // Remove "Annex"
+              points: [],
             });
           } else {
             sections.push({
-              title: item.split('**')[1]?.trim().replace(/^Section\s*[:\-]?\s*/i, '').replace(/^\d+\s*/, ''), // Remove "Section" and leading digits
-              points: []
+              title: item
+                .split("**")[1]
+                ?.trim()
+                .replace(/^Section\s*[:\-]?\s*/i, "")
+                .replace(/^\d+\s*/, ""), // Remove "Section" and leading digits
+              points: [],
             });
           }
-        }  else {
+        } else {
           const lastSection = sections[sections.length - 1];
           const lastAnnex = annexes[annexes.length - 1];
-  
+
           if (lastSection) {
-            const raw = item.replace(/^\d+\.\s*/, '').replace("---","").replace(/\\"/g,"").trim();
-            if(raw !== "")
-            {
+            const raw = item
+              .replace(/^\d+\.\s*/, "")
+              .replace("---", "")
+              .replace(/\\"/g, "")
+              .trim();
+            if (raw !== "") {
               dataArray.push(raw);
             }
-            lastSection.points.push(item.replace(/^\d+\.\s*/, '').trim());
+            lastSection.points.push(item.replace(/^\d+\.\s*/, "").trim());
           } else if (lastAnnex) {
-            const raw = item.replace(/^\d+\.\s*/, '').replace("---","").replace(/\\"/g,"").trim();
-            if(raw !== "")
-              {
-                dataArray.push(raw);
-              }
-            lastAnnex.points.push(item.replace(/^\d+\.\s*/, '').trim());
+            const raw = item
+              .replace(/^\d+\.\s*/, "")
+              .replace("---", "")
+              .replace(/\\"/g, "")
+              .trim();
+            if (raw !== "") {
+              dataArray.push(raw);
+            }
+            lastAnnex.points.push(item.replace(/^\d+\.\s*/, "").trim());
           }
         }
       });
-      
+
       return dataArray;
-    }  
-    
+    }
+
     // Default case (if the response doesn't match either format)
     else {
       console.error("Unknown response format");
@@ -262,22 +282,19 @@ const ProjectView = () => {
     }
   };
 
-
-
-  const runComplianceAssessmenet = async (query,projectId,type) =>{
+  const runComplianceAssessmenet = async (query, projectId, type) => {
     setDisableButton(true);
-   
+
     const regex = /\/([^/]+)$/; // Match the part after the last "/"
-    let file=null;
-    let docArray=[];
+    let file = null;
+    let docArray = [];
     let match = null;
     projectData?.documents?.forEach((document) => {
       let { documenttype, name, path } = document;
-      if(documenttype === FORM_LABEL.PROJECT_DOCUMENT)
-      {
-       file = path;
-       match = file?.match(regex);
-       docArray.push(match?.[1])
+      if (documenttype === FORM_LABEL.PROJECT_DOCUMENT) {
+        file = path;
+        match = file?.match(regex);
+        docArray.push(match?.[1]);
       }
     });
 
@@ -287,181 +304,189 @@ const ProjectView = () => {
     // payload.append("imageKey", docArray);
 
     let data = [];
-    if(query)
-    {
-     data= parseApiResponse(query);
+    if (query) {
+      data = parseApiResponse(query);
     }
 
     let customImageKeyValue = null;
 
-    let fileName= standardData?.find((data) => data?.standard_name === projectData?.regulatory_standard)?.standard_url;
-    let customFileName = projectData?.documents?.filter(f => f.documenttype === FORM_LABEL.CUSTOM_REGULATORY)?.map(f => f.path);
+    let fileName = standardData?.find(
+      (data) => data?.standard_name === projectData?.regulatory_standard
+    )?.standard_url;
+    let customFileName = projectData?.documents
+      ?.filter((f) => f.documenttype === FORM_LABEL.CUSTOM_REGULATORY)
+      ?.map((f) => f.path);
 
-    if((fileName === undefined || fileName === null) && customFileName?.length<=0)
-    {
+    if (
+      (fileName === undefined || fileName === null) &&
+      customFileName?.length <= 0
+    ) {
       fileName = projectData?.mapping_standards;
     }
-    
-    if(fileName !== undefined)
-    {
-    const regex1 = /\/([^/]+)$/; // Match the part after the last "/"
-    const match = customFileName?.length > 0 ? customFileName?.[0].match(regex1) : fileName?.match(regex1);
 
-    customImageKeyValue = match?.[1]
+    if (fileName !== undefined) {
+      const regex1 = /\/([^/]+)$/; // Match the part after the last "/"
+      const match =
+        customFileName?.length > 0
+          ? customFileName?.[0].match(regex1)
+          : fileName?.match(regex1);
+
+      customImageKeyValue = match?.[1];
     }
-    
 
     const payload = {
-      imageKey :docArray,
-      project_id:projectId,
-      requirements:data,
-      user_name:userName,
-      checkListImageKey:customImageKeyValue,
+      imageKey: docArray,
+      project_id: projectId,
+      requirements: data,
+      user_name: userName,
+      checkListImageKey: customImageKeyValue,
     };
 
-   
-    if(match !== undefined && match?.length >0)
-    {
+    if (match !== undefined && match?.length > 0) {
       // setLoading(true);
-    ProjectApiService.projectDocumentUpload(payload,type)
-      .then((response) => {
-        // setLoading(false);
+      ProjectApiService.projectDocumentUpload(payload, type)
+        .then((response) => {
+          // setLoading(false);
 
-        let payload1 = {
-          "requirements":data,
-          project_id:projectId
-        }
-        handleprogressModalOpen();
+          let payload1 = {
+            requirements: data,
+            project_id: projectId,
+          };
+          handleprogressModalOpen();
 
-      //   ProjectApiService.projectComplianceAssessment(payload1)
-      // .then((response) => {
-      //   // setSnackData({
-      //   //   show: true,
-      //   //   message:
-      //   //     response?.data?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-      //   //   type: "success",
-      //   // });
-      //   // SetProjectData(response?.data?.details[0]);
-      //   setLoading(false);
-      //   let status = null;
+          //   ProjectApiService.projectComplianceAssessment(payload1)
+          // .then((response) => {
+          //   // setSnackData({
+          //   //   show: true,
+          //   //   message:
+          //   //     response?.data?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+          //   //   type: "success",
+          //   // });
+          //   // SetProjectData(response?.data?.details[0]);
+          //   setLoading(false);
+          //   let status = null;
 
-      //   if(response?.data?.success === false || response?.data?.error ==="An error occurred while fetching data")
-      //   {
-      //     status = "error";
-      //   }
+          //   if(response?.data?.success === false || response?.data?.error ==="An error occurred while fetching data")
+          //   {
+          //     status = "error";
+          //   }
 
-      //   const array = response?.data?.data;
-      //   const delimiter = "|,|";  // You can use any delimiter you want
-      //   const result = array.join(delimiter);
+          //   const array = response?.data?.data;
+          //   const delimiter = "|,|";  // You can use any delimiter you want
+          //   const result = array.join(delimiter);
 
-      //   const updatedResponse = { ...projectData };
-      //   const previousData = {...projectData};
-      //   updatedResponse.complianceAssesment = `${result}`;
-      //   updatedResponse.no_of_runs = updatedResponse?.no_of_runs + 1;
-      //   if(status === "error")
-      //   {
-      //     updatedResponse.fail_count= updatedResponse?.fail_count + 1;
-      //   }
-      //   else{
-      //     updatedResponse.success_count= updatedResponse?.success_count + 1;
-      //   }
-      //   // updatedResponse.success_count= updatedResponse?.success_count + 1;
-      //   updatedResponse.status = status === "error" ? "Failed" : "Success";
-      //   updatedResponse.last_run = formatDateToCustomFormat(new Date());
-      //   const newHistory = createHistoryObject(projectData, previousData,"assessmentRun");
-      //   setHistoryData((prevState) => {
-      //     const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
-      //     // After the state update, include the updated history in the updatedResponse
-      //     const updatedResponseWithHistory = { ...updatedResponse, history: updatedHistory };
+          //   const updatedResponse = { ...projectData };
+          //   const previousData = {...projectData};
+          //   updatedResponse.complianceAssesment = `${result}`;
+          //   updatedResponse.no_of_runs = updatedResponse?.no_of_runs + 1;
+          //   if(status === "error")
+          //   {
+          //     updatedResponse.fail_count= updatedResponse?.fail_count + 1;
+          //   }
+          //   else{
+          //     updatedResponse.success_count= updatedResponse?.success_count + 1;
+          //   }
+          //   // updatedResponse.success_count= updatedResponse?.success_count + 1;
+          //   updatedResponse.status = status === "error" ? "Failed" : "Success";
+          //   updatedResponse.last_run = formatDateToCustomFormat(new Date());
+          //   const newHistory = createHistoryObject(projectData, previousData,"assessmentRun");
+          //   setHistoryData((prevState) => {
+          //     const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
+          //     // After the state update, include the updated history in the updatedResponse
+          //     const updatedResponseWithHistory = { ...updatedResponse, history: updatedHistory };
 
-      //     if(status === "error")
-      //     {
-      //       setSnackData({
-      //         show: true,
-      //         message:API_ERROR_MESSAGE.FAILED_TO_RUN_ASSESSMENT,
-      //         type: "error",
-      //       });
-      //     }
-          
-      //     // You can also call UpdateProjectDetails here, using the updated response with history
-      //     // setLoading(true);
-      //     UpdateProjectDetails(updatedResponseWithHistory, false);
-      
-      //     return { history: updatedHistory }; // Update state with the new history array
-      //   });
+          //     if(status === "error")
+          //     {
+          //       setSnackData({
+          //         show: true,
+          //         message:API_ERROR_MESSAGE.FAILED_TO_RUN_ASSESSMENT,
+          //         type: "error",
+          //       });
+          //     }
 
+          //     // You can also call UpdateProjectDetails here, using the updated response with history
+          //     // setLoading(true);
+          //     UpdateProjectDetails(updatedResponseWithHistory, false);
 
-      //   // UpdateProjectDetails(updatedResponse, true);
-      // })
-      // .catch((errResponse) => {
-      //   setSnackData({
-      //     show: true,
-      //     message:
-      //       errResponse?.error?.message ||
-      //       API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-      //     type: "error",
-      //   });
-      //   setLoading(false);
-      //   const updatedResponse = { ...projectData };
-      //   const previousData = {...projectData};
-      //   updatedResponse.no_of_runs = updatedResponse?.no_of_runs + 1;
-      //   updatedResponse.fail_count= updatedResponse?.fail_count + 1;
-      //   updatedResponse.status = "Failed";
-      //   updatedResponse.last_run = formatDateToCustomFormat(new Date());
-      //   const newHistory = createHistoryObject(projectData, previousData,"assessmentRun");
-      //   setHistoryData((prevState) => {
-      //     const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
-      //     // After the state update, include the updated history in the updatedResponse
-      //     const updatedResponseWithHistory = { ...updatedResponse, history: updatedHistory };
-          
-      //     // You can also call UpdateProjectDetails here, using the updated response with history
-      //     // setLoading(true);
-      //     UpdateProjectDetails(updatedResponseWithHistory, false);
-      
-      //     return { history: updatedHistory };
-      //   });
+          //     return { history: updatedHistory }; // Update state with the new history array
+          //   });
 
-      // });
-        // UpdateProjectDetails(updatedResponse, true);
-      })
-      .catch((errResponse) => {
-        setDisableButton(false);
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
+          //   // UpdateProjectDetails(updatedResponse, true);
+          // })
+          // .catch((errResponse) => {
+          //   setSnackData({
+          //     show: true,
+          //     message:
+          //       errResponse?.error?.message ||
+          //       API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          //     type: "error",
+          //   });
+          //   setLoading(false);
+          //   const updatedResponse = { ...projectData };
+          //   const previousData = {...projectData};
+          //   updatedResponse.no_of_runs = updatedResponse?.no_of_runs + 1;
+          //   updatedResponse.fail_count= updatedResponse?.fail_count + 1;
+          //   updatedResponse.status = "Failed";
+          //   updatedResponse.last_run = formatDateToCustomFormat(new Date());
+          //   const newHistory = createHistoryObject(projectData, previousData,"assessmentRun");
+          //   setHistoryData((prevState) => {
+          //     const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
+          //     // After the state update, include the updated history in the updatedResponse
+          //     const updatedResponseWithHistory = { ...updatedResponse, history: updatedHistory };
+
+          //     // You can also call UpdateProjectDetails here, using the updated response with history
+          //     // setLoading(true);
+          //     UpdateProjectDetails(updatedResponseWithHistory, false);
+
+          //     return { history: updatedHistory };
+          //   });
+
+          // });
+          // UpdateProjectDetails(updatedResponse, true);
+        })
+        .catch((errResponse) => {
+          setDisableButton(false);
+          setSnackData({
+            show: true,
+            message:
+              errResponse?.error?.message ||
+              API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+            type: "error",
+          });
+          setLoading(false);
+          const updatedResponse = { ...projectData };
+          const previousData = { ...projectData };
+          updatedResponse.no_of_runs = updatedResponse?.no_of_runs + 1;
+          updatedResponse.fail_count = updatedResponse?.fail_count + 1;
+          updatedResponse.status = "Failed";
+          updatedResponse.last_run = formatDateToCustomFormat(new Date());
+
+          const newHistory = createHistoryObject(
+            projectData,
+            previousData,
+            "assessmentRun"
+          );
+          setHistoryData((prevState) => {
+            const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
+            // After the state update, include the updated history in the updatedResponse
+            const updatedResponseWithHistory = {
+              ...updatedResponse,
+              history: updatedHistory,
+            };
+
+            // You can also call UpdateProjectDetails here, using the updated response with history
+            // setLoading(true);
+            UpdateProjectDetails(updatedResponseWithHistory, false);
+
+            return { history: updatedHistory };
+          });
         });
-        setLoading(false);
-        const updatedResponse = { ...projectData };
-        const previousData = {...projectData};
-        updatedResponse.no_of_runs = updatedResponse?.no_of_runs + 1;
-        updatedResponse.fail_count= updatedResponse?.fail_count + 1;
-        updatedResponse.status = "Failed";
-        updatedResponse.last_run = formatDateToCustomFormat(new Date());
-
-        const newHistory = createHistoryObject(projectData, previousData,"assessmentRun");
-        setHistoryData((prevState) => {
-          const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
-          // After the state update, include the updated history in the updatedResponse
-          const updatedResponseWithHistory = { ...updatedResponse, history: updatedHistory };
-          
-          // You can also call UpdateProjectDetails here, using the updated response with history
-          // setLoading(true);
-          UpdateProjectDetails(updatedResponseWithHistory, false);
-      
-          return { history: updatedHistory };
-        });
-      });
-    }
-    else
-    {
+    } else {
       setDisableButton(false);
       setLoading(false);
       setSnackData({
         show: true,
-        message:API_ERROR_MESSAGE.DOCUMENT_NOT_FOUND,
+        message: API_ERROR_MESSAGE.DOCUMENT_NOT_FOUND,
         type: "error",
       });
     }
@@ -469,154 +494,170 @@ const ProjectView = () => {
 
   const runChecklkistCRT = async () => {
     setDisableButton(true);
-    let fileName= standardData?.find((data) => data?.standard_name === projectData?.regulatory_standard)?.standard_url;
-    let customFileName = projectData?.documents?.filter(f => f.documenttype === FORM_LABEL.CUSTOM_REGULATORY)?.map(f => f.path);
+    let fileName = standardData?.find(
+      (data) => data?.standard_name === projectData?.regulatory_standard
+    )?.standard_url;
+    let customFileName = projectData?.documents
+      ?.filter((f) => f.documenttype === FORM_LABEL.CUSTOM_REGULATORY)
+      ?.map((f) => f.path);
 
-    if((fileName === undefined || fileName === null) && customFileName?.length<=0)
-    {
+    if (
+      (fileName === undefined || fileName === null) &&
+      customFileName?.length <= 0
+    ) {
       fileName = projectData?.mapping_standards;
     }
-    
-    if(fileName !== undefined)
-    {
-    const regex = /\/([^/]+)$/; // Match the part after the last "/"
-    const match = customFileName?.length > 0 ? customFileName?.[0].match(regex) : fileName?.match(regex);
 
-    const payload = new FormData();
-    payload.append("imageKey", match?.[1]);
-    payload.append("project_id",projectData?.project_id)
-    payload.append("user_name",userName)
-    // const payload = {
-    //   imageKey :match[1]
-    // };
-    // setLoading(true);
+    if (fileName !== undefined) {
+      const regex = /\/([^/]+)$/; // Match the part after the last "/"
+      const match =
+        customFileName?.length > 0
+          ? customFileName?.[0].match(regex)
+          : fileName?.match(regex);
 
-    ProjectApiService.projectStandardChecklist(payload)
-      .then((response) => {
-        console.log("response", response);
-        // setSnackData({
-        //   show: true,
-        //   message:
-        //     response?.data?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-        //   type: "success",
-        // });
-        // SetProjectData(response?.data?.details[0]);
-        // setLoading(false);
+      const payload = new FormData();
+      payload.append("imageKey", match?.[1]);
+      payload.append("project_id", projectData?.project_id);
+      payload.append("user_name", userName);
+      // const payload = {
+      //   imageKey :match[1]
+      // };
+      // setLoading(true);
 
-        handleprogressModalOpen();
+      ProjectApiService.projectStandardChecklist(payload)
+        .then((response) => {
+          console.log("response", response);
+          // setSnackData({
+          //   show: true,
+          //   message:
+          //     response?.data?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+          //   type: "success",
+          // });
+          // SetProjectData(response?.data?.details[0]);
+          // setLoading(false);
 
-        // handleCRTUpdate(response);
+          handleprogressModalOpen();
 
-       
+          // handleCRTUpdate(response);
 
-        // UpdateProjectDetails(updatedResponse, true);
-      })
-      .catch((errResponse) => {
-        setDisableButton(false);
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
+          // UpdateProjectDetails(updatedResponse, true);
+        })
+        .catch((errResponse) => {
+          setDisableButton(false);
+          setSnackData({
+            show: true,
+            message:
+              errResponse?.error?.message ||
+              API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+            type: "error",
+          });
+          // setLoading(false);
         });
-        // setLoading(false);
-      });
     }
   };
 
-  const handleCRTUpdate = (response)=>{
+  const handleCRTUpdate = (response) => {
     const updatedResponse = { ...projectData };
-    const previousData ={...projectData};
+    const previousData = { ...projectData };
     updatedResponse.checkListResponse = response?.data?.data;
     // updatedResponse.no_of_runs = updatedResponse.no_of_runs + 1;
     updatedResponse.status = "Processing";
     updatedResponse.last_run = formatDateToCustomFormat(new Date());
 
-    const newHistory = createHistoryObject(projectData, previousData,"checklistRun");
+    const newHistory = createHistoryObject(
+      projectData,
+      previousData,
+      "checklistRun"
+    );
     setHistoryData((prevState) => {
       const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
       // After the state update, include the updated history in the updatedResponse
-      const updatedResponseWithHistory = { ...updatedResponse, history: updatedHistory };
-      
+      const updatedResponseWithHistory = {
+        ...updatedResponse,
+        history: updatedHistory,
+      };
+
       // You can also call UpdateProjectDetails here, using the updated response with history
       // setLoading(true);
       UpdateProjectDetails(updatedResponseWithHistory, false);
-  
+
       return { history: updatedHistory }; // Update state with the new history array
     });
-  }
+  };
 
-  const runChecklistAPI = async () => { 
-    let fileName= standardData?.find((data) => data?.standard_name === projectData?.regulatory_standard)?.standard_url;
-    if(fileName === undefined || fileName === null)
-    {
+  const runChecklistAPI = async () => {
+    let fileName = standardData?.find(
+      (data) => data?.standard_name === projectData?.regulatory_standard
+    )?.standard_url;
+    if (fileName === undefined || fileName === null) {
       fileName = projectData?.mapping_standards;
     }
-   
-    if(fileName !== undefined)
-    {
-    const regex = /\/([^/]+)$/; // Match the part after the last "/"
 
-    const match = fileName.match(regex);
+    if (fileName !== undefined) {
+      const regex = /\/([^/]+)$/; // Match the part after the last "/"
 
-    const payload = new FormData();
-    payload.append("imageKey", match?.[1]);
-    payload.append("project_id",projectData?.project_id);
-    payload.append("user_name",userName);
-    // const payload = {
-    //   imageKey :match[1]
-    // };
-    // setChatloading(true);
-    setStandardChatState(false);
-    ProjectApiService.projectUploadStandardChat(payload)
-      .then((response) => {
-        // console.log("response",response)
-        // setSnackData({
-        //   show: true,
-        //   message: response?.data?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-        //   type: "success",
-        // });
-        // SetProjectData(response?.data?.details[0]);
+      const match = fileName.match(regex);
 
-        // setChatloading(false);
-        // handlestandardChatUploadUpdate();
-        setStandardChatState(false);     
+      const payload = new FormData();
+      payload.append("imageKey", match?.[1]);
+      payload.append("project_id", projectData?.project_id);
+      payload.append("user_name", userName);
+      // const payload = {
+      //   imageKey :match[1]
+      // };
+      // setChatloading(true);
+      setStandardChatState(false);
+      ProjectApiService.projectUploadStandardChat(payload)
+        .then((response) => {
+          // console.log("response",response)
+          // setSnackData({
+          //   show: true,
+          //   message: response?.data?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+          //   type: "success",
+          // });
+          // SetProjectData(response?.data?.details[0]);
 
-      })
-      .catch((errResponse) => {
-        // setSnackData({
-        //   show: true,
-        //   message: errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-        //   type: "error",
-        // });
-        setChatloading(false);
-      });
+          // setChatloading(false);
+          // handlestandardChatUploadUpdate();
+          setStandardChatState(false);
+        })
+        .catch((errResponse) => {
+          // setSnackData({
+          //   show: true,
+          //   message: errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          //   type: "error",
+          // });
+          setChatloading(false);
+        });
     }
   };
 
   const handlestandardChatUploadUpdate = () => {
-   
     const updatedResponse = { ...projectData };
     updatedResponse.standardUploaded = "true";
 
     const previousData = { ...projectData };
-    const newHistory = createHistoryObject(updatedResponse, previousData,"StandardUpdates");
-    
+    const newHistory = createHistoryObject(
+      updatedResponse,
+      previousData,
+      "StandardUpdates"
+    );
+
     setHistoryData((prevState) => {
       const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
       // After the state update, include the updated history in the updatedResponse
-      const updatedResponseWithHistory = { ...updatedResponse, history: updatedHistory };
-      
+      const updatedResponseWithHistory = {
+        ...updatedResponse,
+        history: updatedHistory,
+      };
+
       // You can also call UpdateProjectDetails here, using the updated response with history
       UpdateProjectDetails(updatedResponseWithHistory, false);
-  
+
       return { history: updatedHistory }; // Update state with the new history array
     });
     // UpdateProjectDetails(updatedResponse, false);
-
   };
-
 
   const UpdateProjectChatDetails = (payload, countUpdate = false) => {
     ProjectApiService.projectChatUpdate(payload)
@@ -666,6 +707,45 @@ const ProjectView = () => {
       });
   };
 
+  const updateProjectComplianceAssessment = async (payload) => {
+    try {
+      console.log("payload", payload);
+      await ProjectApiService.projectUpdateComplianceAssessment(payload).then(
+        (response) => {
+          setSnackData({
+            show: true,
+            message:
+              response?.message || API_SUCCESS_MESSAGE.UPDATED_SUCCESSFULLY,
+            type: "success",
+          });
+          setLoading(false);
+        }
+      );
+      fetchDetails(id);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const updateProjectChecklist = async (payload) => {
+    try {
+      await ProjectApiService.projectUpdateChecklist(payload).then(
+        (response) => {
+          setSnackData({
+            show: true,
+            message:
+              response?.message || API_SUCCESS_MESSAGE.UPDATED_SUCCESSFULLY,
+            type: "success",
+          });
+          setLoading(false);
+        }
+      );
+      fetchDetails(id);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
@@ -674,31 +754,37 @@ const ProjectView = () => {
     // Handle the file upload logic here
     const updatedResponse = { ...projectData };
 
-    if(uploadedDocument)
-    {
-    // Append the new documents to the existing documents array
-    updatedResponse.documents = [
-      ...updatedResponse.documents,
-      ...uploadedDocument,
-    ];
-    SetProjectData(updatedResponse);
-    setOpenModal(false); // Close the modal after upload
-    setLoading(true);
-
-    const previousData = { ...projectData };
-    const newHistory = createHistoryObject(uploadedDocument, previousData,'documentUpload');
-    setHistoryData((prevState) => {
-      const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
-      // After the state update, include the updated history in the updatedResponse
-      const updatedResponseWithHistory = { ...updatedResponse, history: updatedHistory };
-      
-      // You can also call UpdateProjectDetails here, using the updated response with history
+    if (uploadedDocument) {
+      // Append the new documents to the existing documents array
+      updatedResponse.documents = [
+        ...updatedResponse.documents,
+        ...uploadedDocument,
+      ];
+      SetProjectData(updatedResponse);
+      setOpenModal(false); // Close the modal after upload
       setLoading(true);
-      UpdateProjectDetails(updatedResponseWithHistory, false);
-  
-      return { history: updatedHistory }; // Update state with the new history array
-    });
-  }
+
+      const previousData = { ...projectData };
+      const newHistory = createHistoryObject(
+        uploadedDocument,
+        previousData,
+        "documentUpload"
+      );
+      setHistoryData((prevState) => {
+        const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
+        // After the state update, include the updated history in the updatedResponse
+        const updatedResponseWithHistory = {
+          ...updatedResponse,
+          history: updatedHistory,
+        };
+
+        // You can also call UpdateProjectDetails here, using the updated response with history
+        setLoading(true);
+        UpdateProjectDetails(updatedResponseWithHistory, false);
+
+        return { history: updatedHistory }; // Update state with the new history array
+      });
+    }
 
     // UpdateProjectDetails(updatedResponse, false);
   };
@@ -754,21 +840,44 @@ const ProjectView = () => {
   };
 
   // Helper function to create a history object based on changes
-  const createHistoryObject = (data, previousData,heading) => {
-
+  const createHistoryObject = (data, previousData, heading) => {
     const historyItem = {
       changedby: userName,
       date: new Date().toISOString(),
       changes: {
-        projectName: heading === "projectDetails" ? data?.projectName !== previousData.project_name ? data.projectName : '':"",
-        projectNo: heading === "projectDetails" ? data?.projectNo !== previousData.project_no ? data.projectNo : '':"",
-        description: heading === "projectDetails" ? data?.projectDesc !== previousData.project_description ? data.projectDesc : '':"",
-        invite: '', 
-        documents: heading === "documentUpload" ? data ? data : '':"", 
-        checklistRun: heading === "checklistRun" ? "Run to generated checklist report" :'', 
-        assessmentRun: heading === "assessmentRun" ? "Run to generate Assessment report" :'',
-        standardUplaoded: heading === "StandardUpdates" ? data.standardUploaded !== previousData.standardUploaded ? data.standardUploaded : '':"",
-        status: previousData.status, 
+        projectName:
+          heading === "projectDetails"
+            ? data?.projectName !== previousData.project_name
+              ? data.projectName
+              : ""
+            : "",
+        projectNo:
+          heading === "projectDetails"
+            ? data?.projectNo !== previousData.project_no
+              ? data.projectNo
+              : ""
+            : "",
+        description:
+          heading === "projectDetails"
+            ? data?.projectDesc !== previousData.project_description
+              ? data.projectDesc
+              : ""
+            : "",
+        invite: "",
+        documents: heading === "documentUpload" ? (data ? data : "") : "",
+        checklistRun:
+          heading === "checklistRun" ? "Run to generated checklist report" : "",
+        assessmentRun:
+          heading === "assessmentRun"
+            ? "Run to generate Assessment report"
+            : "",
+        standardUplaoded:
+          heading === "StandardUpdates"
+            ? data.standardUploaded !== previousData.standardUploaded
+              ? data.standardUploaded
+              : ""
+            : "",
+        status: previousData.status,
       },
     };
     return historyItem;
@@ -782,16 +891,23 @@ const ProjectView = () => {
     updatedResponse.project_no = data.projectNo;
     updatedResponse.invite_members = data.invite_Users;
     updatedResponse.invited_user_list = data.invited_user_list;
-    const newHistory = createHistoryObject(data, previousData,"projectDetails");
+    const newHistory = createHistoryObject(
+      data,
+      previousData,
+      "projectDetails"
+    );
     setHistoryData((prevState) => {
       const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
       // After the state update, include the updated history in the updatedResponse
-      const updatedResponseWithHistory = { ...updatedResponse, history: updatedHistory };
-      
+      const updatedResponseWithHistory = {
+        ...updatedResponse,
+        history: updatedHistory,
+      };
+
       // You can also call UpdateProjectDetails here, using the updated response with history
       setLoading(true);
       UpdateProjectDetails(updatedResponseWithHistory, false);
-  
+
       return { history: updatedHistory }; // Update state with the new history array
     });
 
@@ -903,16 +1019,26 @@ const ProjectView = () => {
                             <FileStructureView data={projectData} />
                           </Box>
                         </Grid>
-                        {projectData?.status === "Processing" &&
-                          <Grid item xs={12} sm={12} md={12} lg={12} style={{justifyItems:"center",marginTop:"40px"}}>
+                        {projectData?.status === "Processing" && (
+                          <Grid
+                            item
+                            xs={12}
+                            sm={12}
+                            md={12}
+                            lg={12}
+                            style={{
+                              justifyItems: "center",
+                              marginTop: "40px",
+                            }}
+                          >
                             {/* <Typography>
                               {PROJECT_DETAIL_PAGE.CURRENT_PROGRESS_STATUS}
                             </Typography> */}
-                            
+
                             <img src={processIcon} width="150px" />
                             <ProgressBarView />
                           </Grid>
-                        }
+                        )}
                       </Grid>
                     </Grid>
                     <Grid item xs={12} sm={4} md={4} lg={4}>
@@ -949,7 +1075,13 @@ const ProjectView = () => {
                         <Button
                           variant="outlined"
                           onClick={() => setOpenModal(true)} // Open modal on button click
-                          disabled={projectData?.status === "Processing" ? true : disableButton ? true : false}
+                          disabled={
+                            projectData?.status === "Processing"
+                              ? true
+                              : disableButton
+                                ? true
+                                : false
+                          }
                         >
                           {BUTTON_LABEL.UPLOAD_ADDITIONAL_DOCUMENTS}
                         </Button>
@@ -960,27 +1092,58 @@ const ProjectView = () => {
 
                         {/* <input type="file" id="fileInput" /> */}
                         <Tooltip title="It will create a checklist report">
-                        <Button
-                          variant="contained"
-                          sx={{ mt: 2 }}
-                          // disabled={projectData.documents?.length > 0 && projectData?.regulatory_standard ? false : true}
-                          disabled={projectData?.regulatory_standard ? projectData.checkListResponse ? true: projectData?.status === "Processing" ? true :  disableButton ? true : false : true}
-                          onClick={() => runChecklkistCRT() }
-                        >
-                         {BUTTON_LABEL.RUN_CHECKLIST} 
-                        </Button>
+                          <Button
+                            variant="contained"
+                            sx={{ mt: 2 }}
+                            // disabled={projectData.documents?.length > 0 && projectData?.regulatory_standard ? false : true}
+                            disabled={
+                              projectData?.regulatory_standard
+                                ? projectData.checkListResponse
+                                  ? true
+                                  : projectData?.status === "Processing"
+                                    ? true
+                                    : disableButton
+                                      ? true
+                                      : false
+                                : true
+                            }
+                            onClick={() => runChecklkistCRT()}
+                          >
+                            {BUTTON_LABEL.RUN_CHECKLIST}
+                          </Button>
                         </Tooltip>
-                        <Tooltip title={projectData.checkListResponse ? "Use the requirements from the created check list to run a compliance assessment for the uploaded project document" :"End to end process of creating a check list, assessment of uploaded project documents based on the created check list"
-                        }>
-                        <Button
-                          variant="contained"
-                          sx={{ mt: 2 }}
-                          // disabled={projectData.documents?.length > 0 && projectData?.regulatory_standard ? false : true}
-                          disabled={projectData?.status === "Processing" ? true : disableButton ? true : false}
-                          onClick={() => runComplianceAssessmenet(projectData.checkListResponse,projectData?.project_id, projectData.checkListResponse? "partial":"full")}
+                        <Tooltip
+                          title={
+                            projectData.checkListResponse
+                              ? "Use the requirements from the created check list to run a compliance assessment for the uploaded project document"
+                              : "End to end process of creating a check list, assessment of uploaded project documents based on the created check list"
+                          }
                         >
-                         {projectData.checkListResponse ? BUTTON_LABEL.RUN_COMPLIANCE_ASSESSMENT : BUTTON_LABEL.PERFORM_COMPLETE_ASSESSMENT} 
-                        </Button>
+                          <Button
+                            variant="contained"
+                            sx={{ mt: 2 }}
+                            // disabled={projectData.documents?.length > 0 && projectData?.regulatory_standard ? false : true}
+                            disabled={
+                              projectData?.status === "Processing"
+                                ? true
+                                : disableButton
+                                  ? true
+                                  : false
+                            }
+                            onClick={() =>
+                              runComplianceAssessmenet(
+                                projectData.checkListResponse,
+                                projectData?.project_id,
+                                projectData.checkListResponse
+                                  ? "partial"
+                                  : "full"
+                              )
+                            }
+                          >
+                            {projectData.checkListResponse
+                              ? BUTTON_LABEL.RUN_COMPLIANCE_ASSESSMENT
+                              : BUTTON_LABEL.PERFORM_COMPLETE_ASSESSMENT}
+                          </Button>
                         </Tooltip>
                       </Box>
                     </Grid>
@@ -1001,23 +1164,41 @@ const ProjectView = () => {
                     {projectData?.checkListResponse ? (
                       <FileCard
                         fileName={PROJECT_DETAIL_PAGE.CHECKLIST_REPORT}
-                        data={projectData?.checkListResponse}   
+                        data={projectData?.checkListResponse}
                         projectData={projectData}
+                        updateProjectChecklist={updateProjectChecklist}
                       />
-                    ): projectData?.status === "Processing" && 
-                    <img src={processIcon} width="100px"  height="100px" style={{alignSelf:"center"}} />
-                  }
+                    ) : (
+                      projectData?.status === "Processing" && (
+                        <img
+                          src={processIcon}
+                          width="100px"
+                          height="100px"
+                          style={{ alignSelf: "center" }}
+                        />
+                      )
+                    )}
                     {projectData?.complianceAssesment ? (
                       <FileCard
                         fileName={PROJECT_DETAIL_PAGE.ASSESSMENT_REPORT}
                         data1={projectData?.complianceAssesment}
                         data={projectData?.checkListResponse}
                         projectData={projectData}
+                        updateProjectComplianceAssessment={
+                          updateProjectComplianceAssessment
+                        }
                       />
-                    ): projectData?.status === "Processing" && projectData?.checkListResponse && 
-                    <img src={processIcon} width="100px"  height="100px" style={{alignSelf:"center"}}/>
-                    }    
-                    
+                    ) : (
+                      projectData?.status === "Processing" &&
+                      projectData?.checkListResponse && (
+                        <img
+                          src={processIcon}
+                          width="100px"
+                          height="100px"
+                          style={{ alignSelf: "center" }}
+                        />
+                      )
+                    )}
                   </Box>
 
                   <Box
@@ -1032,12 +1213,15 @@ const ProjectView = () => {
                     <Typography style={{ fontSize: "18px" }}>
                       {PROJECT_DETAIL_PAGE.HISTORY_DETAILS}
                     </Typography>
-                    
-                    {projectData?.history !== undefined && projectData?.history !== null ?
-                      <HistoryDetails data={projectData?.history || historyValue}/>
-                      :
+
+                    {projectData?.history !== undefined &&
+                    projectData?.history !== null ? (
+                      <HistoryDetails
+                        data={projectData?.history || historyValue}
+                      />
+                    ) : (
                       <Empty />
-                    }
+                    )}
                     {/* <TimelineView /> */}
                   </Box>
                 </CustomTabPanel>
@@ -1076,12 +1260,16 @@ const ProjectView = () => {
         </Box>
 
         {/* File Upload Modal */}
-        <Dialog open={openModal} onClose={() => setOpenModal(false)} style={{zIndex:"999"}}>
+        <Dialog
+          open={openModal}
+          onClose={() => setOpenModal(false)}
+          style={{ zIndex: "999" }}
+        >
           <DialogTitle>Upload Documents</DialogTitle>
           <DialogContent>
             <DropZoneFileUpload
               label="You can only upload project documents"
-              typeSelect={false}        
+              typeSelect={false}
               handleSubmitDocument={handleFileChange}
               maxFile={0}
             />
@@ -1090,7 +1278,12 @@ const ProjectView = () => {
             <Button onClick={() => setOpenModal(false)} color="primary">
               Cancel
             </Button>
-            <Button variant="contained" disabled={uploadedDocument?.length >0 ? false : true} onClick={handleFileUpload} color="primary">
+            <Button
+              variant="contained"
+              disabled={uploadedDocument?.length > 0 ? false : true}
+              onClick={handleFileUpload}
+              color="primary"
+            >
               Upload
             </Button>
           </DialogActions>
@@ -1121,11 +1314,18 @@ const ProjectView = () => {
           footer={null}
           width={500}
         >
-          <Box style={{justifyItems:"center"}}>
-          <img src={reportIcon}  width={"100px"}/>
-         <Typography style={{margin:"27px 5px"}}>We got your request and will notify you once it is ready.</Typography>
-         <Button variant="contained" onClick={()=>handleprogressModalClose()}>Close</Button>
-         </Box>
+          <Box style={{ justifyItems: "center" }}>
+            <img src={reportIcon} width={"100px"} />
+            <Typography style={{ margin: "27px 5px" }}>
+              We got your request and will notify you once it is ready.
+            </Typography>
+            <Button
+              variant="contained"
+              onClick={() => handleprogressModalClose()}
+            >
+              Close
+            </Button>
+          </Box>
         </Modal>
 
         {/* Snackbar */}
