@@ -1257,12 +1257,7 @@ const ProjectView = () => {
                 {/* 4th Tab */}
                 <CustomTabPanel value={value} index={3}>
                   <AssessmentHistoryTable
-                    assessmentHistory={(projectData?.assessment_history || [])
-                      .slice()
-                      .sort(
-                        (a, b) =>
-                          new Date(b.updated_at) - new Date(a.updated_at)
-                      )}
+                    assessmentHistory={projectData?.assessment_history}
                   />
                 </CustomTabPanel>
               </Box>
