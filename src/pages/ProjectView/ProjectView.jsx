@@ -707,7 +707,6 @@ const ProjectView = () => {
 
   const updateProjectComplianceAssessment = async (payload) => {
     try {
-      console.log("payload", payload);
       await ProjectApiService.projectUpdateComplianceAssessment(payload).then(
         (response) => {
           setSnackData({
@@ -719,6 +718,7 @@ const ProjectView = () => {
           setLoading(false);
         }
       );
+      setLoading(true);
       fetchDetails(id);
     } catch (error) {
       console.log(error);
@@ -1257,7 +1257,12 @@ const ProjectView = () => {
                 {/* 4th Tab */}
                 <CustomTabPanel value={value} index={3}>
                   <AssessmentHistoryTable
-                    assessmentHistory={projectData?.assessment_history}
+                    assessmentHistory={(projectData?.assessment_history || [])
+                      .slice()
+                      .sort(
+                        (a, b) =>
+                          new Date(b.updated_at) - new Date(a.updated_at)
+                      )}
                   />
                 </CustomTabPanel>
               </Box>
