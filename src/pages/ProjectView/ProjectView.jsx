@@ -11,11 +11,9 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  TextField,
   Tooltip,
 } from "@mui/material";
 import PropTypes from "prop-types";
-import TimelineView from "./TimelineView";
 import FileStructureView from "./FileStructureView";
 import AnalyticEcommerce from "components/cards/statistics/AnalyticEcommerce";
 import ProjectDetailsCardView from "./ProjectDetailCardView2";
@@ -50,9 +48,9 @@ import reportIcon from "../../assets/images/icons/report1.png";
 import processIcon from "../../assets/images/process.png";
 import { formatDate, formatDateToCustomFormat } from "shared/utility";
 import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
+import AssessmentHistoryTable from "components/AssessmentHistoryTable";
 
 const ProjectView = () => {
-  const navigate = useNavigate();
   const [value, setValue] = React.useState(0);
   const location = useLocation();
   const { projectName, runAssessmentState } = location.state || {};
@@ -964,6 +962,7 @@ const ProjectView = () => {
                     <Tab label={TAB_LABEL.OVERVIEW} {...a11yProps(0)} />
                     <Tab label={TAB_LABEL.SUMMARY_REPORT} {...a11yProps(1)} />
                     <Tab label={TAB_LABEL.CHAT_AI} {...a11yProps(2)} />
+                    <Tab label={TAB_LABEL.VERSION_HISTORY} {...a11yProps(3)} />
                   </Tabs>
                 </Box>
 
@@ -1253,6 +1252,13 @@ const ProjectView = () => {
                     )}
                     {/* </Spin> */}
                   </Box>
+                </CustomTabPanel>
+
+                {/* 4th Tab */}
+                <CustomTabPanel value={value} index={3}>
+                  <AssessmentHistoryTable
+                    assessmentHistory={projectData?.assessment_history}
+                  />
                 </CustomTabPanel>
               </Box>
             </Grid>

@@ -7,7 +7,6 @@ export const updateObject = (oldObject, updatedProps) => {
   };
 };
 
-
 export const formatDate = (value) => {
   const date = new Date(value);
   // Format the date as needed
@@ -20,18 +19,36 @@ export const formatDate = (value) => {
   return formattedDate;
 };
 
+export const formatDateTime = (value) => {
+  if (!value) return "";
 
-export const formatDateToCustomFormat=(dateString)=> {
+  const isoString = value.replace(" ", "T").replace(/\.\d+$/, "") + "Z";
+  const date = new Date(isoString);
+
+  const formattedDateTime = date.toLocaleString(undefined, {
+    year: "numeric",
+    month: "short", // e.g., Jan, Feb
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true, // for AM/PM format
+  });
+
+  return formattedDateTime;
+};
+
+export const formatDateToCustomFormat = (dateString) => {
   const date = new Date(dateString); // Parse the date string
-  
+
   // Get the individual components
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based, so we add 1
-  const day = String(date.getDate()).padStart(2, '0');
-  
+  const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-based, so we add 1
+  const day = String(date.getDate()).padStart(2, "0");
+
   // Return formatted date as "YYYY-MM-DD 00:00:00"
   return `${year}-${month}-${day} 00:00:00`;
-}
+};
 
 export const getStatusChipProps = (status) => {
   let color;
@@ -39,49 +56,48 @@ export const getStatusChipProps = (status) => {
   let title;
 
   switch (status) {
-    case 'In Progress':
-      color = '#fffbe6';
-      borderColor = 'warning';
-      title = 'In Progress';
+    case "In Progress":
+      color = "#fffbe6";
+      borderColor = "warning";
+      title = "In Progress";
       break;
-    case 'Processing':
-        color = '#e6f7ff';
-        borderColor = 'primary';
-        title = 'Processing';
-        break;
-    case 'Draft':
-      color = '#e6f7ff';
-      borderColor = 'primary';
-      title = 'Draft';
+    case "Processing":
+      color = "#e6f7ff";
+      borderColor = "primary";
+      title = "Processing";
       break;
-    case 'Success':
-      case 'Completed':
-    case 'Active':
-      color = '#f6ffed';
-      borderColor = 'success';
-      title = 'Success';
+    case "Draft":
+      color = "#e6f7ff";
+      borderColor = "primary";
+      title = "Draft";
       break;
-    case 'Valid':
-        color = '#f6ffed';
-        borderColor = 'success';
-        title = 'Valid';
-        break;
-    case 'Failed':
-      color = '#fff1f0';
-      borderColor = 'error';
-      title = 'Failed';
+    case "Success":
+    case "Completed":
+    case "Active":
+      color = "#f6ffed";
+      borderColor = "success";
+      title = "Success";
       break;
-    case 'Expired':
-        color = '#fff1f0';
-        borderColor = 'error';
-        title = 'Expired';
-        break;
+    case "Valid":
+      color = "#f6ffed";
+      borderColor = "success";
+      title = "Valid";
+      break;
+    case "Failed":
+      color = "#fff1f0";
+      borderColor = "error";
+      title = "Failed";
+      break;
+    case "Expired":
+      color = "#fff1f0";
+      borderColor = "error";
+      title = "Expired";
+      break;
     default:
-      color = '#e6f7ff';
-      borderColor = 'primary';
-      title = 'None';
+      color = "#e6f7ff";
+      borderColor = "primary";
+      title = "None";
   }
 
   return { title, color, borderColor };
 };
-

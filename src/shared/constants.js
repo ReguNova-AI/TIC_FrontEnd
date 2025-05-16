@@ -10,9 +10,10 @@ export const LOGIN_PAGE = {
   REQUEST_BUTTON: "Request for access",
   FORGOT_PASSWORD: "Forgot Password?",
   SEND_REQUEST: "Send Request",
-  OTP_DESC:"Please enter the OTP (One Time Password) sent to your register email id to complete your verification",
-  NEW_PASSWORD:"New Password",
-  CONFIRM_PASSWORD:"Confirm Password"
+  OTP_DESC:
+    "Please enter the OTP (One Time Password) sent to your register email id to complete your verification",
+  NEW_PASSWORD: "New Password",
+  CONFIRM_PASSWORD: "Confirm Password",
 };
 
 export const API_SUCCESS_MESSAGE = {
@@ -20,21 +21,21 @@ export const API_SUCCESS_MESSAGE = {
   USER_CREATED: "User created successfully",
   DETAILS_UPDATED: "Details updated successfully",
   LOGGED_OUT: "Logged out successfully",
-  OTP_SENT:"OTP sent successfully",
-  PASSWORD_RESET:"Password reset successfully",
-  OTP_VERIFY:"OTP verified successfully",
+  OTP_SENT: "OTP sent successfully",
+  PASSWORD_RESET: "Password reset successfully",
+  OTP_VERIFY: "OTP verified successfully",
   UPDATED_SUCCESSFULLY: "Data updated successfully",
   DOWNLOADED_SUCCESSFULLY: "File downloaded successfully",
-  DELETED_SUCCESSFULLY:"Deleted successfully",
-  UPLOADED_SUCCESSFULLY:"Uploaded successfully",
-  SECTOR_DELETED:"Sector deleted successfully",
-  USER_DISABLED:"User access is disabled successfully",
-  USER_ENABLED:"User access is enabled successfully",
-  ORG_DISABLED:"Organization access is disabled successfully",
-  ORG_ENABLED:"Organization access is enabled successfully",
-  INDUSTRY_DELETED:"Industry deleted successfully",
-  ROLE_DELETED:"Role deleted successfully",
-  STANDARD_DELETED:"Standard deleted successfully",
+  DELETED_SUCCESSFULLY: "Deleted successfully",
+  UPLOADED_SUCCESSFULLY: "Uploaded successfully",
+  SECTOR_DELETED: "Sector deleted successfully",
+  USER_DISABLED: "User access is disabled successfully",
+  USER_ENABLED: "User access is enabled successfully",
+  ORG_DISABLED: "Organization access is disabled successfully",
+  ORG_ENABLED: "Organization access is enabled successfully",
+  INDUSTRY_DELETED: "Industry deleted successfully",
+  ROLE_DELETED: "Role deleted successfully",
+  STANDARD_DELETED: "Standard deleted successfully",
 };
 
 export const API_ERROR_MESSAGE = {
@@ -43,14 +44,14 @@ export const API_ERROR_MESSAGE = {
   FILE_SIZE_200MB: "Total file size should not exceed 200MB.",
   PLEASE_SELECT_DOC_TYPE: "Please select a document type.",
   NO_FILE_SELECTED: "No file selected",
-  INCORRECT_EMAIL:"Email Id is not valid",
-  INVALID_OTP:"Invalid OTP",
-  VERIFY_OTP:"Error occurred while verifying OTP.",
-  CUSTOM_REGULATORY_SINGLE_FILE_ONLY : "You can upload only one Standard document",
+  INCORRECT_EMAIL: "Email Id is not valid",
+  INVALID_OTP: "Invalid OTP",
+  VERIFY_OTP: "Error occurred while verifying OTP.",
+  CUSTOM_REGULATORY_SINGLE_FILE_ONLY:
+    "You can upload only one Standard document",
   DOCUMENT_NOT_FOUND: "Please add Project documents to run the assessment",
-  FAILED_TO_RUN_ASSESSMENT : "Failed to run assessment",
-  PASSWORD_EXPIRED:"Your password is expired please try to reset it",
-
+  FAILED_TO_RUN_ASSESSMENT: "Failed to run assessment",
+  PASSWORD_EXPIRED: "Your password is expired please try to reset it",
 };
 
 export const STORAGE_KEYS = {
@@ -112,24 +113,25 @@ export const LISTING_PAGE = Object.freeze({
   DATE_OF_ISSUE: "Date of Issue",
   DATE_OF_EXPIRE: "Expires",
   ORG_NAME: "Organization Name",
-  ORG_EMAIL:"Email ID",
-  ORG_PRIMARY_EMAIL:"Primary Email ID",
-  ORG_WEBSITE:"Website",
-  ORG_ADDRESS:"Address",
-  ROLE:"Role",
-  DESCRIPTION:"Description",
-  FILE_UPLOADED:"File Uploaded",
-  PERMISSION_NAME:"Permission Name",
-  PERMISSION_DESC:"Description",
+  ORG_EMAIL: "Email ID",
+  ORG_PRIMARY_EMAIL: "Primary Email ID",
+  ORG_WEBSITE: "Website",
+  ORG_ADDRESS: "Address",
+  ROLE: "Role",
+  DESCRIPTION: "Description",
+  FILE_UPLOADED: "File Uploaded",
+  PERMISSION_NAME: "Permission Name",
+  PERMISSION_DESC: "Description",
   PERMISSION_CATEGORY: "Category",
-  STANDARD_NAME:"Standard Name",
-  CHECKLIST_GENERATED:"Checklist Generated",
+  STANDARD_NAME: "Standard Name",
+  CHECKLIST_GENERATED: "Checklist Generated",
 });
 
 export const TAB_LABEL = Object.freeze({
   OVERVIEW: "Overview",
   SUMMARY_REPORT: "Summary Report",
   CHAT_AI: "Chat AI",
+  VERSION_HISTORY: "Version History",
 });
 
 export const PROJECT_DETAIL_PAGE = Object.freeze({
@@ -158,15 +160,15 @@ export const BUTTON_LABEL = Object.freeze({
   SEARCH: "Search",
   RUN_PROJECT: "Run Assessment",
   RUN_FULL_PROJECT: "Run Full Assessment",
-  PERFORM_COMPLETE_ASSESSMENT:"Perform Complete Compliance Assessment",
-  RUN_COMPLIANCE_ASSESSMENT:"Run Compliance Assessment",
-  RUN_CHECKLIST:"Run Checklist",
+  PERFORM_COMPLETE_ASSESSMENT: "Perform Complete Compliance Assessment",
+  RUN_COMPLIANCE_ASSESSMENT: "Run Compliance Assessment",
+  RUN_CHECKLIST: "Run Checklist",
   SAVE_DRAFT: "Save as Draft",
-  SAVE_PROJECT:"Save Project",
+  SAVE_PROJECT: "Save Project",
   CREATE_PROJECT: "Add New Project",
   VIEW: "View",
   UPLOAD_DOCUMENTS: "Upload Documents",
-  UPLOAD_ADDITIONAL_DOCUMENTS:"Upload additional project documents",
+  UPLOAD_ADDITIONAL_DOCUMENTS: "Upload additional project documents",
   CREATE_USER: "Add New User",
   UPLOAD_CERTIFICATE: "Upload Certificate",
   SUBMIT: "Submit",
@@ -174,11 +176,11 @@ export const BUTTON_LABEL = Object.freeze({
   SKIP: "Skip",
   NEXT: "Next",
   FINISH: "Finish",
-  CREATE_ORGANIZATION:"Add New Organization",
-  LIST_VIEW:"List View",
-  ADD_NEW:"Add New",
-  CLOSE:"Close",
-  UPDATE:"Update",
+  CREATE_ORGANIZATION: "Add New Organization",
+  LIST_VIEW: "List View",
+  ADD_NEW: "Add New",
+  CLOSE: "Close",
+  UPDATE: "Update",
 });
 
 export const GENERIC_DATA_LABEL = Object.freeze({
@@ -225,22 +227,21 @@ export const FORM_LABEL = Object.freeze({
   INDUSTRY: "Industry",
   ROLE: "Role",
   ORG_NAME: "Organization Name",
-  ORG_WEBSITE:"Website URL",
-  ORG_LOGO:"Logo",
-  ORG_EMAIL:"Organization Email ID",
-  PRIMARY_CONTACT:"Primary Contact Details",
-  SECONDARY_CONTACT:"Secondary Contact Details",
-  SECTOR_NAME:"Sector Name",
+  ORG_WEBSITE: "Website URL",
+  ORG_LOGO: "Logo",
+  ORG_EMAIL: "Organization Email ID",
+  PRIMARY_CONTACT: "Primary Contact Details",
+  SECONDARY_CONTACT: "Secondary Contact Details",
+  SECTOR_NAME: "Sector Name",
   INDUSTRY_NAME: "Industry Name",
-  ROLE_NAME:"Role Name",
-  ROLE_DESC:"Description",
+  ROLE_NAME: "Role Name",
+  ROLE_DESC: "Description",
   STANDARD_NAME: "Standard Name",
-
 });
 export const STEPPER_LABEL = Object.freeze({
   PROJECT_CREATION: "Project Creation",
-  PROJECT_DOCUMENT:"Project Document",
-  STANDARD_DOCUMENT:"Regulatory Standards",
+  PROJECT_DOCUMENT: "Project Document",
+  STANDARD_DOCUMENT: "Regulatory Standards",
   CUSTOM_STANDARD_DOCUMENT: "Custom Standard Document",
   IN_PROGRESS: "In Progress",
   CHECKLIST_REPORT: "Checklist Report",
@@ -252,7 +253,7 @@ export const STEPPER_LABEL = Object.freeze({
   PERSONAl_DETAILS: "Personal Detail",
   ADDRESS_DETAILS: "Address Details",
   ORG_DETAILS: "Organization Details",
-  ORG_CONTACT:"Contact Details"
+  ORG_CONTACT: "Contact Details",
 });
 
 export const FILE_TYPE = Object.freeze({
@@ -261,19 +262,21 @@ export const FILE_TYPE = Object.freeze({
   TEXT: "text",
   APPLICATION_PDF: "application/pdf",
   APPLICATION_EXCEL: "application/vnd.ms-excel",
-  APPLICATION_SHEET:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  APPLICATION_SHEET:
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   APPLICATION_WORD: "application/msword",
-  APPLICATION_OFFICE:"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  APPLICATION_OFFICE:
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   TEXT_CSV: "text/csv",
 });
 
 export const HEADING = Object.freeze({
   CREATE_NEW_PROJECT: "Create a New Project",
   CREATE_USER: "Create User",
-  CREATE_ORG:"Create Organization",
-  EDIT_PROJECT:"Edit Project Details",
-  INVITE_USERS:"Invite users",
-  PROGRESS:""
+  CREATE_ORG: "Create Organization",
+  EDIT_PROJECT: "Edit Project Details",
+  INVITE_USERS: "Invite users",
+  PROGRESS: "",
 });
 
 export const CLOSE_ALERT_DESCRIPTION =

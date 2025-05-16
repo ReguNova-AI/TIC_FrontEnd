@@ -1,24 +1,30 @@
-import React from 'react';
-import { Timeline, Card, Col, Row, Space } from 'antd';
-import { EditOutlined, FileTextOutlined, FileImageOutlined, FileOutlined } from '@ant-design/icons';
-// import './TimelineView.css';
+import React from "react";
+import { Timeline, Card, Space } from "antd";
+import { FileOutlined } from "@ant-design/icons";
 
-const HistoryDetails = ({data}) => {
+const HistoryDetails = ({ data }) => {
   const formatDate = (dateString) => {
+    console.log("dateString", dateString);
     const date = new Date(dateString);
+    console.log("date", date.toLocaleString());
     return date.toLocaleString(); // You can customize the format as needed
   };
 
   const renderChange = (change) => {
     const entries = Object.entries(change);
     return entries.map(([key, value]) => {
-      if (key === 'documents' && value.length > 0) {
+      if (key === "documents" && value.length > 0) {
         return (
           <div key={key}>
             <Space direction="vertical">
               <strong>Documents uploaded:</strong>
               {value.map((doc, index) => (
-                <a href={doc.path} key={index} target="_blank" rel="noopener noreferrer">
+                <a
+                  href={doc.path}
+                  key={index}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <FileOutlined /> {doc.name}
                 </a>
               ))}
@@ -26,35 +32,35 @@ const HistoryDetails = ({data}) => {
           </div>
         );
       }
-      if (key === 'projectName' && value) {
+      if (key === "projectName" && value) {
         return (
           <div key={key}>
             <strong>Project Name:</strong> {value}
           </div>
         );
       }
-      if (key === 'projectNo' && value) {
+      if (key === "projectNo" && value) {
         return (
           <div key={key}>
             <strong>Project No.:</strong> {value}
           </div>
         );
       }
-      if (key === 'description' && value) {
+      if (key === "description" && value) {
         return (
           <div key={key}>
             <strong>Description:</strong> {value}
           </div>
         );
       }
-      if (key === 'checklistRun' && value) {
+      if (key === "checklistRun" && value) {
         return (
           <div key={key}>
             <strong>Checklist generated</strong>
           </div>
         );
       }
-      if (key === 'assessmentRun' && value) {
+      if (key === "assessmentRun" && value) {
         return (
           <div key={key}>
             <strong>Run Assessment</strong>
@@ -62,9 +68,7 @@ const HistoryDetails = ({data}) => {
         );
       }
 
-      
-
-      if (key === 'status' && value) {
+      if (key === "status" && value) {
         return (
           <div key={key}>
             <strong>Current Status:</strong> {value}
@@ -76,10 +80,10 @@ const HistoryDetails = ({data}) => {
   };
 
   return (
-    <Timeline mode="alternate" >
+    <Timeline mode="alternate">
       {data?.map((changeEntry, index) => (
-        <Timeline.Item key={index} label={formatDate(changeEntry.date)} >
-          <Card title={`${changeEntry.changedby}`} >
+        <Timeline.Item key={index} label={formatDate(changeEntry.date)}>
+          <Card title={`${changeEntry.changedby}`}>
             {renderChange(changeEntry.changes)}
           </Card>
         </Timeline.Item>

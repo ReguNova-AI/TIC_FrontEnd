@@ -48,9 +48,10 @@ import {
 } from "docx";
 import { OrganisationApiService } from "services/api/OrganizationAPIService";
 import logo from "../../assets/images/logo1.jpeg";
+import DocumentDialog from "../../components/@extended/DocumentDialog";
 
 // Function to parse the API response into a structured format (skipping the title)
-const parseApiResponse = (response) => {
+export const parseApiResponse = (response) => {
   // If the response contains 'checklist' (new checklist format)
   if (response.checklist && Array.isArray(response.checklist)) {
     let checklist = response.checklist;
@@ -345,6 +346,47 @@ const parseApiResponse = (response) => {
   }
 };
 
+export const extractAnswerAndExplanation = (questions, dataValue) => {
+  return (
+    dataValue &&
+    dataValue?.map((item, index) => {
+      const normalizedItem = item.toLowerCase(); // Normalize the string to lowercase
+
+      // Check if it contains "yes" or "no" (in any capitalization)
+      let answer = "";
+      let explanation = "";
+
+      // if (normalizedItem.includes("yes")) {
+      //   answer = "YES";
+      //   explanation = item.replace(/\byes\b/i, "").trim(); // Remove only the first "yes" (case insensitive)
+      // } else if (normalizedItem.includes("no")) {
+      //   answer = "NO";
+      //   explanation = item.replace(/\bno\b/i, "").trim(); // Remove only the first "no" (case insensitive)
+      // }
+
+      // Check if it starts with YES or NO
+      if (/^yes\b/i.test(normalizedItem)) {
+        answer = "YES";
+        explanation = normalizedItem.replace(/^yes\b/i, "").trim();
+      } else if (/^no\b/i.test(normalizedItem)) {
+        answer = "NO";
+        explanation = normalizedItem.replace(/^no\b/i, "").trim();
+      }
+
+      // Remove unwanted punctuation (., -) from the start or end of the explanation
+      explanation = explanation.replace(/[.,-]+$/, "").trim(); // Remove trailing punctuation
+      explanation = explanation.replace(/^[.,-]+/, "").trim(); // Remove leading punctuation
+
+      // Combine the question with the answer and explanation
+      return {
+        question: questions[index], // Add the corresponding question
+        answer,
+        explanation,
+      };
+    })
+  );
+};
+
 function cleanTitle(text, keyword, preserveLabel = false) {
   let cleaned = text
     .replace(new RegExp(`^(${keyword})\\s*[:\\-]?\\s*`, "i"), "") // Remove keyword label
@@ -507,46 +549,6 @@ const FileCard = ({
     });
 
     return result;
-  };
-  const extractAnswerAndExplanation = (questions, dataValue) => {
-    return (
-      dataValue &&
-      dataValue?.map((item, index) => {
-        const normalizedItem = item.toLowerCase(); // Normalize the string to lowercase
-
-        // Check if it contains "yes" or "no" (in any capitalization)
-        let answer = "";
-        let explanation = "";
-
-        // if (normalizedItem.includes("yes")) {
-        //   answer = "YES";
-        //   explanation = item.replace(/\byes\b/i, "").trim(); // Remove only the first "yes" (case insensitive)
-        // } else if (normalizedItem.includes("no")) {
-        //   answer = "NO";
-        //   explanation = item.replace(/\bno\b/i, "").trim(); // Remove only the first "no" (case insensitive)
-        // }
-
-        // Check if it starts with YES or NO
-        if (/^yes\b/i.test(normalizedItem)) {
-          answer = "YES";
-          explanation = normalizedItem.replace(/^yes\b/i, "").trim();
-        } else if (/^no\b/i.test(normalizedItem)) {
-          answer = "NO";
-          explanation = normalizedItem.replace(/^no\b/i, "").trim();
-        }
-
-        // Remove unwanted punctuation (., -) from the start or end of the explanation
-        explanation = explanation.replace(/[.,-]+$/, "").trim(); // Remove trailing punctuation
-        explanation = explanation.replace(/^[.,-]+/, "").trim(); // Remove leading punctuation
-
-        // Combine the question with the answer and explanation
-        return {
-          question: questions[index], // Add the corresponding question
-          answer,
-          explanation,
-        };
-      })
-    );
   };
 
   // Function to handle opening the modal
@@ -1178,278 +1180,23 @@ const FileCard = ({
       </Card>
 
       {/* Modal Popup */}
-      <Dialog
+      <DocumentDialog
         open={openModal}
-        onClose={(event, reason) => {
-          if (reason !== "backdropClick") {
-            handleCloseModal();
-          }
-        }}
-        fullWidth
-        maxWidth="lg"
-        style={{ zIndex: "999999" }}
-      >
-        <DialogTitle>
-          File Details
-          <FormControlLabel
-            style={{ float: "right" }}
-            control={
-              <Switch
-                checked={editMode}
-                onChange={() => setEditMode(!editMode)}
-              />
-            }
-            label="Edit mode"
-          />
-        </DialogTitle>
-
-        <DialogContent>
-          <MuiBox sx={{ width: "100%" }}>
-            {fileName === "Assessment Report" ? (
-              <Box sx={{ width: "100%", marginTop: 2 }}>
-                <Table sx={{ minWidth: 650 }}>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>
-                        <strong>Requirements</strong>
-                      </TableCell>
-                      <TableCell align="center">
-                        <strong>Fulfilled or Not</strong>
-                      </TableCell>
-                      <TableCell>
-                        <strong>Explanation</strong>
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {complianceData?.map((item, index) => (
-                      <TableRow key={index}>
-                        <TableCell sx={{ width: "45%" }}>
-                          <Typography>{item.question}</Typography>
-                        </TableCell>
-
-                        <TableCell align="center" sx={{ width: "10%" }}>
-                          {editMode ? (
-                            <Switch
-                              checked={item.answer === "YES"}
-                              onChange={(e) =>
-                                handleAnswerChange(index, e.target.checked)
-                              }
-                              color="success"
-                              size="small"
-                              // sx={{
-                              //   "& .MuiSwitch-switchBase": {
-                              //     "&.Mui-checked": {
-                              //       color: "green",
-                              //     },
-                              //     "&.Mui-checked + .MuiSwitch-track": {
-                              //       backgroundColor: "green",
-                              //     },
-                              //     "&:not(.Mui-checked)": {
-                              //       color: "red",
-                              //     },
-                              //     "&:not(.Mui-checked) + .MuiSwitch-track": {
-                              //       backgroundColor: "red",
-                              //     },
-                              //   },
-                              // }}
-                            />
-                          ) : (
-                            <Box fontSize="18px">
-                              {renderAnswerIcon(item.answer)}
-                            </Box>
-                          )}
-                        </TableCell>
-
-                        <TableCell sx={{ width: "45%" }}>
-                          {editMode ? (
-                            <>
-                              <TextField
-                                variant="standard"
-                                multiline
-                                fullWidth
-                                minRows={2}
-                                value={item.explanation}
-                                onChange={(e) =>
-                                  handleExplanationChange(index, e.target.value)
-                                }
-                              />
-                            </>
-                          ) : (
-                            <>
-                              <Typography variant="body2">
-                                {item.explanation}
-                              </Typography>
-                            </>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </Box>
-            ) : (
-              <>
-                <Tabs
-                  value={activeTab}
-                  onChange={handleTabChange}
-                  aria-label="file-tabs"
-                  scrollButtons="auto"
-                  variant="scrollable"
-                >
-                  {/* Dynamically generate tabs */}
-                  {/* {sections.map((section, index) => {
-                    if (section.title === "Title:" && !activeTabflag) {
-                      setActiveTabflag(true);
-                      handleTabChange("", 1);
-                    }
-                    return (
-                      section !== undefined &&
-                      section !== "" &&
-                      section !== null && (
-                        <Tab
-                          key={index}
-                          label={section.title}
-                          style={{
-                            display:
-                              section.title === "Title:" ? "none" : "block",
-                          }}
-                        />
-                      )
-                    );
-                  })} */}
-
-                  {sections.map((section, index) => {
-                    if (section.title.includes("Title:") && !activeTabflag) {
-                      setActiveTabflag(true);
-                      handleTabChange("", 1);
-                    }
-                    return (
-                      section !== undefined &&
-                      section !== "" &&
-                      section !== null && (
-                        <Tab
-                          key={index}
-                          style={{
-                            display: section.title.includes("Title:")
-                              ? "none"
-                              : "block",
-                          }}
-                          label={
-                            editMode ? (
-                              <>
-                                <TextField
-                                  value={section.title}
-                                  placeholder="Enter tab title"
-                                  onChange={(e) =>
-                                    handleTabTitleChange(index, e.target.value)
-                                  }
-                                  variant="standard"
-                                />
-                                {/* // TODO: Add the ability to delete tabs */}
-                                {/* <IconButton
-                              onClick={() => handleDeleteTab(index)}
-                              size="small"
-                            >
-                              ❌
-                            </IconButton> */}
-                              </>
-                            ) : (
-                              section.title
-                            )
-                          }
-                        />
-                      )
-                    );
-                  })}
-                  {editMode && (
-                    <Button
-                      onClick={handleAddTab}
-                      size="small"
-                      style={{ marginLeft: "10px" }}
-                    >
-                      + Add Tab
-                    </Button>
-                  )}
-                </Tabs>
-
-                {/* Tab Content */}
-                {/* <Box sx={{ padding: 2 }}>
-                  {sections.length > 0 && (
-                    <Typography>
-                      <ul>
-                        {sections[activeTab]?.points.map((point, index) => (
-                          <li key={index}>
-                            <Typography>{point}</Typography>
-                          </li>
-                        ))}
-                      </ul>
-                    </Typography>
-                  )}
-                </Box> */}
-
-                {/* Tab Content */}
-                <Box sx={{ padding: 2 }}>
-                  {sections.length > 0 && (
-                    <Box>
-                      <ul>
-                        {sections[activeTab]?.points.map((point, index) => (
-                          <li key={index}>
-                            {editMode ? (
-                              <>
-                                <TextField
-                                  value={point}
-                                  placeholder="Enter point"
-                                  variant="standard"
-                                  multiline
-                                  fullWidth
-                                  onChange={(e) =>
-                                    handlePointChange(
-                                      activeTab,
-                                      index,
-                                      e.target.value
-                                    )
-                                  }
-                                />
-                                {/* // TODO: Add the ability to delete points */}
-                                {/* <IconButton
-                                  onClick={() => handleDeleteContentItem(index)}
-                                  size="large"
-                                >
-                                  ❌
-                                </IconButton> */}
-                              </>
-                            ) : (
-                              <Typography>{point}</Typography>
-                            )}
-                          </li>
-                        ))}
-                      </ul>
-                      {editMode && (
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          onClick={() => handleAddPoint(activeTab)}
-                        >
-                          + Add Point
-                        </Button>
-                      )}
-                    </Box>
-                  )}
-                </Box>
-              </>
-            )}
-          </MuiBox>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => handleSaveAll(fileName)} color="primary">
-            Save All
-          </Button>
-          <Button onClick={handleCloseModal} color="primary">
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onClose={handleCloseModal}
+        fileName={fileName}
+        editMode={editMode}
+        setEditMode={setEditMode}
+        complianceData={complianceData}
+        sections={sections}
+        handleTabTitleChange={handleTabTitleChange}
+        handleAnswerChange={handleAnswerChange}
+        handleExplanationChange={handleExplanationChange}
+        renderAnswerIcon={renderAnswerIcon}
+        handleAddTab={handleAddTab}
+        handleAddPoint={handleAddPoint}
+        handlePointChange={handlePointChange}
+        handleSaveAll={handleSaveAll}
+      />
     </>
   );
 };
