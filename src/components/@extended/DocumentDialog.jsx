@@ -27,11 +27,12 @@ const DocumentDialog = ({
   setEditMode,
   complianceData,
   sections,
+  setSections,
   handleTabTitleChange,
   handleAnswerChange,
   handleExplanationChange,
   renderAnswerIcon,
-  handleAddTab,
+  // handleAddTab,
   handleAddPoint,
   handlePointChange,
   handleSaveAll,
@@ -39,6 +40,12 @@ const DocumentDialog = ({
 }) => {
   const [localActiveTab, setLocalActiveTab] = React.useState(0);
   const [localTabFlag, setLocalTabFlag] = React.useState(false);
+
+  const handleAddTab = () => {
+    const updated = [...sections, { title: "title", points: [""] }];
+    setSections(updated);
+    setLocalActiveTab(updated.length - 1);
+  };
 
   const handleLocalTabChange = (event, newValue) => {
     setLocalActiveTab(newValue);

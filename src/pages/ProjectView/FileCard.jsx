@@ -464,15 +464,21 @@ const FileCard = ({
     setSections(updated);
   };
 
+  // const handleAddTab = () => {
+  //   setSections([
+  //     ...sections,
+  //     {
+  //       title: "",
+  //       points: [""],
+  //     },
+  //   ]);
+  //   setActiveTab(sections.length); // focus on new tab
+  // };
+
   const handleAddTab = () => {
-    setSections([
-      ...sections,
-      {
-        title: "",
-        points: [""],
-      },
-    ]);
-    setActiveTab(sections.length); // focus on new tab
+    const updated = [...sections, { title: "", points: [""] }];
+    setSections(updated);
+    setActiveTab(updated.length); // focus on the newly added tab
   };
 
   const handleAddPoint = (tabIndex) => {
@@ -1188,6 +1194,7 @@ const FileCard = ({
         setEditMode={setEditMode}
         complianceData={complianceData}
         sections={sections}
+        setSections={setSections}
         handleTabTitleChange={handleTabTitleChange}
         handleAnswerChange={handleAnswerChange}
         handleExplanationChange={handleExplanationChange}
