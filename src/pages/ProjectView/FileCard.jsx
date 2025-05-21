@@ -49,6 +49,7 @@ import {
 import { OrganisationApiService } from "services/api/OrganizationAPIService";
 import logo from "../../assets/images/logo1.jpeg";
 import DocumentDialog from "../../components/@extended/DocumentDialog";
+import { PROJECT_DETAIL_PAGE } from "shared/constants";
 
 // Function to parse the API response into a structured format (skipping the title)
 export const parseApiResponse = (response) => {
@@ -277,7 +278,6 @@ export const parseApiResponse = (response) => {
             .map((line) => line.replace(/^\d+(\.\d+)?\./, "").trim()),
         };
       }
-      console.log("lines", lines);
       return {
         title: `Section ${index + 1}`,
         points: lines.slice(1).map((line) => line.trim()),
@@ -504,7 +504,7 @@ const FileCard = ({
   };
 
   const handleSaveAll = (fileName) => {
-    if (fileName === "Assessment Report") {
+    if (fileName === PROJECT_DETAIL_PAGE.ASSESSMENT_REPORT) {
       const complianceAssessment = complianceData
         .map((item) => `${item.answer}, ${item.explanation}`)
         .join("|,|");
@@ -514,9 +514,8 @@ const FileCard = ({
         complianceAssessment: complianceAssessment,
       };
       updateProjectComplianceAssessment(payload);
-    } else if ("Checklist Report") {
+    } else if (fileName === PROJECT_DETAIL_PAGE.CHECKLIST_REPORT) {
       const checklist = formatSectionsToList(sections);
-      console.log("checklist", checklist);
 
       const payload = {
         project_id: projectData.project_id,
@@ -526,8 +525,6 @@ const FileCard = ({
       };
       updateProjectChecklist(payload);
     }
-
-    console.log("fileName", fileName);
   };
 
   const formatSectionsToList = (sections) => {
@@ -943,7 +940,7 @@ const FileCard = ({
 
     // Create a new document
     const doc =
-      fileName === "Assessment Report"
+      fileName === PROJECT_DETAIL_PAGE.ASSESSMENT_REPORT
         ? new Document({
             sections: [
               {
@@ -1154,7 +1151,11 @@ const FileCard = ({
           <Box sx={{ marginBottom: 1 }}>
             {/* File Icon, adjust based on file type */}
             <img
-              src={fileName === "Assessment Report" ? assessment : checklist}
+              src={
+                fileName === PROJECT_DETAIL_PAGE.ASSESSMENT_REPORT
+                  ? assessment
+                  : checklist
+              }
               width="150"
               alt="File"
             />

@@ -1,6 +1,5 @@
+import _ from "lodash";
 import BaseApiService from "./BaseApiService";
-
-
 
 const _userCreate = (payload) => {
   return BaseApiService.post(`/api/v1/user/create`, null, payload);
@@ -9,18 +8,24 @@ const _userUpdate = (payload) => {
   return BaseApiService.put(`/api/v1/user/update`, null, payload);
 };
 
-
 const _userListing = () => {
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
-const user_id = userdetails?.[0]?.user_id;
-const role = userdetails?.[0]?.role_name;
-const industry_id = userdetails?.[0]?.industry_id;
+  const user_id = userdetails?.[0]?.user_id;
+  const role = userdetails?.[0]?.role_name;
+  const industry_id = userdetails?.[0]?.industry_id;
   if (role === "Super Admin") {
     return BaseApiService.get(`/api/v1/users`, null, null);
   } else {
     if (
-      role !== "Super Admin" && role !== "Org Super Admin" && role !== "Admin") {
-      return BaseApiService.get(`/api/v1/org/users?industry_id=${industry_id}`,null,null);
+      role !== "Super Admin" &&
+      role !== "Org Super Admin" &&
+      role !== "Admin"
+    ) {
+      return BaseApiService.get(
+        `/api/v1/org/users?industry_id=${industry_id}`,
+        null,
+        null
+      );
     } else {
       return BaseApiService.get(`/api/v1/org/users`, null, null);
     }
@@ -51,11 +56,34 @@ const _roleDetails = () => {
   return BaseApiService.get(`/api/v1/roles`, null, null);
 };
 
-const _userAccess = (id,active)=>{
-  const payload = {id:id}
-  return BaseApiService.post(`/api/v1/users/${id}/updateActive?is_active=${active}`, null, payload);
-  
-}
+const _userAccess = (id, active) => {
+  const payload = { id: id };
+  return BaseApiService.post(
+    `/api/v1/users/${id}/updateActive?is_active=${active}`,
+    null,
+    payload
+  );
+};
+
+const _externalUserListing = () => {
+  return BaseApiService.get(`/api/v2/external-users`, null, null);
+};
+
+const _addProjectsToExternalUser = (payload) => {
+  return BaseApiService.post(
+    `/api/v2/project/assign-user-to-external-project`,
+    null,
+    payload
+  );
+};
+
+const _externalUserProjects = (userId, orgId) => {
+  return BaseApiService.get(
+    `/api/v2/external-users-projects?userId=${userId}&orgId=${orgId}`,
+    null,
+    null
+  );
+};
 
 export const UserApiService = {
   userCreate: _userCreate,
@@ -67,5 +95,8 @@ export const UserApiService = {
   industryDetails: _industryDetails,
   userEmailCheck: _userEmailCheck,
   roleDetails: _roleDetails,
-  userAccess:_userAccess,
+  userAccess: _userAccess,
+  externalUserListing: _externalUserListing,
+  getExternalUserPeojects: _externalUserProjects,
+  addProjectsToExternalUser: _addProjectsToExternalUser,
 };

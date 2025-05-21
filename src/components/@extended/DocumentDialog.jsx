@@ -16,8 +16,10 @@ import {
   TableBody,
   Switch,
   FormControlLabel,
+  Pagination,
 } from "@mui/material";
 import React from "react";
+import { PROJECT_DETAIL_PAGE } from "shared/constants";
 
 const DocumentDialog = ({
   open,
@@ -40,6 +42,8 @@ const DocumentDialog = ({
 }) => {
   const [localActiveTab, setLocalActiveTab] = React.useState(0);
   const [localTabFlag, setLocalTabFlag] = React.useState(false);
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const rowsPerPage = 10;
 
   const handleAddTab = () => {
     const updated = [...sections, { title: "title", points: [""] }];
@@ -50,6 +54,12 @@ const DocumentDialog = ({
   const handleLocalTabChange = (event, newValue) => {
     setLocalActiveTab(newValue);
   };
+
+  const paginatedData = complianceData?.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
+  );
+
   return (
     <Dialog
       open={open}
@@ -79,7 +89,7 @@ const DocumentDialog = ({
       </DialogTitle>
 
       <DialogContent>
-        {fileName === "Assessment Report" ? (
+        {fileName === PROJECT_DETAIL_PAGE.ASSESSMENT_REPORT ? (
           <Box sx={{ width: "100%", marginTop: 2 }}>
             <Table sx={{ minWidth: 650 }}>
               <TableHead>
@@ -96,7 +106,7 @@ const DocumentDialog = ({
                 </TableRow>
               </TableHead>
               <TableBody>
-                {complianceData?.map((item, index) => (
+                {paginatedData?.map((item, index) => (
                   <TableRow key={index}>
                     <TableCell sx={{ width: "45%" }}>
                       <Typography>{item.question}</Typography>
@@ -138,6 +148,14 @@ const DocumentDialog = ({
                   </TableRow>
                 ))}
               </TableBody>
+              <Box marginTop={3}>
+                <Pagination
+                  count={Math.ceil((complianceData?.length || 0) / rowsPerPage)}
+                  page={currentPage}
+                  onChange={(e, page) => setCurrentPage(page)}
+                  color="primary"
+                />
+              </Box>
             </Table>
           </Box>
         ) : (
@@ -168,7 +186,8 @@ const DocumentDialog = ({
                         editMode ? (
                           <TextField
                             value={section.title}
-                            placeholder="Enter tab title"
+                            placeholder="Enter item title"
+                            fullWidth
                             onChange={(e) =>
                               handleTabTitleChange(index, e.target.value)
                             }
@@ -188,7 +207,7 @@ const DocumentDialog = ({
                   size="small"
                   style={{ marginLeft: "10px" }}
                 >
-                  + Add Tab
+                  + Add Item
                 </Button>
               )}
             </Tabs>
@@ -202,7 +221,7 @@ const DocumentDialog = ({
                         {editMode ? (
                           <TextField
                             value={point}
-                            placeholder="Enter point"
+                            placeholder="Enter Item"
                             variant="standard"
                             multiline
                             fullWidth
@@ -226,7 +245,7 @@ const DocumentDialog = ({
                       size="small"
                       onClick={() => handleAddPoint(localActiveTab)}
                     >
-                      + Add Point
+                      + Add Item
                     </Button>
                   )}
                 </Box>
@@ -239,7 +258,9 @@ const DocumentDialog = ({
       <DialogActions>
         {!isReadOnly && (
           <Button onClick={() => handleSaveAll(fileName)} color="primary">
-            Save All
+            {fileName === PROJECT_DETAIL_PAGE.CHECKLIST_REPORT
+              ? "Save All"
+              : "Save"}
           </Button>
         )}
         <Button onClick={onClose} color="primary">

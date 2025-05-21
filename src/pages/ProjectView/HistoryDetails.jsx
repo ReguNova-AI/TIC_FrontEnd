@@ -4,9 +4,7 @@ import { FileOutlined } from "@ant-design/icons";
 
 const HistoryDetails = ({ data }) => {
   const formatDate = (dateString) => {
-    console.log("dateString", dateString);
     const date = new Date(dateString);
-    console.log("date", date.toLocaleString());
     return date.toLocaleString(); // You can customize the format as needed
   };
 
@@ -63,7 +61,7 @@ const HistoryDetails = ({ data }) => {
       if (key === "assessmentRun" && value) {
         return (
           <div key={key}>
-            <strong>Run Assessment</strong>
+            <strong>Assessment Report</strong>
           </div>
         );
       }

@@ -35,8 +35,7 @@ const steps = [
   STEPPER_LABEL.ORG_DETAILS,
 ];
 
-export default function UserCreation({ onHandleClose,type,selecteddata  }) {
-  // console.log("selecteddata",selecteddata)
+export default function UserCreation({ onHandleClose, type, selecteddata }) {
   const [activeStep, setActiveStep] = useState(0);
   const [skipped, setSkipped] = useState(new Set());
   const [orgData, setOrgData] = useState([]);
@@ -49,7 +48,7 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
   const [filteredSectors, setFilteredSectors] = useState([]); // Holds sectors filtered by organization
   const [uploadedFileData, setUpoadedFileData] = useState("");
   const [mandatoryError, setMandatoryError] = useState("");
-console.log("selecteddata",selecteddata)
+
   const [snackData, setSnackData] = useState({
     show: false,
     message: "",
@@ -60,7 +59,7 @@ console.log("selecteddata",selecteddata)
   // Updated formData structure to match the desired format
   const [formData, setFormData] = React.useState({
     role_id: "",
-    role_name:"",
+    role_name: "",
     user_first_name: "",
     user_last_name: "",
     user_profile: "", // URL for avatar upload
@@ -88,19 +87,22 @@ console.log("selecteddata",selecteddata)
     phoneError: "",
   });
 
-  
-
   const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
   const phoneRegex = /^[0-9]{10}$/; // For a 10-digit phone number (adjust as needed)
 
   const isStepOptional = (step) => step === 1;
   const isStepSkipped = (step) => skipped.has(step);
-  
+
   const handleNext = () => {
     if (activeStep === 0 && !validateStep()) {
       return; // Stop if validation fails
     }
-    if(errorValue.emailError !== "" && errorValue.emailError !== NULL && errorValue.phoneError !== "" && errorValue.phoneError !== NULL){
+    if (
+      errorValue.emailError !== "" &&
+      errorValue.emailError !== NULL &&
+      errorValue.phoneError !== "" &&
+      errorValue.phoneError !== NULL
+    ) {
       return;
     }
     let newSkipped = skipped;
@@ -130,11 +132,11 @@ console.log("selecteddata",selecteddata)
     });
   };
 
-  const setValuetoNull = ()=>{
+  const setValuetoNull = () => {
     setFormData({
       ...formData,
       role_id: null,
-      role_name:"",
+      role_name: "",
       user_first_name: "",
       user_last_name: "",
       user_profile: "", // URL for avatar upload
@@ -154,7 +156,7 @@ console.log("selecteddata",selecteddata)
       industry_name: "",
       created_by: userdetails?.[0]?.user_id,
     });
-  }
+  };
 
   const handleSubmit = () => {
     if (!validateStep("final")) {
@@ -188,97 +190,101 @@ console.log("selecteddata",selecteddata)
 
     let payload = formData;
 
-    if(type === "new")
-    {
-    UserApiService.userCreate(payload)
-      .then((response) => {
-        setSnackData({
-          show: true,
-          message: response?.message || API_SUCCESS_MESSAGE.USER_CREATED,
-          type: "success",
+    if (type === "new") {
+      UserApiService.userCreate(payload)
+        .then((response) => {
+          setSnackData({
+            show: true,
+            message: response?.message || API_SUCCESS_MESSAGE.USER_CREATED,
+            type: "success",
+          });
+          setValuetoNull();
+          setActiveStep(0);
+          setFormData({
+            ...formData,
+            role_id: "",
+            role_name: "",
+            user_first_name: "",
+            user_last_name: "",
+            user_profile: "", // URL for avatar upload
+            user_email: "",
+            user_phone_no: "",
+            user_address: {
+              street: "",
+              city: "",
+              state: "",
+              zip: "",
+            },
+            sector_id: "",
+            sector_name: "",
+            org_id: "",
+            org_name: "",
+            industry_id: "",
+            industry_name: "",
+            created_by: userdetails?.[0]?.user_id,
+          });
+          onHandleClose(true);
+        })
+        .catch((errResponse) => {
+          setSnackData({
+            show: true,
+            message:
+              errResponse?.error?.message ||
+              API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+            type: "error",
+          });
         });
-        setValuetoNull()
-        setActiveStep(0);
-       setFormData({
+    } else {
+      let payload = {
         ...formData,
-          role_id: "",
-          role_name:"",
-          user_first_name: "",
-          user_last_name: "",
-          user_profile: "", // URL for avatar upload
-          user_email: "",
-          user_phone_no: "",
-          user_address: {
-            street: "",
-            city: "",
-            state: "",
-            zip: "",
-          },
-          sector_id: "",
-          sector_name: "",
-          org_id: "",
-          org_name: "",
-          industry_id: "",
-          industry_name: "",
-          created_by: userdetails?.[0]?.user_id,
-        });
-        onHandleClose(true);
-      })
-      .catch((errResponse) => {
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
-      });
-    }
-    else{
-      let payload = {...formData, user_id: selecteddata.index,updated_by: userdetails?.[0]?.user_id,isActive:selecteddata?.isActive}
+        user_id: selecteddata.index,
+        updated_by: userdetails?.[0]?.user_id,
+        isActive: selecteddata?.isActive,
+      };
+
       UserApiService.userUpdate(payload)
-      .then((response) => {
-        setSnackData({
-          show: true,
-          message: response?.message || API_SUCCESS_MESSAGE.USER_CREATED,
-          type: "success",
+        .then((response) => {
+          setSnackData({
+            show: true,
+            message: response?.message || API_SUCCESS_MESSAGE.USER_CREATED,
+            type: "success",
+          });
+          setValuetoNull();
+          setActiveStep(0);
+          setFormData({
+            ...formData,
+            role_id: "",
+            role_name: "",
+            user_first_name: "",
+            user_last_name: "",
+            user_profile: "", // URL for avatar upload
+            user_email: "",
+            user_phone_no: "",
+            user_address: {
+              street: "",
+              city: "",
+              state: "",
+              zip: "",
+            },
+            sector_id: "",
+            sector_name: "",
+            org_id: "",
+            org_name: "",
+            industry_id: "",
+            industry_name: "",
+            created_by: userdetails?.[0]?.user_id,
+          });
+          onHandleClose(true);
+        })
+        .catch((errResponse) => {
+          setSnackData({
+            show: true,
+            message:
+              errResponse?.error?.message ||
+              API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+            type: "error",
+          });
         });
-        setValuetoNull()
-        setActiveStep(0);
-       setFormData({
-        ...formData,
-          role_id: "",
-          role_name:"",
-          user_first_name: "",
-          user_last_name: "",
-          user_profile: "", // URL for avatar upload
-          user_email: "",
-          user_phone_no: "",
-          user_address: {
-            street: "",
-            city: "",
-            state: "",
-            zip: "",
-          },
-          sector_id: "",
-          sector_name: "",
-          org_id: "",
-          org_name: "",
-          industry_id: "",
-          industry_name: "",
-          created_by: userdetails?.[0]?.user_id,
-        });
-        onHandleClose(true);
-      })
-      .catch((errResponse) => {
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
-      });
     }
   };
 
@@ -292,7 +298,7 @@ console.log("selecteddata",selecteddata)
         "user_phone_no",
         // "sector_id",
         "org_id",
-        "industry_id",
+        // "industry_id",
       ];
     } else {
       // Validate required fields for Step 1
@@ -306,7 +312,7 @@ console.log("selecteddata",selecteddata)
 
     for (const field of requiredFields) {
       if (!formData[field] || formData[field].length === 0) {
-        console.log(field)
+        console.log(field);
         setMandatoryError("Please fill all the required fields");
         return false;
       }
@@ -330,8 +336,7 @@ console.log("selecteddata",selecteddata)
           emailError: "",
         });
 
-        checkEmailAvailablity(value);
-        
+        // checkEmailAvailablity(value);
       }
     }
 
@@ -373,12 +378,12 @@ console.log("selecteddata",selecteddata)
     setUpoadedFileData(data);
   };
 
-  useEffect(()=>{
+  useEffect(() => {
     setFormData({
       ...formData,
       user_profile: uploadedFileData, // URL for avatar upload
     });
-  },[uploadedFileData])
+  }, [uploadedFileData]);
 
   const handleReset = () => {
     setActiveStep(0);
@@ -407,10 +412,10 @@ console.log("selecteddata",selecteddata)
         // Get the logged-in user's role from `userdetails`
         const userRole = userdetails?.[0]?.role_name;
         const userOrg = userdetails?.[0]?.org_id;
-  
+
         // Filter org based on the logged-in user's role
         if (userRole !== "Super Admin") {
-          filteredOrg = filteredOrg.filter(org => org.org_id === userOrg);
+          filteredOrg = filteredOrg.filter((org) => org.org_id === userOrg);
         }
 
         setOrgData(filteredOrg); // Use an empty array as fallback
@@ -474,7 +479,7 @@ console.log("selecteddata",selecteddata)
       });
   };
 
-  const fetchRole= () => {
+  const fetchRole = () => {
     UserApiService.roleDetails()
       .then((response) => {
         setSnackData({
@@ -487,19 +492,29 @@ console.log("selecteddata",selecteddata)
 
         // Get the logged-in user's role from `userdetails`
         const userRole = userdetails?.[0]?.role_name;
-  
+
         // Filter roles based on the logged-in user's role
         if (userRole === "Super Admin") {
-          filteredRoles = filteredRoles.filter(role => role.role_name !== "Super Admin");
+          filteredRoles = filteredRoles.filter(
+            (role) => role.role_name !== "Super Admin"
+          );
         }
-  
+
         if (userRole === "Org Super Admin") {
-          filteredRoles = filteredRoles.filter(role => role.role_name !== "Super Admin" && role.role_name !== "Org Super Admin");
+          filteredRoles = filteredRoles.filter(
+            (role) =>
+              role.role_name !== "Super Admin" &&
+              role.role_name !== "Org Super Admin"
+          );
         }
-        
-        if(userRole !== "Super Admin" && userRole !== "Org Super Admin")
-        {
-          filteredRoles = filteredRoles.filter(role => role.role_name !== "Super Admin" && role.role_name !== "Org Super Admin" && role.role_name !== "Admin");
+
+        if (userRole !== "Super Admin" && userRole !== "Org Super Admin") {
+          filteredRoles = filteredRoles.filter(
+            (role) =>
+              role.role_name !== "Super Admin" &&
+              role.role_name !== "Org Super Admin" &&
+              role.role_name !== "Admin"
+          );
         }
         // Set the filtered roles data
         setRoleData(filteredRoles);
@@ -515,61 +530,54 @@ console.log("selecteddata",selecteddata)
       });
   };
 
-  const checkEmailAvailablity = (value)=>{
+  const checkEmailAvailablity = (value) => {
     UserApiService.userEmailCheck(value)
-    .then((response) => {
-      
-
-      if(response?.data?.message === "User exist")
-      {
-        setErrorValue({
-          ...errorValue,
-          emailError: "Email Id already exists. Please add another email id",
+      .then((response) => {
+        if (response?.data?.message === "User exist") {
+          setErrorValue({
+            ...errorValue,
+            emailError: "Email Id already exists. Please add another email id",
+          });
+          return false;
+        } else {
+          setErrorValue({
+            ...errorValue,
+            emailError: "",
+          });
+          return true;
+        }
+      })
+      .catch((errResponse) => {
+        setSnackData({
+          show: true,
+          message:
+            errResponse?.error?.message ||
+            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          type: "error",
         });
-        return false;
-      }
-      else
-      {
-        setErrorValue({
-          ...errorValue,
-          emailError: "",
-        });
-        return true;
-      }
-     
-    })
-    .catch((errResponse) => {
-      setSnackData({
-        show: true,
-        message:
-          errResponse?.error?.message ||
-          API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-        type: "error",
       });
-    });
 
     setErrorValue({
       ...errorValue,
       emailError: "",
     });
     return true;
-  }
+  };
 
   const handleOrgChange = (event) => {
     let orgId = event?.target?.value;
 
-      setSelectedOrg(orgId);
-    
+    setSelectedOrg(orgId);
+
     // Find the selected organization
     const selectedOrganization = orgData.find((org) => org.org_id === orgId);
 
     let industryIds = null;
     if (selectedOrganization?.industries?.includes(",")) {
       industryIds = selectedOrganization?.industries
-        .split(',')  // Split by comma
-        .map(industry => Number(industry.trim())); // Convert each string to a number
-    }
-    else{
+        .split(",") // Split by comma
+        .map((industry) => Number(industry.trim())); // Convert each string to a number
+    } else {
       industryIds = JSON.parse(selectedOrganization?.industries || "[]");
     }
     // console.log("industryIds",industryIds)
@@ -578,8 +586,8 @@ console.log("selecteddata",selecteddata)
       ? selectedOrganization.sector_id
       : [];
 
-      if (!Array.isArray(industryIds)) {
-        industryIds = [industryIds]; // Wrap in an array if it's not already an array
+    if (!Array.isArray(industryIds)) {
+      industryIds = [industryIds]; // Wrap in an array if it's not already an array
     }
 
     // Filter industries based on the organization's available industries
@@ -587,8 +595,7 @@ console.log("selecteddata",selecteddata)
       industryIds.includes(industry.industry_id)
     );
 
-
-// console.log("availableIndustries",availableIndustries)
+    // console.log("availableIndustries",availableIndustries)
     setFilteredIndustries(availableIndustries);
     setSelectedIndustry([]);
 
@@ -607,39 +614,32 @@ console.log("selecteddata",selecteddata)
   };
 
   const handleOrgChangeForEdit = (data) => {
-     let orgId = data?.org_id;
-      setSelectedOrg(data?.org_id);
-   
+    let orgId = data?.org_id;
+    setSelectedOrg(data?.org_id);
+
     // Find the selected organization
     const selectedOrganization = orgData.find((org) => org.org_id === orgId);
-    
-    console.log("selectedOrganization?.industries",selectedOrganization?.industries)
 
     let industryIds = null;
     if (selectedOrganization?.industries?.includes(",")) {
       industryIds = selectedOrganization?.industries
-        .split(',')  // Split by comma
-        .map(industry => Number(industry.trim())); // Convert each string to a number
-    }
-    else{
+        .split(",") // Split by comma
+        .map((industry) => Number(industry.trim())); // Convert each string to a number
+    } else {
       industryIds = JSON.parse(selectedOrganization?.industries || "[]");
     }
 
-    console.log("industryIds",industryIds)
-
-      if (!Array.isArray(industryIds)) {
-        industryIds = [industryIds]; // Wrap in an array if it's not already an array
+    if (!Array.isArray(industryIds)) {
+      industryIds = [industryIds]; // Wrap in an array if it's not already an array
     }
 
     const availableIndustries = industryData.filter((industry) =>
       industryIds.includes(industry.industry_id)
     );
 
-
-// console.log("availableIndustries",availableIndustries)
+    // console.log("availableIndustries",availableIndustries)
     setFilteredIndustries(availableIndustries);
     setSelectedIndustry(industryIds); // Reset selected industry
-   
   };
 
   const handleSectorChange = (event) => {
@@ -655,8 +655,8 @@ console.log("selecteddata",selecteddata)
   };
 
   const handleIndustryChange = (event) => {
-    const industryId = event.target.value; 
-    const { value } = event.target;    
+    const industryId = event.target.value;
+    const { value } = event.target;
     setSelectedIndustry(value);
 
     // const selectedIndustry = filteredIndustries.find(
@@ -666,8 +666,10 @@ console.log("selecteddata",selecteddata)
     const selectedIndustries = filteredIndustries.filter((industry) =>
       industryId.includes(industry.industry_id)
     );
-  
-    const selectedIndustryNames = selectedIndustries.map(industry => industry.industry_name); // Get industry names for selected ids
+
+    const selectedIndustryNames = selectedIndustries.map(
+      (industry) => industry.industry_name
+    ); // Get industry names for selected ids
 
     setFormData({
       ...formData,
@@ -681,63 +683,65 @@ console.log("selecteddata",selecteddata)
   const handleRoleChange = (event) => {
     const roleId = event.target.value;
 
-    const roleName= roleData.find((role) => role.role_id === roleId)?.role_name
-    
+    const roleName = roleData.find(
+      (role) => role.role_id === roleId
+    )?.role_name;
+
     setFormData({
       ...formData,
       role_id: roleId,
-      role_name:roleName,
+      role_name: roleName,
     });
   };
 
+  useEffect(() => {
+    if (orgData) {
+      setFormData({
+        ...formData,
+        role_id: selecteddata?.role_id || "",
+        role_name: selecteddata?.role_name || "",
+        user_first_name: selecteddata?.first_name || "",
+        user_last_name: selecteddata?.last_name || "",
+        user_profile: selecteddata?.profile_url || "", // URL for avatar upload
+        user_email: selecteddata?.email || "",
+        user_phone_no: selecteddata?.phone_no || "",
+        user_address: {
+          street: selecteddata?.user_address?.street || "",
+          city: selecteddata?.user_address?.city || "",
+          state: selecteddata?.user_address?.state || "",
+          zip: selecteddata?.user_address?.zip || "",
+        },
+        sector_id: 1,
+        sector_name: "Nil",
+        org_id: selecteddata?.org_id || "",
+        org_name: selecteddata?.org_name || "",
+        industry_id: selecteddata?.industry_id || "",
+        industry_name: selecteddata?.industry || "",
+        created_by: userdetails?.[0]?.user_id,
+        industries: selecteddata?.industries || [],
+        industry_names: selecteddata?.industry_names || [],
+      });
 
-  useEffect(()=>{
-    if(orgData)
-    {
-    setFormData({
-      ...formData,
-      role_id: selecteddata?.role_id || "",
-  role_name: selecteddata?.role_name || "",
-  user_first_name: selecteddata?.first_name || "",
-  user_last_name: selecteddata?.last_name ||"",
-  user_profile: selecteddata?.profile_url ||"", // URL for avatar upload
-  user_email: selecteddata?.email ||"",
-  user_phone_no: selecteddata?.phone_no ||"",
-  user_address: {
-    street: selecteddata?.user_address?.street ||"",
-    city: selecteddata?.user_address?.city ||"",
-    state: selecteddata?.user_address?.state ||"",
-    zip: selecteddata?.user_address?.zip ||"",
-  },
-  sector_id: 1,
-  sector_name: "Nil",
-  org_id: selecteddata?.org_id ||"",
-  org_name: selecteddata?.org_name ||"",
-  industry_id: selecteddata?.industry_id ||"",
-  industry_name: selecteddata?.industry ||"",
-  created_by: userdetails?.[0]?.user_id,
-  industries: selecteddata?.industries || [],
-  industry_names: selecteddata?.industry_names || [],
-    });
-
-    if(selecteddata?.org_id)
-      {
+      if (selecteddata?.org_id) {
         setSelectedOrg(selecteddata?.org_id);
         handleOrgChangeForEdit(selecteddata);
       }
-      if (!selecteddata?.industry_id && selecteddata?.industry_names?.length > 0) {
+      if (
+        !selecteddata?.industry_id &&
+        selecteddata?.industry_names?.length > 0
+      ) {
         const matchedIndustryIds = industryData
-          .filter((ind) => selecteddata.industry_names.includes(ind.industry_name))
+          .filter((ind) =>
+            selecteddata.industry_names.includes(ind.industry_name)
+          )
           .map((ind) => ind.industry_id);
-  
+
         setSelectedIndustry(matchedIndustryIds);
       } else if (selecteddata?.industry_id) {
         setSelectedIndustry([Number(selecteddata.industry_id)]);
       }
     }
-
-  },[selecteddata,orgData,industryData]);
-
+  }, [selecteddata, orgData, industryData]);
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -770,7 +774,10 @@ console.log("selecteddata",selecteddata)
           {activeStep === 0 ? (
             <Grid container spacing={2}>
               <Grid item xs={12} sm={12} style={{ padding: "18px" }}>
-                <AvatarUpload onUpload={setUpoadedFileData} uploadedImage={formData.user_profile}/>
+                <AvatarUpload
+                  onUpload={setUpoadedFileData}
+                  uploadedImage={formData.user_profile}
+                />
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField
@@ -784,7 +791,6 @@ console.log("selecteddata",selecteddata)
                   inputProps={{
                     maxLength: 30, // Restrict input to 40 characters
                   }}
-                  
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -822,7 +828,7 @@ console.log("selecteddata",selecteddata)
                 <TextField
                   label={FORM_LABEL.PHONE}
                   variant="outlined"
-                  fullWidth     
+                  fullWidth
                   name="user_phone_no"
                   value={formData.user_phone_no}
                   onChange={handleInputChange}
@@ -898,8 +904,10 @@ console.log("selecteddata",selecteddata)
                     {FORM_LABEL.ORGANIZATION}
                     <span>*</span>
                   </InputLabel>
-                  <Select value={selectedOrg} onChange={handleOrgChange} 
-                  // disabled={type !== "new" ? true : false}
+                  <Select
+                    value={selectedOrg}
+                    onChange={handleOrgChange}
+                    // disabled={type !== "new" ? true : false}
                   >
                     {/* <MenuItem value="">
                       <em>None</em>
@@ -942,41 +950,43 @@ console.log("selecteddata",selecteddata)
                     <span>*</span>
                   </InputLabel>
                   <Select
-                                      value={selectedIndustry}
-                                      // value={selecteddata?.industry_names.join(", ")}
-                                      onChange={handleIndustryChange}
-                                      multiple
-                                      // renderValue={(selected) => {
-                                      //   console.log("selected data",selected)
-                                      //   const selectedIndustries = filteredIndustries.filter(
-                                      //     (industry) => selected.includes(industry.industry_id)
-                                      //   );
-                                      //   return selectedIndustries
-                                      //     .map((industry) => industry.industry_name)
-                                      //     .join(", ");
-                                      // }}
-                                      renderValue={(selected) => {
-                                        const selectedIndustries = filteredIndustries.filter(
-                                          (industry) => selected.includes(industry.industry_id)
-                                        );
-                                        return selectedIndustries.map((industry) => industry.industry_name).join(", ");
-                                      }}                               
-                                      // disabled={filteredIndustries.length === 0 || type !== "new"}
-                                    >
-                                      {filteredIndustries.map((industry) => (
-                                        <MenuItem
-                                          key={industry.industry_id}
-                                          value={industry.industry_id}
-                                        >
-                                          <Checkbox
-                                            checked={selectedIndustry.includes(
-                                              industry.industry_id
-                                            )}
-                                          />
-                                          {industry.industry_name}
-                                        </MenuItem>
-                                      ))}
-                                    </Select>
+                    value={selectedIndustry}
+                    // value={selecteddata?.industry_names.join(", ")}
+                    onChange={handleIndustryChange}
+                    multiple
+                    // renderValue={(selected) => {
+                    //   console.log("selected data",selected)
+                    //   const selectedIndustries = filteredIndustries.filter(
+                    //     (industry) => selected.includes(industry.industry_id)
+                    //   );
+                    //   return selectedIndustries
+                    //     .map((industry) => industry.industry_name)
+                    //     .join(", ");
+                    // }}
+                    renderValue={(selected) => {
+                      const selectedIndustries = filteredIndustries.filter(
+                        (industry) => selected.includes(industry.industry_id)
+                      );
+                      return selectedIndustries
+                        .map((industry) => industry.industry_name)
+                        .join(", ");
+                    }}
+                    // disabled={filteredIndustries.length === 0 || type !== "new"}
+                  >
+                    {filteredIndustries.map((industry) => (
+                      <MenuItem
+                        key={industry.industry_id}
+                        value={industry.industry_id}
+                      >
+                        <Checkbox
+                          checked={selectedIndustry.includes(
+                            industry.industry_id
+                          )}
+                        />
+                        {industry.industry_name}
+                      </MenuItem>
+                    ))}
+                  </Select>
                 </FormControl>
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -994,10 +1004,7 @@ console.log("selecteddata",selecteddata)
                       <em>None</em>
                     </MenuItem> */}
                     {roleData.map((role) => (
-                      <MenuItem
-                        key={role.role_id}
-                        value={role.role_id}
-                      >
+                      <MenuItem key={role.role_id} value={role.role_id}>
                         {role.role_name}
                       </MenuItem>
                     ))}
@@ -1008,39 +1015,40 @@ console.log("selecteddata",selecteddata)
           ) : null}
 
           {activeStep <= 2 && (
-            
-           
-            <Box sx={{pt: 2, mt: 4}}>
-               <span style={{ color: "red",marginBottom:"20px", display:"block" }}>{mandatoryError}</span>
-            <Box sx={{ display: "flex", flexDirection: "row" }}>
-              
-              {activeStep !== 0 && (
-                <Button
-                  disabled={activeStep === 0}
-                  onClick={handleBack}
-                  sx={{ mr: 1 }}
-                  variant="outlined"
-                >
-                  {BUTTON_LABEL.BACK}
-                </Button>
-              )}
-              <Box sx={{ flex: "1 1 auto" }} />
-              {isStepOptional(activeStep) && (
-                <Button color="inherit" onClick={handleSkip} sx={{ mr: 1 }}>
-                  {BUTTON_LABEL.SKIP}
-                </Button>
-              )}
-              <Button
-                onClick={
-                  activeStep === steps.length - 1 ? handleSubmit : handleNext
-                }
-                variant="contained"
+            <Box sx={{ pt: 2, mt: 4 }}>
+              <span
+                style={{ color: "red", marginBottom: "20px", display: "block" }}
               >
-                {activeStep === steps.length - 1
-                  ? BUTTON_LABEL.FINISH
-                  : BUTTON_LABEL.NEXT}
-              </Button>
-            </Box>
+                {mandatoryError}
+              </span>
+              <Box sx={{ display: "flex", flexDirection: "row" }}>
+                {activeStep !== 0 && (
+                  <Button
+                    disabled={activeStep === 0}
+                    onClick={handleBack}
+                    sx={{ mr: 1 }}
+                    variant="outlined"
+                  >
+                    {BUTTON_LABEL.BACK}
+                  </Button>
+                )}
+                <Box sx={{ flex: "1 1 auto" }} />
+                {isStepOptional(activeStep) && (
+                  <Button color="inherit" onClick={handleSkip} sx={{ mr: 1 }}>
+                    {BUTTON_LABEL.SKIP}
+                  </Button>
+                )}
+                <Button
+                  onClick={
+                    activeStep === steps.length - 1 ? handleSubmit : handleNext
+                  }
+                  variant="contained"
+                >
+                  {activeStep === steps.length - 1
+                    ? BUTTON_LABEL.FINISH
+                    : BUTTON_LABEL.NEXT}
+                </Button>
+              </Box>
             </Box>
           )}
         </Grid>
