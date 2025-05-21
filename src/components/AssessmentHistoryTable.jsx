@@ -11,6 +11,7 @@ import {
   parseApiResponse,
 } from "pages/ProjectView/FileCard";
 import { formatDateTime } from "shared/utility";
+import { PROJECT_DETAIL_PAGE } from "shared/constants";
 
 const AssessmentHistoryTable = ({ assessmentHistory }) => {
   const [open, setOpen] = useState(false);
@@ -75,8 +76,8 @@ const AssessmentHistoryTable = ({ assessmentHistory }) => {
                   <td style={tableCellStyle}>{item.updated_by_name}</td>
                   <td style={tableCellStyle}>
                     {item.updatedStatus === 1
-                      ? "Checklist Report"
-                      : "Assessment Report"}
+                      ? PROJECT_DETAIL_PAGE.CHECKLIST_REPORT
+                      : PROJECT_DETAIL_PAGE.ASSESSMENT_REPORT}
                     <IconButton
                       color="primary"
                       aria-label="view"
@@ -93,8 +94,8 @@ const AssessmentHistoryTable = ({ assessmentHistory }) => {
                         setComplianceData(complianceData);
                         setFileName(
                           item.updatedStatus === 1
-                            ? "Checklist Report"
-                            : "Assessment Report"
+                            ? PROJECT_DETAIL_PAGE.CHECKLIST_REPORT
+                            : PROJECT_DETAIL_PAGE.ASSESSMENT_REPORT
                         );
                         setActiveTab(0);
                         setActiveTabflag(false);

@@ -1,34 +1,28 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useEffect, useState } from "react";
 import {
   Space,
   Table,
   ConfigProvider,
   Empty,
-  Input,
-  Popover,
   Button,
   Spin,
   Modal,
-  Form,
   Avatar,
-  message,
   Popconfirm,
 } from "antd";
-import { Chip, Tooltip } from "@mui/material";
+import { Tooltip } from "@mui/material";
 import FormControl from "@mui/material/FormControl";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import InputLabel from "@mui/material/InputLabel";
 import InputAdornment from "@mui/material/InputAdornment";
-import Stack from "@mui/material/Stack";
 import MultiSelectWithChip from "components/form/MultiSelectWithChip"; // Assuming this is a custom component
 import {
   SearchOutlined,
-  DownloadOutlined,
-  FileFilled,
-  QuestionCircleOutlined,
   CloseCircleOutlined,
   CheckCircleOutlined,
   EditOutlined,
+  FolderAddOutlined,
 } from "@ant-design/icons";
 import { useLocation, useNavigate } from "react-router-dom";
 import { UserApiService } from "services/api/UserAPIService";
@@ -50,13 +44,11 @@ import {
   API_ERROR_MESSAGE,
   LISTING_PAGE,
   API_SUCCESS_MESSAGE,
-  STATUS,
   BUTTON_LABEL,
   GENERIC_DATA_LABEL,
   FORM_LABEL,
   HEADING,
 } from "shared/constants";
-import { formatDate, getStatusChipProps } from "shared/utility";
 import UserCreation from "./UserCreation";
 
 function CustomTabPanel(props) {
@@ -88,8 +80,47 @@ function a11yProps(index) {
   };
 }
 
+export const createData = (
+  index,
+  first_name,
+  last_name,
+  email,
+  phone_no,
+  sector,
+  industry,
+  org_name,
+  profile_url,
+  isActive,
+  user_address,
+  sector_id,
+  org_id,
+  industry_id,
+  role_id,
+  role_name,
+  industry_names
+) => {
+  return {
+    index,
+    first_name,
+    last_name,
+    email,
+    phone_no,
+    sector,
+    industry,
+    org_name,
+    profile_url,
+    isActive,
+    user_address,
+    sector_id,
+    org_id,
+    industry_id,
+    role_id,
+    role_name,
+    industry_names,
+  };
+};
+
 const UserListing = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   const { filterStatusValue } = location.state || {}; // Receive initial status filter
   const [data, setData] = useState([]);
@@ -97,6 +128,7 @@ const UserListing = () => {
   const [searchText, setSearchText] = useState("");
   const [filteredData, setFilteredData] = useState([]);
   const [filteredDataforInactive, setFilteredDataforInactive] = useState([]);
+  const [filteredDataforExternal, setFilteredDataforExternal] = useState([]);
 
   const [statusFilter, setStatusFilter] = useState([]);
   const [industryFilter, setIndustryFilter] = useState([]);
@@ -104,28 +136,23 @@ const UserListing = () => {
   const [viewMode, setViewMode] = useState("list"); // 'list' or 'card'
   const [currentPage, setCurrentPage] = useState(1); // Track the current page
   const [currentPageforInactive, setCurrentPageforInactive] = useState(1); // Track the current page
+  const [currentPageforExternal, setCurrentPageforExternal] = useState(1); // Track the current page
   const [pageSize, setPageSize] = useState(10); // Number of rows per page
   const [pageSizeinactive, setPageSizeinactive] = useState(10); // Number of rows per page
+  const [pageSizeExternal, setPageSizeExternal] = useState(10); // Number of rows per page
 
   const [loading, setLoading] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false); // To control modal visibility
-    const [modalType,setModalType] = useState("");
-    const [modalData,setModalData] = useState({});
-  const [form] = Form.useForm(); // For form handling
+  const [isProjectModalVisible, setIsProjectModalVisible] = useState(false); // To control modal visibility
+  const [modalType, setModalType] = useState("");
+  const [modalData, setModalData] = useState({});
 
   const [value, setValue] = React.useState(0);
 
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
-  
-  const handleChange = (event, newValue) => {
-    setValue(newValue);
-  };
 
-  const [snackData, setSnackData] = useState({
-    show: false,
-    message: "",
-    type: "error",
-  });
+  // Debounced search input (500ms delay)
+  const debouncedSearchText = useDebounce(searchText, 500);
 
   useEffect(() => {
     fetchData();
@@ -138,45 +165,21 @@ const UserListing = () => {
     }
   }, [filterStatusValue]);
 
-  const createData = (
-    index,
-    first_name,
-    last_name,
-    email,
-    phone_no,
-    sector,
-    industry,
-    org_name,
-    profile_url,
-    isActive,
-    user_address,
-            sector_id,
-            org_id,
-            industry_id,
-            role_id,
-            role_name,
-            industry_names,
-  ) => {
-    return {
-      index,
-      first_name,
-      last_name,
-      email,
-      phone_no,
-      sector,
-      industry,
-      org_name,
-      profile_url,
-      isActive,
-      user_address,
-            sector_id,
-            org_id,
-            industry_id,
-            role_id,
-            role_name,
-            industry_names,
-    };
+  // Effect for updating filtered data based on filters
+  useEffect(() => {
+    setFilteredData(filterData("Active"));
+    setFilteredDataforInactive(filterData("Inactive"));
+  }, [statusFilter, industryFilter, debouncedSearchText]);
+
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
   };
+
+  const [snackData, setSnackData] = useState({
+    show: false,
+    message: "",
+    type: "error",
+  });
 
   const fetchData = () => {
     UserApiService.userListing()
@@ -189,62 +192,86 @@ const UserListing = () => {
           type: "success",
         });
 
-        // console.log("response",response)
-        const newData = response?.data?.activeUsers.map((user, index) => {
-          return createData(
-            user.user_id,
-            user.user_first_name,
-            user.user_last_name,
-            user.user_email,
-            user.user_phone_no,
-            user.sector_name,
-            user.industry_name,
-            user.org_name,
-            user.user_profile,
-            user.is_active,
-            user.user_address,
-            user.sector_id,
-            user.org_id,
-            user.industry_id,
-            user.role_id,
-            user.role_name,
-            user.industry_names,
-          );
-        });
-
-        const inactiveUsersData = response?.data?.inactiveUsers.map(
-          (user, index) => {
+        const newData =
+          response?.data?.activeUsers?.map((user, index) => {
             return createData(
               user.user_id,
-            user.user_first_name,
-            user.user_last_name,
-            user.user_email,
-            user.user_phone_no,
-            user.sector_name,
-            user.industry_name,
-            user.org_name,
-            user.user_profile,
-            user.is_active,
-            user.user_address,
-            user.sector_id,
-            user.org_id,
-            user.industry_id,
-            user.role_id,
-            user.role_name,
-            user.industry_names,
+              user.user_first_name,
+              user.user_last_name,
+              user.user_email,
+              user.user_phone_no,
+              user.sector_name,
+              user.industry_name,
+              user.org_name,
+              user.user_profile,
+              user.is_active,
+              user.user_address,
+              user.sector_id,
+              user.org_id,
+              user.industry_id,
+              user.role_id,
+              user.role_name,
+              user.industry_names
             );
-          }
-        );
+          }) || [];
+
+        const inactiveUsersData =
+          response?.data?.inactiveUsers?.map((user, index) => {
+            return createData(
+              user.user_id,
+              user.user_first_name,
+              user.user_last_name,
+              user.user_email,
+              user.user_phone_no,
+              user.sector_name,
+              user.industry_name,
+              user.org_name,
+              user.user_profile,
+              user.is_active,
+              user.user_address,
+              user.sector_id,
+              user.org_id,
+              user.industry_id,
+              user.role_id,
+              user.role_name,
+              user.industry_names
+            );
+          }) || [];
+
+        const externalUsersData =
+          response?.data?.externalUsers?.map((user, index) => {
+            return createData(
+              user.user_id,
+              user.user_first_name,
+              user.user_last_name,
+              user.user_email,
+              user.user_phone_no,
+              user.sector_name,
+              user.industry_name,
+              user.org_name,
+              user.user_profile,
+              user.is_active,
+              user.user_address,
+              user.sector_id,
+              user.org_id,
+              user.industry_id,
+              user.role_id,
+              user.role_name,
+              user.industry_names
+            );
+          }) || [];
         setCurrentPage(1);
         setCurrentPageforInactive(1);
         setData(newData);
         setInactiveUserData(inactiveUsersData);
         setFilteredData(newData);
         setFilteredDataforInactive(inactiveUsersData);
+        setFilteredDataforExternal(externalUsersData);
 
         setLoading(false);
       })
       .catch((errResponse) => {
+        console.log("errResponse", errResponse);
         setSnackData({
           show: true,
           message:
@@ -261,9 +288,6 @@ const UserListing = () => {
     const searchText = value.toLowerCase();
     setSearchText(searchText);
   };
-
-  // Debounced search input (500ms delay)
-  const debouncedSearchText = useDebounce(searchText, 500);
 
   // Centralized filtering logic
   const filterData = (type) => {
@@ -296,12 +320,6 @@ const UserListing = () => {
     }
   };
 
-  // Effect for updating filtered data based on filters
-  useEffect(() => {
-    setFilteredData(filterData("Active"));
-    setFilteredDataforInactive(filterData("Inactive"));
-  }, [statusFilter, industryFilter, debouncedSearchText]);
-
   // Handle view mode switch
   const handleViewModeChange = (newViewMode) => {
     setViewMode(newViewMode); // Update view mode (list or card)
@@ -309,7 +327,6 @@ const UserListing = () => {
 
   // Handle project navigation
   const handleNavigateToUsers = (userId) => {
-
     // navigate(`/projectView/${projectNo}`, { state: { projectNo } });
   };
 
@@ -335,7 +352,7 @@ const UserListing = () => {
     currentPageforInactive * pageSizeinactive
   );
 
-  const handleModalOpen = (type,data) => {
+  const handleModalOpen = (type, data) => {
     setModalData(data);
     setModalType(type);
     setIsModalVisible(true);
@@ -382,7 +399,8 @@ const UserListing = () => {
         setSnackData({
           show: true,
           message:
-            errResponse.response?.data?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+            errResponse.response?.data?.message ||
+            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
       });
@@ -458,12 +476,14 @@ const UserListing = () => {
             ) : (
               <img
                 src={userListingIcon}
+                alt="User"
                 width="32px"
                 style={{ verticalAlign: "middle" }}
               />
             )}
             <a
               onClick={() => handleNavigateToUsers(record.index)}
+              alt="User"
               style={{
                 color: "#2ba9bc",
                 cursor: "pointer",
@@ -504,73 +524,103 @@ const UserListing = () => {
     // },
     {
       title: LISTING_PAGE.INDUSTRY,
-      
+
       key: "industry_names",
       render: (record) => {
-        let industry_namearray = Array.isArray(record.industry_names) ? record.industry_names : [record.industry_names];
-       return industry_namearray?.map((name,index)=>{
-          return  index === 0 ? name : ", "+name;
-        })
-      }
+        let industry_namearray = Array.isArray(record.industry_names)
+          ? record.industry_names
+          : [record.industry_names];
+        return industry_namearray?.map((name, index) => {
+          return index === 0 ? name : ", " + name;
+        });
+      },
     },
 
     {
       title: LISTING_PAGE.ACTION,
       key: "action",
       render: (record) => {
-       
-        if(userdetails?.[0]?.user_email !== record.email)
-        {
-       return (
-       <>
-       <Tooltip title="Edit user details" >
-       <Button style={{border:"none",background:"transparent",boxShadow:"none",}}  onClick={()=>handleModalOpen("update",record)}>
-          <EditOutlined style={{fontSize:"20px"}}/>
-       </Button>
-       </Tooltip><Popconfirm
-          title={
-            record.isActive
-              ? `Disable access for ${record.first_name}`
-              : `Enable access for ${record.first_name}`
-          }
-          description={
-            record.isActive
-              ? "Are you sure you want to disable the user's access?"
-              : "Are you sure you want to enable the user's access?"
-          }
-          onConfirm={(e) =>{ e.preventDefault(); handleDelete(record?.index, record?.isActive)}}
-          onCancel={cancel}
-          okText="Confirm"
-          cancelText="Cancel"
-          icon={
-            record.isActive ? (
-              <CloseCircleOutlined
-                style={{
-                  color: "red",
+        if (userdetails?.[0]?.user_email !== record.email) {
+          return (
+            <>
+              <Tooltip title="Edit user details">
+                <Button
+                  style={{
+                    border: "none",
+                    background: "transparent",
+                    boxShadow: "none",
+                  }}
+                  onClick={() => handleModalOpen("update", record)}
+                >
+                  <EditOutlined style={{ fontSize: "20px" }} />
+                </Button>
+              </Tooltip>
+              <Popconfirm
+                title={
+                  record.isActive
+                    ? `Disable access for ${record.first_name}`
+                    : `Enable access for ${record.first_name}`
+                }
+                description={
+                  record.isActive
+                    ? "Are you sure you want to disable the user's access?"
+                    : "Are you sure you want to enable the user's access?"
+                }
+                onConfirm={(e) => {
+                  e.preventDefault();
+                  handleDelete(record?.index, record?.isActive);
                 }}
-              />
-            ) : (
-              <CheckCircleOutlined
-                style={{
-                  color: "green",
-                }}
-              />
-            )
-          }
-        >
-          <Tooltip
-            title={
-              record.isActive ? "Disable User Access" : "Enable User Access"
-            }
-          >
-            <img
-              src={record.isActive ? disableUser : enableUser}
-              width="26px"
-            />
-          </Tooltip>
-        </Popconfirm>
-        </>
-        );}
+                onCancel={cancel}
+                okText="Confirm"
+                cancelText="Cancel"
+                icon={
+                  record.isActive ? (
+                    <CloseCircleOutlined
+                      style={{
+                        color: "red",
+                      }}
+                    />
+                  ) : (
+                    <CheckCircleOutlined
+                      style={{
+                        color: "green",
+                      }}
+                    />
+                  )
+                }
+              >
+                <Tooltip
+                  title={
+                    record.isActive
+                      ? "Disable User Access"
+                      : "Enable User Access"
+                  }
+                >
+                  <img
+                    src={record.isActive ? disableUser : enableUser}
+                    width="26px"
+                  />
+                </Tooltip>
+              </Popconfirm>
+              {record.role_name == "External" && (
+                <>
+                  <Tooltip title="Add multiple projects">
+                    <Button
+                      style={{
+                        border: "none",
+                        background: "transparent",
+                        boxShadow: "none",
+                      }}
+                      onClick={() => setIsProjectModalVisible(true)}
+                    >
+                      <FolderAddOutlined style={{ fontSize: "20px" }} />
+                    </Button>
+                  </Tooltip>
+                </>
+              )}
+            </>
+          );
+        }
       },
     },
   ];
@@ -600,7 +650,7 @@ const UserListing = () => {
           >
             <Button
               type="primary"
-              onClick={()=>handleModalOpen('new',null)}
+              onClick={() => handleModalOpen("new", null)}
               style={{
                 background: "#2ba9bc",
                 display: "flex",
@@ -609,7 +659,7 @@ const UserListing = () => {
               }}
             >
               {/* <FileFilled style={{ marginRight: 4 }} /> */}
-              <img src={addUserIcon} width="18px" />
+              <img src={addUserIcon} width="18px" alt="" />
               {BUTTON_LABEL.CREATE_USER}
             </Button>
 
@@ -646,9 +696,9 @@ const UserListing = () => {
                   {BUTTON_LABEL.FILTER}
                 </Button>
               </Popover> */}
-              <Button>
+              {/* <Button>
                 <DownloadOutlined />
-              </Button>
+              </Button> */}
             </Space>
           </Space>
           {/* Displaying Table or Card View */}
@@ -705,8 +755,13 @@ const UserListing = () => {
           footer={null}
           width={800}
         >
-          <UserCreation onHandleClose={(e) => handleClose()} type={modalType} selecteddata={modalData}/>
+          <UserCreation
+            onHandleClose={(e) => handleClose()}
+            type={modalType}
+            selecteddata={modalData}
+          />
         </Modal>
+
         <Snackbar
           style={{ top: "80px" }}
           anchorOrigin={{ vertical: "top", horizontal: "right" }}

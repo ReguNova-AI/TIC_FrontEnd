@@ -1,5 +1,15 @@
 // assets
-import { DashboardOutlined,FileTextOutlined,LineChartOutlined,SafetyCertificateOutlined,ProductOutlined,ProjectOutlined,UserOutlined,SettingOutlined,PartitionOutlined } from '@ant-design/icons';
+import {
+  DashboardOutlined,
+  FileTextOutlined,
+  LineChartOutlined,
+  SafetyCertificateOutlined,
+  ProductOutlined,
+  ProjectOutlined,
+  UserOutlined,
+  SettingOutlined,
+  PartitionOutlined,
+} from "@ant-design/icons";
 
 // icons
 const icons = {
@@ -11,36 +21,35 @@ const icons = {
   ProductOutlined,
   UserOutlined,
   SettingOutlined,
-  PartitionOutlined
+  PartitionOutlined,
 };
 
 // ==============================|| MENU ITEMS - DASHBOARD ||============================== //
 
 const dashboard = {
-  id: 'group-dashboard',
-  title: '',
-  type: 'group',
+  id: "group-dashboard",
+  title: "",
+  type: "group",
   children: [
     {
-      id: 'dashboard',
-      title: 'Dashboard',
-      type: 'item',
-      url: '/dashboard/default',
+      id: "dashboard",
+      title: "Dashboard",
+      type: "item",
+      url: "/dashboard/default",
       icon: icons.ProductOutlined,
       breadcrumbs: false,
-      access:["all"],
-      superAdminAccess:true
-      
+      access: ["all"],
+      superAdminAccess: true,
     },
     {
-      id: 'myProject',
-      title: 'My projects',
-      type: 'item',
-      url: '/projects',
+      id: "myProject",
+      title: "My projects",
+      type: "item",
+      url: "/projects",
       icon: icons.ProjectOutlined,
       breadcrumbs: false,
-      access:["all"],
-      superAdminAccess:true
+      access: ["all"],
+      superAdminAccess: true,
     },
     // {
     //   id: 'documents',
@@ -52,14 +61,14 @@ const dashboard = {
     //   access:["all"],
     // },
     {
-      id: 'certificateManager',
-      title: 'Certificate Manager',
-      type: 'item',
-      url: '/certificateManager',
+      id: "certificateManager",
+      title: "Certificate Manager",
+      type: "item",
+      url: "/certificateManager",
       icon: icons.SafetyCertificateOutlined,
       breadcrumbs: false,
-      access:["all"],
-      superAdminAccess:false
+      access: ["all"],
+      superAdminAccess: false,
     },
     // {
     //   id: 'downloadReports',
@@ -80,40 +89,46 @@ const dashboard = {
     //   // ],
     // },
     {
-      id: 'users',
-      title: 'Users',
-      type: 'item',
-      url: '/users',
+      id: "users",
+      title: "Users",
+      type: "item",
+      url: "/users",
       icon: icons.UserOutlined,
       breadcrumbs: false,
-      access:["Super Admin","Org Super Admin","Admin"],
-      superAdminAccess:true
+      access: ["Super Admin", "Org Super Admin", "Admin"],
+      superAdminAccess: true,
     },
     {
-      id: 'organization',
-      title: 'Organization',
-      type: 'item',
-      url: '/organization',
+      id: "externalUsers",
+      title: "External Users",
+      type: "item",
+      url: "/externalUsers",
+      icon: icons.UserOutlined,
+      breadcrumbs: false,
+      access: ["Super Admin", "Org Super Admin", "Admin"],
+      superAdminAccess: true,
+    },
+    {
+      id: "organization",
+      title: "Organization",
+      type: "item",
+      url: "/organization",
       icon: icons.PartitionOutlined,
       breadcrumbs: false,
-      access:["Super Admin"],
-      superAdminAccess:true
+      access: ["Super Admin"],
+      superAdminAccess: true,
     },
     {
-      id: 'configuration',
-      title: 'Configuration',
-      type: 'item',
-      url: '/admin_config',
+      id: "configuration",
+      title: "Configuration",
+      type: "item",
+      url: "/admin_config",
       icon: icons.SettingOutlined,
       breadcrumbs: false,
-      access:["Super Admin"],
-      superAdminAccess:true
+      access: ["Super Admin"],
+      superAdminAccess: true,
     },
-    
-    
-    
-
-  ]
+  ],
 };
 
 export default dashboard;

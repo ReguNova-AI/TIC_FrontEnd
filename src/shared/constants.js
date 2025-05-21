@@ -104,7 +104,6 @@ export const LISTING_PAGE = Object.freeze({
   EMAIL: "Email ID",
   PHONE_NO: "Mobile No.",
   SECTOR: "Sector",
-  INDUSTRY: "Industry",
   ORG_NAME: "Organization",
   PROFILE_URL: "Profile Link",
   CERTIFICATE_NAME: "Certificate Name",
@@ -112,7 +111,7 @@ export const LISTING_PAGE = Object.freeze({
   ISSUER: "Issuer",
   DATE_OF_ISSUE: "Date of Issue",
   DATE_OF_EXPIRE: "Expires",
-  ORG_NAME: "Organization Name",
+  // ORG_NAME: "Organization Name",
   ORG_EMAIL: "Email ID",
   ORG_PRIMARY_EMAIL: "Primary Email ID",
   ORG_WEBSITE: "Website",
@@ -125,6 +124,7 @@ export const LISTING_PAGE = Object.freeze({
   PERMISSION_CATEGORY: "Category",
   STANDARD_NAME: "Standard Name",
   CHECKLIST_GENERATED: "Checklist Generated",
+  USER_NAME: "User",
 });
 
 export const TAB_LABEL = Object.freeze({
@@ -138,7 +138,7 @@ export const PROJECT_DETAIL_PAGE = Object.freeze({
   CURRENT_PROGRESS_STATUS: "Current Progress Status",
   UPLOADED_FILES: "Uploaded File Details",
   LAST_RUN_DETAILS: "Last Run Details",
-  CHECKLIST_REPORT: "Checklist Report",
+  CHECKLIST_REPORT: "Checklist",
   ASSESSMENT_REPORT: "Assessment Report",
   HISTORY_DETAILS: "History Details",
 });
@@ -244,7 +244,7 @@ export const STEPPER_LABEL = Object.freeze({
   STANDARD_DOCUMENT: "Regulatory Standards",
   CUSTOM_STANDARD_DOCUMENT: "Custom Standard Document",
   IN_PROGRESS: "In Progress",
-  CHECKLIST_REPORT: "Checklist Report",
+  CHECKLIST_REPORT: "Checklist",
   ASSESSMENT_REPORT: "Assessment Report",
   FINAL_STEP: "Final Step",
   FINISH_STATUS: "finish",
@@ -277,6 +277,7 @@ export const HEADING = Object.freeze({
   EDIT_PROJECT: "Edit Project Details",
   INVITE_USERS: "Invite users",
   PROGRESS: "",
+  ASSIGNED_PROJECTS: "Assigned Project",
 });
 
 export const CLOSE_ALERT_DESCRIPTION =
