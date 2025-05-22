@@ -50,6 +50,47 @@ import { formatDate, formatDateToCustomFormat } from "shared/utility";
 import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
 import AssessmentHistoryTable from "components/AssessmentHistoryTable";
 
+// Helper function to create a history object based on changes
+export const createHistoryObject = (data, previousData, heading, userName) => {
+  const historyItem = {
+    changedby: userName,
+    date: new Date().toISOString(),
+    changes: {
+      projectName:
+        heading === "projectDetails"
+          ? data?.projectName !== previousData.project_name
+            ? data.projectName
+            : ""
+          : "",
+      projectNo:
+        heading === "projectDetails"
+          ? data?.projectNo !== previousData.project_no
+            ? data.projectNo
+            : ""
+          : "",
+      description:
+        heading === "projectDetails"
+          ? data?.projectDesc !== previousData.project_description
+            ? data.projectDesc
+            : ""
+          : "",
+      invite: "",
+      documents: heading === "documentUpload" ? (data ? data : "") : "",
+      checklistRun:
+        heading === "checklistRun" ? "Run to generated checklist report" : "",
+      assessmentRun:
+        heading === "assessmentRun" ? "Run to generate Assessment report" : "",
+      standardUplaoded:
+        heading === "StandardUpdates"
+          ? data.standardUploaded !== previousData.standardUploaded
+            ? data.standardUploaded
+            : ""
+          : "",
+      status: previousData.status,
+    },
+  };
+  return historyItem;
+};
 const ProjectView = () => {
   const [value, setValue] = React.useState(0);
   const location = useLocation();
@@ -387,7 +428,7 @@ const ProjectView = () => {
           //   // updatedResponse.success_count= updatedResponse?.success_count + 1;
           //   updatedResponse.status = status === "error" ? "Failed" : "Success";
           //   updatedResponse.last_run = formatDateToCustomFormat(new Date());
-          //   const newHistory = createHistoryObject(projectData, previousData,"assessmentRun");
+          //   const newHistory = createHistoryObject(projectData, previousData,"assessmentRun", userName);
           //   setHistoryData((prevState) => {
           //     const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
           //     // After the state update, include the updated history in the updatedResponse
@@ -426,7 +467,7 @@ const ProjectView = () => {
           //   updatedResponse.fail_count= updatedResponse?.fail_count + 1;
           //   updatedResponse.status = "Failed";
           //   updatedResponse.last_run = formatDateToCustomFormat(new Date());
-          //   const newHistory = createHistoryObject(projectData, previousData,"assessmentRun");
+          //   const newHistory = createHistoryObject(projectData, previousData,"assessmentRun",userName);
           //   setHistoryData((prevState) => {
           //     const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
           //     // After the state update, include the updated history in the updatedResponse
@@ -462,7 +503,8 @@ const ProjectView = () => {
           const newHistory = createHistoryObject(
             projectData,
             previousData,
-            "assessmentRun"
+            "assessmentRun",
+            userName
           );
           setHistoryData((prevState) => {
             const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
@@ -565,7 +607,8 @@ const ProjectView = () => {
     const newHistory = createHistoryObject(
       projectData,
       previousData,
-      "checklistRun"
+      "checklistRun",
+      userName
     );
     setHistoryData((prevState) => {
       const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
@@ -638,7 +681,8 @@ const ProjectView = () => {
     const newHistory = createHistoryObject(
       updatedResponse,
       previousData,
-      "StandardUpdates"
+      "StandardUpdates",
+      userName
     );
 
     setHistoryData((prevState) => {
@@ -766,7 +810,8 @@ const ProjectView = () => {
       const newHistory = createHistoryObject(
         uploadedDocument,
         previousData,
-        "documentUpload"
+        "documentUpload",
+        userName
       );
       setHistoryData((prevState) => {
         const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
@@ -837,50 +882,6 @@ const ProjectView = () => {
     // fetchData();
   };
 
-  // Helper function to create a history object based on changes
-  const createHistoryObject = (data, previousData, heading) => {
-    const historyItem = {
-      changedby: userName,
-      date: new Date().toISOString(),
-      changes: {
-        projectName:
-          heading === "projectDetails"
-            ? data?.projectName !== previousData.project_name
-              ? data.projectName
-              : ""
-            : "",
-        projectNo:
-          heading === "projectDetails"
-            ? data?.projectNo !== previousData.project_no
-              ? data.projectNo
-              : ""
-            : "",
-        description:
-          heading === "projectDetails"
-            ? data?.projectDesc !== previousData.project_description
-              ? data.projectDesc
-              : ""
-            : "",
-        invite: "",
-        documents: heading === "documentUpload" ? (data ? data : "") : "",
-        checklistRun:
-          heading === "checklistRun" ? "Run to generated checklist report" : "",
-        assessmentRun:
-          heading === "assessmentRun"
-            ? "Run to generate Assessment report"
-            : "",
-        standardUplaoded:
-          heading === "StandardUpdates"
-            ? data.standardUploaded !== previousData.standardUploaded
-              ? data.standardUploaded
-              : ""
-            : "",
-        status: previousData.status,
-      },
-    };
-    return historyItem;
-  };
-
   const updateDetails = (data) => {
     const updatedResponse = { ...projectData };
     const previousData = { ...projectData };
@@ -892,7 +893,8 @@ const ProjectView = () => {
     const newHistory = createHistoryObject(
       data,
       previousData,
-      "projectDetails"
+      "projectDetails",
+      userName
     );
     setHistoryData((prevState) => {
       const updatedHistory = [...prevState.history, newHistory]; // Append the new history item

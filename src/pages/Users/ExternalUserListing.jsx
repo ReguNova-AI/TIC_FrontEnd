@@ -410,22 +410,19 @@ const ExternalUsers = () => {
                   ></img>
                 </Tooltip>
               </Popconfirm>
-              {record.role_name === "External" && (
-                <>
-                  <Tooltip title="Add multiple projects">
-                    <Button
-                      style={{
-                        border: "none",
-                        background: "transparent",
-                        boxShadow: "none",
-                      }}
-                      onClick={() => handleAssignProjectModal(record)}
-                    >
-                      <FolderAddOutlined style={{ fontSize: "20px" }} />
-                    </Button>
-                  </Tooltip>
-                </>
-              )}
+
+              <Tooltip title="Add multiple projects">
+                <Button
+                  style={{
+                    border: "none",
+                    background: "transparent",
+                    boxShadow: "none",
+                  }}
+                  onClick={() => handleAssignProjectModal(record)}
+                >
+                  <FolderAddOutlined style={{ fontSize: "20px" }} />
+                </Button>
+              </Tooltip>
             </>
           );
         }

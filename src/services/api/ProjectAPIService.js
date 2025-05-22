@@ -138,6 +138,10 @@ const _projectUpdateChecklist = (payload) => {
   );
 };
 
+const _externalProjectListing = () => {
+  return BaseApiService.get(`/api/v2/project/external-projects`, null, null);
+};
+
 export const ProjectApiService = {
   projectCreate: _projectCreate,
   projectListing: _projectListing,
@@ -152,4 +156,5 @@ export const ProjectApiService = {
   projectDocumentUpload: _projectDocumentUpload,
   projectUpdateComplianceAssessment: _projectUpdateComplianceAssessment,
   projectUpdateChecklist: _projectUpdateChecklist,
+  externalProjectListing: _externalProjectListing,
 };
