@@ -9,6 +9,8 @@ import UserListing from "pages/Users/UserListing";
 import ProtectedRoute from "./ProtectedRoute";
 import ProfileDetails from "layout/Dashboard/Header/HeaderContent/Profile/ProfileDetails";
 import ExternalUsers from "pages/Users/ExternalUserListing";
+import ExternalProjectListing from "pages/ExternalProjects/ExternalProjectListing";
+import ExternalProjectView from "pages/ExternalProjects/ExternalProjectView";
 
 const Color = Loadable(lazy(() => import("pages/component-overview/color")));
 const Typography = Loadable(
@@ -135,6 +137,22 @@ const MainRoutes = {
       element: (
         <ProtectedRoute>
           <ExternalUsers />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "externalProjects",
+      element: (
+        <ProtectedRoute>
+          <ExternalProjectListing />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "externalProjectView/:id",
+      element: (
+        <ProtectedRoute>
+          <ExternalProjectView />
         </ProtectedRoute>
       ),
     },
