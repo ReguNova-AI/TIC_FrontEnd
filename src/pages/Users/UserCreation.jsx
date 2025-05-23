@@ -158,41 +158,42 @@ export default function UserCreation({ onHandleClose, type, selecteddata }) {
     });
   };
 
-  const handleSubmit = () => {
-    if (!validateStep("final")) {
-      return; // Stop if validation fails
-    }
+  const handleSubmit = async () => {
+    try {
+      if (!validateStep("final")) {
+        return; // Stop if validation fails
+      }
 
-    // let filepayload = { documents: [uploadedFileData], type: "jpg" };
-    // FileUploadApiService.fileUpload(filepayload)
-    //   .then((response) => {
-    //     setSnackData({
-    //       show: true,
-    //       message: response?.message || API_SUCCESS_MESSAGE.USER_CREATED,
-    //       type: "success",
-    //     });
-    //     const url = response?.data?.details?.[0];
+      // let filepayload = { documents: [uploadedFileData], type: "jpg" };
+      // FileUploadApiService.fileUpload(filepayload)
+      //   .then((response) => {
+      //     setSnackData({
+      //       show: true,
+      //       message: response?.message || API_SUCCESS_MESSAGE.USER_CREATED,
+      //       type: "success",
+      //     });
+      //     const url = response?.data?.details?.[0];
 
-    //     setFormData({
-    //       ...formData,
-    //       user_profile: url, // URL for avatar upload
-    //     });
-    //   })
-    //   .catch((errResponse) => {
-    //     setSnackData({
-    //       show: true,
-    //       message:
-    //         errResponse?.error?.message ||
-    //         API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-    //       type: "error",
-    //     });
-    //   });
+      //     setFormData({
+      //       ...formData,
+      //       user_profile: url, // URL for avatar upload
+      //     });
+      //   })
+      //   .catch((errResponse) => {
+      //     setSnackData({
+      //       show: true,
+      //       message:
+      //         errResponse?.error?.message ||
+      //         API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+      //       type: "error",
+      //     });
+      //   });
 
-    let payload = formData;
+      let payload = formData;
 
-    if (type === "new") {
-      UserApiService.userCreate(payload)
-        .then((response) => {
+      if (type === "new") {
+        const response = await UserApiService.userCreate(payload);
+        if (response?.statusCode === 200) {
           setSnackData({
             show: true,
             message: response?.message || API_SUCCESS_MESSAGE.USER_CREATED,
@@ -224,31 +225,28 @@ export default function UserCreation({ onHandleClose, type, selecteddata }) {
             created_by: userdetails?.[0]?.user_id,
           });
           onHandleClose(true);
-        })
-        .catch((errResponse) => {
+        } else {
           setSnackData({
             show: true,
-            message:
-              errResponse?.error?.message ||
-              API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+            message: response?.message || API_ERROR_MESSAGE.ERROR_OCCURED,
             type: "error",
           });
-        });
-    } else {
-      let payload = {
-        ...formData,
-        user_id: selecteddata.index,
-        updated_by: userdetails?.[0]?.user_id,
-        isActive: selecteddata?.isActive,
-      };
-
-      UserApiService.userUpdate(payload)
-        .then((response) => {
+        }
+      } else {
+        let payload = {
+          ...formData,
+          user_id: selecteddata.index,
+          updated_by: userdetails?.[0]?.user_id,
+          isActive: selecteddata?.isActive,
+        };
+        const response = await UserApiService.userUpdate(payload);
+        if (response?.statusCode === 200) {
           setSnackData({
             show: true,
-            message: response?.message || API_SUCCESS_MESSAGE.USER_CREATED,
+            message: response?.message || API_SUCCESS_MESSAGE.USER_UPDATED,
             type: "success",
           });
+
           setValuetoNull();
           setActiveStep(0);
           setFormData({
@@ -275,16 +273,26 @@ export default function UserCreation({ onHandleClose, type, selecteddata }) {
             created_by: userdetails?.[0]?.user_id,
           });
           onHandleClose(true);
-        })
-        .catch((errResponse) => {
+        } else {
           setSnackData({
             show: true,
-            message:
-              errResponse?.error?.message ||
-              API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+            message: response?.message || API_ERROR_MESSAGE.ERROR_OCCURED,
             type: "error",
           });
-        });
+        }
+      }
+    } catch (error) {
+      console.error(
+        "Error during form submission:",
+        error?.response?.data?.message
+      );
+      setSnackData({
+        show: true,
+        message:
+          error?.response?.data?.message ||
+          API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+        type: "error",
+      });
     }
   };
 
@@ -744,183 +752,189 @@ export default function UserCreation({ onHandleClose, type, selecteddata }) {
   }, [selecteddata, orgData, industryData]);
 
   return (
-    <Box sx={{ width: "100%" }}>
-      <Grid container spacing={2} style={{ padding: "10px 10px 10px 0px" }}>
-        <Grid item xs={12} sm={4} style={{ borderRight: "1px solid #dfdfdf" }}>
-          <Stepper activeStep={activeStep} orientation="vertical">
-            {steps.map((label, index) => {
-              const stepProps = {};
-              const labelProps = {};
-              if (isStepOptional(index)) {
-                labelProps.optional = (
-                  <Typography variant="caption">
-                    {FORM_LABEL.OPTIONAL}
-                  </Typography>
+    <>
+      <Box sx={{ width: "100%" }}>
+        <Grid container spacing={2} style={{ padding: "10px 10px 10px 0px" }}>
+          <Grid
+            item
+            xs={12}
+            sm={4}
+            style={{ borderRight: "1px solid #dfdfdf" }}
+          >
+            <Stepper activeStep={activeStep} orientation="vertical">
+              {steps.map((label, index) => {
+                const stepProps = {};
+                const labelProps = {};
+                if (isStepOptional(index)) {
+                  labelProps.optional = (
+                    <Typography variant="caption">
+                      {FORM_LABEL.OPTIONAL}
+                    </Typography>
+                  );
+                }
+                if (isStepSkipped(index)) {
+                  stepProps.completed = false;
+                }
+                return (
+                  <Step key={label} {...stepProps}>
+                    <StepLabel {...labelProps}>{label}</StepLabel>
+                  </Step>
                 );
-              }
-              if (isStepSkipped(index)) {
-                stepProps.completed = false;
-              }
-              return (
-                <Step key={label} {...stepProps}>
-                  <StepLabel {...labelProps}>{label}</StepLabel>
-                </Step>
-              );
-            })}
-          </Stepper>
-        </Grid>
+              })}
+            </Stepper>
+          </Grid>
 
-        <Grid item xs={12} sm={8}>
-          {activeStep === 0 ? (
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={12} style={{ padding: "18px" }}>
-                <AvatarUpload
-                  onUpload={setUpoadedFileData}
-                  uploadedImage={formData.user_profile}
-                />
+          <Grid item xs={12} sm={8}>
+            {activeStep === 0 ? (
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={12} style={{ padding: "18px" }}>
+                  <AvatarUpload
+                    onUpload={setUpoadedFileData}
+                    uploadedImage={formData.user_profile}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label={FORM_LABEL.FIRST_NAME}
+                    variant="outlined"
+                    fullWidth
+                    name="user_first_name"
+                    value={formData.user_first_name}
+                    onChange={handleInputChange}
+                    required
+                    inputProps={{
+                      maxLength: 30, // Restrict input to 40 characters
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label={FORM_LABEL.LAST_NAME}
+                    variant="outlined"
+                    fullWidth
+                    name="user_last_name"
+                    value={formData.user_last_name}
+                    onChange={handleInputChange}
+                    required
+                    inputProps={{
+                      maxLength: 30, // Restrict input to 40 characters
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label={FORM_LABEL.EMAIL}
+                    variant="outlined"
+                    fullWidth
+                    name="user_email"
+                    value={formData.user_email}
+                    onChange={handleInputChange}
+                    error={!!errorValue.emailError}
+                    helperText={errorValue.emailError}
+                    required
+                    disabled={type !== "new" ? true : false}
+                    inputProps={{
+                      maxLength: 30, // Restrict input to 40 characters
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label={FORM_LABEL.PHONE}
+                    variant="outlined"
+                    fullWidth
+                    name="user_phone_no"
+                    value={formData.user_phone_no}
+                    onChange={handleInputChange}
+                    error={!!errorValue.phoneError}
+                    helperText={errorValue.phoneError}
+                    required
+                    inputProps={{
+                      maxLength: 10, // Restrict input to 40 characters
+                    }}
+                  />
+                </Grid>
               </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label={FORM_LABEL.FIRST_NAME}
-                  variant="outlined"
-                  fullWidth
-                  name="user_first_name"
-                  value={formData.user_first_name}
-                  onChange={handleInputChange}
-                  required
-                  inputProps={{
-                    maxLength: 30, // Restrict input to 40 characters
-                  }}
-                />
+            ) : activeStep === 1 ? (
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label={FORM_LABEL.STREET}
+                    variant="outlined"
+                    fullWidth
+                    name="user_address_street"
+                    value={formData.user_address.street}
+                    onChange={handleInputChange}
+                    inputProps={{
+                      maxLength: 30, // Restrict input to 40 characters
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label={FORM_LABEL.CITY}
+                    variant="outlined"
+                    fullWidth
+                    name="user_address_city"
+                    value={formData.user_address.city}
+                    onChange={handleInputChange}
+                    inputProps={{
+                      maxLength: 30, // Restrict input to 40 characters
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label={FORM_LABEL.STATE}
+                    variant="outlined"
+                    fullWidth
+                    name="user_address_state"
+                    value={formData.user_address.state}
+                    onChange={handleInputChange}
+                    inputProps={{
+                      maxLength: 30, // Restrict input to 40 characters
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label={FORM_LABEL.ZIP}
+                    variant="outlined"
+                    fullWidth
+                    name="user_address_zip"
+                    value={formData.user_address.zip}
+                    onChange={handleInputChange}
+                    inputProps={{
+                      maxLength: 30, // Restrict input to 40 characters
+                    }}
+                  />
+                </Grid>
               </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label={FORM_LABEL.LAST_NAME}
-                  variant="outlined"
-                  fullWidth
-                  name="user_last_name"
-                  value={formData.user_last_name}
-                  onChange={handleInputChange}
-                  required
-                  inputProps={{
-                    maxLength: 30, // Restrict input to 40 characters
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label={FORM_LABEL.EMAIL}
-                  variant="outlined"
-                  fullWidth
-                  name="user_email"
-                  value={formData.user_email}
-                  onChange={handleInputChange}
-                  error={!!errorValue.emailError}
-                  helperText={errorValue.emailError}
-                  required
-                  disabled={type !== "new" ? true : false}
-                  inputProps={{
-                    maxLength: 30, // Restrict input to 40 characters
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label={FORM_LABEL.PHONE}
-                  variant="outlined"
-                  fullWidth
-                  name="user_phone_no"
-                  value={formData.user_phone_no}
-                  onChange={handleInputChange}
-                  error={!!errorValue.phoneError}
-                  helperText={errorValue.phoneError}
-                  required
-                  inputProps={{
-                    maxLength: 10, // Restrict input to 40 characters
-                  }}
-                />
-              </Grid>
-            </Grid>
-          ) : activeStep === 1 ? (
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label={FORM_LABEL.STREET}
-                  variant="outlined"
-                  fullWidth
-                  name="user_address_street"
-                  value={formData.user_address.street}
-                  onChange={handleInputChange}
-                  inputProps={{
-                    maxLength: 30, // Restrict input to 40 characters
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label={FORM_LABEL.CITY}
-                  variant="outlined"
-                  fullWidth
-                  name="user_address_city"
-                  value={formData.user_address.city}
-                  onChange={handleInputChange}
-                  inputProps={{
-                    maxLength: 30, // Restrict input to 40 characters
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label={FORM_LABEL.STATE}
-                  variant="outlined"
-                  fullWidth
-                  name="user_address_state"
-                  value={formData.user_address.state}
-                  onChange={handleInputChange}
-                  inputProps={{
-                    maxLength: 30, // Restrict input to 40 characters
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label={FORM_LABEL.ZIP}
-                  variant="outlined"
-                  fullWidth
-                  name="user_address_zip"
-                  value={formData.user_address.zip}
-                  onChange={handleInputChange}
-                  inputProps={{
-                    maxLength: 30, // Restrict input to 40 characters
-                  }}
-                />
-              </Grid>
-            </Grid>
-          ) : activeStep === 2 ? (
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
-                  <InputLabel>
-                    {FORM_LABEL.ORGANIZATION}
-                    <span>*</span>
-                  </InputLabel>
-                  <Select
-                    value={selectedOrg}
-                    onChange={handleOrgChange}
-                    // disabled={type !== "new" ? true : false}
-                  >
-                    {/* <MenuItem value="">
+            ) : activeStep === 2 ? (
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth>
+                    <InputLabel>
+                      {FORM_LABEL.ORGANIZATION}
+                      <span>*</span>
+                    </InputLabel>
+                    <Select
+                      value={selectedOrg}
+                      onChange={handleOrgChange}
+                      // disabled={type !== "new" ? true : false}
+                    >
+                      {/* <MenuItem value="">
                       <em>None</em>
                     </MenuItem> */}
-                    {orgData.map((org) => (
-                      <MenuItem key={org.org_id} value={org.org_id}>
-                        {org.org_name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              {/* <Grid item xs={12} sm={6}>
+                      {orgData.map((org) => (
+                        <MenuItem key={org.org_id} value={org.org_id}>
+                          {org.org_name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+                {/* <Grid item xs={12} sm={6}>
                 <FormControl fullWidth>
                   <InputLabel>
                     {FORM_LABEL.SECTOR}
@@ -943,116 +957,137 @@ export default function UserCreation({ onHandleClose, type, selecteddata }) {
                   </Select>
                 </FormControl>
               </Grid> */}
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
-                  <InputLabel>
-                    {FORM_LABEL.INDUSTRY}
-                    <span>*</span>
-                  </InputLabel>
-                  <Select
-                    value={selectedIndustry}
-                    // value={selecteddata?.industry_names.join(", ")}
-                    onChange={handleIndustryChange}
-                    multiple
-                    // renderValue={(selected) => {
-                    //   console.log("selected data",selected)
-                    //   const selectedIndustries = filteredIndustries.filter(
-                    //     (industry) => selected.includes(industry.industry_id)
-                    //   );
-                    //   return selectedIndustries
-                    //     .map((industry) => industry.industry_name)
-                    //     .join(", ");
-                    // }}
-                    renderValue={(selected) => {
-                      const selectedIndustries = filteredIndustries.filter(
-                        (industry) => selected.includes(industry.industry_id)
-                      );
-                      return selectedIndustries
-                        .map((industry) => industry.industry_name)
-                        .join(", ");
-                    }}
-                    // disabled={filteredIndustries.length === 0 || type !== "new"}
-                  >
-                    {filteredIndustries.map((industry) => (
-                      <MenuItem
-                        key={industry.industry_id}
-                        value={industry.industry_id}
-                      >
-                        <Checkbox
-                          checked={selectedIndustry.includes(
-                            industry.industry_id
-                          )}
-                        />
-                        {industry.industry_name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
-                  <InputLabel>
-                    {FORM_LABEL.ROLE}
-                    <span>*</span>
-                  </InputLabel>
-                  <Select
-                    value={formData.role_id}
-                    onChange={handleRoleChange}
-                    disabled={roleData.length === 0}
-                  >
-                    {/* <MenuItem value="">
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth>
+                    <InputLabel>
+                      {FORM_LABEL.INDUSTRY}
+                      <span>*</span>
+                    </InputLabel>
+                    <Select
+                      value={selectedIndustry}
+                      // value={selecteddata?.industry_names.join(", ")}
+                      onChange={handleIndustryChange}
+                      multiple
+                      // renderValue={(selected) => {
+                      //   console.log("selected data",selected)
+                      //   const selectedIndustries = filteredIndustries.filter(
+                      //     (industry) => selected.includes(industry.industry_id)
+                      //   );
+                      //   return selectedIndustries
+                      //     .map((industry) => industry.industry_name)
+                      //     .join(", ");
+                      // }}
+                      renderValue={(selected) => {
+                        const selectedIndustries = filteredIndustries.filter(
+                          (industry) => selected.includes(industry.industry_id)
+                        );
+                        return selectedIndustries
+                          .map((industry) => industry.industry_name)
+                          .join(", ");
+                      }}
+                      // disabled={filteredIndustries.length === 0 || type !== "new"}
+                    >
+                      {filteredIndustries.map((industry) => (
+                        <MenuItem
+                          key={industry.industry_id}
+                          value={industry.industry_id}
+                        >
+                          <Checkbox
+                            checked={selectedIndustry.includes(
+                              industry.industry_id
+                            )}
+                          />
+                          {industry.industry_name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth>
+                    <InputLabel>
+                      {FORM_LABEL.ROLE}
+                      <span>*</span>
+                    </InputLabel>
+                    <Select
+                      value={formData.role_id}
+                      onChange={handleRoleChange}
+                      disabled={roleData.length === 0}
+                    >
+                      {/* <MenuItem value="">
                       <em>None</em>
                     </MenuItem> */}
-                    {roleData.map((role) => (
-                      <MenuItem key={role.role_id} value={role.role_id}>
-                        {role.role_name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                      {roleData.map((role) => (
+                        <MenuItem key={role.role_id} value={role.role_id}>
+                          {role.role_name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
               </Grid>
-            </Grid>
-          ) : null}
+            ) : null}
 
-          {activeStep <= 2 && (
-            <Box sx={{ pt: 2, mt: 4 }}>
-              <span
-                style={{ color: "red", marginBottom: "20px", display: "block" }}
-              >
-                {mandatoryError}
-              </span>
-              <Box sx={{ display: "flex", flexDirection: "row" }}>
-                {activeStep !== 0 && (
-                  <Button
-                    disabled={activeStep === 0}
-                    onClick={handleBack}
-                    sx={{ mr: 1 }}
-                    variant="outlined"
-                  >
-                    {BUTTON_LABEL.BACK}
-                  </Button>
-                )}
-                <Box sx={{ flex: "1 1 auto" }} />
-                {isStepOptional(activeStep) && (
-                  <Button color="inherit" onClick={handleSkip} sx={{ mr: 1 }}>
-                    {BUTTON_LABEL.SKIP}
-                  </Button>
-                )}
-                <Button
-                  onClick={
-                    activeStep === steps.length - 1 ? handleSubmit : handleNext
-                  }
-                  variant="contained"
+            {activeStep <= 2 && (
+              <Box sx={{ pt: 2, mt: 4 }}>
+                <span
+                  style={{
+                    color: "red",
+                    marginBottom: "20px",
+                    display: "block",
+                  }}
                 >
-                  {activeStep === steps.length - 1
-                    ? BUTTON_LABEL.FINISH
-                    : BUTTON_LABEL.NEXT}
-                </Button>
+                  {mandatoryError}
+                </span>
+                <Box sx={{ display: "flex", flexDirection: "row" }}>
+                  {activeStep !== 0 && (
+                    <Button
+                      disabled={activeStep === 0}
+                      onClick={handleBack}
+                      sx={{ mr: 1 }}
+                      variant="outlined"
+                    >
+                      {BUTTON_LABEL.BACK}
+                    </Button>
+                  )}
+                  <Box sx={{ flex: "1 1 auto" }} />
+                  {isStepOptional(activeStep) && (
+                    <Button color="inherit" onClick={handleSkip} sx={{ mr: 1 }}>
+                      {BUTTON_LABEL.SKIP}
+                    </Button>
+                  )}
+                  <Button
+                    onClick={
+                      activeStep === steps.length - 1
+                        ? handleSubmit
+                        : handleNext
+                    }
+                    variant="contained"
+                  >
+                    {activeStep === steps.length - 1
+                      ? BUTTON_LABEL.FINISH
+                      : BUTTON_LABEL.NEXT}
+                  </Button>
+                </Box>
               </Box>
-            </Box>
-          )}
+            )}
+          </Grid>
         </Grid>
-      </Grid>
-    </Box>
+      </Box>
+      <Snackbar
+        style={{ top: "80px" }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        open={snackData.show}
+        autoHideDuration={3000}
+        onClose={() => setSnackData({ show: false })}
+      >
+        <Alert
+          onClose={() => setSnackData({ show: false })}
+          severity={snackData.type}
+        >
+          {snackData.message}
+        </Alert>
+      </Snackbar>
+    </>
   );
 }
