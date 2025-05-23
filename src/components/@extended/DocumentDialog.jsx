@@ -116,7 +116,10 @@ const DocumentDialog = ({
                         <Switch
                           checked={item.answer === "YES"}
                           onChange={(e) =>
-                            handleAnswerChange(index, e.target.checked)
+                            handleAnswerChange(
+                              (currentPage - 1) * rowsPerPage + index,
+                              e.target.checked
+                            )
                           }
                           color="success"
                           size="small"
@@ -136,7 +139,10 @@ const DocumentDialog = ({
                           minRows={2}
                           value={item.explanation}
                           onChange={(e) =>
-                            handleExplanationChange(index, e.target.value)
+                            handleExplanationChange(
+                              (currentPage - 1) * rowsPerPage + index,
+                              e.target.value
+                            )
                           }
                         />
                       ) : (
