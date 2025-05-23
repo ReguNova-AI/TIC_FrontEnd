@@ -52,6 +52,7 @@ export const API_ERROR_MESSAGE = {
   DOCUMENT_NOT_FOUND: "Please add Project documents to run the assessment",
   FAILED_TO_RUN_ASSESSMENT: "Failed to run assessment",
   PASSWORD_EXPIRED: "Your password is expired please try to reset it",
+  ERROR_OCCURED: "Error occurred",
 };
 
 export const STORAGE_KEYS = {
