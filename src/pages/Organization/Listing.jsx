@@ -4,7 +4,6 @@ import {
   Table,
   ConfigProvider,
   Empty,
-  Input,
   Popover,
   Button,
   Spin,
@@ -20,11 +19,8 @@ import InputAdornment from "@mui/material/InputAdornment";
 import MultiSelectWithChip from "components/form/MultiSelectWithChip"; // Assuming this is a custom component
 import {
   SearchOutlined,
-  DownloadOutlined,
-  FileFilled,
   CloseCircleOutlined,
   CheckCircleOutlined,
-  EditFilled,
   EditOutlined,
 } from "@ant-design/icons";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -34,7 +30,6 @@ import {
   API_ERROR_MESSAGE,
   LISTING_PAGE,
   API_SUCCESS_MESSAGE,
-  STATUS,
   BUTTON_LABEL,
   GENERIC_DATA_LABEL,
   FORM_LABEL,
@@ -51,7 +46,6 @@ import PropTypes from "prop-types";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
-
 
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -82,7 +76,6 @@ function a11yProps(index) {
   };
 }
 
-
 const OrganizationListing = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -95,7 +88,6 @@ const OrganizationListing = () => {
   const [statusFilter, setStatusFilter] = useState([]);
   const [industryFilter, setIndustryFilter] = useState([]);
   const [sectorFilter, setSectorFilter] = useState([]);
-  const [nameFilter, setNameFilter] = useState(""); // For sorting by name
   const [industryData, setIndustryData] = useState([]);
   const [sectorData, setSectorData] = useState([]);
   const [sortOrder, setSortOrder] = useState("ascend"); // 'ascend' or 'descend'
@@ -108,8 +100,8 @@ const OrganizationListing = () => {
   const [value, setValue] = React.useState(0);
   const [loading, setLoading] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [modalType,setModalType] = useState("");
-  const [modalData,setModalData] = useState({});
+  const [modalType, setModalType] = useState("");
+  const [modalData, setModalData] = useState({});
 
   const [snackData, setSnackData] = useState({
     show: false,
@@ -140,7 +132,6 @@ const OrganizationListing = () => {
     sector_id,
     contact_json,
     address
-
   ) => {
     return {
       index,
@@ -154,7 +145,7 @@ const OrganizationListing = () => {
       industryId,
       sector_id,
       contact_json,
-      address
+      address,
     };
   };
 
@@ -379,7 +370,7 @@ const OrganizationListing = () => {
     inActiveCurrentPage * inactivePageSize
   );
 
-  const handleModalOpen = (type,data) => {
+  const handleModalOpen = (type, data) => {
     setModalData(data);
     setModalType(type);
     setIsModalVisible(true);
@@ -399,7 +390,6 @@ const OrganizationListing = () => {
     console.log(e);
     // message.error('Click on No');
   };
-
 
   const filterPopoverContent = (
     <div style={{ padding: "10px", minWidth: "200px" }}>
@@ -455,7 +445,7 @@ const OrganizationListing = () => {
       active = 1;
     }
 
-    OrganisationApiService.orgAccess(orgId,active)
+    OrganisationApiService.orgAccess(orgId, active)
       .then((response) => {
         // Check the response structure and map data accordingly
         setLoading(false);
@@ -476,145 +466,167 @@ const OrganizationListing = () => {
         setSnackData({
           show: true,
           message:
-            errResponse.response?.data?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+            errResponse.response?.data?.message ||
+            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
       });
   };
 
-
-  const columns =(type)=>{
-
-  return [
-    {
-      title: LISTING_PAGE.ORG_NAME,
-      dataIndex: "org_name",
-      key: "org_name",
-      render: (text, record) => (
-        <>
-          {record.org_logo ? (
-            <Avatar
-              sx={{ width: 40, height: 40 }}
-              alt={record.org_name}
-              src={record.org_logo}
-            />
-          ) : (
-            <img
-              src={Orgicon}
-              width="32px"
-              style={{ verticalAlign: "middle" }}
-            />
-          )}
-          <span style={{ marginLeft: 10 }}>
-            <a
-              onClick={() => handleNavigateToOrganization(record.index)}
-              style={{ color: "#2ba9bc", cursor: "pointer" }}
-            >
-              {text}
-            </a>
-          </span>
-        </>
-      ),
-      filterSearch: true,
-      onFilter: (value, record) =>
-        record.org_name.toLowerCase().includes(value.toLowerCase()),
-    },
-    {
-      title: LISTING_PAGE.ORG_WEBSITE,
-      dataIndex: "org_url",
-      key: "org_url",
-    },
-    // {
-    //   title: LISTING_PAGE.SECTOR,
-    //   dataIndex: "sector",
-    //   key: "sector",
-    // },
-    {
-      title: LISTING_PAGE.INDUSTRY,
-      dataIndex: "industry",
-      key: "industry",
-      // render: (industry) => (
-      //   <>
-      //     {industry?.map((item, index) => (
-      //       <Chip label={item} key={index} sx={{ marginBottom: 1 }} />
-      //     ))}
-      //   </>
-      // ),
-    },
-    {
-      title: LISTING_PAGE.ORG_ADDRESS,
-      dataIndex: "org_address",
-      key: "org_address",
-      render: (address) => <span>{address || GENERIC_DATA_LABEL.NO_DATA}</span>,
-    },
-    {
-      title: LISTING_PAGE.ORG_PRIMARY_EMAIL,
-      dataIndex: "org_email",
-      key: "org_email",
-      filterSearch: true,
-      onFilter: (value, record) =>
-        record?.contact_json?.primary_contact?.email.toString().includes(value),
-    },
-    {
-      title: LISTING_PAGE.ACTION,
-      key: "action",
-      width:"120px",
-      render: (_, record) => {
-       return (
-       <>
-       <Tooltip title="Edit organization details" >
-       <Button style={{border:"none",background:"transparent",boxShadow:"none",}}  onClick={()=>handleModalOpen("update",record)}>
-          <EditOutlined style={{fontSize:"20px"}}/>
-       </Button>
-       </Tooltip>
-       <Popconfirm
-          title={
-            type === "Active"
-              ? `Disable access for ${record?.org_name}`
-              : `Enable access for ${record?.org_name}`
-          }
-          description={
-            type === "Active"
-              ? "Are you sure you want to disable the Organization access?"
-              : "Are you sure you want to enable the Organization access?"
-          }
-          onConfirm={(e) =>{ e.preventDefault(); handleDelete(record?.index, type)}}
-          onCancel={cancel}
-          okText="Confirm"
-          cancelText="Cancel"
-          icon={
-            type === "Active" ? (
-              <CloseCircleOutlined
-                style={{
-                  color: "red",
-                }}
+  const columns = (type) => {
+    return [
+      {
+        title: LISTING_PAGE.ORG_NAME,
+        dataIndex: "org_name",
+        key: "org_name",
+        render: (text, record) => (
+          <>
+            {record.org_logo ? (
+              <Avatar
+                sx={{ width: 40, height: 40 }}
+                alt={record.org_name}
+                src={record.org_logo}
               />
             ) : (
-              <CheckCircleOutlined
-                style={{
-                  color: "green",
-                }}
+              <img
+                src={Orgicon}
+                width="32px"
+                style={{ verticalAlign: "middle" }}
               />
-            )
-          }
-        >
-          <Tooltip
-            title={
-              type === "Active" ? "Disable Organization Access" : "Enable Organization Access"
-            }
-          >
-            <img
-              src={type === "Active" ? disableUser : enableUser}
-              width="26px"
-            />
-          </Tooltip>
-        </Popconfirm>
-        </>
-        );
+            )}
+            <span style={{ marginLeft: 10 }}>
+              <a
+                onClick={() => handleNavigateToOrganization(record.index)}
+                style={{ color: "#2ba9bc", cursor: "pointer" }}
+              >
+                {text}
+              </a>
+            </span>
+          </>
+        ),
+        filterSearch: true,
+        onFilter: (value, record) =>
+          record.org_name.toLowerCase().includes(value.toLowerCase()),
       },
-    },
-  ];
-};
+      {
+        title: LISTING_PAGE.ORG_WEBSITE,
+        dataIndex: "org_url",
+        key: "org_url",
+      },
+      // {
+      //   title: LISTING_PAGE.SECTOR,
+      //   dataIndex: "sector",
+      //   key: "sector",
+      // },
+      {
+        title: LISTING_PAGE.INDUSTRY,
+        dataIndex: "industry",
+        key: "industry",
+        // render: (industry) => (
+        //   <>
+        //     {industry?.map((item, index) => (
+        //       <Chip label={item} key={index} sx={{ marginBottom: 1 }} />
+        //     ))}
+        //   </>
+        // ),
+      },
+      {
+        title: LISTING_PAGE.ORG_ADDRESS,
+        dataIndex: "org_address",
+        key: "org_address",
+        render: (address) => (
+          <span>{address || GENERIC_DATA_LABEL.NO_DATA}</span>
+        ),
+      },
+      {
+        title: LISTING_PAGE.ORG_PRIMARY_EMAIL,
+        dataIndex: "org_email",
+        key: "org_email",
+        filterSearch: true,
+        onFilter: (value, record) =>
+          record?.contact_json?.primary_contact?.email
+            .toString()
+            .includes(value),
+      },
+      {
+        title: LISTING_PAGE.ACTION,
+        key: "action",
+        width: "150px",
+        render: (_, record) => {
+          return (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
+                flexWrap: "wrap", // <-- allows wrapping on small screens
+              }}
+            >
+              <Tooltip title="Edit organization details">
+                <Button
+                  style={{
+                    border: "none",
+                    background: "transparent",
+                    boxShadow: "none",
+                  }}
+                  onClick={() => handleModalOpen("update", record)}
+                >
+                  <EditOutlined style={{ fontSize: "20px" }} />
+                </Button>
+              </Tooltip>
+              <Popconfirm
+                title={
+                  type === "Active"
+                    ? `Disable access for ${record?.org_name}`
+                    : `Enable access for ${record?.org_name}`
+                }
+                description={
+                  type === "Active"
+                    ? "Are you sure you want to disable the Organization access?"
+                    : "Are you sure you want to enable the Organization access?"
+                }
+                onConfirm={(e) => {
+                  e.preventDefault();
+                  handleDelete(record?.index, type);
+                }}
+                onCancel={cancel}
+                okText="Confirm"
+                cancelText="Cancel"
+                icon={
+                  type === "Active" ? (
+                    <CloseCircleOutlined
+                      style={{
+                        color: "red",
+                      }}
+                    />
+                  ) : (
+                    <CheckCircleOutlined
+                      style={{
+                        color: "green",
+                      }}
+                    />
+                  )
+                }
+              >
+                <Tooltip
+                  title={
+                    type === "Active"
+                      ? "Disable Organization Access"
+                      : "Enable Organization Access"
+                  }
+                >
+                  <img
+                    src={type === "Active" ? disableUser : enableUser}
+                    width="26px"
+                  />
+                </Tooltip>
+              </Popconfirm>
+            </div>
+          );
+        },
+      },
+    ];
+  };
 
   return (
     <Spin tip="Loading" size="large" spinning={loading}>
@@ -641,7 +653,7 @@ const OrganizationListing = () => {
           >
             <Button
               type="primary"
-              onClick={()=>handleModalOpen("new",null)}
+              onClick={() => handleModalOpen("new", null)}
               style={{
                 background: "#2ba9bc",
                 display: "flex",
@@ -649,7 +661,6 @@ const OrganizationListing = () => {
                 borderRadius: "20px",
               }}
             >
-              {/* <FileFilled style={{ marginRight: 4 }} /> */}
               <img src={addorgIcon} width="18px" />
               {BUTTON_LABEL.CREATE_ORGANIZATION}
             </Button>
@@ -699,7 +710,7 @@ const OrganizationListing = () => {
             </Tabs>
           </Box>
           <CustomTabPanel value={value} index={0}>
-            <Table
+            {/* <Table
               columns={columns("Active")}
               dataSource={paginatedData}
               rowKey="index"
@@ -709,20 +720,45 @@ const OrganizationListing = () => {
                 total: filteredData.length,
                 onChange: handlePaginationChange,
               }}
-            />
+            /> */}
+            <div
+              style={{
+                overflowY: "auto",
+                overflowX: "auto",
+              }}
+            >
+              <Table
+                columns={columns("Active")}
+                dataSource={paginatedData}
+                rowKey="index"
+                pagination={{
+                  current: currentPage,
+                  pageSize,
+                  total: filteredData.length,
+                  onChange: handlePaginationChange,
+                }}
+              />
+            </div>
           </CustomTabPanel>
           <CustomTabPanel value={value} index={1}>
-            <Table
-              columns={columns("Inactive")}
-              dataSource={inActivePaginatedData}
-              rowKey="index"
-              pagination={{
-                current: inActiveCurrentPage,
-                pageSize,
-                total: inActiveFilteredData.length,
-                onChange: handleInactivePaginationChange,
+            <div
+              style={{
+                overflowY: "auto",
+                overflowX: "auto",
               }}
-            />
+            >
+              <Table
+                columns={columns("Inactive")}
+                dataSource={inActivePaginatedData}
+                rowKey="index"
+                pagination={{
+                  current: inActiveCurrentPage,
+                  pageSize,
+                  total: inActiveFilteredData.length,
+                  onChange: handleInactivePaginationChange,
+                }}
+              />
+            </div>
           </CustomTabPanel>
         </Space>
         {/* Modal for Organization Creation */}
@@ -733,7 +769,11 @@ const OrganizationListing = () => {
           footer={null}
           width={800}
         >
-          <OrgCreation onHandleClose={(e) => handleClose()} type={modalType} selecteddata={modalData}/>
+          <OrgCreation
+            onHandleClose={(e) => handleClose()}
+            type={modalType}
+            selecteddata={modalData}
+          />
         </Modal>
         <Snackbar
           style={{ top: "80px" }}

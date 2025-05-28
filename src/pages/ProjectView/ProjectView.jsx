@@ -164,6 +164,7 @@ const ProjectView = () => {
   }, [standardData]);
 
   const fetchDetails = (id) => {
+    setLoading(true);
     ProjectApiService.projectDetails(id)
       .then((response) => {
         setSnackData({
@@ -178,7 +179,7 @@ const ProjectView = () => {
         setChatloading(
           response?.data?.details[0]?.standardUploaded !== null ? false : true
         );
-        setLoading(false);
+        // setLoading(false);
       })
       .catch((errResponse) => {
         setSnackData({
@@ -188,6 +189,9 @@ const ProjectView = () => {
             API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
+        // setLoading(false);
+      })
+      .finally(() => {
         setLoading(false);
       });
   };
@@ -759,7 +763,7 @@ const ProjectView = () => {
               response?.message || API_SUCCESS_MESSAGE.UPDATED_SUCCESSFULLY,
             type: "success",
           });
-          setLoading(false);
+          // setLoading(false);
         }
       );
       setLoading(true);
@@ -779,7 +783,7 @@ const ProjectView = () => {
               response?.message || API_SUCCESS_MESSAGE.UPDATED_SUCCESSFULLY,
             type: "success",
           });
-          setLoading(false);
+          // setLoading(false);
         }
       );
       fetchDetails(id);

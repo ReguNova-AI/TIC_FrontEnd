@@ -1,3 +1,4 @@
+import { CloseCircleTwoTone } from "@ant-design/icons";
 import {
   Dialog,
   DialogTitle,
@@ -17,6 +18,8 @@ import {
   Switch,
   FormControlLabel,
   Pagination,
+  IconButton,
+  Checkbox,
 } from "@mui/material";
 import React from "react";
 import { PROJECT_DETAIL_PAGE } from "shared/constants";
@@ -43,6 +46,7 @@ const DocumentDialog = ({
   const [localActiveTab, setLocalActiveTab] = React.useState(0);
   const [localTabFlag, setLocalTabFlag] = React.useState(false);
   const [currentPage, setCurrentPage] = React.useState(1);
+  const [selectedPoints, setSelectedPoints] = React.useState({});
   const rowsPerPage = 10;
 
   const handleAddTab = () => {
@@ -59,6 +63,52 @@ const DocumentDialog = ({
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage
   );
+
+  const handleDeleteTab = (indexToDelete) => {
+    const newSections = [...sections];
+    newSections.splice(indexToDelete, 1);
+    setSections(newSections);
+
+    // Adjust active tab if needed
+    if (localActiveTab === indexToDelete) {
+      setLocalActiveTab(Math.max(indexToDelete - 1, 0));
+    } else if (localActiveTab > indexToDelete) {
+      setLocalActiveTab(localActiveTab - 1);
+    }
+  };
+
+  const handleSelectPoint = (tabIndex, pointIndex) => {
+    setSelectedPoints((prev) => {
+      const current = prev[tabIndex] || [];
+      const updated = current.includes(pointIndex)
+        ? current.filter((i) => i !== pointIndex)
+        : [...current, pointIndex];
+
+      return {
+        ...prev,
+        [tabIndex]: updated,
+      };
+    });
+  };
+
+  const handleDeleteSelectedPoints = () => {
+    const updatedSections = [...sections];
+    const selectedIndexes = selectedPoints[localActiveTab] || [];
+
+    // Filter out selected points
+    updatedSections[localActiveTab].points = updatedSections[
+      localActiveTab
+    ].points.filter((_, index) => !selectedIndexes.includes(index));
+
+    // Update the state
+    setSections(updatedSections);
+
+    // Clear selected points for the current tab
+    setSelectedPoints((prev) => ({
+      ...prev,
+      [localActiveTab]: [],
+    }));
+  };
 
   return (
     <Dialog
@@ -190,15 +240,26 @@ const DocumentDialog = ({
                       }}
                       label={
                         editMode ? (
-                          <TextField
-                            value={section.title}
-                            placeholder="Enter item title"
-                            fullWidth
-                            onChange={(e) =>
-                              handleTabTitleChange(index, e.target.value)
-                            }
-                            variant="standard"
-                          />
+                          <Box display="flex" alignItems="center">
+                            <TextField
+                              value={section.title}
+                              placeholder="Enter item title"
+                              fullWidth
+                              onChange={(e) =>
+                                handleTabTitleChange(index, e.target.value)
+                              }
+                              variant="standard"
+                            />
+                            <IconButton
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation(); // Prevent switching tabs
+                                handleDeleteTab(index);
+                              }}
+                            >
+                              <CloseCircleTwoTone fontSize="small" />
+                            </IconButton>
+                          </Box>
                         ) : (
                           section.title
                         )
@@ -225,20 +286,33 @@ const DocumentDialog = ({
                     {sections[localActiveTab]?.points.map((point, index) => (
                       <li key={index}>
                         {editMode ? (
-                          <TextField
-                            value={point}
-                            placeholder="Enter Item"
-                            variant="standard"
-                            multiline
-                            fullWidth
-                            onChange={(e) =>
-                              handlePointChange(
-                                localActiveTab,
-                                index,
-                                e.target.value
-                              )
-                            }
-                          />
+                          <Box display="flex" alignItems="center" gap={1}>
+                            <TextField
+                              value={point}
+                              placeholder="Enter Item"
+                              variant="standard"
+                              multiline
+                              fullWidth
+                              onChange={(e) =>
+                                handlePointChange(
+                                  localActiveTab,
+                                  index,
+                                  e.target.value
+                                )
+                              }
+                            />
+                            <Checkbox
+                              checked={
+                                selectedPoints[localActiveTab]?.includes(
+                                  index
+                                ) || false
+                              }
+                              onChange={() =>
+                                handleSelectPoint(localActiveTab, index)
+                              }
+                              size="small"
+                            />
+                          </Box>
                         ) : (
                           <Typography>{point}</Typography>
                         )}
@@ -246,13 +320,32 @@ const DocumentDialog = ({
                     ))}
                   </ul>
                   {editMode && (
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={() => handleAddPoint(localActiveTab)}
+                    <Box
+                      display="flex"
+                      flexDirection="row"
+                      justifyContent="space-between"
+                      alignItems="center"
+                      marginBottom={2}
                     >
-                      + Add Item
-                    </Button>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => handleAddPoint(localActiveTab)}
+                      >
+                        + Add Item
+                      </Button>
+                      {selectedPoints[localActiveTab]?.length > 0 && (
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          size="small"
+                          onClick={handleDeleteSelectedPoints}
+                          style={{ marginBottom: "10px" }}
+                        >
+                          🗑️ Delete Selected
+                        </Button>
+                      )}
+                    </Box>
                   )}
                 </Box>
               )}
@@ -269,7 +362,7 @@ const DocumentDialog = ({
               : "Save"}
           </Button>
         )}
-        <Button onClick={onClose} color="primary">
+        <Button onClick={() => onClose(fileName)} color="primary">
           Close
         </Button>
       </DialogActions>
