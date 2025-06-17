@@ -361,6 +361,9 @@ export const extractAnswerAndExplanation = (questions, dataValue) => {
       } else if (/^no\b/i.test(normalizedItem)) {
         answer = "NO";
         explanation = normalizedItem.replace(/^no\b/i, "").trim();
+      } else {
+        answer = "NO";
+        explanation = normalizedItem.replace(/^no\b/i, "").trim();
       }
 
       // Remove unwanted punctuation (., -) from the start or end of the explanation
@@ -388,7 +391,7 @@ function cleanTitle(text, keyword, preserveLabel = false) {
 }
 
 let sectionDataBeforeEdit = [];
-let assessmentDataBeforeEdit = [];
+let complienceDataBeforeEdit = [];
 
 const FileCard = ({
   fileName,
@@ -551,7 +554,7 @@ const FileCard = ({
 
   // Function to handle opening the modal
   const handleOpenModal = () => {
-    assessmentDataBeforeEdit = _.cloneDeep(assessmentData);
+    complienceDataBeforeEdit = _.cloneDeep(complianceData);
     sectionDataBeforeEdit = _.cloneDeep(sections);
     setOpenModal(true);
   };
@@ -565,7 +568,7 @@ const FileCard = ({
     }
 
     if (fileName === PROJECT_DETAIL_PAGE.ASSESSMENT_REPORT) {
-      isEqual = _.isEqual(assessmentData, assessmentDataBeforeEdit);
+      isEqual = _.isEqual(complianceData, complienceDataBeforeEdit);
     }
 
     if (!isEqual) {
@@ -588,7 +591,7 @@ const FileCard = ({
 
       if (dirtyFileName === PROJECT_DETAIL_PAGE.ASSESSMENT_REPORT) {
         // If you're using a setter, use that here
-        setAssessmentData(_.cloneDeep(assessmentDataBeforeEdit));
+        setComplianceData(_.cloneDeep(complienceDataBeforeEdit));
       }
     }
 
