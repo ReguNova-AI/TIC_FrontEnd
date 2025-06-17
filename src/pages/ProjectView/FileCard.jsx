@@ -10,18 +10,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Tabs,
-  Tab,
-  Box as MuiBox,
   Button,
-  Table,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-  TextField,
-  FormControlLabel,
-  Switch,
 } from "@mui/material";
 import {
   DownloadOutlined,
@@ -50,6 +39,7 @@ import { OrganisationApiService } from "services/api/OrganizationAPIService";
 import logo from "../../assets/images/logo1.jpeg";
 import DocumentDialog from "../../components/@extended/DocumentDialog";
 import { PROJECT_DETAIL_PAGE } from "shared/constants";
+import _ from "lodash";
 
 // Function to parse the API response into a structured format (skipping the title)
 export const parseApiResponse = (response) => {
@@ -371,6 +361,9 @@ export const extractAnswerAndExplanation = (questions, dataValue) => {
       } else if (/^no\b/i.test(normalizedItem)) {
         answer = "NO";
         explanation = normalizedItem.replace(/^no\b/i, "").trim();
+      } else {
+        answer = "NO";
+        explanation = normalizedItem.replace(/^no\b/i, "").trim();
       }
 
       // Remove unwanted punctuation (., -) from the start or end of the explanation
@@ -397,6 +390,9 @@ function cleanTitle(text, keyword, preserveLabel = false) {
   return preserveLabel ? `${keyword}: ${cleaned}` : cleaned;
 }
 
+let sectionDataBeforeEdit = [];
+let complienceDataBeforeEdit = [];
+
 const FileCard = ({
   fileName,
   onDownload,
@@ -411,12 +407,14 @@ const FileCard = ({
   // Modal open state and active tab state
   const [openModal, setOpenModal] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
-  const [activeTabflag, setActiveTabflag] = useState(false);
   const [editMode, setEditMode] = useState(false);
 
   const [sections, setSections] = useState([]);
   const [assessmentData, setAssessmentData] = useState([]);
   const [complianceData, setComplianceData] = useState([]);
+  const [showConfirmDialog, setShowConfirmDialog] = React.useState(false);
+  const [dirtyFileName, setDirtyFileName] = React.useState(null);
+
   apiResponse = data;
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
   const userEmail = userdetails?.[0]?.user_email;
@@ -556,11 +554,48 @@ const FileCard = ({
 
   // Function to handle opening the modal
   const handleOpenModal = () => {
+    complienceDataBeforeEdit = _.cloneDeep(complianceData);
+    sectionDataBeforeEdit = _.cloneDeep(sections);
     setOpenModal(true);
   };
 
   // Function to handle closing the modal
-  const handleCloseModal = () => {
+  const handleCloseModal = (fileName) => {
+    let isEqual = true;
+
+    if (fileName === PROJECT_DETAIL_PAGE.CHECKLIST_REPORT) {
+      isEqual = _.isEqual(sections, sectionDataBeforeEdit);
+    }
+
+    if (fileName === PROJECT_DETAIL_PAGE.ASSESSMENT_REPORT) {
+      isEqual = _.isEqual(complianceData, complienceDataBeforeEdit);
+    }
+
+    if (!isEqual) {
+      setDirtyFileName(fileName);
+      setShowConfirmDialog(true); // Show confirmation popover/dialog
+      return;
+    }
+
+    setOpenModal(false);
+  };
+
+  const handleConfirmClose = (shouldSave) => {
+    if (shouldSave) {
+      handleSaveAll(dirtyFileName);
+    } else {
+      // Revert data back to original
+      if (dirtyFileName === PROJECT_DETAIL_PAGE.CHECKLIST_REPORT) {
+        setSections(_.cloneDeep(sectionDataBeforeEdit));
+      }
+
+      if (dirtyFileName === PROJECT_DETAIL_PAGE.ASSESSMENT_REPORT) {
+        // If you're using a setter, use that here
+        setComplianceData(_.cloneDeep(complienceDataBeforeEdit));
+      }
+    }
+
+    setShowConfirmDialog(false);
     setOpenModal(false);
   };
 
@@ -1205,6 +1240,27 @@ const FileCard = ({
         handlePointChange={handlePointChange}
         handleSaveAll={handleSaveAll}
       />
+
+      <Dialog
+        open={showConfirmDialog}
+        onClose={() => setShowConfirmDialog(false)}
+        style={{ zIndex: 9999999 }}
+      >
+        <DialogTitle>Unsaved Changes</DialogTitle>
+        <DialogContent>
+          <Typography>
+            You’ve got unsaved changes. Wanna save them before closing?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => handleConfirmClose(false)} color="secondary">
+            No, Discard
+          </Button>
+          <Button onClick={() => handleConfirmClose(true)} color="primary">
+            Yes, Save
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };

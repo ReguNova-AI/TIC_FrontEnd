@@ -14,11 +14,8 @@ import Loader from "components/Loader";
 import Breadcrumbs from "components/@extended/Breadcrumbs";
 
 import { handlerDrawerOpen, useGetMenuMaster } from "api/menu";
-import { IconButton } from "@mui/material";
-import MenuFoldOutlined from "@ant-design/icons/MenuFoldOutlined";
-import MenuUnfoldOutlined from "@ant-design/icons/MenuUnfoldOutlined";
 import { Button } from "antd";
-import menuIcon from "../../assets/images/icons/menuIcon.svg"
+import menuIcon from "../../assets/images/icons/menuIcon.svg";
 
 // ==============================|| MAIN LAYOUT ||============================== //
 
@@ -44,11 +41,15 @@ export default function DashboardLayout() {
           position: "fixed",
           marginLeft: drawerOpen ? "240px" : !downXL ? "63px" : "2px",
           zIndex: "999999",
-          borderRadius:"50%",
-          padding:"6px"
+          borderRadius: "50%",
+          padding: "6px",
         }}
       >
-         <img src={menuIcon} width="20px" style={{transform: !drawerOpen ? "none" :"scaleX(-1)"}}/>
+        <img
+          src={menuIcon}
+          width="20px"
+          style={{ transform: !drawerOpen ? "none" : "scaleX(-1)" }}
+        />
       </Button>
       <Box
         component="main"
