@@ -9,17 +9,15 @@ import Chip from '@mui/material/Chip';
 // project import
 import Logo from './LogoMain';
 import config from 'config';
-import logo from '../../assets/images/logo1.jpeg';
+import logo from '../../assets/images/GridConform.png';
 
 // ==============================|| MAIN LOGO ||============================== //
 
 const LogoSection = ({ sx, to }) => {
   return (
     <ButtonBase disableRipple component={Link} to={!to ? config.defaultPath : to} sx={sx}>
-      <Stack direction="row" spacing={1} alignItems="center">
         {/* <Logo /> */}
-        <img src={logo } width='60px'/>
-      </Stack>
+        <img src={logo } width='180px'/>
     </ButtonBase>
   );
 };

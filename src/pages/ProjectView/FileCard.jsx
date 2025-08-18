@@ -24,7 +24,7 @@ import { saveAs } from 'file-saver';
 import { Document, Packer, Paragraph, TextRun, AlignmentType,Header,ImageRun } from 'docx';
 import { Table as DocxTable, TableRow as DocxTableRow, TableCell as DocxTableCell } from "docx";
 import { OrganisationApiService } from 'services/api/OrganizationAPIService';
-import logo from "../../assets/images/logo1.jpeg";
+import logo from "../../assets/images/GridConform2.jpg";
 
 // Function to parse the API response into a structured format (skipping the title)
 const parseApiResponse = (response) => {
