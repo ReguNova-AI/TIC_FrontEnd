@@ -36,7 +36,7 @@ import {
   TableCell as DocxTableCell,
 } from "docx";
 import { OrganisationApiService } from "services/api/OrganizationAPIService";
-import logo from "../../assets/images/logo1.jpeg";
+import logo from "../../assets/images/GridConform2.jpg";
 import DocumentDialog from "../../components/@extended/DocumentDialog";
 import { PROJECT_DETAIL_PAGE } from "shared/constants";
 import _ from "lodash";
@@ -690,7 +690,7 @@ const FileCard = ({
       zipCode: OrgData?.org_address?.zip,
       // email: OrgData?.contact_json?.primary_contact?.email,
       email: userEmail,
-      submittedByName: "Regunova AI",
+      submittedByName: "GridConform",
       submittedByZip: "PO Box 375,",
       submittedByAddress: "Frisco, TX 75034, US",
       submittedByEmail: "Email support@regunova.ai",
