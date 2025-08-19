@@ -690,7 +690,7 @@ const FileCard = ({
       zipCode: OrgData?.org_address?.zip,
       // email: OrgData?.contact_json?.primary_contact?.email,
       email: userEmail,
-      submittedByName: "GridConform",
+      submittedByName: "Grid Conform",
       submittedByZip: "PO Box 375,",
       submittedByAddress: "Frisco, TX 75034, US",
       submittedByEmail: "Email support@regunova.ai",
