@@ -29,6 +29,8 @@ import { ProjectApiService } from "services/api/ProjectAPIService";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import { Spin, Modal, Result, Empty } from "antd";
+import Breadcrumbs from "@mui/material/Breadcrumbs";
+import Link from "@mui/material/Link";
 import {
   API_ERROR_MESSAGE,
   API_SUCCESS_MESSAGE,
@@ -106,6 +108,7 @@ const ProjectView = () => {
   const [isProgressModalVisible, setIsProgressModalVisible] = useState(false); // To control modal visibility
   const [historyValue, setHistoryValue] = useState([]);
   const [disableButton, setDisableButton] = useState(false);
+  const navigate = useNavigate();
 
   // const chatLoadingIcon = (props) => <Icon component={chatLoadingicon} {...props} />;
 
@@ -167,12 +170,12 @@ const ProjectView = () => {
     setLoading(true);
     ProjectApiService.projectDetails(id)
       .then((response) => {
-        setSnackData({
-          show: true,
-          message:
-            response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-          type: "success",
-        });
+        // setSnackData({
+        //   show: true,
+        //   message:
+        //     response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+        //   type: "success",
+        // });
         SetProjectData(response?.data?.details[0]);
         setHistoryData({ history: response?.data?.details[0].history || [] });
         setHistoryValue(response?.data?.details[0].history);
@@ -205,12 +208,12 @@ const ProjectView = () => {
         }
         setLoading(false);
 
-        setSnackData({
-          show: true,
-          message:
-            response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-          type: "success",
-        });
+        // setSnackData({
+        //   show: true,
+        //   message:
+        //     response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+        //   type: "success",
+        // });
       })
       .catch((errResponse) => {
         setLoading(false);
@@ -934,11 +937,45 @@ const ProjectView = () => {
 
   return (
     <>
-      <BreadcrumbsView
+      {/* <BreadcrumbsView
         previousLink="/projects"
         previousPage="My Projects"
         currentPage={projectData?.project_name}
-      />
+      /> */}
+
+      <div role="presentation" style={{ margin: "0px 0px 20px 0px" }}>
+        <Breadcrumbs aria-label="breadcrumb">
+          <Link
+            underline="hover"
+            color="inherit"
+            onClick={() => {
+              navigate("/dashboard/default");
+            }}
+            style={{ cursor: "pointer" }}
+          >
+            Dashboard
+          </Link>
+
+          <Link
+            underline="hover"
+            color="inherit"
+            onClick={() => window.history.back()}
+            style={{ cursor: "pointer" }}
+          >
+            My Projects
+          </Link>
+
+          <Link
+            //   underline="hover"
+            color="inherit"
+            aria-current="page"
+          >
+            <span style={{ color: "black", fontWeight: 600 }}>
+              {projectData?.project_name}
+            </span>
+          </Link>
+        </Breadcrumbs>
+      </div>
       <Spin tip="Loading" size="large" spinning={loading}>
         <Box
           sx={{

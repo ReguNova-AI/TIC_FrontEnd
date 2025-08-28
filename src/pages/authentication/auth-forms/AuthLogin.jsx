@@ -45,22 +45,23 @@ export default function AuthLogin() {
   sessionStorage.clear();
   sessionStorage.removeItem("userDetails");
   localStorage.removeItem("userDetails"); // If you're using localStorage
-  document.cookie = "session_cookie=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/"; // Example for clearing cookies
-  
+  document.cookie =
+    "session_cookie=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/"; // Example for clearing cookies
+
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
   };
 
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
-  }; 
+  };
 
   const handleSubmitForm = (values, { setSubmitting }) => {
     let payload = values;
     AuthApiService.login(payload)
       .then((response) => {
         // On success, you can add any additional logic here
-        
+
         if (response.message === API_ERROR_MESSAGE.INVALID_PASSWORD) {
           setSnackData({
             show: true,
@@ -74,26 +75,29 @@ export default function AuthLogin() {
             type: "success",
           });
 
-          if(response?.data?.userDetails?.[0].password_updated_date === null)
-          {
-            sessionStorage.setItem("email",response?.data?.userDetails?.[0]?.user_email);
-            sessionStorage.setItem("resetFlow",true);
+          if (response?.data?.userDetails?.[0].password_updated_date === null) {
+            sessionStorage.setItem(
+              "email",
+              response?.data?.userDetails?.[0]?.user_email
+            );
+            sessionStorage.setItem("resetFlow", true);
             navigate("/passwordReset", { state: { showPage: true } });
+          } else {
+            dispatch(actions.setAuthentication(response));
+            navigate("/dashboard/default");
           }
-          else{
-             dispatch(actions.setAuthentication(response)); 
-             navigate("/dashboard/default");
-          }
-
-
-          
         }
       })
       .catch((errResponse) => {
         // On failure, reset the button to enable again
         setSnackData({
           show: true,
-          message: errResponse?.response?.data?.message === "User password has expired." ? API_ERROR_MESSAGE.PASSWORD_EXPIRED : errResponse?.response?.data?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          message:
+            errResponse?.response?.data?.message ===
+            "User password has expired."
+              ? API_ERROR_MESSAGE.PASSWORD_EXPIRED
+              : errResponse?.response?.data?.message ||
+                API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
 
@@ -273,7 +277,7 @@ export default function AuthLogin() {
       </Formik>
 
       <Snackbar
-      style={{top:"80px"}}
+        style={{ top: "80px" }}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
         open={snackData.show}
         autoHideDuration={3000}
