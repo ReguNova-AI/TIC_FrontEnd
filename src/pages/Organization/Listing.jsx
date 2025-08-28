@@ -16,7 +16,7 @@ import FormControl from "@mui/material/FormControl";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import InputLabel from "@mui/material/InputLabel";
 import InputAdornment from "@mui/material/InputAdornment";
-import MultiSelectWithChip from "components/form/MultiSelectWithChip"; // Assuming this is a custom component
+import MultiSelectWithChip from "components/form/MultiSelectWithChip";
 import {
   SearchOutlined,
   CloseCircleOutlined,
@@ -46,10 +46,10 @@ import PropTypes from "prop-types";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
+import { useOrganizations } from "components/hooks/useOrganizations"; // ✅ cached hook
 
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
-
   return (
     <div
       role="tabpanel"
@@ -62,13 +62,11 @@ function CustomTabPanel(props) {
     </div>
   );
 }
-
 CustomTabPanel.propTypes = {
   children: PropTypes.node,
   index: PropTypes.number.isRequired,
   value: PropTypes.number.isRequired,
 };
-
 function a11yProps(index) {
   return {
     id: `simple-tab-${index}`,
@@ -79,7 +77,11 @@ function a11yProps(index) {
 const OrganizationListing = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { filterStatusValue } = location.state || {}; // Receive initial status filter
+  const { filterStatusValue } = location.state || {};
+
+  // ✅ use cached hook
+  const { data: orgResponse, isLoading, refetch } = useOrganizations();
+
   const [data, setData] = useState([]);
   const [inActiveData, setInActiveData] = useState([]);
   const [searchText, setSearchText] = useState("");
@@ -90,158 +92,66 @@ const OrganizationListing = () => {
   const [sectorFilter, setSectorFilter] = useState([]);
   const [industryData, setIndustryData] = useState([]);
   const [sectorData, setSectorData] = useState([]);
-  const [sortOrder, setSortOrder] = useState("ascend"); // 'ascend' or 'descend'
-  const [popoverVisible, setPopoverVisible] = useState(false); // Control popover visibility
-  const [viewMode, setViewMode] = useState("list"); // 'list' or 'card'
-  const [currentPage, setCurrentPage] = useState(1); // Track the current page
-  const [inActiveCurrentPage, setInActiveCurrentPage] = useState(1); // Track the current page
-  const [pageSize, setPageSize] = useState(10); // Number of rows per page
-  const [inactivePageSize, setInactivePageSize] = useState(10); // Number of rows per page
-  const [value, setValue] = React.useState(0);
-  const [loading, setLoading] = useState(true);
+  const [sortOrder, setSortOrder] = useState("ascend");
+  const [popoverVisible, setPopoverVisible] = useState(false);
+  const [viewMode, setViewMode] = useState("list");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [inActiveCurrentPage, setInActiveCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [inactivePageSize, setInactivePageSize] = useState(10);
+  const [value, setValue] = useState(0);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [modalType, setModalType] = useState("");
   const [modalData, setModalData] = useState({});
-
   const [snackData, setSnackData] = useState({
     show: false,
     message: "",
     type: "error",
   });
 
-  const handleChange = (event, newValue) => {
-    setValue(newValue);
-  };
+  const handleChange = (event, newValue) => setValue(newValue);
 
+  // ✅ transform API response only when it changes
   useEffect(() => {
-    fetchData();
-    // fetchSectorDetails();
-    fetchIndustryDetails();
-  }, []);
+    if (!orgResponse) return;
 
-  const createData = (
-    index,
-    org_email,
-    org_logo,
-    org_name,
-    org_url,
-    org_address,
-    sector,
-    industry,
-    industryId,
-    sector_id,
-    contact_json,
-    address
-  ) => {
-    return {
-      index,
-      org_email,
-      org_logo,
-      org_name,
-      org_url,
-      org_address,
-      sector,
-      industry,
-      industryId,
-      sector_id,
-      contact_json,
-      address,
+    const mapOrg = (org) => {
+      const addressParts = [];
+      if (org.org_address?.city) addressParts.push(org.org_address?.city);
+      if (org.org_address?.state) addressParts.push(org.org_address?.state);
+      if (org.org_address?.street) addressParts.push(org.org_address?.street);
+      if (org.org_address?.country) addressParts.push(org.org_address?.country);
+      const address = addressParts.join(", ");
+      return {
+        index: org.org_id,
+        org_email: org?.contact_json?.primary_contact?.email,
+        org_logo: org.org_logo,
+        org_name: org.org_name,
+        org_url: org.org_url,
+        org_address: address,
+        sector: org.sector_name,
+        industry: org.industry_names,
+        industryId: org.industries,
+        sector_id: org.sector_id,
+        contact_json: org?.contact_json,
+        address: org.org_address,
+      };
     };
-  };
 
-  const fetchData = () => {
-    OrganisationApiService.organisationListing()
-      .then((response) => {
-        setSnackData({
-          show: true,
-          message:
-            response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-          type: "success",
-        });
+    setData((orgResponse?.details || []).map(mapOrg));
+    setInActiveData((orgResponse?.inActiveOrgs || []).map(mapOrg));
+    setFilteredData((orgResponse?.details || []).map(mapOrg));
+    setInActiveFilteredData((orgResponse?.inActiveOrgs || []).map(mapOrg));
+  }, [orgResponse]);
 
-        const newData = response?.data?.details.map((org, index) => {
-          const addressParts = [];
-          if (org.org_address?.city) addressParts.push(org.org_address?.city);
-          if (org.org_address?.state) addressParts.push(org.org_address?.state);
-          if (org.org_address?.street)
-            addressParts.push(org.org_address?.street);
-          if (org.org_address?.country)
-            addressParts.push(org.org_address?.country);
-
-          // Join the address parts with a comma
-          const address = addressParts.join(", ");
-
-          return createData(
-            org.org_id, // index
-            org?.contact_json?.primary_contact?.email,
-            org.org_logo,
-            org.org_name,
-            org.org_url,
-            address,
-            org.sector_name,
-            org.industry_names,
-            org.industries,
-            org.sector_id,
-            org?.contact_json,
-            org.org_address
-          );
-        });
-
-        const inActiveData = response?.data?.inActiveOrgs.map((org, index) => {
-          const addressParts = [];
-          if (org.org_address?.city) addressParts.push(org.org_address?.city);
-          if (org.org_address?.state) addressParts.push(org.org_address?.state);
-          if (org.org_address?.street)
-            addressParts.push(org.org_address?.street);
-          if (org.org_address?.country)
-            addressParts.push(org.org_address?.country);
-
-          // Join the address parts with a comma
-          const address = addressParts.join(", ");
-
-          return createData(
-            org.org_id, // index
-            org?.contact_json?.primary_contact?.email,
-            org.org_logo,
-            org.org_name,
-            org.org_url,
-            address,
-            org.sector_name,
-            org.industry_names
-          );
-        });
-
-        setData(newData);
-        setInActiveData(inActiveData);
-        setFilteredData(newData);
-        setInActiveFilteredData(inActiveData);
-        setLoading(false);
-      })
-      .catch((errResponse) => {
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
-        setLoading(false);
-      });
-  };
-
-  const fetchIndustryDetails = () => {
+  // fetch industries (not cached yet)
+  useEffect(() => {
     UserApiService.industryDetails()
       .then((response) => {
-        setSnackData({
-          show: true,
-          message:
-            response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-          type: "success",
-        });
         const industryNames = response?.data?.details.map(
           (item) => item.industry_name
         );
-        setIndustryData(industryNames || []); // Use an empty array as fallback
+        setIndustryData(industryNames || []);
       })
       .catch((errResponse) => {
         setSnackData({
@@ -252,82 +162,33 @@ const OrganizationListing = () => {
           type: "error",
         });
       });
-  };
+  }, []);
 
-  const fetchSectorDetails = () => {
-    UserApiService.sectorDetails()
-      .then((response) => {
-        setSnackData({
-          show: true,
-          message:
-            response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-          type: "success",
-        });
-        const sectors = response?.data?.details.map((item) => item.sector_name);
-        setSectorData(sectors || []);
-      })
-      .catch((errResponse) => {
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
-      });
-  };
-
-  const handleSearch = (value) => {
-    const searchText = value.toLowerCase();
-    setSearchText(searchText);
-  };
-
+  const handleSearch = (value) => setSearchText(value.toLowerCase());
   const debouncedSearchText = useDebounce(searchText, 500);
 
   const filterData = (type) => {
-    let filtered = null;
-    if (type === "Active") {
-      filtered = data.filter((item) => {
-        const matchesStatus =
-          statusFilter.length === 0 || statusFilter.includes(filterStatusValue);
-        const matchesIndustry =
-          industryFilter.length === 0 ||
-          industryFilter.some((ind) => item.industry.includes(ind));
-        const matchesSector =
-          sectorFilter.length === 0 || sectorFilter.includes(item.sector);
-        const matchesSearchText =
-          item.org_name.toLowerCase().includes(debouncedSearchText) ||
-          item.org_email.toString().includes(debouncedSearchText);
+    const source = type === "Active" ? data : inActiveData;
+    let filtered = source.filter((item) => {
+      const matchesStatus =
+        statusFilter.length === 0 || statusFilter.includes(filterStatusValue);
+      const matchesIndustry =
+        industryFilter.length === 0 ||
+        industryFilter.some((ind) => item.industry.includes(ind));
+      const matchesSector =
+        sectorFilter.length === 0 || sectorFilter.includes(item.sector);
+      const matchesSearchText =
+        item.org_name.toLowerCase().includes(debouncedSearchText) ||
+        item.org_email?.toString().includes(debouncedSearchText);
+      return (
+        matchesStatus && matchesSector && matchesIndustry && matchesSearchText
+      );
+    });
 
-        return (
-          matchesStatus && matchesSector && matchesIndustry && matchesSearchText
-        );
-      });
-    } else {
-      filtered = inActiveData.filter((item) => {
-        const matchesStatus =
-          statusFilter.length === 0 || statusFilter.includes(filterStatusValue);
-        const matchesIndustry =
-          industryFilter.length === 0 ||
-          industryFilter.some((ind) => item.industry.includes(ind));
-        const matchesSector =
-          sectorFilter.length === 0 || sectorFilter.includes(item.sector);
-        const matchesSearchText =
-          item.org_name.toLowerCase().includes(debouncedSearchText) ||
-          item.org_email.toString().includes(debouncedSearchText);
-
-        return (
-          matchesStatus && matchesSector && matchesIndustry && matchesSearchText
-        );
-      });
-    }
-
-    if (sortOrder === "ascend") {
+    if (sortOrder === "ascend")
       filtered.sort((a, b) => a.org_name.localeCompare(b.org_name));
-    } else if (sortOrder === "descend") {
+    if (sortOrder === "descend")
       filtered.sort((a, b) => b.org_name.localeCompare(a.org_name));
-    }
-
     return filtered;
   };
 
@@ -340,31 +201,14 @@ const OrganizationListing = () => {
     sectorFilter,
     debouncedSearchText,
     sortOrder,
+    data,
+    inActiveData,
   ]);
-
-  const handleViewModeChange = (newViewMode) => {
-    setViewMode(newViewMode); // Update view mode (list or card)
-  };
-
-  const handleNavigateToOrganization = (org_id) => {
-    // navigate(`/projectView/${org_id}`, { state: { org_id } });
-  };
-
-  const handlePaginationChange = (page, pageSize) => {
-    setCurrentPage(page);
-    setPageSize(pageSize);
-  };
-
-  const handleInactivePaginationChange = (page, pageSize) => {
-    setInActiveCurrentPage(page);
-    setInactivePageSize(pageSize);
-  };
 
   const paginatedData = filteredData.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
-
   const inActivePaginatedData = inActiveFilteredData.slice(
     (inActiveCurrentPage - 1) * inactivePageSize,
     inActiveCurrentPage * inactivePageSize
@@ -375,261 +219,136 @@ const OrganizationListing = () => {
     setModalType(type);
     setIsModalVisible(true);
   };
-
   const handleModalClose = () => {
     setIsModalVisible(false);
-    fetchData();
+    refetch(); // ✅ refresh only after modal actions
   };
-
   const handleClose = () => {
     setIsModalVisible(false);
-    fetchData();
+    refetch();
   };
-
-  const cancel = (e) => {
-    console.log(e);
-    // message.error('Click on No');
-  };
-
-  const filterPopoverContent = (
-    <div style={{ padding: "10px", minWidth: "200px" }}>
-      {/* <div>
-        <label><b>Sector</b></label>
-        <MultiSelectWithChip
-          value={sectorFilter}
-          onChange={setSectorFilter}
-          options={sectorData}
-          placeholder="Select Sector"
-        />
-      </div> */}
-      <div style={{ marginTop: "10px" }}>
-        <label>
-          <b>Industry</b>
-        </label>
-        <MultiSelectWithChip
-          value={industryFilter}
-          onChange={setIndustryFilter}
-          options={industryData}
-          placeholder="Select Industry"
-        />
-      </div>
-      <div style={{ marginTop: "10px" }}>
-        <label>
-          <b>Sort Organization Name by:</b>
-        </label>
-        <br />
-        <br />
-        <Space direction="horizontal">
-          <Button
-            onClick={() => setSortOrder("ascend")}
-            type={sortOrder === "ascend" ? "primary" : "default"}
-          >
-            Ascending
-          </Button>
-          <Button
-            onClick={() => setSortOrder("descend")}
-            type={sortOrder === "descend" ? "primary" : "default"}
-          >
-            Descending
-          </Button>
-        </Space>
-      </div>
-    </div>
-  );
 
   const handleDelete = (orgId, type) => {
-    let active = 1;
-    if (type === "Active") {
-      active = 0;
-    } else {
-      active = 1;
-    }
-
+    let active = type === "Active" ? 0 : 1;
     OrganisationApiService.orgAccess(orgId, active)
       .then((response) => {
-        // Check the response structure and map data accordingly
-        setLoading(false);
-
         setSnackData({
           show: true,
           message:
-            response?.message || active
+            response?.message ||
+            (active
               ? API_SUCCESS_MESSAGE.ORG_ENABLED
-              : API_SUCCESS_MESSAGE.ORG_DISABLED,
+              : API_SUCCESS_MESSAGE.ORG_DISABLED),
           type: "success",
         });
-        fetchData();
+        refetch(); // ✅ refresh cache after mutation
       })
       .catch((errResponse) => {
-        setLoading(false);
-        console.log("errResponse", errResponse.response?.data?.message);
         setSnackData({
           show: true,
           message:
-            errResponse.response?.data?.message ||
+            errResponse?.response?.data?.message ||
             API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
       });
   };
 
-  const columns = (type) => {
-    return [
-      {
-        title: LISTING_PAGE.ORG_NAME,
-        dataIndex: "org_name",
-        key: "org_name",
-        render: (text, record) => (
-          <>
-            {record.org_logo ? (
-              <Avatar
-                sx={{ width: 40, height: 40 }}
-                alt={record.org_name}
-                src={record.org_logo}
-              />
-            ) : (
-              <img
-                src={Orgicon}
-                width="32px"
-                style={{ verticalAlign: "middle" }}
-              />
-            )}
-            <span style={{ marginLeft: 10 }}>
-              <a
-                onClick={() => handleNavigateToOrganization(record.index)}
-                style={{ color: "#2ba9bc", cursor: "pointer" }}
-              >
-                {text}
-              </a>
-            </span>
-          </>
-        ),
-        filterSearch: true,
-        onFilter: (value, record) =>
-          record.org_name.toLowerCase().includes(value.toLowerCase()),
-      },
-      {
-        title: LISTING_PAGE.ORG_WEBSITE,
-        dataIndex: "org_url",
-        key: "org_url",
-      },
-      // {
-      //   title: LISTING_PAGE.SECTOR,
-      //   dataIndex: "sector",
-      //   key: "sector",
-      // },
-      {
-        title: LISTING_PAGE.INDUSTRY,
-        dataIndex: "industry",
-        key: "industry",
-        // render: (industry) => (
-        //   <>
-        //     {industry?.map((item, index) => (
-        //       <Chip label={item} key={index} sx={{ marginBottom: 1 }} />
-        //     ))}
-        //   </>
-        // ),
-      },
-      {
-        title: LISTING_PAGE.ORG_ADDRESS,
-        dataIndex: "org_address",
-        key: "org_address",
-        render: (address) => (
-          <span>{address || GENERIC_DATA_LABEL.NO_DATA}</span>
-        ),
-      },
-      {
-        title: LISTING_PAGE.ORG_PRIMARY_EMAIL,
-        dataIndex: "org_email",
-        key: "org_email",
-        filterSearch: true,
-        onFilter: (value, record) =>
-          record?.contact_json?.primary_contact?.email
-            .toString()
-            .includes(value),
-      },
-      {
-        title: LISTING_PAGE.ACTION,
-        key: "action",
-        width: "150px",
-        render: (_, record) => {
-          return (
-            <div
+  const columns = (type) => [
+    {
+      title: LISTING_PAGE.ORG_NAME,
+      dataIndex: "org_name",
+      key: "org_name",
+      render: (text, record) => (
+        <>
+          {record.org_logo ? (
+            <Avatar
+              sx={{ width: 40, height: 40 }}
+              alt={record.org_name}
+              src={record.org_logo}
+            />
+          ) : (
+            <img
+              src={Orgicon}
+              width="32px"
+              style={{ verticalAlign: "middle" }}
+            />
+          )}
+          <span style={{ marginLeft: 10 }}>
+            <a style={{ color: "#2ba9bc", cursor: "pointer" }}>{text}</a>
+          </span>
+        </>
+      ),
+    },
+    { title: LISTING_PAGE.ORG_WEBSITE, dataIndex: "org_url", key: "org_url" },
+    { title: LISTING_PAGE.INDUSTRY, dataIndex: "industry", key: "industry" },
+    {
+      title: LISTING_PAGE.ORG_ADDRESS,
+      dataIndex: "org_address",
+      key: "org_address",
+      render: (address) => <span>{address || GENERIC_DATA_LABEL.NO_DATA}</span>,
+    },
+    {
+      title: LISTING_PAGE.ORG_PRIMARY_EMAIL,
+      dataIndex: "org_email",
+      key: "org_email",
+    },
+    {
+      title: LISTING_PAGE.ACTION,
+      key: "action",
+      width: "150px",
+      render: (_, record) => (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "4px",
+            flexWrap: "wrap",
+          }}
+        >
+          <Tooltip title="Edit organization details">
+            <Button
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "4px",
-                flexWrap: "wrap", // <-- allows wrapping on small screens
+                border: "none",
+                background: "transparent",
+                boxShadow: "none",
               }}
+              onClick={() => handleModalOpen("update", record)}
             >
-              <Tooltip title="Edit organization details">
-                <Button
-                  style={{
-                    border: "none",
-                    background: "transparent",
-                    boxShadow: "none",
-                  }}
-                  onClick={() => handleModalOpen("update", record)}
-                >
-                  <EditOutlined style={{ fontSize: "20px" }} />
-                </Button>
-              </Tooltip>
-              <Popconfirm
-                title={
-                  type === "Active"
-                    ? `Disable access for ${record?.org_name}`
-                    : `Enable access for ${record?.org_name}`
-                }
-                description={
-                  type === "Active"
-                    ? "Are you sure you want to disable the Organization access?"
-                    : "Are you sure you want to enable the Organization access?"
-                }
-                onConfirm={(e) => {
-                  e.preventDefault();
-                  handleDelete(record?.index, type);
-                }}
-                onCancel={cancel}
-                okText="Confirm"
-                cancelText="Cancel"
-                icon={
-                  type === "Active" ? (
-                    <CloseCircleOutlined
-                      style={{
-                        color: "red",
-                      }}
-                    />
-                  ) : (
-                    <CheckCircleOutlined
-                      style={{
-                        color: "green",
-                      }}
-                    />
-                  )
-                }
-              >
-                <Tooltip
-                  title={
-                    type === "Active"
-                      ? "Disable Organization Access"
-                      : "Enable Organization Access"
-                  }
-                >
-                  <img
-                    src={type === "Active" ? disableUser : enableUser}
-                    width="26px"
-                  />
-                </Tooltip>
-              </Popconfirm>
-            </div>
-          );
-        },
-      },
-    ];
-  };
+              <EditOutlined style={{ fontSize: "20px" }} />
+            </Button>
+          </Tooltip>
+          <Popconfirm
+            title={
+              type === "Active"
+                ? `Disable ${record?.org_name}`
+                : `Enable ${record?.org_name}`
+            }
+            onConfirm={() => handleDelete(record?.index, type)}
+            okText="Confirm"
+            cancelText="Cancel"
+            icon={
+              type === "Active" ? (
+                <CloseCircleOutlined style={{ color: "red" }} />
+              ) : (
+                <CheckCircleOutlined style={{ color: "green" }} />
+              )
+            }
+          >
+            <Tooltip title={type === "Active" ? "Disable Org" : "Enable Org"}>
+              <img
+                src={type === "Active" ? disableUser : enableUser}
+                width="26px"
+              />
+            </Tooltip>
+          </Popconfirm>
+        </div>
+      ),
+    },
+  ];
 
   return (
-    <Spin tip="Loading" size="large" spinning={loading}>
+    <Spin tip="Loading" size="large" spinning={isLoading}>
       <ConfigProvider
         renderEmpty={() => <Empty description={GENERIC_DATA_LABEL.NO_DATA} />}
       >
@@ -643,7 +362,7 @@ const OrganizationListing = () => {
             boxShadow: "6px 12px 20px #e4e4e4",
           }}
         >
-          {/* Top Section with buttons */}
+          {/* Top Section */}
           <Space
             style={{
               width: "100%",
@@ -664,7 +383,6 @@ const OrganizationListing = () => {
               <img src={addorgIcon} width="18px" />
               {BUTTON_LABEL.CREATE_ORGANIZATION}
             </Button>
-
             <Space>
               <FormControl fullWidth>
                 <InputLabel htmlFor="outlined-adornment-search">
@@ -681,9 +399,43 @@ const OrganizationListing = () => {
                   onChange={(e) => handleSearch(e.target.value)}
                 />
               </FormControl>
-
               <Popover
-                content={filterPopoverContent}
+                content={
+                  <div style={{ padding: "10px", minWidth: "200px" }}>
+                    <div style={{ marginTop: "10px" }}>
+                      <label>
+                        <b>Industry</b>
+                      </label>
+                      <MultiSelectWithChip
+                        value={industryFilter}
+                        onChange={setIndustryFilter}
+                        options={industryData}
+                        placeholder="Select Industry"
+                      />
+                    </div>
+                    <div style={{ marginTop: "10px" }}>
+                      <label>
+                        <b>Sort Organization Name by:</b>
+                      </label>
+                      <br />
+                      <br />
+                      <Space direction="horizontal">
+                        <Button
+                          onClick={() => setSortOrder("ascend")}
+                          type={sortOrder === "ascend" ? "primary" : "default"}
+                        >
+                          Ascending
+                        </Button>
+                        <Button
+                          onClick={() => setSortOrder("descend")}
+                          type={sortOrder === "descend" ? "primary" : "default"}
+                        >
+                          Descending
+                        </Button>
+                      </Space>
+                    </div>
+                  </div>
+                }
                 title={BUTTON_LABEL.FILTER}
                 visible={popoverVisible}
                 onVisibleChange={setPopoverVisible}
@@ -699,6 +451,7 @@ const OrganizationListing = () => {
             </Space>
           </Space>
 
+          {/* Tabs */}
           <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
             <Tabs
               value={value}
@@ -710,23 +463,7 @@ const OrganizationListing = () => {
             </Tabs>
           </Box>
           <CustomTabPanel value={value} index={0}>
-            {/* <Table
-              columns={columns("Active")}
-              dataSource={paginatedData}
-              rowKey="index"
-              pagination={{
-                current: currentPage,
-                pageSize,
-                total: filteredData.length,
-                onChange: handlePaginationChange,
-              }}
-            /> */}
-            <div
-              style={{
-                overflowY: "auto",
-                overflowX: "auto",
-              }}
-            >
+            <div style={{ overflowY: "auto", overflowX: "auto" }}>
               <Table
                 columns={columns("Active")}
                 dataSource={paginatedData}
@@ -735,33 +472,35 @@ const OrganizationListing = () => {
                   current: currentPage,
                   pageSize,
                   total: filteredData.length,
-                  onChange: handlePaginationChange,
+                  onChange: (p, ps) => {
+                    setCurrentPage(p);
+                    setPageSize(ps);
+                  },
                 }}
               />
             </div>
           </CustomTabPanel>
           <CustomTabPanel value={value} index={1}>
-            <div
-              style={{
-                overflowY: "auto",
-                overflowX: "auto",
-              }}
-            >
+            <div style={{ overflowY: "auto", overflowX: "auto" }}>
               <Table
                 columns={columns("Inactive")}
                 dataSource={inActivePaginatedData}
                 rowKey="index"
                 pagination={{
                   current: inActiveCurrentPage,
-                  pageSize,
+                  pageSize: inactivePageSize,
                   total: inActiveFilteredData.length,
-                  onChange: handleInactivePaginationChange,
+                  onChange: (p, ps) => {
+                    setInActiveCurrentPage(p);
+                    setInactivePageSize(ps);
+                  },
                 }}
               />
             </div>
           </CustomTabPanel>
         </Space>
-        {/* Modal for Organization Creation */}
+
+        {/* Modal */}
         <Modal
           title={HEADING.CREATE_ORG}
           visible={isModalVisible}
@@ -775,6 +514,8 @@ const OrganizationListing = () => {
             selecteddata={modalData}
           />
         </Modal>
+
+        {/* Snackbar */}
         <Snackbar
           style={{ top: "80px" }}
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
@@ -793,17 +534,13 @@ const OrganizationListing = () => {
     </Spin>
   );
 };
+
 function useDebounce(value, delay) {
   const [debouncedValue, setDebouncedValue] = useState(value);
-
   useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
+    const handler = setTimeout(() => setDebouncedValue(value), delay);
     return () => clearTimeout(handler);
   }, [value, delay]);
-
   return debouncedValue;
 }
 
