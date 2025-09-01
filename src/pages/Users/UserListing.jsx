@@ -227,7 +227,15 @@ const UserListing = () => {
             user.industry_names
           )
         ) || [];
-      return { active, inactive, external };
+      const totalActiveUsers = data?.totalActiveUsers || 0;
+      const totalInactiveUsers = data?.totalInactiveUsers || 0;
+      return {
+        active,
+        inactive,
+        external,
+        totalActiveUsers,
+        totalInactiveUsers,
+      };
     },
   });
 
@@ -254,12 +262,8 @@ const UserListing = () => {
 
   const filteredActive = userData ? filterData(userData.active) : [];
   const filteredInactive = userData ? filterData(userData.inactive) : [];
-  const totalActive = userData
-    ? userData?.totalActiveUsers?.[0]?.total_active_users
-    : filteredActive.length;
-  const totalInactive = userData
-    ? userData?.totalInactiveUsers?.[0]?.total_inactive_users
-    : filteredInactive.length;
+  const totalActive = userData?.totalActiveUsers || 0;
+  const totalInactive = userData?.totalInactiveUsers || 0;
 
   // Pagination
   // const paginatedData = filteredActive.slice(
