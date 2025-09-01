@@ -113,8 +113,10 @@ export const createData = (
 });
 
 // ---- API fetcher
-const fetchUserListing = async () => {
-  const response = await UserApiService.userListing();
+const fetchUserListing = async ({ queryKey }) => {
+  // TanStack Query passes an object with the query key to the query function
+  const [_key, { page, limit }] = queryKey;
+  const response = await UserApiService.userListing(page, limit);
   return response?.data;
 };
 
@@ -153,7 +155,7 @@ const UserListing = () => {
     isError,
     error,
   } = useQuery({
-    queryKey: ["userListing"],
+    queryKey: ["userListing", { page: currentPage, limit: pageSize }],
     queryFn: fetchUserListing,
     staleTime: 1000 * 60 * 5, // cache 5 min
     refetchOnWindowFocus: false,
@@ -252,16 +254,22 @@ const UserListing = () => {
 
   const filteredActive = userData ? filterData(userData.active) : [];
   const filteredInactive = userData ? filterData(userData.inactive) : [];
+  const totalActive = userData
+    ? userData?.totalActiveUsers?.[0]?.total_active_users
+    : filteredActive.length;
+  const totalInactive = userData
+    ? userData?.totalInactiveUsers?.[0]?.total_inactive_users
+    : filteredInactive.length;
 
   // Pagination
-  const paginatedData = filteredActive.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
-  const paginatedInactive = filteredInactive.slice(
-    (currentPageforInactive - 1) * pageSizeInactive,
-    currentPageforInactive * pageSizeInactive
-  );
+  // const paginatedData = filteredActive.slice(
+  //   (currentPage - 1) * pageSize,
+  //   currentPage * pageSize
+  // );
+  // const paginatedInactive = filteredInactive.slice(
+  //   (currentPageforInactive - 1) * pageSizeInactive,
+  //   currentPageforInactive * pageSizeInactive
+  // );
 
   // Handlers
   const handleSearch = (val) => setSearchText(val.toLowerCase());
@@ -447,12 +455,13 @@ const UserListing = () => {
           <CustomTabPanel value={value} index={0}>
             <Table
               columns={columns}
-              dataSource={paginatedData}
+              // dataSource={paginatedData}
+              dataSource={filteredActive}
               rowKey="index"
               pagination={{
                 current: currentPage,
                 pageSize,
-                total: filteredActive.length,
+                total: totalActive,
                 onChange: (p, ps) => {
                   setCurrentPage(p);
                   setPageSize(ps);
@@ -463,15 +472,25 @@ const UserListing = () => {
           <CustomTabPanel value={value} index={1}>
             <Table
               columns={columns}
-              dataSource={paginatedInactive}
+              // dataSource={paginatedInactive}
+              dataSource={filteredInactive}
               rowKey="index"
+              // pagination={{
+              //   current: currentPageforInactive,
+              //   pageSize: pageSizeInactive,
+              //   total: filteredInactive.length,
+              //   onChange: (p, ps) => {
+              //     setCurrentPageforInactive(p);
+              //     setPageSizeInactive(ps);
+              //   },
+              // }}
               pagination={{
-                current: currentPageforInactive,
-                pageSize: pageSizeInactive,
-                total: filteredInactive.length,
+                current: currentPage,
+                pageSize,
+                total: totalInactive,
                 onChange: (p, ps) => {
-                  setCurrentPageforInactive(p);
-                  setPageSizeInactive(ps);
+                  setCurrentPage(p);
+                  setPageSize(ps);
                 },
               }}
             />

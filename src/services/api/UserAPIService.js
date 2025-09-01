@@ -8,13 +8,17 @@ const _userUpdate = (payload) => {
   return BaseApiService.put(`/api/v1/user/update`, null, payload);
 };
 
-const _userListing = () => {
+const _userListing = (page, limit) => {
+  const params = {
+    page: page,
+    limit: limit,
+  };
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
   const user_id = userdetails?.[0]?.user_id;
   const role = userdetails?.[0]?.role_name;
   const industry_id = userdetails?.[0]?.industry_id;
   if (role === "Super Admin") {
-    return BaseApiService.get(`/api/v1/users`, null, null);
+    return BaseApiService.get(`/api/v1/users`, params, null);
   } else {
     if (
       role !== "Super Admin" &&
@@ -23,11 +27,11 @@ const _userListing = () => {
     ) {
       return BaseApiService.get(
         `/api/v1/org/users?industry_id=${industry_id}`,
-        null,
+        params,
         null
       );
     } else {
-      return BaseApiService.get(`/api/v1/org/users`, null, null);
+      return BaseApiService.get(`/api/v1/org/users`, params, null);
     }
   }
 };

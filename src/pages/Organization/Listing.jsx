@@ -79,9 +79,6 @@ const OrganizationListing = () => {
   const location = useLocation();
   const { filterStatusValue } = location.state || {};
 
-  // ✅ use cached hook
-  const { data: orgResponse, isLoading, refetch } = useOrganizations();
-
   const [data, setData] = useState([]);
   const [inActiveData, setInActiveData] = useState([]);
   const [searchText, setSearchText] = useState("");
@@ -108,6 +105,15 @@ const OrganizationListing = () => {
     message: "",
     type: "error",
   });
+  const [totalActiveOrgs, setTotalActiveOrgs] = useState(0);
+  const [totalInactiveOrgs, setTotalInactiveOrgs] = useState(0);
+
+  // ✅ use cached hook
+  const {
+    data: orgResponse,
+    isLoading,
+    refetch,
+  } = useOrganizations(currentPage, pageSize);
 
   const handleChange = (event, newValue) => setValue(newValue);
 
@@ -142,6 +148,8 @@ const OrganizationListing = () => {
     setInActiveData((orgResponse?.inActiveOrgs || []).map(mapOrg));
     setFilteredData((orgResponse?.details || []).map(mapOrg));
     setInActiveFilteredData((orgResponse?.inActiveOrgs || []).map(mapOrg));
+    setTotalActiveOrgs(orgResponse?.totalActiveOrgs?.[0]?.count || 0);
+    setTotalInactiveOrgs(orgResponse?.totalInActiveOrgs?.[0]?.count || 0);
   }, [orgResponse]);
 
   // fetch industries (not cached yet)
@@ -205,14 +213,14 @@ const OrganizationListing = () => {
     inActiveData,
   ]);
 
-  const paginatedData = filteredData.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
-  const inActivePaginatedData = inActiveFilteredData.slice(
-    (inActiveCurrentPage - 1) * inactivePageSize,
-    inActiveCurrentPage * inactivePageSize
-  );
+  // const paginatedData = filteredData.slice(
+  //   (currentPage - 1) * pageSize,
+  //   currentPage * pageSize
+  // );
+  // const inActivePaginatedData = inActiveFilteredData.slice(
+  //   (inActiveCurrentPage - 1) * inactivePageSize,
+  //   inActiveCurrentPage * inactivePageSize
+  // );
 
   const handleModalOpen = (type, data) => {
     setModalData(data);
@@ -466,16 +474,18 @@ const OrganizationListing = () => {
             <div style={{ overflowY: "auto", overflowX: "auto" }}>
               <Table
                 columns={columns("Active")}
-                dataSource={paginatedData}
+                // dataSource={paginatedData}
+                dataSource={filteredData}
                 rowKey="index"
                 pagination={{
                   current: currentPage,
                   pageSize,
-                  total: filteredData.length,
+                  total: totalActiveOrgs,
                   onChange: (p, ps) => {
                     setCurrentPage(p);
                     setPageSize(ps);
                   },
+                  showSizeChanger: true,
                 }}
               />
             </div>
@@ -484,12 +494,13 @@ const OrganizationListing = () => {
             <div style={{ overflowY: "auto", overflowX: "auto" }}>
               <Table
                 columns={columns("Inactive")}
-                dataSource={inActivePaginatedData}
+                // dataSource={inActivePaginatedData}
+                dataSource={inActiveFilteredData}
                 rowKey="index"
                 pagination={{
                   current: inActiveCurrentPage,
                   pageSize: inactivePageSize,
-                  total: inActiveFilteredData.length,
+                  total: totalInactiveOrgs,
                   onChange: (p, ps) => {
                     setInActiveCurrentPage(p);
                     setInactivePageSize(ps);

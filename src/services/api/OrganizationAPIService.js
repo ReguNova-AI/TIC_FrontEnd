@@ -8,25 +8,31 @@ const _organisationUpdate = (payload) => {
   return BaseApiService.post(`/api/v1/organizations/update`, null, payload);
 };
 
-const _organisationListing = (userid) => {
-  return BaseApiService.get(`/api/v1/organizations`, null, null);
+const _organisationListing = (page, limit) => {
+  const params = {
+    page: page,
+    limit: limit,
+  };
+  return BaseApiService.get(`/api/v1/organizations`, params, null);
 };
 
 const _organisationDetails = (id) => {
   return BaseApiService.get(`/api/v1/organizations/${id}`, null, null);
 };
 
-const _orgAccess = (orgId,active) => {
-  let payload = {}
-  return BaseApiService.post(`/api/v1/organizations/${orgId}/users/toggle-active?is_active=${active}`, null, payload);
+const _orgAccess = (orgId, active) => {
+  let payload = {};
+  return BaseApiService.post(
+    `/api/v1/organizations/${orgId}/users/toggle-active?is_active=${active}`,
+    null,
+    payload
+  );
 };
-
 
 export const OrganisationApiService = {
   organisationCreate: _organisationCreate,
-  organisationUpdate:_organisationUpdate,
+  organisationUpdate: _organisationUpdate,
   organisationListing: _organisationListing,
   organisationDetails: _organisationDetails,
-  orgAccess:_orgAccess,
-
+  orgAccess: _orgAccess,
 };
