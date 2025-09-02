@@ -274,6 +274,9 @@ const ExternalUsers = () => {
     value: PropTypes.number.isRequired,
   };
 
+  const [projectCurrentPage, setProjectCurrentPage] = useState(1);
+  const projectPageSize = 10;
+
   // ✅ query hook (but disabled until a user is selected)
   const {
     data: userProjectsResponse,
@@ -284,8 +287,8 @@ const ExternalUsers = () => {
   } = useExternalUserProjects(
     selectedUser?.user_id,
     selectedUser?.org_id,
-    currentPage,
-    pageSize,
+    projectCurrentPage,
+    projectPageSize,
     {
       enabled: !!selectedUser, // 🚀 runs only when selectedUser is set
     }
@@ -621,7 +624,7 @@ const ExternalUsers = () => {
             </>
           </Space>
 
-          <ProjectSelectionModal
+          {/* <ProjectSelectionModal
             visible={isProjectModalVisible}
             onClose={(event, reason) => {
               if (reason !== "backdropClick") {
@@ -629,6 +632,21 @@ const ExternalUsers = () => {
               }
             }}
             allProjects={selectedUserprojects}
+            onSubmit={handleSubmitProjects}
+          /> */}
+
+          <ProjectSelectionModal
+            visible={isProjectModalVisible}
+            onClose={(event, reason) => {
+              if (reason !== "backdropClick") {
+                setIsProjectModalVisible(false);
+              }
+            }}
+            projects={selectedUserprojects}
+            totalCount={selectedUserprojects?.length || 0}
+            currentPage={projectCurrentPage}
+            pageSize={pageSize}
+            onPageChange={(newPage) => setProjectCurrentPage(newPage)}
             onSubmit={handleSubmitProjects}
           />
 
