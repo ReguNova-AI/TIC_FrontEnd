@@ -69,8 +69,12 @@ const _userAccess = (id, active) => {
   );
 };
 
-const _externalUserListing = () => {
-  return BaseApiService.get(`/api/v2/external-users`, null, null);
+const _externalUserListing = (page, limit) => {
+  const params = {
+    page: page,
+    limit: limit,
+  };
+  return BaseApiService.get(`/api/v2/external-users`, params, null);
 };
 
 const _addProjectsToExternalUser = (payload) => {

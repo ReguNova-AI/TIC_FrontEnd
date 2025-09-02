@@ -70,10 +70,14 @@ const ExternalUsers = () => {
 
   const [filteredActiveData, setFilteredActiveData] = useState([]);
   const [filteredInActiveData, setFilteredInActiveData] = useState([]);
-  const [currentPageForActive, setCurrentPageForActive] = useState(1);
-  const [currentPageForInactive, setCurrentPageForInactive] = useState(1);
-  const [pageSizeForActive, setPageSizeForActive] = useState(10);
-  const [pageSizeForInactive, setPageSizeForInactive] = useState(10);
+  // const [currentPageForActive, setCurrentPageForActive] = useState(1);
+  // const [currentPageForInactive, setCurrentPageForInactive] = useState(1);
+  // const [pageSizeForActive, setPageSizeForActive] = useState(10);
+  // const [pageSizeForInactive, setPageSizeForInactive] = useState(10);
+  const [pageSize, setPageSize] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [activeUsersCount, setActiveUsersCount] = useState(0);
+  const [inactiveUsersCount, setInactiveUsersCount] = useState(0);
 
   const [selectedUserprojects, setSelectedUserprojects] = useState([]);
   const [snackData, setSnackData] = useState({
@@ -86,7 +90,12 @@ const ExternalUsers = () => {
   const debouncedSearchText = useDebounce(searchText, 500);
 
   // ✅ React Query hooks
-  const { data: usersData, isLoading, isError, error } = useExternalUsers();
+  const {
+    data: usersData,
+    isLoading,
+    isError,
+    error,
+  } = useExternalUsers(currentPage, pageSize);
 
   const toggleUserAccess = useToggleUserAccess();
   const assignProjects = useAssignProjects();
@@ -150,6 +159,12 @@ const ExternalUsers = () => {
 
     setFilteredActiveData(filterData(activeUsersData));
     setFilteredInActiveData(filterData(inactiveUsersData));
+    setActiveUsersCount(
+      usersData?.totalActiveUsers?.[0]?.total_active_external_users || 0
+    );
+    setInactiveUsersCount(
+      usersData?.totalInactiveUsers?.[0]?.total_inactive_external_users || 0
+    );
   }, [usersData, debouncedSearchText]);
 
   // handle enable/disable user
@@ -440,19 +455,24 @@ const ExternalUsers = () => {
   ];
 
   // Pagination logic
-  const paginatedData = filteredActiveData.slice(
-    (currentPageForActive - 1) * pageSizeForActive,
-    currentPageForActive * pageSizeForActive
-  );
+  // const paginatedData = filteredActiveData.slice(
+  //   (currentPageForActive - 1) * pageSizeForActive,
+  //   currentPageForActive * pageSizeForActive
+  // );
 
-  const paginatedDataforInactive = filteredInActiveData.slice(
-    (currentPageForInactive - 1) * pageSizeForInactive,
-    currentPageForInactive * pageSizeForInactive
-  );
+  // const paginatedDataforInactive = filteredInActiveData.slice(
+  //   (currentPageForInactive - 1) * pageSizeForInactive,
+  //   currentPageForInactive * pageSizeForInactive
+  // );
+
+  // const handlePaginationChange = (page, pageSize) => {
+  //   setCurrentPageForActive(page);
+  //   setPageSizeForActive(pageSize);
+  // };
 
   const handlePaginationChange = (page, pageSize) => {
-    setCurrentPageForActive(page);
-    setPageSizeForActive(pageSize);
+    setCurrentPage(page);
+    setPageSize(pageSize);
   };
 
   // if (isLoading) {
@@ -523,12 +543,13 @@ const ExternalUsers = () => {
               <CustomTabPanel value={tabsValue} index={0}>
                 <Table
                   columns={columns}
-                  dataSource={paginatedData}
+                  // dataSource={paginatedData}
+                  dataSource={filteredActiveData}
                   rowKey="index"
                   pagination={{
-                    current: currentPageForActive,
-                    pageSize: pageSizeForActive,
-                    total: filteredActiveData?.length,
+                    current: currentPage,
+                    pageSize: pageSize,
+                    total: activeUsersCount,
                     onChange: handlePaginationChange,
                   }}
                 />
@@ -536,12 +557,13 @@ const ExternalUsers = () => {
               <CustomTabPanel value={tabsValue} index={1}>
                 <Table
                   columns={columns}
-                  dataSource={paginatedDataforInactive}
+                  // dataSource={paginatedDataforInactive}
+                  dataSource={filteredInActiveData}
                   rowKey="index"
                   pagination={{
-                    current: currentPageForInactive,
-                    pageSize: pageSizeForInactive,
-                    total: filteredInActiveData?.length,
+                    current: currentPage,
+                    pageSize: pageSize,
+                    total: inactiveUsersCount,
                     onChange: handlePaginationChange,
                   }}
                 />
