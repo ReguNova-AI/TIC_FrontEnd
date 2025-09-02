@@ -54,6 +54,7 @@ import {
   useAssignProjects,
 } from "components/hooks/useExternalUsers";
 import { UserApiService } from "services/api/UserAPIService";
+import { useExternalUserProjects } from "components/hooks/useExternalUserProject";
 
 const ExternalUsers = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -273,38 +274,87 @@ const ExternalUsers = () => {
     value: PropTypes.number.isRequired,
   };
 
+  // ✅ query hook (but disabled until a user is selected)
+  const {
+    data: userProjectsResponse,
+    isError: isUserProjectsError,
+    error: userProjectsError,
+    isSuccess,
+    refetch, // we can also trigger manually if needed
+  } = useExternalUserProjects(
+    selectedUser?.user_id,
+    selectedUser?.org_id,
+    currentPage,
+    pageSize,
+    {
+      enabled: !!selectedUser, // 🚀 runs only when selectedUser is set
+    }
+  );
+
+  // ✅ handle modal open
   const handleAssignProjectModal = (record) => {
-    fetchUserProjects(record?.index, record?.org_id);
     setSelectedUser({
       user_id: record.index,
       org_id: record.org_id,
     });
     setIsProjectModalVisible(true);
+    refetch(); // manually trigger fetch when modal opens
   };
 
-  const fetchUserProjects = async (userId = 0, orgId = 0) => {
-    await UserApiService.getExternalUserPeojects(userId, orgId)
-      .then((response) => {
-        if (response?.data?.length > 0) {
-          setSelectedUserprojects(response?.data);
-        }
-        setSnackData({
-          show: true,
-          message:
-            response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-          type: "success",
-        });
-      })
-      .catch((errResponse) => {
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
+  // ✅ react to query results with useEffect
+  useEffect(() => {
+    if (isSuccess && userProjectsResponse?.length > 0) {
+      setSelectedUserprojects(userProjectsResponse);
+      // setSnackData({
+      //   show: true,
+      //   message: "Projects fetched successfully",
+      //   type: "success",
+      // });
+    }
+  }, [isSuccess, userProjectsResponse]);
+
+  useEffect(() => {
+    if (isUserProjectsError) {
+      setSnackData({
+        show: true,
+        message: userProjectsError?.message || "Internal Server Error",
+        type: "error",
       });
-  };
+    }
+  }, [isUserProjectsError, userProjectsError]);
+
+  // const handleAssignProjectModal = (record) => {
+  //   fetchUserProjects(record?.index, record?.org_id);
+  //   setSelectedUser({
+  //     user_id: record.index,
+  //     org_id: record.org_id,
+  //   });
+  //   setIsProjectModalVisible(true);
+  // };
+
+  // const fetchUserProjects = async (userId = 0, orgId = 0) => {
+  //   await UserApiService.getExternalUserPeojects(userId, orgId)
+  //     .then((response) => {
+  //       if (response?.data?.length > 0) {
+  //         setSelectedUserprojects(response?.data);
+  //       }
+  //       setSnackData({
+  //         show: true,
+  //         message:
+  //           response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+  //         type: "success",
+  //       });
+  //     })
+  //     .catch((errResponse) => {
+  //       setSnackData({
+  //         show: true,
+  //         message:
+  //           errResponse?.error?.message ||
+  //           API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+  //         type: "error",
+  //       });
+  //     });
+  // };
 
   // Table columns
   const columns = [

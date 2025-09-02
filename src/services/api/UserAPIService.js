@@ -85,10 +85,14 @@ const _addProjectsToExternalUser = (payload) => {
   );
 };
 
-const _externalUserProjects = (userId, orgId) => {
+const _externalUserProjects = (userId, orgId, page, limit) => {
+  const params = {
+    page: page,
+    limit: limit,
+  };
   return BaseApiService.get(
     `/api/v2/external-users-projects?userId=${userId}&orgId=${orgId}`,
-    null,
+    params,
     null
   );
 };
