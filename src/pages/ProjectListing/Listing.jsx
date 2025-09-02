@@ -73,9 +73,6 @@ const Listing = () => {
   const location = useLocation();
   const { filterStatusValue } = location.state || {};
 
-  // Tanstack Query
-  const { data: projectData, isLoading, isError, error } = useProjects();
-
   // Local state for filtering, search, pagination
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState([]);
@@ -93,6 +90,13 @@ const Listing = () => {
     message: "",
     type: "error",
   });
+  // Tanstack Query
+  const {
+    data: projectData,
+    isLoading,
+    isError,
+    error,
+  } = useProjects(currentPage, pageSize);
 
   // ------------------ Data Transformation ------------------
   const transformProjects = (projects = []) =>

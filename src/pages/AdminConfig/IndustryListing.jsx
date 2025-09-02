@@ -1,10 +1,25 @@
 import React, { useEffect, useState } from "react";
-import { Space, Table, ConfigProvider, Empty, Button, Spin, Tooltip,Popconfirm, Modal } from "antd";
+import {
+  Space,
+  Table,
+  ConfigProvider,
+  Empty,
+  Button,
+  Spin,
+  Tooltip,
+  Popconfirm,
+  Modal,
+} from "antd";
 import FormControl from "@mui/material/FormControl";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import InputLabel from "@mui/material/InputLabel";
 import InputAdornment from "@mui/material/InputAdornment";
-import { CloseCircleOutlined,DeleteFilled, EditOutlined, SearchOutlined } from "@ant-design/icons";
+import {
+  CloseCircleOutlined,
+  DeleteFilled,
+  EditOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
@@ -17,7 +32,7 @@ import {
 } from "shared/constants";
 import trashIcon from "../../assets/images/icons/trash4.svg";
 import IndustryCreation from "./IndustryCreation";
-
+import { useIndustryListing } from "components/hooks/useIndustryListing";
 
 const IndustriesListing = () => {
   const [data, setData] = useState([]);
@@ -26,9 +41,9 @@ const IndustriesListing = () => {
   const [currentPage, setCurrentPage] = useState(1); // Track the current page
   const [pageSize, setPageSize] = useState(10); // Number of rows per page
   const [loading, setLoading] = useState(true);
-    const [isModalVisible, setIsModalVisible] = useState(false);
-    const [modalType,setModalType] = useState("");
-    const [modalData,setModalData] = useState({});
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [modalType, setModalType] = useState("");
+  const [modalData, setModalData] = useState({});
   const [snackData, setSnackData] = useState({
     show: false,
     message: "",
@@ -36,44 +51,80 @@ const IndustriesListing = () => {
   });
 
   // Fetch data
+  // useEffect(() => {
+  //   fetchData();
+  // }, []);
+
+  // const fetchData = () => {
+  //   AdminConfigAPIService.industryListing()
+  //     .then((response) => {
+  //       // Check the response structure and map data accordingly
+  //       if (response?.data?.details) {
+  //         const newData = response?.data?.details.map((industry) => ({
+  //           industry_id: industry.industry_id,
+  //           industry_name: industry.industry_name,
+  //           sector_name : industry.sector_name
+  //         }));
+  //         setData(newData);
+  //         setCurrentPage(1);
+  //         setFilteredData(newData);
+  //       }
+  //       setLoading(false);
+
+  //       setSnackData({
+  //         show: true,
+  //         message:
+  //           response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+  //         type: "success",
+  //       });
+  //     })
+  //     .catch((errResponse) => {
+  //       setLoading(false);
+  //       setSnackData({
+  //         show: true,
+  //         message:
+  //           errResponse?.error?.message ||
+  //           API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+  //         type: "error",
+  //       });
+  //     });
+  // };
+
+  const {
+    data: industryResponse,
+    isLoading,
+    isError,
+    error,
+    isSuccess,
+    refetch: fetchData,
+  } = useIndustryListing(currentPage, pageSize);
+
+  // 🔄 When API call succeeds, transform and store in state
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (isSuccess && industryResponse?.details) {
+      const newData = industryResponse.details.map((industry) => ({
+        industry_id: industry.industry_id,
+        industry_name: industry.industry_name,
+        sector_name: industry.sector_name,
+      }));
 
-  const fetchData = () => {
-    AdminConfigAPIService.industryListing()
-      .then((response) => {
-        // Check the response structure and map data accordingly
-        if (response?.data?.details) {
-          const newData = response?.data?.details.map((industry) => ({
-            industry_id: industry.industry_id,
-            industry_name: industry.industry_name, 
-            sector_name : industry.sector_name
-          }));
-          setData(newData);
-          setCurrentPage(1);
-          setFilteredData(newData);
-        }
-        setLoading(false);
+      setData(newData);
+      setFilteredData(newData);
+    }
+  }, [isSuccess, industryResponse]);
 
-        setSnackData({
-          show: true,
-          message:
-            response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-          type: "success",
-        });
-      })
-      .catch((errResponse) => {
-        setLoading(false);
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
+  // 🔄 Handle errors
+  useEffect(() => {
+    if (isError) {
+      setSnackData({
+        show: true,
+        message:
+          error?.response?.data?.message ||
+          API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+        type: "error",
       });
-  };
+    }
+  }, [isError, error]);
 
   // Debounced search
   const handleSearch = (value) => {
@@ -85,8 +136,10 @@ const IndustriesListing = () => {
 
   // Centralized filtering logic
   useEffect(() => {
-    const filtered = data.filter((item) =>
-      item.industry_name.toLowerCase().includes(debouncedSearchText) || item.sector_name.toLowerCase().includes(debouncedSearchText)
+    const filtered = data.filter(
+      (item) =>
+        item.industry_name.toLowerCase().includes(debouncedSearchText) ||
+        item.sector_name.toLowerCase().includes(debouncedSearchText)
     );
     setFilteredData(filtered);
   }, [debouncedSearchText, data]);
@@ -103,13 +156,12 @@ const IndustriesListing = () => {
     currentPage * pageSize
   );
 
-  const handleModalOpen = (type,data) => {
-    console.log("data",data)
+  const handleModalOpen = (type, data) => {
+    console.log("data", data);
     setModalData(data);
     setModalType(type);
     setIsModalVisible(true);
   };
-
 
   const handleModalClose = () => {
     setIsModalVisible(false);
@@ -120,7 +172,6 @@ const IndustriesListing = () => {
     setIsModalVisible(false);
     fetchData();
   };
-
 
   // Table columns
   const columns = [
@@ -142,50 +193,57 @@ const IndustriesListing = () => {
     //     onFilter: (value, record) =>
     //       record.sector_name.toLowerCase().includes(value.toLowerCase()),
     //   },
-  
-     
-      {
-        title: LISTING_PAGE.ACTION,
-        key: "action",
-        render: (_, record) => {
-          return (
+
+    {
+      title: LISTING_PAGE.ACTION,
+      key: "action",
+      render: (_, record) => {
+        return (
           <>
-          <Tooltip title="Edit industry details" >
-          <Button style={{border:"none",background:"transparent",boxShadow:"none",}}  onClick={()=>handleModalOpen("update",record)}>
-             <EditOutlined style={{fontSize:"20px"}}/>
-          </Button>
-          </Tooltip>
-          <Popconfirm
-            title={`Delete  ${record.industry_name} Industry`}
-            description="Are you sure you want to delete?"
-            onConfirm={(e) =>{ e.preventDefault(); handleDelete(record.industry_id)}}
-            onCancel={cancel}
-            okText="Confirm"
-            cancelText="Cancel"
-            icon={
+            <Tooltip title="Edit industry details">
+              <Button
+                style={{
+                  border: "none",
+                  background: "transparent",
+                  boxShadow: "none",
+                }}
+                onClick={() => handleModalOpen("update", record)}
+              >
+                <EditOutlined style={{ fontSize: "20px" }} />
+              </Button>
+            </Tooltip>
+            <Popconfirm
+              title={`Delete  ${record.industry_name} Industry`}
+              description="Are you sure you want to delete?"
+              onConfirm={(e) => {
+                e.preventDefault();
+                handleDelete(record.industry_id);
+              }}
+              onCancel={cancel}
+              okText="Confirm"
+              cancelText="Cancel"
+              icon={
                 <CloseCircleOutlined
                   style={{
                     color: "red",
                   }}
                 />
-            }
-          >
-            <Tooltip title="Delete Industry" >
-            <img src={trashIcon} width="22px"/>
-          </Tooltip>
-          </Popconfirm>
-            </>
-          
-        )
-      }
+              }
+            >
+              <Tooltip title="Delete Industry">
+                <img src={trashIcon} width="22px" />
+              </Tooltip>
+            </Popconfirm>
+          </>
+        );
       },
+    },
   ];
 
   const cancel = (e) => {
     console.log(e);
     // message.error('Click on No');
   };
-
 
   // Handle delete action
   const handleDelete = (id) => {
@@ -198,8 +256,7 @@ const IndustriesListing = () => {
 
         setSnackData({
           show: true,
-          message:
-            response?.message || API_SUCCESS_MESSAGE.INDUSTRY_DELETED,
+          message: response?.message || API_SUCCESS_MESSAGE.INDUSTRY_DELETED,
           type: "success",
         });
         fetchData();
@@ -209,16 +266,16 @@ const IndustriesListing = () => {
         setSnackData({
           show: true,
           message:
-          errResponse.response?.data?.message ==="This industry is in use" ? "Can't delete this industry it is already used for user/organization/project creation" :
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+            errResponse.response?.data?.message === "This industry is in use"
+              ? "Can't delete this industry it is already used for user/organization/project creation"
+              : API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
       });
-
   };
 
   return (
-    <Spin tip="Loading" size="large" spinning={loading}>
+    <Spin tip="Loading" size="large" spinning={isLoading}>
       <ConfigProvider
         renderEmpty={() => <Empty description={GENERIC_DATA_LABEL.NO_DATA} />}
       >
@@ -280,12 +337,15 @@ const IndustriesListing = () => {
           footer={null}
           width={800}
         >
-          <IndustryCreation onHandleClose={(e) => handleClose()} type={"edit"} selecteddata={modalData}/>
+          <IndustryCreation
+            onHandleClose={(e) => handleClose()}
+            type={"edit"}
+            selecteddata={modalData}
+          />
         </Modal>
 
-
         <Snackbar
-        style={{top:"80px"}}
+          style={{ top: "80px" }}
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
           open={snackData.show}
           autoHideDuration={3000}
