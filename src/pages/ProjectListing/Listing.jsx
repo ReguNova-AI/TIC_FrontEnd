@@ -120,8 +120,9 @@ const Listing = () => {
       invite_members: project.invite_members,
     }));
 
-  const createdProjects = transformProjects(projectData?.details);
+  const createdProjects = transformProjects(projectData?.projects);
   const invitedProjects = transformProjects(projectData?.invited_projects);
+  const TotalRecords = projectData?.total_count || 0;
 
   // ------------------ Search & Filters ------------------
   const debouncedSearchText = useDebounce(searchText, 500);
@@ -428,12 +429,12 @@ const Listing = () => {
             </Alert>
           ) : userRole === "Super Admin" ? (
             <AdminOrgNestedListing
-              data={projectData?.details}
+              data={projectData?.projects}
               filterStatusValue={filterStatusValue}
             />
           ) : userRole === "Org Super Admin" || userRole === "Admin" ? (
             <NestedListing
-              data={projectData?.details}
+              data={projectData?.projects}
               filterStatusValue={filterStatusValue}
             />
           ) : (
@@ -457,7 +458,7 @@ const Listing = () => {
                     pagination={{
                       current: currentPage,
                       pageSize,
-                      total: filteredData?.length,
+                      total: TotalRecords,
                       onChange: (page, size) => {
                         setCurrentPage(page);
                         setPageSize(size);
@@ -477,7 +478,7 @@ const Listing = () => {
                     pagination={{
                       current: currentInvitedPage,
                       pageInvitedSize,
-                      total: filteredInvitedData?.length,
+                      total: TotalRecords,
                       onChange: (page, size) => {
                         setCurrentInvitedPage(page);
                         setPageInvitedSize(size);

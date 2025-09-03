@@ -32,8 +32,12 @@ const _roleUpdate = (payload, id) => {
   return BaseApiService.put(`/api/v1/roles/${id}/update`, null, payload);
 };
 
-const _roleListing = (userid) => {
-  return BaseApiService.get(`/api/v1/roles`, null, null);
+const _roleListing = (page, limit) => {
+  const params = {
+    page: page,
+    limit: limit,
+  };
+  return BaseApiService.get(`/api/v1/roles`, params, null);
 };
 
 const _permissionListing = () => {
