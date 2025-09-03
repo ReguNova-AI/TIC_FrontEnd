@@ -100,6 +100,8 @@ const RoleListing = () => {
     refetch: fetchData,
   } = useRolesListing(currentPage, pageSize);
 
+  const totalRecords = rolesData?.total_count || 0;
+
   // 🔄 When API call succeeds, transform and store in state
   useEffect(() => {
     if (isSuccess && rolesData?.details) {
@@ -318,7 +320,7 @@ const RoleListing = () => {
             pagination={{
               current: currentPage,
               pageSize,
-              total: filteredData.length,
+              total: totalRecords,
               onChange: handlePaginationChange,
             }}
           />
