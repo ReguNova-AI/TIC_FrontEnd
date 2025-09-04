@@ -294,7 +294,12 @@ const OrganizationListing = () => {
       title: LISTING_PAGE.ORG_ADDRESS,
       dataIndex: "org_address",
       key: "org_address",
-      render: (address) => <span>{address || GENERIC_DATA_LABEL.NO_DATA}</span>,
+      render: (address) => (
+        <span>
+          {/* {address || GENERIC_DATA_LABEL.NO_DATA} */}
+          {address || " "}
+        </span>
+      ),
     },
     {
       title: LISTING_PAGE.ORG_PRIMARY_EMAIL,
