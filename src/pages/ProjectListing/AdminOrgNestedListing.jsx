@@ -208,7 +208,7 @@ const AdminOrgNestedListing = ({ data }) => {
         const orgMatches = org.org_name
           ?.toLowerCase()
           .includes(searchText?.toLowerCase());
-        const industryMatches = org.industries.some(
+        const industryMatches = org?.industries?.some(
           (industry) =>
             industry.industry_name
               ?.toLowerCase()

@@ -90,6 +90,10 @@ const Listing = () => {
     message: "",
     type: "error",
   });
+  // ------------------ Misc ------------------
+  const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
+  const userRole = userdetails?.[0]?.role_name;
+
   // Tanstack Query
   const {
     data: projectData,
@@ -122,7 +126,19 @@ const Listing = () => {
 
   const createdProjects = transformProjects(projectData?.details);
   const invitedProjects = transformProjects(projectData?.invited_projects);
-  const TotalRecords = projectData?.total_count || 0;
+  const TotalProjectRecords =
+    userRole === "Super Admin" ||
+    userRole === "Org Super Admin" ||
+    userRole === "Admin"
+      ? projectData?.total_count || 0
+      : projectData?.total_project_count || 0;
+
+  const TotalInvitedProjectRecords =
+    userRole === "Super Admin" ||
+    userRole === "Org Super Admin" ||
+    userRole === "Admin"
+      ? projectData?.total_count || 0
+      : projectData?.total_invited_project_count || 0;
 
   // ------------------ Search & Filters ------------------
   const debouncedSearchText = useDebounce(searchText, 500);
@@ -163,10 +179,6 @@ const Listing = () => {
     (currentInvitedPage - 1) * pageInvitedSize,
     currentInvitedPage * pageInvitedSize
   );
-
-  // ------------------ Misc ------------------
-  const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
-  const userRole = userdetails?.[0]?.role_name;
 
   const handleNavigateToProject = (projectNo, type) => {
     navigate(`/projectView/${projectNo}`, {
@@ -458,7 +470,7 @@ const Listing = () => {
                     pagination={{
                       current: currentPage,
                       pageSize,
-                      total: TotalRecords,
+                      total: TotalProjectRecords,
                       onChange: (page, size) => {
                         setCurrentPage(page);
                         setPageSize(size);
@@ -478,7 +490,7 @@ const Listing = () => {
                     pagination={{
                       current: currentInvitedPage,
                       pageInvitedSize,
-                      total: TotalRecords,
+                      total: TotalInvitedProjectRecords,
                       onChange: (page, size) => {
                         setCurrentInvitedPage(page);
                         setPageInvitedSize(size);

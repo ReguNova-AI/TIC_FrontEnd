@@ -30,7 +30,7 @@ const _projectListing = (page, limit) => {
       role !== "Org Super Admin" &&
       role !== "Admin"
     ) {
-      return BaseApiService.get(`/api/v1/user/projects`, null, null);
+      return BaseApiService.get(`/api/v1/user/projects`, params, null);
     } else {
       let pathname = window.location.pathname;
       // console.log(pathname)
