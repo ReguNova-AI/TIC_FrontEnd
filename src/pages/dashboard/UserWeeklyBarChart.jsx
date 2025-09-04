@@ -1,11 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
-import * as echarts from 'echarts';
-import { DashboardApiService } from 'services/api/DashboardAPIService';
-// import { DashboardApiService } from '../../services/api/dashboardAPIService';
+import React, { useEffect, useRef, useState } from "react";
+import * as echarts from "echarts";
+import { DashboardApiService } from "services/api/DashboardAPIService";
 
 const UserWeeklyBarChart = () => {
   const chartRef = useRef(null);
-  const [chartData,setChartData] = useState([]);
+  const [chartData, setChartData] = useState([]);
 
   useEffect(() => {
     fetchData();
@@ -13,90 +12,92 @@ const UserWeeklyBarChart = () => {
 
   const formatDate = (date) => {
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');  // Months are 0-based
-    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   };
-  
-  // Get today's date
+
   const today = new Date();
-  
-  // Get the date 10 days before today
   const lastDate = new Date();
   lastDate.setDate(today.getDate() - 10);
-  
-  // Format both dates
+
   const todayFormatted = formatDate(today);
   const lastDateFormatted = formatDate(lastDate);
-  
 
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
-    const id = userdetails?.[0]?.user_id;
-    const fetchData = ()=>{
-    DashboardApiService.userWeeklyCreatedProject(todayFormatted,lastDateFormatted)
+  const id = userdetails?.[0]?.user_id;
+
+  const fetchData = () => {
+    DashboardApiService.userWeeklyCreatedProject(
+      todayFormatted,
+      lastDateFormatted
+    )
       .then((response) => {
-        setChartData(response?.data)
-       
+        // ensure it's always an array
+        const data = Array.isArray(response?.data) ? response.data : [];
+        setChartData(data);
       })
-      .catch((errResponse) => {
-       
-      });
-    }
+      .catch(() => {});
+  };
 
   useEffect(() => {
     if (chartRef.current) {
       const myChart = echarts.init(chartRef.current);
-      const dates = chartData.map(item => item.project_date);
-      const projectCounts = chartData.map(item => item.project_count);
-  
+      console.log("chartData", chartData);
+
+      const dates = Array.isArray(chartData)
+        ? chartData.map((item) => item.project_date)
+        : [];
+
+      const projectCounts = Array.isArray(chartData)
+        ? chartData.map((item) => item.project_count)
+        : [];
 
       const option = {
         tooltip: {
-          trigger: 'axis', // The tooltip will be triggered when hovering over the axis
+          trigger: "axis",
           formatter: function (params) {
-            // Custom formatter for tooltip to show project_date and project_count
             const date = params[0].axisValue;
             const count = params[0].data;
             return `${date}<br />Project Count: ${count}`;
           },
           axisPointer: {
-            type: 'line', // Line pointer will be shown on hover
+            type: "line",
             lineStyle: {
-              color: '#333', // Line color when hovering
-              width: 2, // Line width
+              color: "#333",
+              width: 2,
             },
           },
         },
         xAxis: {
-          type: 'category',
-          data: dates
+          type: "category",
+          data: dates,
         },
         yAxis: {
-          type: 'value'
+          type: "value",
         },
         series: [
           {
             data: projectCounts,
-            type: 'line',
-            smooth: true
-          }
-        ]
+            type: "line",
+            smooth: true,
+          },
+        ],
       };
 
       myChart.setOption(option);
 
-      // Optional: resize the chart when the window resizes
-      window.addEventListener('resize', () => myChart.resize());
+      const handleResize = () => myChart.resize();
+      window.addEventListener("resize", handleResize);
 
-      // Cleanup on component unmount
       return () => {
-        window.removeEventListener('resize', () => myChart.resize());
+        window.removeEventListener("resize", handleResize);
         myChart.dispose();
       };
     }
   }, [chartData]);
 
-  return <div ref={chartRef} style={{ width: '100%', height: '400px' }} />;
+  return <div ref={chartRef} style={{ width: "100%", height: "400px" }} />;
 };
 
 export default UserWeeklyBarChart;

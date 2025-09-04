@@ -44,12 +44,19 @@ import {
 } from "@ant-design/icons";
 import PropTypes from "prop-types";
 import ProjectSelectionModal from "components/modal/ProjectSelectionModal";
-import { UserApiService } from "services/api/UserAPIService";
 import { createData } from "./UserListing";
 import UserCreation from "./UserCreation";
 
+// ✅ Import hooks
+import {
+  useExternalUsers,
+  useToggleUserAccess,
+  useAssignProjects,
+} from "components/hooks/useExternalUsers";
+import { UserApiService } from "services/api/UserAPIService";
+import { useExternalUserProjects } from "components/hooks/useExternalUserProject";
+
 const ExternalUsers = () => {
-  const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [modalType, setModalType] = useState("");
   const [modalData, setModalData] = useState({});
@@ -62,19 +69,18 @@ const ExternalUsers = () => {
   const [searchText, setSearchText] = useState("");
   const [tabsValue, setTabsValue] = useState(0);
 
-  const [activeData, setActiveData] = useState([]);
-  const [inactiveData, setInactiveData] = useState([]);
-
   const [filteredActiveData, setFilteredActiveData] = useState([]);
   const [filteredInActiveData, setFilteredInActiveData] = useState([]);
-  const [currentPageForActive, setCurrentPageForActive] = useState(1);
-  const [currentPageForInactive, setCurrentPageForInactive] = useState(1);
-  const [pageSizeForActive, setPageSizeForActive] = useState(10);
-  // eslint-disable-next-line no-unused-vars
-  const [pageSizeForInactive, setPageSizeForInactive] = useState(10);
+  // const [currentPageForActive, setCurrentPageForActive] = useState(1);
+  // const [currentPageForInactive, setCurrentPageForInactive] = useState(1);
+  // const [pageSizeForActive, setPageSizeForActive] = useState(10);
+  // const [pageSizeForInactive, setPageSizeForInactive] = useState(10);
+  const [pageSize, setPageSize] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [activeUsersCount, setActiveUsersCount] = useState(0);
+  const [inactiveUsersCount, setInactiveUsersCount] = useState(0);
 
   const [selectedUserprojects, setSelectedUserprojects] = useState([]);
-
   const [snackData, setSnackData] = useState({
     show: false,
     message: "",
@@ -82,109 +88,139 @@ const ExternalUsers = () => {
   });
 
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
-
-  // Debounced search input (500ms delay)
   const debouncedSearchText = useDebounce(searchText, 500);
 
+  // ✅ React Query hooks
+  const {
+    data: usersData,
+    isLoading,
+    isError,
+    error,
+  } = useExternalUsers(currentPage, pageSize);
+
+  const toggleUserAccess = useToggleUserAccess();
+  const assignProjects = useAssignProjects();
+
+  // transform + filter users when data or search changes
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (!usersData) return;
 
-  useEffect(() => {
-    const filteredActive = filterData("Active", activeData);
-    const filteredInactive = filterData("Inactive", inactiveData);
+    const activeUsersData =
+      usersData?.activeUsers?.map((user, index) =>
+        createData(
+          user.user_id,
+          user.user_first_name,
+          user.user_last_name,
+          user.user_email,
+          user.user_phone_no,
+          user.sector_name,
+          user.industry_name,
+          user.org_name,
+          user.user_profile,
+          user.is_active,
+          user.user_address,
+          user.sector_id,
+          user.org_id,
+          user.industry_id,
+          user.role_id,
+          user.role_name,
+          user.industry_names
+        )
+      ) || [];
 
-    setFilteredActiveData(filteredActive);
-    setFilteredInActiveData(filteredInactive);
-    setLoading(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearchText, activeData, inactiveData]);
+    const inactiveUsersData =
+      usersData?.inactiveUsers?.map((user, index) =>
+        createData(
+          user.user_id,
+          user.user_first_name,
+          user.user_last_name,
+          user.user_email,
+          user.user_phone_no,
+          user.sector_name,
+          user.industry_name,
+          user.org_name,
+          user.user_profile,
+          user.is_active,
+          user.user_address,
+          user.sector_id,
+          user.org_id,
+          user.industry_id,
+          user.role_id,
+          user.role_name,
+          user.industry_names
+        )
+      ) || [];
 
-  const filterData = (type, data) => {
-    return data.filter((item) => {
-      const matchesSearchText =
-        item.first_name?.toLowerCase().includes(debouncedSearchText) ||
-        item.email?.toLowerCase().includes(debouncedSearchText);
-      return matchesSearchText;
-    });
+    const filterData = (data) =>
+      data.filter(
+        (item) =>
+          item.first_name?.toLowerCase().includes(debouncedSearchText) ||
+          item.email?.toLowerCase().includes(debouncedSearchText)
+      );
+
+    setFilteredActiveData(filterData(activeUsersData));
+    setFilteredInActiveData(filterData(inactiveUsersData));
+    setActiveUsersCount(
+      usersData?.totalActiveUsers?.[0]?.total_active_external_users || 0
+    );
+    setInactiveUsersCount(
+      usersData?.totalInactiveUsers?.[0]?.total_inactive_external_users || 0
+    );
+  }, [usersData, debouncedSearchText]);
+
+  // handle enable/disable user
+  const handleDisableUser = (userId, isActive) => {
+    toggleUserAccess.mutate(
+      { userId, isActive: !isActive },
+      {
+        onSuccess: (response) => {
+          setSnackData({
+            show: true,
+            message:
+              response?.message ||
+              (isActive
+                ? API_SUCCESS_MESSAGE.USER_DISABLED
+                : API_SUCCESS_MESSAGE.USER_ENABLED),
+            type: "success",
+          });
+        },
+        onError: (err) => {
+          setSnackData({
+            show: true,
+            message:
+              err?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+            type: "error",
+          });
+        },
+      }
+    );
   };
 
-  const fetchData = () => {
-    UserApiService.externalUserListing()
-      .then((response) => {
-        // On success, you can add any additional logic here
+  const handleSubmitProjects = (payload) => {
+    const reqData = {
+      ...payload,
+      user_id: selectedUser.user_id || 0,
+      org_id: selectedUser.org_id || 0,
+    };
+
+    assignProjects.mutate(reqData, {
+      onSuccess: (response) => {
         setSnackData({
           show: true,
           message:
-            response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+            response?.message || API_SUCCESS_MESSAGE.UPDATED_SUCCESSFULLY,
           type: "success",
         });
-
-        const activeUsersData =
-          response?.data?.activeUsers?.map((user, index) => {
-            return createData(
-              user.user_id,
-              user.user_first_name,
-              user.user_last_name,
-              user.user_email,
-              user.user_phone_no,
-              user.sector_name,
-              user.industry_name,
-              user.org_name,
-              user.user_profile,
-              user.is_active,
-              user.user_address,
-              user.sector_id,
-              user.org_id,
-              user.industry_id,
-              user.role_id,
-              user.role_name,
-              user.industry_names
-            );
-          }) || [];
-
-        const inactiveUsersData =
-          response?.data?.inactiveUsers?.map((user, index) => {
-            return createData(
-              user.user_id,
-              user.user_first_name,
-              user.user_last_name,
-              user.user_email,
-              user.user_phone_no,
-              user.sector_name,
-              user.industry_name,
-              user.org_name,
-              user.user_profile,
-              user.is_active,
-              user.user_address,
-              user.sector_id,
-              user.org_id,
-              user.industry_id,
-              user.role_id,
-              user.role_name,
-              user.industry_names
-            );
-          }) || [];
-
-        setCurrentPageForActive(1);
-        setCurrentPageForInactive(1);
-        setActiveData(activeUsersData);
-        setInactiveData(inactiveUsersData);
-        setFilteredActiveData(activeUsersData);
-        setFilteredInActiveData(inactiveUsersData);
-
-        setLoading(false);
-      })
-      .catch((errResponse) => {
+      },
+      onError: (err) => {
         setSnackData({
           show: true,
           message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+            err?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
-        setLoading(false);
-      });
+      },
+    });
   };
 
   const handleModalOpen = (type, data) => {
@@ -193,9 +229,16 @@ const ExternalUsers = () => {
     setIsModalVisible(true);
   };
 
+  const handleModalClose = () => {
+    setIsModalVisible(false);
+  };
+
+  const handleClose = () => {
+    setIsModalVisible(false);
+  };
+
   const handleUserSearch = (value) => {
-    const searchText = value.toLowerCase();
-    setSearchText(searchText);
+    setSearchText(value.toLowerCase());
   };
 
   const handleTabChange = (event, newValue) => {
@@ -231,36 +274,91 @@ const ExternalUsers = () => {
     value: PropTypes.number.isRequired,
   };
 
-  const handleNavigateToUsers = (userId) => {
-    // navigate(`/projectView/${projectNo}`, { state: { projectNo } });
+  const [projectCurrentPage, setProjectCurrentPage] = useState(1);
+  const projectPageSize = 10;
+
+  // ✅ query hook (but disabled until a user is selected)
+  const {
+    data: userProjectsResponse,
+    isError: isUserProjectsError,
+    error: userProjectsError,
+    isSuccess,
+    refetch, // we can also trigger manually if needed
+  } = useExternalUserProjects(
+    selectedUser?.user_id,
+    selectedUser?.org_id,
+    projectCurrentPage,
+    projectPageSize,
+    {
+      enabled: !!selectedUser, // 🚀 runs only when selectedUser is set
+    }
+  );
+
+  // ✅ handle modal open
+  const handleAssignProjectModal = (record) => {
+    setSelectedUser({
+      user_id: record.index,
+      org_id: record.org_id,
+    });
+    setSelectedUserprojects(userProjectsResponse?.details);
+    setIsProjectModalVisible(true);
+    refetch(); // manually trigger fetch when modal opens
   };
 
-  const handleDisableUser = (userId, isActive) => {
-    UserApiService.userAccess(userId, !isActive)
-      .then((response) => {
-        setLoading(false);
-        // On success, you can add any additional logic here
-        setSnackData({
-          show: true,
-          message:
-            response?.message || isActive
-              ? API_SUCCESS_MESSAGE.USER_ENABLED
-              : API_SUCCESS_MESSAGE.USER_DISABLED,
-          type: "success",
-        });
-        fetchData();
-      })
-      .catch((errResponse) => {
-        setLoading(false);
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
+  // ✅ react to query results with useEffect
+  useEffect(() => {
+    if (isSuccess && userProjectsResponse?.length > 0) {
+      setSelectedUserprojects(userProjectsResponse?.details);
+      // setSnackData({
+      //   show: true,
+      //   message: "Projects fetched successfully",
+      //   type: "success",
+      // });
+    }
+  }, [isSuccess, userProjectsResponse]);
+
+  useEffect(() => {
+    if (isUserProjectsError) {
+      setSnackData({
+        show: true,
+        message: userProjectsError?.message || "Internal Server Error",
+        type: "error",
       });
-  };
+    }
+  }, [isUserProjectsError, userProjectsError]);
+
+  // const handleAssignProjectModal = (record) => {
+  //   fetchUserProjects(record?.index, record?.org_id);
+  //   setSelectedUser({
+  //     user_id: record.index,
+  //     org_id: record.org_id,
+  //   });
+  //   setIsProjectModalVisible(true);
+  // };
+
+  // const fetchUserProjects = async (userId = 0, orgId = 0) => {
+  //   await UserApiService.getExternalUserPeojects(userId, orgId)
+  //     .then((response) => {
+  //       if (response?.data?.length > 0) {
+  //         setSelectedUserprojects(response?.data);
+  //       }
+  //       setSnackData({
+  //         show: true,
+  //         message:
+  //           response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+  //         type: "success",
+  //       });
+  //     })
+  //     .catch((errResponse) => {
+  //       setSnackData({
+  //         show: true,
+  //         message:
+  //           errResponse?.error?.message ||
+  //           API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+  //         type: "error",
+  //       });
+  //     });
+  // };
 
   // Table columns
   const columns = [
@@ -293,7 +391,6 @@ const ExternalUsers = () => {
               />
             )}
             <a
-              onClick={() => handleNavigateToUsers(record.index)}
               alt="User"
               style={{
                 color: "#2ba9bc",
@@ -306,43 +403,34 @@ const ExternalUsers = () => {
           </>
         );
       },
-      filterSearch: true,
-      onFilter: (value, record) =>
-        record.first_name.toLowerCase().includes(value.toLowerCase()),
     },
     {
       title: LISTING_PAGE.EMAIL,
       dataIndex: "email",
       key: "email",
-      filterSearch: true,
-      onFilter: (value, record) => record.email.toString().includes(value),
     },
     {
       title: LISTING_PAGE.PHONE_NO,
       dataIndex: "phone_no",
       key: "phone_no",
     },
-
     {
       title: LISTING_PAGE.ORG_NAME,
       dataIndex: "org_name",
       key: "org_name",
     },
-
     {
       title: LISTING_PAGE.INDUSTRY,
-
       key: "industry_names",
       render: (record) => {
         let industry_namearray = Array.isArray(record.industry_names)
           ? record.industry_names
           : [record.industry_names];
-        return industry_namearray?.map((name, index) => {
-          return index === 0 ? name : ", " + name;
-        });
+        return industry_namearray?.map((name, index) =>
+          index === 0 ? name : ", " + name
+        );
       },
     },
-
     {
       title: LISTING_PAGE.ACTION,
       key: "action",
@@ -377,22 +465,13 @@ const ExternalUsers = () => {
                   e.preventDefault();
                   handleDisableUser(record?.index, record?.isActive);
                 }}
-                // onCancel={cancel}
                 okText="Confirm"
                 cancelText="Cancel"
                 icon={
                   record.isActive ? (
-                    <CloseCircleOutlined
-                      style={{
-                        color: "red",
-                      }}
-                    />
+                    <CloseCircleOutlined style={{ color: "red" }} />
                   ) : (
-                    <CheckCircleOutlined
-                      style={{
-                        color: "green",
-                      }}
-                    />
+                    <CheckCircleOutlined style={{ color: "green" }} />
                   )
                 }
               >
@@ -410,7 +489,6 @@ const ExternalUsers = () => {
                   ></img>
                 </Tooltip>
               </Popconfirm>
-
               <Tooltip title="Add multiple projects">
                 <Button
                   style={{
@@ -431,103 +509,42 @@ const ExternalUsers = () => {
   ];
 
   // Pagination logic
-  const paginatedData = filteredActiveData.slice(
-    (currentPageForActive - 1) * pageSizeForActive,
-    currentPageForActive * pageSizeForActive
-  );
+  // const paginatedData = filteredActiveData.slice(
+  //   (currentPageForActive - 1) * pageSizeForActive,
+  //   currentPageForActive * pageSizeForActive
+  // );
 
-  const paginatedDataforInactive = filteredInActiveData.slice(
-    (currentPageForInactive - 1) * pageSizeForInactive,
-    currentPageForInactive * pageSizeForInactive
-  );
+  // const paginatedDataforInactive = filteredInActiveData.slice(
+  //   (currentPageForInactive - 1) * pageSizeForInactive,
+  //   currentPageForInactive * pageSizeForInactive
+  // );
 
-  // Handle pagination change
+  // const handlePaginationChange = (page, pageSize) => {
+  //   setCurrentPageForActive(page);
+  //   setPageSizeForActive(pageSize);
+  // };
+
   const handlePaginationChange = (page, pageSize) => {
-    setCurrentPageForActive(page);
-    setPageSizeForActive(pageSize);
+    setCurrentPage(page);
+    setPageSize(pageSize);
   };
 
-  const handleModalClose = () => {
-    setIsModalVisible(false);
-    fetchData();
-  };
+  // if (isLoading) {
+  //   return <Spin tip="Loading" size="large" spinning />;
+  // }
 
-  const handleClose = () => {
-    setIsModalVisible(false);
-    fetchData();
-  };
-
-  const handleAssignProjectModal = (record) => {
-    setLoading(true);
-    fetchUserProjects(record?.index, record?.org_id);
-    setSelectedUser({
-      user_id: record.index,
-      org_id: record.org_id,
-    });
-    setIsProjectModalVisible(true);
-  };
-
-  const fetchUserProjects = async (userId = 0, orgId = 0) => {
-    await UserApiService.getExternalUserPeojects(userId, orgId)
-      .then((response) => {
-        // On success, you can add any additional logic here
-        if (response?.data?.length > 0) {
-          console.log("response", response?.data);
-          setSelectedUserprojects(response?.data);
-        }
-        setLoading(false);
-        setSnackData({
-          show: true,
-          message:
-            response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-          type: "success",
-        });
-      })
-      .catch((errResponse) => {
-        setLoading(false);
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
-      });
-  };
-
-  const handleSubmitProjects = (payload) => {
-    const reqData = {
-      ...payload,
-      user_id: selectedUser.user_id || 0,
-      org_id: selectedUser.org_id || 0,
-    };
-
-    UserApiService.addProjectsToExternalUser(reqData)
-      .then((response) => {
-        // On success, you can add any additional logic here
-        setSnackData({
-          show: true,
-          message:
-            response?.message || API_SUCCESS_MESSAGE.UPDATED_SUCCESSFULLY,
-          type: "success",
-        });
-      })
-      .catch((errResponse) => {
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
-      });
-
-    setLoading(false);
-  };
+  if (isError) {
+    return (
+      <Alert
+        severity="error"
+        message={error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR}
+      />
+    );
+  }
 
   try {
     return (
-      <Spin tip="Loading" size="large" spinning={loading}>
+      <Spin tip="Loading" size="large" spinning={isLoading}>
         <ConfigProvider
           renderEmpty={() => <Empty description={GENERIC_DATA_LABEL.NO_DATA} />}
         >
@@ -574,21 +591,19 @@ const ExternalUsers = () => {
                         onChange={(e) => handleUserSearch(e.target.value)}
                       />
                     </FormControl>
-                    {/* <Button>
-                      <DownloadOutlined />
-                    </Button> */}
                   </Space>
                 </Space>
               </Box>
               <CustomTabPanel value={tabsValue} index={0}>
                 <Table
                   columns={columns}
-                  dataSource={paginatedData}
+                  // dataSource={paginatedData}
+                  dataSource={filteredActiveData}
                   rowKey="index"
                   pagination={{
-                    current: currentPageForActive,
-                    pageSizeForActive,
-                    total: filteredActiveData?.length,
+                    current: currentPage,
+                    pageSize: pageSize,
+                    total: activeUsersCount,
                     onChange: handlePaginationChange,
                   }}
                 />
@@ -596,12 +611,13 @@ const ExternalUsers = () => {
               <CustomTabPanel value={tabsValue} index={1}>
                 <Table
                   columns={columns}
-                  dataSource={paginatedDataforInactive}
+                  // dataSource={paginatedDataforInactive}
+                  dataSource={filteredInActiveData}
                   rowKey="index"
                   pagination={{
-                    current: currentPageForInactive,
-                    pageSizeForInactive,
-                    total: filteredInActiveData?.length,
+                    current: currentPage,
+                    pageSize: pageSize,
+                    total: inactiveUsersCount,
                     onChange: handlePaginationChange,
                   }}
                 />
@@ -609,16 +625,29 @@ const ExternalUsers = () => {
             </>
           </Space>
 
+          {/* <ProjectSelectionModal
+            visible={isProjectModalVisible}
+            onClose={(event, reason) => {
+              if (reason !== "backdropClick") {
+                setIsProjectModalVisible(false);
+              }
+            }}
+            allProjects={selectedUserprojects}
+            onSubmit={handleSubmitProjects}
+          /> */}
+
           <ProjectSelectionModal
             visible={isProjectModalVisible}
             onClose={(event, reason) => {
               if (reason !== "backdropClick") {
                 setIsProjectModalVisible(false);
-                setLoading(false);
               }
             }}
-            // allProjects={dummyProjects}
-            allProjects={selectedUserprojects}
+            projects={selectedUserprojects}
+            totalCount={selectedUserprojects?.length || 0}
+            currentPage={projectCurrentPage}
+            pageSize={pageSize}
+            onPageChange={(newPage) => setProjectCurrentPage(newPage)}
             onSubmit={handleSubmitProjects}
           />
 
@@ -658,7 +687,7 @@ const ExternalUsers = () => {
   }
 };
 
-// Custom hook for debouncing input value
+// Debounce Hook
 function useDebounce(value, delay) {
   const [debouncedValue, setDebouncedValue] = useState(value);
 

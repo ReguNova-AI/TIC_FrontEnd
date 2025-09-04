@@ -12,21 +12,25 @@ const _projectChatUpdate = (payload) => {
   return BaseApiService.post(`/api/v2/chat/updateChatResponse`, null, payload);
 };
 
-const _projectListing = () => {
+const _projectListing = (page, limit) => {
+  const params = {
+    page: page,
+    limit: limit,
+  };
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
   const user_id = userdetails?.[0]?.user_id;
   const role = userdetails?.[0]?.role_name;
   const industry_id = userdetails?.[0]?.industry_id;
 
   if (role === "Super Admin") {
-    return BaseApiService.get(`/api/v1/projects`, null, null);
+    return BaseApiService.get(`/api/v1/projects`, params, null);
   } else {
     if (
       role !== "Super Admin" &&
       role !== "Org Super Admin" &&
       role !== "Admin"
     ) {
-      return BaseApiService.get(`/api/v1/user/projects`, null, null);
+      return BaseApiService.get(`/api/v1/user/projects`, params, null);
     } else {
       let pathname = window.location.pathname;
       // console.log(pathname)
