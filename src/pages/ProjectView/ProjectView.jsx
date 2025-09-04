@@ -711,12 +711,12 @@ const ProjectView = () => {
   const UpdateProjectChatDetails = (payload, countUpdate = false) => {
     ProjectApiService.projectChatUpdate(payload)
       .then((response) => {
-        setSnackData({
-          show: true,
-          message:
-            response?.message || API_SUCCESS_MESSAGE.UPDATED_SUCCESSFULLY,
-          type: "success",
-        });
+        // setSnackData({
+        //   show: true,
+        //   message:
+        //     response?.message || API_SUCCESS_MESSAGE.UPDATED_SUCCESSFULLY,
+        //   type: "success",
+        // });
         // SetProjectData(response?.data?.details[0]);
         setLoading(false);
       })
