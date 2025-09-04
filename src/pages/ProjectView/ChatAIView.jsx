@@ -49,7 +49,18 @@ const ChatAIView = ({ data, onSubmit, responseValue, projectId }) => {
 
       onSubmit([...history, newHistory]);
     } catch (errResponse) {
-      // Handle error
+      console.error("Error fetching data:", errResponse);
+
+      const apiMessage =
+        errResponse?.response?.data?.message || // API-provided message
+        errResponse?.message || // Axios error message
+        API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR; // fallback
+
+      setSnackData({
+        show: true,
+        message: apiMessage,
+        type: "error",
+      });
     } finally {
       setLoading(false);
     }
