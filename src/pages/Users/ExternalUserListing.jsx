@@ -300,6 +300,7 @@ const ExternalUsers = () => {
       user_id: record.index,
       org_id: record.org_id,
     });
+    setSelectedUserprojects(userProjectsResponse?.details);
     setIsProjectModalVisible(true);
     refetch(); // manually trigger fetch when modal opens
   };
@@ -307,7 +308,7 @@ const ExternalUsers = () => {
   // ✅ react to query results with useEffect
   useEffect(() => {
     if (isSuccess && userProjectsResponse?.length > 0) {
-      setSelectedUserprojects(userProjectsResponse);
+      setSelectedUserprojects(userProjectsResponse?.details);
       // setSnackData({
       //   show: true,
       //   message: "Projects fetched successfully",

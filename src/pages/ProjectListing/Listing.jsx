@@ -120,7 +120,7 @@ const Listing = () => {
       invite_members: project.invite_members,
     }));
 
-  const createdProjects = transformProjects(projectData?.projects);
+  const createdProjects = transformProjects(projectData?.details);
   const invitedProjects = transformProjects(projectData?.invited_projects);
   const TotalRecords = projectData?.total_count || 0;
 
@@ -429,12 +429,12 @@ const Listing = () => {
             </Alert>
           ) : userRole === "Super Admin" ? (
             <AdminOrgNestedListing
-              data={projectData?.projects}
+              data={projectData?.details}
               filterStatusValue={filterStatusValue}
             />
           ) : userRole === "Org Super Admin" || userRole === "Admin" ? (
             <NestedListing
-              data={projectData?.projects}
+              data={projectData?.details}
               filterStatusValue={filterStatusValue}
             />
           ) : (

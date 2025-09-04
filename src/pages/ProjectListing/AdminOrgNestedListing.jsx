@@ -31,6 +31,7 @@ const AdminOrgNestedListing = ({ data }) => {
   // Fetch data when the component mounts
   useEffect(() => {
     setDataSource(data);
+    console.log("Data in AdminOrgNestedListing:", data);
   }, [data]);
 
   // Function to navigate to project view
