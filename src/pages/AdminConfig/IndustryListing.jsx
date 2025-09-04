@@ -99,6 +99,8 @@ const IndustriesListing = () => {
     refetch: fetchData,
   } = useIndustryListing(currentPage, pageSize);
 
+  const total_records = industryResponse?.total_count || 0;
+
   // 🔄 When API call succeeds, transform and store in state
   useEffect(() => {
     if (isSuccess && industryResponse?.details) {
@@ -151,10 +153,10 @@ const IndustriesListing = () => {
   };
 
   // Pagination logic
-  const paginatedData = filteredData.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
+  // const paginatedData = filteredData.slice(
+  //   (currentPage - 1) * pageSize,
+  //   currentPage * pageSize
+  // );
 
   const handleModalOpen = (type, data) => {
     console.log("data", data);
@@ -319,12 +321,12 @@ const IndustriesListing = () => {
 
           <Table
             columns={columns}
-            dataSource={paginatedData}
+            dataSource={filteredData}
             rowKey="sector_id" // Unique key for each row
             pagination={{
               current: currentPage,
               pageSize,
-              total: filteredData.length,
+              total: total_records,
               onChange: handlePaginationChange,
             }}
           />
