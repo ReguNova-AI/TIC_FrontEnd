@@ -192,9 +192,12 @@ const AdminOrgNestedListing = ({ data }) => {
       title: "Total Projects",
       key: "total_projects",
       render: (_, record) => {
-        const totalProjects = record.industries.reduce((acc, industry) => {
-          return acc + (industry.projects ? industry.projects.length : 0);
-        }, 0);
+        const totalProjects = (record.industries || []).reduce(
+          (acc, industry) => {
+            return acc + (industry.projects || []).length;
+          },
+          0
+        );
         return <span>{totalProjects}</span>;
       },
     },
@@ -204,27 +207,24 @@ const AdminOrgNestedListing = ({ data }) => {
   const filterData = (data) => {
     return data
       .filter((org) => {
-        // Check if organization or industry names match the search text
         const orgMatches = org.org_name
           ?.toLowerCase()
           .includes(searchText?.toLowerCase());
-        const industryMatches = org?.industries?.some(
+        const industryMatches = (org?.industries || []).some(
           (industry) =>
             industry.industry_name
               ?.toLowerCase()
               .includes(searchText?.toLowerCase()) ||
-            (industry.projects &&
-              industry.projects.some((project) =>
-                project.project_name
-                  ?.toLowerCase()
-                  .includes(searchText?.toLowerCase())
-              ))
+            (industry.projects || []).some((project) =>
+              project.project_name
+                ?.toLowerCase()
+                .includes(searchText?.toLowerCase())
+            )
         );
 
-        // Filter projects by status within industries
-        const filteredIndustries = org?.industries?.map((industry) => ({
+        const filteredIndustries = (org?.industries || []).map((industry) => ({
           ...industry,
-          projects: industry?.projects?.filter((project) => {
+          projects: (industry?.projects || []).filter((project) => {
             return (
               selectedStatuses?.length === 0 ||
               selectedStatuses?.some((status) =>
@@ -234,9 +234,8 @@ const AdminOrgNestedListing = ({ data }) => {
           }),
         }));
 
-        // Only include industries with projects matching the selected statuses
-        const industriesWithFilteredProjects = filteredIndustries?.filter(
-          (industry) => industry?.projects?.length > 0
+        const industriesWithFilteredProjects = filteredIndustries.filter(
+          (industry) => (industry?.projects || []).length > 0
         );
 
         return (
@@ -246,8 +245,8 @@ const AdminOrgNestedListing = ({ data }) => {
       })
       .map((org) => ({
         ...org,
-        industries: org?.industries?.filter((industry) =>
-          industry.projects?.some((project) => {
+        industries: (org?.industries || []).filter((industry) =>
+          (industry.projects || []).some((project) => {
             return (
               selectedStatuses?.length === 0 ||
               selectedStatuses?.some((status) =>
@@ -285,27 +284,27 @@ const AdminOrgNestedListing = ({ data }) => {
     return (
       <Table
         columns={industryColumns}
-        dataSource={record.industries}
+        dataSource={record.industries || []}
         rowKey="industry_id"
         expandable={{
           expandedRowRender: (industry) => {
-            const industryProjects = industry?.projects?.filter((project) => {
-              // Filter by project status if any status is selected
-              const matchesStatus =
-                selectedStatuses?.length === 0 ||
-                selectedStatuses?.includes(project.status);
+            const industryProjects = (industry?.projects || []).filter(
+              (project) => {
+                const matchesStatus =
+                  selectedStatuses?.length === 0 ||
+                  selectedStatuses?.includes(project.status);
 
-              // Filter by project name or user name search text
-              const matchesSearchText =
-                project?.project_name
-                  ?.toLowerCase()
-                  ?.includes(searchText?.toLowerCase()) ||
-                record?.name
-                  ?.toLowerCase()
-                  ?.includes(searchText?.toLowerCase());
+                const matchesSearchText =
+                  project?.project_name
+                    ?.toLowerCase()
+                    ?.includes(searchText?.toLowerCase()) ||
+                  record?.name
+                    ?.toLowerCase()
+                    ?.includes(searchText?.toLowerCase());
 
-              return matchesStatus && matchesSearchText;
-            });
+                return matchesStatus && matchesSearchText;
+              }
+            );
             return (
               <Table
                 columns={projectColumns}
