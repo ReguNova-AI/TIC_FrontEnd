@@ -51,6 +51,8 @@ const CreateProjectForm = () => {
   });
   const [documents, setDocuments] = useState([]);
 
+  console.log("documents", documents);
+
   const [formData, setFormData] = useState({
     projectName: "",
     projectNo: "",
@@ -552,7 +554,10 @@ const CreateProjectForm = () => {
                 </Box>
               </Grid>
               <Grid item xs={12} sm={12}>
-                <DocumentSection />
+                <DocumentSection
+                  documents={documents}
+                  setDocuments={setDocuments}
+                />
               </Grid>
 
               <Grid item xs={12} sm={12}>

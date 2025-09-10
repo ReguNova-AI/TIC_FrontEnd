@@ -62,8 +62,8 @@ const getFileIcon = (filename) => {
   }
 };
 
-const DocumentSection = () => {
-  const [documents, setDocuments] = useState([]); // [{type:"folder", name, children:[{file}] }]
+const DocumentSection = ({ documents, setDocuments }) => {
+  //   const [documents, setDocuments] = useState([]); // [{type:"folder", name, children:[{file}] }]
   const [openFolder, setOpenFolder] = useState({});
   const [newFolderName, setNewFolderName] = useState("");
   const [newDoc, setNewDoc] = useState({ name: "", type: "", file: null });
@@ -78,27 +78,43 @@ const DocumentSection = () => {
     setNewFolderName("");
   };
 
-  // --- Upload + Add File into last folder
-  const handleAddDocument = async () => {
-    if (!newDoc.name || !newDoc.file) return;
+  // --- Upload File (auto upload on select)
+  const handleFileSelect = async (file, name, type) => {
+    if (!file) return;
     if (documents.length === 0) {
       message.error("Please create a folder first.");
       return;
     }
 
     const lastFolderIdx = documents.length - 1;
-    const folder = documents[lastFolderIdx];
+
+    // temporary file entry
+    const tempFile = {
+      type: "file",
+      name: name || file.name,
+      file,
+      documenttype: type || "Project Document",
+      size: file.size,
+      path: null,
+      progress: 0,
+    };
+
+    setDocuments((prev) => {
+      const updated = [...prev];
+      updated[lastFolderIdx].children.push(tempFile);
+      return updated;
+    });
 
     try {
-      // Prepare base64
+      // Convert to base64
       const reader = new FileReader();
       const fileDataUrl = await new Promise((resolve, reject) => {
         reader.onloadend = () => resolve(reader.result);
         reader.onerror = reject;
-        reader.readAsDataURL(newDoc.file);
+        reader.readAsDataURL(file);
       });
 
-      const ext = newDoc.file.name.split(".").pop();
+      const ext = file.name.split(".").pop();
       const payload = { documents: [fileDataUrl], type: ext };
 
       const response = await FileUploadApiService.fileUpload(payload, {
@@ -109,31 +125,27 @@ const DocumentSection = () => {
             updated[lastFolderIdx].children = updated[
               lastFolderIdx
             ].children.map((f) =>
-              f.name === newDoc.name ? { ...f, progress: percent } : f
+              f.name === (name || file.name) ? { ...f, progress: percent } : f
             );
             return updated;
           });
         },
       });
 
-      const uploadedFile = {
-        type: "file",
-        name: newDoc.name,
-        file: newDoc.file,
-        documenttype: newDoc.type || "Project Document",
-        size: newDoc.file.size,
-        path: response.data.details[0], // from API
-        progress: 100,
-      };
-
+      // update with API path
       setDocuments((prev) => {
         const updated = [...prev];
-        updated[lastFolderIdx].children.push(uploadedFile);
+        updated[lastFolderIdx].children = updated[lastFolderIdx].children.map(
+          (f) =>
+            f.name === (name || file.name)
+              ? { ...f, path: response.data.details[0], progress: 100 }
+              : f
+        );
         return updated;
       });
 
-      setNewDoc({ name: "", type: "", file: null });
       message.success("File uploaded successfully!");
+      setNewDoc({ name: "", type: "", file: null }); // reset fields
     } catch (err) {
       console.error(err);
       message.error("File upload failed!");
@@ -149,10 +161,10 @@ const DocumentSection = () => {
   const handleDeleteFile = async (folderIdx, fileName, filePath) => {
     try {
       const regex = /\/([^/]+)$/;
-      const match = filePath.match(regex);
-      const filepayload = { imageKey: match[1] };
-
-      await FileUploadApiService.fileDelete(filepayload);
+      const match = filePath?.match(regex);
+      if (match) {
+        await FileUploadApiService.fileDelete({ imageKey: match[1] });
+      }
 
       setDocuments((prev) => {
         const updated = [...prev];
@@ -201,7 +213,7 @@ const DocumentSection = () => {
           </Button>
         </Box>
 
-        {/* Add Document */}
+        {/* Upload Document */}
         <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
           <TextField
             label="Document Name"
@@ -215,22 +227,24 @@ const DocumentSection = () => {
             value={newDoc.type}
             onChange={(e) => setNewDoc({ ...newDoc, type: e.target.value })}
           />
-          <Button variant="outlined" component="label">
-            Upload
+
+          <Button
+            variant="contained"
+            component="label"
+            style={{ background: "#003a8c", textTransform: "none" }}
+          >
+            Upload Document
             <input
               hidden
               type="file"
-              onChange={(e) =>
-                setNewDoc({ ...newDoc, file: e.target.files[0] })
-              }
+              onChange={(e) => {
+                const file = e.target.files[0];
+                if (file) {
+                  setNewDoc((prev) => ({ ...prev, file }));
+                  handleFileSelect(file, newDoc.name, newDoc.type);
+                }
+              }}
             />
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleAddDocument}
-            style={{ background: "#003a8c", textTransform: "none" }}
-          >
-            Add Document
           </Button>
         </Box>
 
@@ -275,10 +289,12 @@ const DocumentSection = () => {
                           <span style={{ marginRight: 10 }}>
                             {getFileIcon(child.file?.name)}
                           </span>
-                          <ListItemText
-                            primary={`${child.name} (${child.documenttype})`}
-                            secondary={formatFileSize(child.size)}
-                          />
+                          <Tooltip title={child.file?.name}>
+                            <ListItemText
+                              primary={`${child.name || child.file?.name} (${child.documenttype})`}
+                              secondary={formatFileSize(child.size)}
+                            />
+                          </Tooltip>
                           <Progress
                             percent={child.progress}
                             size="small"
