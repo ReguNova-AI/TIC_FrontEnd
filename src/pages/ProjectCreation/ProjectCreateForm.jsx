@@ -568,7 +568,7 @@ const CreateProjectForm = () => {
                     setSubmissionStatus("Draft");
                   }}
                   style={{
-                    background: "#003a8c",
+                    // background: "#003a8c",
                     float: "right",
                     textTransform: "none",
                   }}
