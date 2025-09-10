@@ -28,6 +28,7 @@ import {
   CloseCircleOutlined,
 } from "@ant-design/icons";
 import { FileUploadApiService } from "services/api/FileUploadAPIService";
+import { FORM_LABEL } from "shared/constants";
 
 // --- Utility: format size
 const formatFileSize = (bytes) => {
@@ -63,10 +64,10 @@ const getFileIcon = (filename) => {
 };
 
 const DocumentSection = ({ documents, setDocuments }) => {
-  //   const [documents, setDocuments] = useState([]); // [{type:"folder", name, children:[{file}] }]
   const [openFolder, setOpenFolder] = useState({});
   const [newFolderName, setNewFolderName] = useState("");
   const [newDoc, setNewDoc] = useState({ name: "", type: "", file: null });
+  const [currentFolder, setCurrentFolder] = useState(null); // NEW
 
   // --- Add Folder
   const handleAddFolder = () => {
@@ -75,20 +76,15 @@ const DocumentSection = ({ documents, setDocuments }) => {
       ...prev,
       { type: "folder", name: newFolderName, children: [] },
     ]);
+    setCurrentFolder(newFolderName); // set as active folder
     setNewFolderName("");
   };
 
   // --- Upload File (auto upload on select)
   const handleFileSelect = async (file, name, type) => {
     if (!file) return;
-    if (documents.length === 0) {
-      message.error("Please create a folder first.");
-      return;
-    }
 
-    const lastFolderIdx = documents.length - 1;
-
-    // temporary file entry
+    // File object
     const tempFile = {
       type: "file",
       name: name || file.name,
@@ -99,11 +95,19 @@ const DocumentSection = ({ documents, setDocuments }) => {
       progress: 0,
     };
 
-    setDocuments((prev) => {
-      const updated = [...prev];
-      updated[lastFolderIdx].children.push(tempFile);
-      return updated;
-    });
+    // Add either inside current folder or root
+    if (currentFolder) {
+      setDocuments((prev) => {
+        const updated = prev.map((item) =>
+          item.type === "folder" && item.name === currentFolder
+            ? { ...item, children: [...item.children, tempFile] }
+            : item
+        );
+        return updated;
+      });
+    } else {
+      setDocuments((prev) => [...prev, tempFile]);
+    }
 
     try {
       // Convert to base64
@@ -121,27 +125,50 @@ const DocumentSection = ({ documents, setDocuments }) => {
         onUploadProgress: (evt) => {
           const percent = Math.round((evt.loaded * 100) / evt.total);
           setDocuments((prev) => {
-            const updated = [...prev];
-            updated[lastFolderIdx].children = updated[
-              lastFolderIdx
-            ].children.map((f) =>
-              f.name === (name || file.name) ? { ...f, progress: percent } : f
-            );
-            return updated;
+            if (currentFolder) {
+              return prev.map((item) =>
+                item.type === "folder" && item.name === currentFolder
+                  ? {
+                      ...item,
+                      children: item.children.map((f) =>
+                        f.name === (name || file.name)
+                          ? { ...f, progress: percent }
+                          : f
+                      ),
+                    }
+                  : item
+              );
+            } else {
+              return prev.map((f) =>
+                f.name === (name || file.name) ? { ...f, progress: percent } : f
+              );
+            }
           });
         },
       });
 
       // update with API path
       setDocuments((prev) => {
-        const updated = [...prev];
-        updated[lastFolderIdx].children = updated[lastFolderIdx].children.map(
-          (f) =>
+        if (currentFolder) {
+          return prev.map((item) =>
+            item.type === "folder" && item.name === currentFolder
+              ? {
+                  ...item,
+                  children: item.children.map((f) =>
+                    f.name === (name || file.name)
+                      ? { ...f, path: response.data.details[0], progress: 100 }
+                      : f
+                  ),
+                }
+              : item
+          );
+        } else {
+          return prev.map((f) =>
             f.name === (name || file.name)
               ? { ...f, path: response.data.details[0], progress: 100 }
               : f
-        );
-        return updated;
+          );
+        }
       });
 
       message.success("File uploaded successfully!");
@@ -155,6 +182,7 @@ const DocumentSection = ({ documents, setDocuments }) => {
   // --- Toggle Folder
   const handleToggleFolder = (folderName) => {
     setOpenFolder((prev) => ({ ...prev, [folderName]: !prev[folderName] }));
+    setCurrentFolder(folderName); // make clicked folder active for upload
   };
 
   // --- Delete File
@@ -168,9 +196,14 @@ const DocumentSection = ({ documents, setDocuments }) => {
 
       setDocuments((prev) => {
         const updated = [...prev];
-        updated[folderIdx].children = updated[folderIdx].children.filter(
-          (f) => f.name !== fileName
-        );
+        if (typeof folderIdx === "number") {
+          updated[folderIdx].children = updated[folderIdx].children.filter(
+            (f) => f.name !== fileName
+          );
+        } else {
+          // root-level file
+          return prev.filter((f) => f.name !== fileName);
+        }
         return updated;
       });
       message.success("File deleted successfully!");
@@ -183,6 +216,9 @@ const DocumentSection = ({ documents, setDocuments }) => {
   // --- Delete Folder
   const handleDeleteFolder = (folderName) => {
     setDocuments((prev) => prev.filter((f) => f.name !== folderName));
+    if (currentFolder === folderName) {
+      setCurrentFolder(null); // reset current folder if deleted
+    }
   };
 
   return (
@@ -194,7 +230,9 @@ const DocumentSection = ({ documents, setDocuments }) => {
       }}
     >
       <Box sx={{ mt: 4 }}>
-        <h4 style={{ fontWeight: 500, margin: "4px" }}>Project Documents</h4>
+        <h4 style={{ fontWeight: 500, margin: "4px" }}>
+          {FORM_LABEL.DOCUMENT_UPLOAD}
+        </h4>
 
         {/* Add Folder */}
         <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
@@ -249,7 +287,7 @@ const DocumentSection = ({ documents, setDocuments }) => {
         </Box>
 
         {/* List of Folders */}
-        <List sx={{ mt: 2 }}>
+        {/* <List sx={{ mt: 2 }}>
           {documents.map((folder, fIdx) =>
             folder.type === "folder" ? (
               <React.Fragment key={fIdx}>
@@ -324,6 +362,143 @@ const DocumentSection = ({ documents, setDocuments }) => {
                 </Collapse>
               </React.Fragment>
             ) : null
+          )}
+        </List> */}
+        <List sx={{ mt: 2 }}>
+          {documents.map((item, idx) =>
+            item.type === "folder" ? (
+              <React.Fragment key={idx}>
+                {/* Folder row */}
+                <ListItem button onClick={() => handleToggleFolder(item.name)}>
+                  <Folder sx={{ mr: 1 }} />
+                  <ListItemText primary={item.name} />
+                  {openFolder[item.name] ? <ExpandLess /> : <ExpandMore />}
+                  {/* Delete Folder */}
+                  <Popconfirm
+                    title="Delete Folder"
+                    description="Are you sure you want to delete this folder?"
+                    onConfirm={() => handleDeleteFolder(item.name)}
+                    okText="Confirm"
+                    cancelText="Cancel"
+                    icon={<CloseCircleOutlined style={{ color: "red" }} />}
+                  >
+                    <IconButton>
+                      <DeleteIcon color="error" />
+                    </IconButton>
+                  </Popconfirm>
+                </ListItem>
+
+                {/* Folder contents */}
+                <Collapse
+                  in={openFolder[item.name]}
+                  timeout="auto"
+                  unmountOnExit
+                >
+                  <List component="div" disablePadding sx={{ pl: 4 }}>
+                    {item.children?.length === 0 ? (
+                      <ListItem>
+                        <ListItemText primary="(Empty Folder)" />
+                      </ListItem>
+                    ) : (
+                      item.children.map((child, cIdx) => (
+                        <ListItem
+                          key={cIdx}
+                          sx={{ display: "flex", alignItems: "flex-start" }}
+                        >
+                          <span
+                            style={{ marginRight: "10px", fontSize: "18px" }}
+                          >
+                            {getFileIcon(child.file?.name)}
+                          </span>
+
+                          <ListItemText
+                            primary={
+                              <Tooltip title={child.file?.name}>
+                                <span>
+                                  {child.name}{" "}
+                                  <span style={{ color: "#2ba9bc" }}>
+                                    ({child.documenttype})
+                                  </span>
+                                </span>
+                              </Tooltip>
+                            }
+                            secondary={`${formatFileSize(child.size)}`}
+                          />
+
+                          <Progress
+                            percent={child.progress}
+                            size="small"
+                            strokeColor="#52c41a"
+                            style={{ width: "40%", marginRight: "10px" }}
+                          />
+
+                          <Popconfirm
+                            title="Delete File"
+                            description="Are you sure you want to delete this file?"
+                            onConfirm={() =>
+                              handleDeleteFile(idx, child.name, child.path)
+                            }
+                            okText="Confirm"
+                            cancelText="Cancel"
+                            icon={
+                              <CloseCircleOutlined style={{ color: "red" }} />
+                            }
+                          >
+                            <IconButton>
+                              <DeleteIcon color="error" />
+                            </IconButton>
+                          </Popconfirm>
+                        </ListItem>
+                      ))
+                    )}
+                  </List>
+                </Collapse>
+              </React.Fragment>
+            ) : (
+              // 🟢 Root-level file rendering (same UI as above)
+              <ListItem
+                key={idx}
+                sx={{ display: "flex", alignItems: "flex-start" }}
+              >
+                <span style={{ marginRight: "10px", fontSize: "18px" }}>
+                  {getFileIcon(item.file?.name)}
+                </span>
+
+                <ListItemText
+                  primary={
+                    <Tooltip title={item.file?.name}>
+                      <span>
+                        {item.name}{" "}
+                        <span style={{ color: "#2ba9bc" }}>
+                          ({item.documenttype})
+                        </span>
+                      </span>
+                    </Tooltip>
+                  }
+                  secondary={`${formatFileSize(item.size)}`}
+                />
+
+                <Progress
+                  percent={item.progress}
+                  size="small"
+                  strokeColor="#52c41a"
+                  style={{ width: "40%", marginRight: "10px" }}
+                />
+
+                <Popconfirm
+                  title="Delete File"
+                  description="Are you sure you want to delete this file?"
+                  onConfirm={() => handleDeleteFile(null, item.name, item.path)}
+                  okText="Confirm"
+                  cancelText="Cancel"
+                  icon={<CloseCircleOutlined style={{ color: "red" }} />}
+                >
+                  <IconButton>
+                    <DeleteIcon color="error" />
+                  </IconButton>
+                </Popconfirm>
+              </ListItem>
+            )
           )}
         </List>
       </Box>
