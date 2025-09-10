@@ -11,6 +11,7 @@ import ProfileDetails from "layout/Dashboard/Header/HeaderContent/Profile/Profil
 import ExternalUsers from "pages/Users/ExternalUserListing";
 import ExternalProjectListing from "pages/ExternalProjects/ExternalProjectListing";
 import ExternalProjectView from "pages/ExternalProjects/ExternalProjectView";
+import CreateProjectForm from "pages/ProjectCreation/ProjectCreateForm";
 
 const Color = Loadable(lazy(() => import("pages/component-overview/color")));
 const Typography = Loadable(
@@ -100,7 +101,8 @@ const MainRoutes = {
       path: "createProject",
       element: (
         <ProtectedRoute>
-          <ProjectForm />
+          {/* <ProjectForm /> */}
+          <CreateProjectForm />
         </ProtectedRoute>
       ),
     },
