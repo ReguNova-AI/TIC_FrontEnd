@@ -60,7 +60,7 @@ const CreateProjectForm = () => {
     teamMembers: [], // Array to hold selected team members
     regulatory: "",
     invite_Users: [],
-    document: {},
+    document: [],
     status: "",
     invited_user_list: [],
     mapping_standards: "",
@@ -279,6 +279,14 @@ const CreateProjectForm = () => {
   };
 
   const handleSubmit = (e) => {
+    if (documents?.length === 0) {
+      setSnackData({
+        show: true,
+        message: "Please add at least one document.",
+        type: "error",
+      });
+      return; // Prevent form submission
+    }
     e.preventDefault();
     const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
     const updatedStatus =
@@ -311,7 +319,8 @@ const CreateProjectForm = () => {
       regulatory_standard: formData.regulatory,
       invite_members: selectedUserData,
       invited_user_list: formData.invited_user_list,
-      documents: formData.document,
+      //   documents: formData.document,
+      documents: documents,
       org_id: userdetails?.[0]?.org_id,
       org_name: userdetails?.[0]?.org_name,
       created_by_id: userdetails?.[0]?.user_id,

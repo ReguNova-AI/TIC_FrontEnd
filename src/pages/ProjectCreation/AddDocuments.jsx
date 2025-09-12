@@ -275,7 +275,7 @@ const DocumentSection = ({ documents, setDocuments }) => {
             <TextField
               label="Document Name"
               variant="outlined"
-              required
+              //   required
               value={newDoc.name}
               onChange={(e) => setNewDoc({ ...newDoc, name: e.target.value })}
             />
@@ -287,7 +287,7 @@ const DocumentSection = ({ documents, setDocuments }) => {
                 label="Type"
                 value={newDoc.type}
                 onChange={(e) => setNewDoc({ ...newDoc, type: e.target.value })}
-                required
+                // required
               >
                 {documentTypes.map((type) => (
                   <MenuItem key={type} value={type}>
