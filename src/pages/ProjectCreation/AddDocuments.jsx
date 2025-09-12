@@ -9,6 +9,11 @@ import {
   Collapse,
   IconButton,
   Tooltip,
+  InputLabel,
+  Select,
+  Chip,
+  MenuItem,
+  FormControl,
 } from "@mui/material";
 import {
   Folder,
@@ -63,6 +68,15 @@ const getFileIcon = (filename) => {
   }
 };
 
+const documentTypes = [
+  "Project Document",
+  "Specification",
+  "Drawing",
+  "Report",
+  "Certificate",
+  "Other",
+];
+
 const DocumentSection = ({ documents, setDocuments }) => {
   const [openFolder, setOpenFolder] = useState({});
   const [newFolderName, setNewFolderName] = useState("");
@@ -71,7 +85,7 @@ const DocumentSection = ({ documents, setDocuments }) => {
   const uploadedFiles = documents?.flatMap((item) =>
     item.type === "folder" ? item.children : item
   );
-
+  const [docType, setDocType] = useState("");
   // --- Add Folder
   const handleAddFolder = () => {
     if (!newFolderName.trim()) return;
@@ -286,13 +300,28 @@ const DocumentSection = ({ documents, setDocuments }) => {
               value={newDoc.name}
               onChange={(e) => setNewDoc({ ...newDoc, name: e.target.value })}
             />
-            <TextField
+            {/* <TextField
               variant="outlined"
               label="Type"
               value={newDoc.type}
               onChange={(e) => setNewDoc({ ...newDoc, type: e.target.value })}
-            />
-
+            /> */}
+            <FormControl fullWidth sx={{ maxWidth: 160 }}>
+              <InputLabel id="demo-simple-select-label">Type</InputLabel>
+              <Select
+                labelId="document-type-label"
+                label="Type"
+                id="document-type-select"
+                value={docType}
+                onChange={(e) => setDocType(e.target.value)}
+              >
+                {documentTypes.map((type) => (
+                  <MenuItem key={type} value={type}>
+                    {type}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
             <Button
               variant="contained"
               component="label"
