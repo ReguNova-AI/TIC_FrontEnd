@@ -272,7 +272,7 @@ const DocumentSection = ({ documents, setDocuments }) => {
             />
 
             <FormControl fullWidth sx={{ maxWidth: 160 }}>
-              <InputLabel id="document-type-label">Type</InputLabel>
+              <InputLabel id="document-type-label">Type*</InputLabel>
               <Select
                 labelId="document-type-label"
                 label="Type"
@@ -391,30 +391,33 @@ const DocumentSection = ({ documents, setDocuments }) => {
                                 : "No File"
                             }
                           />
+
                           <Progress
                             percent={child.progress}
                             size="small"
                             strokeColor="#52c41a"
                             style={{ width: "40%", marginRight: "10px" }}
                           />
-                          {/* Upload file later */}
-                          <input
-                            type="file"
-                            hidden
-                            id={`file-upload-${idx}-${cIdx}`}
-                            onChange={(e) =>
-                              handleFileUpload(
-                                e.target.files[0],
-                                child.name,
-                                item.name
-                              )
-                            }
-                          />
-                          <label htmlFor={`file-upload-${idx}-${cIdx}`}>
-                            <IconButton component="span">
-                              <InsertDriveFile />
-                            </IconButton>
-                          </label>
+                          <Tooltip title="Upload Document">
+                            {/* Upload file later */}
+                            <input
+                              type="file"
+                              hidden
+                              id={`file-upload-${idx}-${cIdx}`}
+                              onChange={(e) =>
+                                handleFileUpload(
+                                  e.target.files[0],
+                                  child.name,
+                                  item.name
+                                )
+                              }
+                            />
+                            <label htmlFor={`file-upload-${idx}-${cIdx}`}>
+                              <IconButton component="span">
+                                <InsertDriveFile />
+                              </IconButton>
+                            </label>
+                          </Tooltip>
                           <Popconfirm
                             title="Delete File"
                             description="Delete this file?"
