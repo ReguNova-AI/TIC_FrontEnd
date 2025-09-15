@@ -145,7 +145,7 @@ const ProjectDetailsCardView = ({
           </CardContent>
         </Card>
 
-        {!isExternalProject && (
+        {/* {!isExternalProject && (
           <Card
             sx={{ borderRadius: "10px", marginTop: "10px" }}
             style={{
@@ -176,7 +176,7 @@ const ProjectDetailsCardView = ({
               </Box>
             </CardContent>
           </Card>
-        )}
+        )} */}
       </Grid>
     </Grid>
   );

@@ -5,9 +5,11 @@ import {
   FolderFilled,
 } from "@ant-design/icons";
 import { Tree } from "antd";
-import { Tooltip } from "@mui/material";
+import { IconButton, Tooltip } from "@mui/material";
 import { FORM_LABEL } from "shared/constants";
 import folderIcon from "../../assets/images/icons/folderIcon1.svg";
+import { InsertDriveFile } from "@mui/icons-material";
+
 const FileStructureView = ({ data }) => {
   const [showLine, setShowLine] = useState(true);
   const [showIcon, setShowIcon] = useState(true);
@@ -27,7 +29,8 @@ const FileStructureView = ({ data }) => {
       // If the tree structure doesn't have the folder (documenttype), create it
       if (!treeStructure[document_type]) {
         treeStructure[document_type] = {
-          title: document_type,
+          // title: document_type,
+          title: "Folder - " + document_type,
           key: document_type?.replace(/\s+/g, "-"), // Key to be unique (no spaces)
           // icon: <FolderFilled style={{ color: "blue" }} />,
           icon: (
@@ -57,10 +60,46 @@ const FileStructureView = ({ data }) => {
               {docuemnt_name}
             </span>
             {/* Tooltip for the download icon */}
-            <Tooltip title="Download">
-              {/* <DownloadOutlined style={{ marginLeft:8,marginRight: 8, fontSize: 16, color: 'green' }} /> */}
-            </Tooltip>
+            {/* <Tooltip title="Download">
+              <DownloadOutlined
+                style={{
+                  marginLeft: 8,
+                  marginRight: 8,
+                  fontSize: 16,
+                  color: "green",
+                }}
+              />
+            </Tooltip> */}
             {/* Document Name */}
+            {/* File input with icon */}
+            <Tooltip title="Upload Document">
+              <input
+                type="file"
+                hidden
+                id="file-input"
+                // onChange={(e) => {
+                //   const file = e.target.files[0];
+                //   if (file) {
+                //     setNewDoc((prev) => ({ ...prev, file }));
+                //   }
+                // }}
+              />
+              <label htmlFor="file-input">
+                <IconButton
+                  component="span"
+                  // color={newDoc.file ? "success" : "default"}
+                  sx={{
+                    padding: 0,
+                    marginLeft: 1,
+                    marginRight: 1,
+                    fontSize: 16,
+                    color: "#3366ff",
+                  }}
+                >
+                  <InsertDriveFile />
+                </IconButton>
+              </label>
+            </Tooltip>
           </div>
         ),
         key: path, // Use document path as a unique key

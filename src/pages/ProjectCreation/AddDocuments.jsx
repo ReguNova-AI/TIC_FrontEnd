@@ -161,8 +161,19 @@ const DocumentSection = ({ documents, setDocuments }) => {
   };
 
   // --- Toggle folder open/close (UI only)
-  const handleToggleFolder = (folderName) => {
-    setOpenFolder((prev) => ({ ...prev, [folderName]: !prev[folderName] }));
+  //   const handleToggleFolder = (folderName) => {
+  //     setOpenFolder((prev) => ({ ...prev, [folderName]: !prev[folderName] }));
+  //   };
+
+  // --- Toggle folder open/close & set as current
+  const handleToggleFolder = (folder) => {
+    setOpenFolder((prev) => {
+      const isOpen = !prev[folder];
+      if (isOpen) {
+        setCurrentFolder(folder); // set current folder when opened
+      }
+      return { ...prev, [folder]: isOpen };
+    });
   };
 
   // --- Delete File
@@ -226,12 +237,27 @@ const DocumentSection = ({ documents, setDocuments }) => {
   };
 
   // --- Group docs by folder_name
-  const groupedDocs = documents.reduce((acc, doc) => {
-    const folder = doc.folder_name || "Uncategorized";
-    if (!acc[folder]) acc[folder] = [];
-    acc[folder].push(doc);
-    return acc;
-  }, {});
+  //   const groupedDocs = documents.reduce((acc, doc) => {
+  //     const folder = doc.folder_name || "Uncategorized";
+  //     if (!acc[folder]) acc[folder] = [];
+  //     acc[folder].push(doc);
+  //     return acc;
+  //   }, {});
+  // --- Group docs into folders + standalone
+  const groupedDocs = documents.reduce(
+    (acc, doc) => {
+      if (doc.folder_name) {
+        if (!acc.folders[doc.folder_name]) {
+          acc.folders[doc.folder_name] = [];
+        }
+        acc.folders[doc.folder_name].push(doc);
+      } else {
+        acc.standalone.push(doc);
+      }
+      return acc;
+    },
+    { folders: {}, standalone: [] }
+  );
 
   return (
     <section
@@ -340,7 +366,8 @@ const DocumentSection = ({ documents, setDocuments }) => {
 
         {/* List of Folders & Files */}
         <List sx={{ mt: 2 }}>
-          {Object.entries(groupedDocs).map(([folder, docs]) => (
+          {/* --- Folders --- */}
+          {Object.entries(groupedDocs.folders).map(([folder, docs]) => (
             <React.Fragment key={folder}>
               {/* --- Folder Header --- */}
               <ListItem
@@ -348,13 +375,14 @@ const DocumentSection = ({ documents, setDocuments }) => {
                 onClick={() => handleToggleFolder(folder)}
                 sx={{ display: "flex", alignItems: "center" }}
               >
-                <Checkbox
+                {/* <Checkbox
                   checked={currentFolder === folder}
                   onChange={(e) =>
                     setCurrentFolder(e.target.checked ? folder : null)
                   }
                   onClick={(e) => e.stopPropagation()}
-                />
+                /> */}
+                {openFolder[folder] ? <ExpandLess /> : <ExpandMore />}
 
                 <Folder sx={{ mr: 1 }} />
                 <ListItemText primary={folder} />
@@ -371,8 +399,6 @@ const DocumentSection = ({ documents, setDocuments }) => {
                     <DeleteIcon color="error" />
                   </IconButton>
                 </Popconfirm>
-
-                {openFolder[folder] ? <ExpandLess /> : <ExpandMore />}
               </ListItem>
 
               {/* --- Folder Files --- */}
@@ -461,6 +487,73 @@ const DocumentSection = ({ documents, setDocuments }) => {
                 </List>
               </Collapse>
             </React.Fragment>
+          ))}
+
+          {/* --- Standalone Files (no folder) --- */}
+          {groupedDocs.standalone.map((doc) => (
+            <ListItem
+              key={doc.document_id}
+              sx={{ display: "flex", alignItems: "flex-start" }}
+            >
+              <span style={{ marginRight: "10px", fontSize: "18px" }}>
+                {getFileIcon(doc.file?.name || doc.path)}
+              </span>
+              <ListItemText
+                primary={
+                  <Tooltip title={doc.file?.name || doc.path || "No File"}>
+                    <span>
+                      {doc.docuemnt_name}{" "}
+                      <span style={{ color: "#2ba9bc" }}>
+                        ({doc.docuemnt_type})
+                      </span>
+                    </span>
+                  </Tooltip>
+                }
+                secondary={
+                  doc.file
+                    ? formatFileSize(doc.file.size)
+                    : doc.path || "No File"
+                }
+              />
+
+              <Progress
+                percent={doc.progress || 0}
+                size="small"
+                strokeColor="#52c41a"
+                style={{ width: "40%", marginRight: "10px" }}
+              />
+
+              <input
+                type="file"
+                hidden
+                id={`file-upload-${doc.document_id}`}
+                onChange={(e) =>
+                  handleFileUpload(
+                    e.target.files[0],
+                    doc.docuemnt_name,
+                    doc.folder_name
+                  )
+                }
+              />
+              <label htmlFor={`file-upload-${doc.document_id}`}>
+                <IconButton component="span">
+                  <InsertDriveFile />
+                </IconButton>
+              </label>
+
+              <Popconfirm
+                title="Delete File"
+                description="Delete this file?"
+                onConfirm={() => handleDeleteFile(doc.document_id, doc.path)}
+                okText="Confirm"
+                cancelText="Cancel"
+                icon={<CloseCircleOutlined style={{ color: "red" }} />}
+              >
+                <IconButton>
+                  <DeleteIcon color="error" />
+                </IconButton>
+              </Popconfirm>
+            </ListItem>
           ))}
         </List>
       </Box>

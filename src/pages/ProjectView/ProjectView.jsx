@@ -1003,9 +1003,9 @@ const ProjectView = () => {
                     aria-label="basic tabs example"
                   >
                     <Tab label={TAB_LABEL.OVERVIEW} {...a11yProps(0)} />
-                    <Tab label={TAB_LABEL.SUMMARY_REPORT} {...a11yProps(1)} />
+                    {/* <Tab label={TAB_LABEL.SUMMARY_REPORT} {...a11yProps(1)} />
                     <Tab label={TAB_LABEL.CHAT_AI} {...a11yProps(2)} />
-                    <Tab label={TAB_LABEL.VERSION_HISTORY} {...a11yProps(3)} />
+                    <Tab label={TAB_LABEL.VERSION_HISTORY} {...a11yProps(3)} /> */}
                   </Tabs>
                 </Box>
 
@@ -1013,7 +1013,7 @@ const ProjectView = () => {
                 <CustomTabPanel value={value} index={0}>
                   <Grid container rowSpacing={1} columnSpacing={1}>
                     <Grid item xs={12} sm={8} md={8} lg={8}>
-                      <Grid container rowSpacing={1} columnSpacing={1}>
+                      {/* <Grid container rowSpacing={1} columnSpacing={1}>
                         <Grid item xs={12} sm={6} md={4} lg={4}>
                           <AnalyticEcommerce
                             title={COUNT_CARD_LABELS.NO_OF_RUNS}
@@ -1044,7 +1044,7 @@ const ProjectView = () => {
                             icon={failedIcon}
                           />
                         </Grid>
-                      </Grid>
+                      </Grid> */}
                       <Grid container style={{ marginTop: "20px" }}>
                         <Grid item xs={12} sm={12} md={12} lg={12}>
                           <Box
@@ -1054,7 +1054,7 @@ const ProjectView = () => {
                               borderRadius: "10px",
                               border: "1px solid #e4e4e4",
                               // width: "420px",
-                              marginTop: "30px",
+                              // marginTop: "30px",
                             }}
                           >
                             {PROJECT_DETAIL_PAGE.UPLOADED_FILES}
@@ -1082,112 +1082,6 @@ const ProjectView = () => {
                           </Grid>
                         )}
                       </Grid>
-                    </Grid>
-                    <Grid item xs={12} sm={4} md={4} lg={4}>
-                      <Box
-                        style={{
-                          boxShadow: "0px 0px 41px #e4e4e4",
-                          padding: "20px",
-                          borderRadius: "10px",
-                          border: "1px solid #e4e4e4",
-                        }}
-                      >
-                        <Typography variant="h5">
-                          {PROJECT_DETAIL_PAGE.LAST_RUN_DETAILS}
-                        </Typography>
-                        <span style={{ fontSize: "12px", color: "grey" }}>
-                          {projectData.last_run !== null &&
-                          projectData.last_run !== "null" &&
-                          projectData.last_run !== ""
-                            ? formatDate(projectData.last_run)
-                            : ""}
-                        </span>
-                        <div style={{ marginTop: "20px" }}>
-                          <RecentHistory data={projectData} />
-                        </div>
-                      </Box>
-                      <Box
-                        sx={{
-                          mt: 2,
-                          display: "inline-grid",
-                          float: "right",
-                          textAlign: "right",
-                        }}
-                      >
-                        <Button
-                          variant="outlined"
-                          onClick={() => setOpenModal(true)} // Open modal on button click
-                          disabled={
-                            projectData?.status === "Processing"
-                              ? true
-                              : disableButton
-                                ? true
-                                : false
-                          }
-                        >
-                          {BUTTON_LABEL.UPLOAD_ADDITIONAL_DOCUMENTS}
-                        </Button>
-                        {/* <Button variant="contained" sx={{ mt: 2 }} onClick={()=>runChecklistAPI()}>
-                         
-                          Upload standard chat
-                        </Button> */}
-
-                        {/* <input type="file" id="fileInput" /> */}
-                        <Tooltip title="It will create a checklist report">
-                          <Button
-                            variant="contained"
-                            sx={{ mt: 2 }}
-                            // disabled={projectData.documents?.length > 0 && projectData?.regulatory_standard ? false : true}
-                            disabled={
-                              projectData?.regulatory_standard
-                                ? projectData.checkListResponse
-                                  ? true
-                                  : projectData?.status === "Processing"
-                                    ? true
-                                    : disableButton
-                                      ? true
-                                      : false
-                                : true
-                            }
-                            onClick={() => runChecklkistCRT()}
-                          >
-                            {BUTTON_LABEL.RUN_CHECKLIST}
-                          </Button>
-                        </Tooltip>
-                        <Tooltip
-                          title={
-                            projectData.checkListResponse
-                              ? "Use the requirements from the created check list to run a compliance assessment for the uploaded project document"
-                              : "End to end process of creating a check list, assessment of uploaded project documents based on the created check list"
-                          }
-                        >
-                          <Button
-                            variant="contained"
-                            sx={{ mt: 2 }}
-                            // disabled={projectData.documents?.length > 0 && projectData?.regulatory_standard ? false : true}
-                            disabled={
-                              projectData?.status === "Processing"
-                                ? true
-                                : disableButton
-                                  ? true
-                                  : false
-                            }
-                            onClick={() =>
-                              runComplianceAssessmenet(
-                                projectData.checkListResponse,
-                                projectData?.project_id,
-                                projectData.checkListResponse
-                                  ? "partial"
-                                  : "full"
-                              )
-                            }
-                          >
-                            {projectData.checkListResponse
-                              ? BUTTON_LABEL.RUN_COMPLIANCE_ASSESSMENT
-                              : BUTTON_LABEL.PERFORM_COMPLETE_ASSESSMENT}
-                          </Button>
-                        </Tooltip>
-                      </Box>
                     </Grid>
                   </Grid>
                 </CustomTabPanel>
