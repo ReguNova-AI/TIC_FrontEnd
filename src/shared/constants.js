@@ -142,6 +142,18 @@ export const PROJECT_DETAIL_PAGE = Object.freeze({
   CHECKLIST_REPORT: "Checklist",
   ASSESSMENT_REPORT: "Assessment Report",
   HISTORY_DETAILS: "History Details",
+  RUN_DETAILS: "Run Details",
+  UPLOADED_PROJECT_DOCUMENTS: "Uploaded Project Documents",
+  UPLOADED_STANDARD_DOCUMENTS: "Uploaded Standard Documents",
+  UPLOADED_CUSTOM_STANDARD_DOCUMENTS: "Uploaded Custom Standard Documents",
+  NO_OF_RUNS: "No. of runs",
+  CREATED_ON: "Created on",
+  CREATED_BY: "Created by",
+  LAST_UPDATED: "Last updated",
+  LAST_UPDATED_BY: "Last updated by",
+  RUN_ON: "Run on",
+  RUN_BY: "Run by",
+  TOTAL_FILES_UPLOADED: "Total files uploaded",
 });
 
 export const STATUS = Object.freeze({

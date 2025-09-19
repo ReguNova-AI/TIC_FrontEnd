@@ -51,6 +51,7 @@ import processIcon from "../../assets/images/process.png";
 import { formatDate, formatDateToCustomFormat } from "shared/utility";
 import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
 import AssessmentHistoryTable from "components/AssessmentHistoryTable";
+import ProgressRing from "pages/ProjectCreation/CircularDocumentProgress";
 
 // Helper function to create a history object based on changes
 export const createHistoryObject = (data, previousData, heading, userName) => {
@@ -1045,20 +1046,37 @@ const ProjectView = () => {
                           />
                         </Grid>
                       </Grid> */}
-                      <Grid container style={{ marginTop: "20px" }}>
+                      <Grid container style={{ marginTop: "10px" }}>
                         <Grid item xs={12} sm={12} md={12} lg={12}>
                           <Box
-                            style={{
+                            // style={{
+                            //   boxShadow: "0px 0px 41px #e4e4e4",
+                            //   padding: "20px",
+                            //   borderRadius: "10px",
+                            //   border: "1px solid #e4e4e4",
+                            //   // width: "420px",
+                            //   // marginTop: "30px",
+                            // }}
+                            sx={{
+                              display: "flex",
+                              justifyContent: "space-between", // content left + progress right
+                              alignItems: "center", // vertical alignment
                               boxShadow: "0px 0px 41px #e4e4e4",
                               padding: "20px",
                               borderRadius: "10px",
                               border: "1px solid #e4e4e4",
-                              // width: "420px",
-                              // marginTop: "30px",
                             }}
                           >
-                            {PROJECT_DETAIL_PAGE.UPLOADED_FILES}
-                            <FileStructureView data={projectData} />
+                            {/* Left side content */}
+                            <Box>
+                              {PROJECT_DETAIL_PAGE.UPLOADED_PROJECT_DOCUMENTS}
+                              <FileStructureView data={projectData} />
+                            </Box>
+                            <ProgressRing
+                              label="Completion Progress"
+                              totalFiles={100}
+                              currentFiles={projectData?.completion_percentage}
+                            />
                           </Box>
                         </Grid>
                         {projectData?.status === "Processing" && (

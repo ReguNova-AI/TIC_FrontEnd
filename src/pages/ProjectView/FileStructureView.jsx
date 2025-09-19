@@ -9,6 +9,38 @@ import { IconButton, Tooltip } from "@mui/material";
 import { FORM_LABEL } from "shared/constants";
 import folderIcon from "../../assets/images/icons/folderIcon1.svg";
 import { InsertDriveFile } from "@mui/icons-material";
+import {
+  FilePdfOutlined,
+  FileWordOutlined,
+  FileExcelOutlined,
+  FileTextOutlined,
+  FileImageOutlined,
+  FileUnknownOutlined,
+  CloseCircleOutlined,
+} from "@ant-design/icons";
+
+const getFileIcon = (filename) => {
+  if (!filename) return <FileUnknownOutlined style={{ color: "#595959" }} />;
+  const ext = filename.split(".").pop().toLowerCase();
+  switch (ext) {
+    case "pdf":
+      return <FilePdfOutlined style={{ color: "#cf1322" }} />;
+    case "doc":
+    case "docx":
+      return <FileWordOutlined style={{ color: "#1890ff" }} />;
+    case "xls":
+    case "xlsx":
+      return <FileExcelOutlined style={{ color: "#52c41a" }} />;
+    case "jpg":
+    case "jpeg":
+    case "png":
+      return <FileImageOutlined style={{ color: "#fa8c16" }} />;
+    case "txt":
+      return <FileTextOutlined style={{ color: "#722ed1" }} />;
+    default:
+      return <FileUnknownOutlined style={{ color: "#595959" }} />;
+  }
+};
 
 const FileStructureView = ({ data }) => {
   const [showLine, setShowLine] = useState(true);
@@ -21,7 +53,8 @@ const FileStructureView = ({ data }) => {
     const treeStructure = {};
 
     documents.forEach((document) => {
-      let { document_type, docuemnt_name, path } = document;
+      let { document_type, document_name, path, folder_name, version } =
+        document;
       console.log("inside document", document);
       if (document_type === "Custom Regulatory") {
         document_type = FORM_LABEL.CUSTOM_REGULATORY;
@@ -30,7 +63,7 @@ const FileStructureView = ({ data }) => {
       if (!treeStructure[document_type]) {
         treeStructure[document_type] = {
           // title: document_type,
-          title: "Folder - " + document_type,
+          title: `${folder_name} (${document_type})`,
           key: document_type?.replace(/\s+/g, "-"), // Key to be unique (no spaces)
           // icon: <FolderFilled style={{ color: "blue" }} />,
           icon: (
@@ -57,7 +90,7 @@ const FileStructureView = ({ data }) => {
                 textOverflow: "ellipsis",
               }}
             >
-              {docuemnt_name}
+              {document_name}
             </span>
             {/* Tooltip for the download icon */}
             {/* <Tooltip title="Download">
@@ -70,7 +103,7 @@ const FileStructureView = ({ data }) => {
                 }}
               />
             </Tooltip> */}
-            {/* Document Name */}
+
             {/* File input with icon */}
             <Tooltip title="Upload Document">
               <input
@@ -96,9 +129,25 @@ const FileStructureView = ({ data }) => {
                     color: "#3366ff",
                   }}
                 >
-                  <InsertDriveFile />
+                  {/* <InsertDriveFile /> */}
+                  {getFileIcon(document_type)}
                 </IconButton>
               </label>
+            </Tooltip>
+            <Tooltip title={`Version: ${version}`}>
+              <span
+                style={{
+                  width: "10%",
+                  overflow: "hidden",
+                  display: "inline-block",
+                  whiteSpace: "nowrap",
+                  textOverflow: "ellipsis",
+                  color: "gray",
+                  fontSize: "10px",
+                }}
+              >
+                {version}
+              </span>
             </Tooltip>
           </div>
         ),
@@ -113,8 +162,9 @@ const FileStructureView = ({ data }) => {
 
   // Set the tree data when the component mounts or when `data` changes
   useEffect(() => {
-    if (data && Array.isArray(data.documents)) {
-      const transformedData = transformDataToTree(data.documents);
+    if (data && Array.isArray(data?.project_documents)) {
+      const transformedData = transformDataToTree(data?.project_documents);
+
       setGData(transformedData); // Set the tree data
     }
   }, [data]);
