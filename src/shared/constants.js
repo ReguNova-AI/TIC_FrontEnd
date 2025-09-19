@@ -154,6 +154,7 @@ export const PROJECT_DETAIL_PAGE = Object.freeze({
   RUN_ON: "Run on",
   RUN_BY: "Run by",
   TOTAL_FILES_UPLOADED: "Total files uploaded",
+  RUN_AI_COMPLIANCE_ASSESSMENT: "Run AI Compliance Assessment",
 });
 
 export const STATUS = Object.freeze({

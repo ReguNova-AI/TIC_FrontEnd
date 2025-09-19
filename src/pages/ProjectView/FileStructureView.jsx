@@ -83,7 +83,7 @@ const FileStructureView = ({ data }) => {
           <div style={{ display: "flex", alignItems: "center" }}>
             <span
               style={{
-                width: "48%",
+                width: "100%",
                 overflow: "hidden",
                 display: "inline-block",
                 whiteSpace: "nowrap",

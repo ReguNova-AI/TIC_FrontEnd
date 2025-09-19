@@ -34,7 +34,7 @@ const ProgressRing = ({ label, totalFiles, currentFiles }) => {
           variant="determinate"
           value={progress}
           color={getColor(progress)}
-          size={50}
+          size={100}
           thickness={5}
         />
         <Box
@@ -53,7 +53,7 @@ const ProgressRing = ({ label, totalFiles, currentFiles }) => {
             variant="caption"
             component="div"
             color="text.secondary"
-            fontSize={10}
+            fontSize={18}
             fontWeight="bold"
           >
             {`${Math.round(progress)}%`}

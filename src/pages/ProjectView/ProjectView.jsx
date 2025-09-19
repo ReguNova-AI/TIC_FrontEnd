@@ -52,6 +52,7 @@ import { formatDate, formatDateToCustomFormat } from "shared/utility";
 import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
 import AssessmentHistoryTable from "components/AssessmentHistoryTable";
 import ProgressRing from "pages/ProjectCreation/CircularDocumentProgress";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 
 // Helper function to create a history object based on changes
 export const createHistoryObject = (data, previousData, heading, userName) => {
@@ -988,12 +989,12 @@ const ProjectView = () => {
           }}
         >
           <Grid container rowSpacing={4.5} columnSpacing={2.75}>
-            <Grid item xs={3} sm={3} md={3} lg={3}>
+            {/* <Grid item xs={3} sm={3} md={3} lg={3}>
               <ProjectDetailsCardView
                 data={projectData}
                 handleClick={(e) => handleModalOpen(e)}
               />
-            </Grid>
+            </Grid> */}
 
             <Grid item xs={9} sm={9} md={9} lg={9}>
               <Box sx={{ width: "100%" }}>
@@ -1004,104 +1005,99 @@ const ProjectView = () => {
                     aria-label="basic tabs example"
                   >
                     <Tab label={TAB_LABEL.OVERVIEW} {...a11yProps(0)} />
-                    {/* <Tab label={TAB_LABEL.SUMMARY_REPORT} {...a11yProps(1)} />
-                    <Tab label={TAB_LABEL.CHAT_AI} {...a11yProps(2)} />
-                    <Tab label={TAB_LABEL.VERSION_HISTORY} {...a11yProps(3)} /> */}
+                    <Tab label={TAB_LABEL.SUMMARY_REPORT} {...a11yProps(1)} />
+                    {/* <Tab label={TAB_LABEL.CHAT_AI} {...a11yProps(2)} /> */}
+                    {/* <Tab label={TAB_LABEL.VERSION_HISTORY} {...a11yProps(3)} /> */}
                   </Tabs>
                 </Box>
 
                 {/* 1st Tab */}
                 <CustomTabPanel value={value} index={0}>
-                  <Grid container rowSpacing={1} columnSpacing={1}>
-                    <Grid item xs={12} sm={8} md={8} lg={8}>
-                      {/* <Grid container rowSpacing={1} columnSpacing={1}>
-                        <Grid item xs={12} sm={6} md={4} lg={4}>
-                          <AnalyticEcommerce
-                            title={COUNT_CARD_LABELS.NO_OF_RUNS}
-                            count={projectData.no_of_runs}
-                            graphic={false}
-                            customIcon={true}
-                            icon={runIcon}
-                          />
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={4} lg={4}>
-                          <AnalyticEcommerce
-                            title={COUNT_CARD_LABELS.SUCCESS}
-                            count={projectData.success_count}
-                            color="success"
-                            graphic={false}
-                            customIcon={true}
-                            icon={successIcon}
-                          />
-                        </Grid>
+                  <Grid container spacing={2} alignItems="stretch">
+                    {/* Left: Project Details */}
+                    <Grid item xs={12} md={4}>
+                      <ProjectDetailsCardView
+                        data={projectData}
+                        handleClick={(e) => handleModalOpen(e)}
+                      />
+                    </Grid>
 
-                        <Grid item xs={12} sm={6} md={4} lg={4}>
-                          <AnalyticEcommerce
-                            title={COUNT_CARD_LABELS.FAILED}
-                            count={projectData.fail_count}
-                            color="error"
-                            graphic={false}
-                            customIcon={true}
-                            icon={failedIcon}
-                          />
-                        </Grid>
-                      </Grid> */}
-                      <Grid container style={{ marginTop: "10px" }}>
-                        <Grid item xs={12} sm={12} md={12} lg={12}>
-                          <Box
-                            // style={{
-                            //   boxShadow: "0px 0px 41px #e4e4e4",
-                            //   padding: "20px",
-                            //   borderRadius: "10px",
-                            //   border: "1px solid #e4e4e4",
-                            //   // width: "420px",
-                            //   // marginTop: "30px",
-                            // }}
-                            sx={{
-                              display: "flex",
-                              justifyContent: "space-between", // content left + progress right
-                              alignItems: "center", // vertical alignment
-                              boxShadow: "0px 0px 41px #e4e4e4",
-                              padding: "20px",
-                              borderRadius: "10px",
-                              border: "1px solid #e4e4e4",
-                            }}
-                          >
-                            {/* Left side content */}
-                            <Box>
-                              {PROJECT_DETAIL_PAGE.UPLOADED_PROJECT_DOCUMENTS}
-                              <FileStructureView data={projectData} />
-                            </Box>
-                            <ProgressRing
-                              label="Completion Progress"
-                              totalFiles={100}
-                              currentFiles={projectData?.completion_percentage}
-                            />
-                          </Box>
-                        </Grid>
-                        {projectData?.status === "Processing" && (
-                          <Grid
-                            item
-                            xs={12}
-                            sm={12}
-                            md={12}
-                            lg={12}
-                            style={{
-                              justifyItems: "center",
-                              marginTop: "40px",
-                            }}
-                          >
-                            {/* <Typography>
-                              {PROJECT_DETAIL_PAGE.CURRENT_PROGRESS_STATUS}
-                            </Typography> */}
+                    {/* Middle: File Structure */}
+                    <Grid item xs={12} md={6}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          boxShadow: "0px 0px 41px #e4e4e4",
+                          padding: "20px",
+                          borderRadius: "10px",
+                          border: "1px solid #e4e4e4",
+                          width: "100%",
+                          height: "100%",
+                        }}
+                      >
+                        <Box>
+                          {PROJECT_DETAIL_PAGE.UPLOADED_PROJECT_DOCUMENTS}
+                          <FileStructureView data={projectData} />
+                        </Box>
+                      </Box>
+                    </Grid>
 
-                            <img src={processIcon} width="150px" />
-                            <ProgressBarView />
-                          </Grid>
-                        )}
-                      </Grid>
+                    {/* Right: Progress Ring */}
+                    <Grid item xs={12} md={2}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          width: "200%",
+                          height: "auto", // makes it stretch evenly with siblings
+                          boxShadow: "0px 0px 41px #e4e4e4",
+                          padding: "20px",
+                          borderRadius: "10px",
+                          border: "1px solid #e4e4e4",
+                        }}
+                      >
+                        <ProgressRing
+                          label="Completion Progress"
+                          totalFiles={100}
+                          currentFiles={projectData?.completion_percentage}
+                        />
+                      </Box>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        size="medium"
+                        startIcon={
+                          <AutoAwesomeIcon
+                            style={{ color: "white", fontSize: 24 }}
+                          />
+                        }
+                        sx={{
+                          marginTop: "auto", // pushes button to bottom
+                          mt: 2,
+                          width: "200%",
+                          fontSize: 14,
+                        }}
+                      >
+                        {PROJECT_DETAIL_PAGE.RUN_AI_COMPLIANCE_ASSESSMENT}
+                      </Button>
                     </Grid>
                   </Grid>
+
+                  {/* Extra Row for Processing status */}
+                  {projectData?.status === "Processing" && (
+                    <Grid
+                      item
+                      xs={12}
+                      style={{ textAlign: "center", marginTop: "40px" }}
+                    >
+                      <img src={processIcon} width="150px" alt="Processing" />
+                      <ProgressBarView />
+                    </Grid>
+                  )}
                 </CustomTabPanel>
 
                 {/* 2nd Tab */}
