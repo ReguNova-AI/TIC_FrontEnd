@@ -14,6 +14,9 @@ import {
   MenuItem,
   FormControl,
   Checkbox,
+  Modal,
+  Paper,
+  Fab,
 } from "@mui/material";
 import {
   Folder,
@@ -36,6 +39,7 @@ import { FileUploadApiService } from "services/api/FileUploadAPIService";
 import { FORM_LABEL } from "shared/constants";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
+import AddIcon from "@mui/icons-material/Add";
 
 // --- Utility: format size
 const formatFileSize = (bytes) => {
@@ -89,6 +93,7 @@ const DocumentSection = ({ documents, setDocuments }) => {
     file: null,
   });
   const [currentFolder, setCurrentFolder] = useState(null);
+  const [openAddFile, setOpenAddFile] = useState(false);
 
   // --- Add Folder (empty placeholder entry)
   const handleAddFolder = () => {
@@ -395,6 +400,24 @@ const DocumentSection = ({ documents, setDocuments }) => {
                   cancelText="Cancel"
                   icon={<CloseCircleOutlined style={{ color: "red" }} />}
                 >
+                  {/* --- Floating button only when a folder is selected/open */}
+
+                  <Fab
+                    color="gray"
+                    aria-label="add"
+                    size="small"
+                    onClick={() => {
+                      handleToggleFolder(folder);
+                      setOpenAddFile(true);
+                    }}
+                    style={{
+                      marginRight: 50,
+                      zIndex: 1000,
+                    }}
+                  >
+                    <AddIcon />
+                  </Fab>
+
                   <IconButton onClick={(e) => e.stopPropagation()}>
                     <DeleteIcon color="error" />
                   </IconButton>
@@ -405,12 +428,14 @@ const DocumentSection = ({ documents, setDocuments }) => {
               <Collapse in={openFolder[folder]} timeout="auto" unmountOnExit>
                 <List component="div" disablePadding sx={{ pl: 4 }}>
                   {docs.filter((d) => d.docuemnt_name).length === 0 ? (
-                    <ListItem>
-                      <ListItemText
-                        primary="No files"
-                        sx={{ fontStyle: "italic" }}
-                      />
-                    </ListItem>
+                    <>
+                      <ListItem>
+                        <ListItemText
+                          primary="No files"
+                          sx={{ fontStyle: "italic" }}
+                        />
+                      </ListItem>
+                    </>
                   ) : (
                     docs.map((doc) => (
                       <ListItem
@@ -557,6 +582,77 @@ const DocumentSection = ({ documents, setDocuments }) => {
           ))}
         </List>
       </Box>
+      {/* --- Modal Version --- */}
+      <Modal open={openAddFile} onClose={() => setOpenAddFile(false)}>
+        <Paper
+          sx={{
+            position: "absolute",
+            bottom: "10%",
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: 500,
+            p: 3,
+            borderRadius: 2,
+          }}
+        >
+          <h3>Add Document in {currentFolder}</h3>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <TextField
+              label="Document Name"
+              value={newDoc.name}
+              onChange={(e) => setNewDoc({ ...newDoc, name: e.target.value })}
+            />
+
+            <FormControl fullWidth>
+              <InputLabel id="modal-doc-type">Type*</InputLabel>
+              <Select
+                labelId="modal-doc-type"
+                value={newDoc.type}
+                onChange={(e) => setNewDoc({ ...newDoc, type: e.target.value })}
+              >
+                {documentTypes.map((type) => (
+                  <MenuItem key={type} value={type}>
+                    {type}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <TextField
+              label="Description"
+              value={newDoc.desc}
+              onChange={(e) => setNewDoc({ ...newDoc, desc: e.target.value })}
+            />
+
+            <input
+              type="file"
+              hidden
+              id="modal-file-input"
+              onChange={(e) =>
+                setNewDoc((prev) => ({ ...prev, file: e.target.files[0] }))
+              }
+            />
+            <label htmlFor="modal-file-input">
+              <Button variant="outlined" component="span">
+                {newDoc.file ? newDoc.file.name : "Choose File"}
+              </Button>
+            </label>
+
+            <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
+              <Button onClick={() => setOpenAddFile(false)}>Cancel</Button>
+              <Button
+                variant="contained"
+                onClick={() => {
+                  handleAddDocument();
+                  setOpenAddFile(false);
+                }}
+              >
+                Add
+              </Button>
+            </Box>
+          </Box>
+        </Paper>
+      </Modal>
     </section>
   );
 };
