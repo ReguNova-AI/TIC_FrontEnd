@@ -12,6 +12,10 @@ const _projectChatUpdate = (payload) => {
   return BaseApiService.post(`/api/v2/chat/updateChatResponse`, null, payload);
 };
 
+const _uploadProjectDocument = (payload) => {
+  return BaseApiService.post(`/api/v1/project_document/create`, null, payload);
+};
+
 const _projectListing = (page, limit) => {
   const params = {
     page: page,
@@ -161,4 +165,5 @@ export const ProjectApiService = {
   projectUpdateComplianceAssessment: _projectUpdateComplianceAssessment,
   projectUpdateChecklist: _projectUpdateChecklist,
   externalProjectListing: _externalProjectListing,
+  uploadProjectDocument: _uploadProjectDocument,
 };

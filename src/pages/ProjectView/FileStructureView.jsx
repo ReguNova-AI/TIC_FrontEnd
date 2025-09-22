@@ -4,9 +4,9 @@ import {
   DownloadOutlined,
   FolderFilled,
 } from "@ant-design/icons";
-import { Tree } from "antd";
-import { IconButton, Tooltip } from "@mui/material";
-import { FORM_LABEL } from "shared/constants";
+import { message, Progress, Tree, Modal, Tooltip } from "antd";
+import { IconButton } from "@mui/material";
+import { API_ERROR_MESSAGE, FORM_LABEL } from "shared/constants";
 import folderIcon from "../../assets/images/icons/folderIcon1.svg";
 import { InsertDriveFile } from "@mui/icons-material";
 import {
@@ -19,6 +19,8 @@ import {
   CloseCircleOutlined,
 } from "@ant-design/icons";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
+import { FileUploadApiService } from "services/api/FileUploadAPIService";
+import { ProjectApiService } from "services/api/ProjectAPIService";
 
 const getFileIcon = (filename) => {
   if (!filename) return <FileUnknownOutlined style={{ color: "#595959" }} />;
@@ -49,6 +51,102 @@ const FileStructureView = ({ data }) => {
   const [showLeafIcon, setShowLeafIcon] = useState(false);
   const [gData, setGData] = useState([]); // Store the tree data
   const [newDoc, setNewDoc] = useState({ file: null });
+
+  // --- Upload modal state
+  const [uploadingFile, setUploadingFile] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [openModal, setOpenModal] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [filePath, setFilePath] = useState("");
+
+  // --- File Upload logic
+  const handleFileUpload = async (file) => {
+    if (!file) return;
+    setUploadingFile(file);
+    setUploadProgress(0);
+    setUploadSuccess(false);
+    setOpenModal(true);
+
+    try {
+      const reader = new FileReader();
+      const fileDataUrl = await new Promise((resolve, reject) => {
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const ext = file.name.split(".").pop();
+      const payload = { documents: [fileDataUrl], type: ext };
+
+      const response = await FileUploadApiService.fileUpload(payload, {
+        onUploadProgress: (evt) => {
+          const percent = Math.round((evt.loaded * 100) / evt.total);
+          setUploadProgress(percent);
+        },
+      });
+
+      // Assume API returns the uploaded file path
+      const filePath = response.data.details?.[0];
+
+      // Update the corresponding document in state
+      setFilePath(filePath);
+      // You might want to call a prop function to update the parent component's state
+      // For example: props.onFileUploadSuccess(docName, filePath);
+
+      setUploadSuccess(true);
+      message.success("File uploaded successfully!");
+      return filePath;
+    } catch (err) {
+      console.error(err);
+      message.error("File upload failed!");
+      setOpenModal(false);
+    }
+  };
+
+  const handleUploadDocument = (doc_data, uploaded_file_path) => {
+    const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
+
+    const payload = {
+      project_id: data?.project_id,
+      document_name: doc_data?.document_name,
+      document_type: doc_data?.document_type,
+      uploaded_by_id: userdetails?.[0]?.user_id,
+      uploaded_by_name:
+        userdetails?.[0]?.user_first_name +
+        " " +
+        userdetails?.[0]?.user_last_name,
+      folder_name: doc_data?.folder_name,
+      document_desc: doc_data?.document_desc || "",
+      file_path: uploaded_file_path || filePath,
+      risk_information: {
+        risk_level: data?.risk_information?.risk_level || " ",
+        mitigation: data?.risk_information?.mitigation || " ",
+      },
+      information_extract: {
+        summary: data?.information_extract?.summary || " ",
+      },
+    };
+    // Logic to handle document upload
+    ProjectApiService.uploadProjectDocument(payload)
+      .then((response) => {
+        message.success(response.message || "Document uploaded successfully!");
+        console.log("payload", payload);
+      })
+      .catch((errResponse) => {
+        message.error(
+          errResponse?.error?.message ||
+            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR ||
+            "Document upload failed!"
+        );
+      });
+    setOpenModal(false);
+    setUploadProgress(0);
+    setUploadingFile(null);
+    setUploadSuccess(false);
+    setFilePath("");
+    // Reset the newDoc state after upload
+    setNewDoc({ file: null });
+  };
 
   // Function to transform the data into the required tree format
   const transformDataToTree = (documents) => {
@@ -131,10 +229,20 @@ const FileStructureView = ({ data }) => {
                     type="file"
                     hidden
                     id="file-input"
-                    onChange={(e) => {
+                    onChange={async (e) => {
                       const file = e.target.files[0];
                       if (file) {
                         setNewDoc((prev) => ({ ...prev, file }));
+
+                        // Wait for upload to finish and get the path
+                        const uploadedPath = await handleFileUpload(file);
+
+                        if (uploadedPath) {
+                          handleUploadDocument({
+                            ...document,
+                            file_path: uploadedPath,
+                          });
+                        }
                       }
                     }}
                   />
@@ -212,6 +320,31 @@ const FileStructureView = ({ data }) => {
     <div>
       <div style={{ marginBottom: 16 }}>
         {/* Your additional controls can go here */}
+        {/* Upload Progress Modal */}
+
+        <Modal
+          open={openModal}
+          footer={null}
+          onCancel={() => setOpenModal(false)}
+          title="Uploading Document"
+          centered
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            {getFileIcon(uploadingFile?.name)}
+            <span
+              style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis" }}
+            >
+              {uploadingFile?.name}
+            </span>
+            {uploadSuccess && (
+              <CheckOutlined style={{ color: "green", fontSize: 20 }} />
+            )}
+          </div>
+          <Progress
+            percent={uploadProgress}
+            status={uploadSuccess ? "success" : "active"}
+          />
+        </Modal>
       </div>
 
       <Tree
