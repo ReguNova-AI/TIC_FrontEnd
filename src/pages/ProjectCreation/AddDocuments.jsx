@@ -95,13 +95,17 @@ const DocumentSection = ({ documents, setDocuments }) => {
   const [currentFolder, setCurrentFolder] = useState(null);
   const [openAddFile, setOpenAddFile] = useState(false);
 
+  const generateOTP = () => {
+    return Math.floor(1000 + Math.random() * 9000);
+  };
   // --- Add Folder (empty placeholder entry)
   const handleAddFolder = () => {
     if (!newFolderName.trim()) return;
     setDocuments((prev) => [
       ...prev,
       {
-        document_id: Date.now(),
+        // document_id: Date.now(),
+        document_id: generateOTP(),
         version: "V1",
         docuemnt_name: "",
         docuemnt_type: "",
@@ -214,7 +218,8 @@ const DocumentSection = ({ documents, setDocuments }) => {
     }
 
     const docEntry = {
-      document_id: Date.now(),
+      //   document_id: Date.now(),
+      document_id: generateOTP(),
       version: "V1",
       docuemnt_name: newDoc.name,
       docuemnt_type: newDoc.type,

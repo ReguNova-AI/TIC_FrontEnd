@@ -18,6 +18,7 @@ import {
   FileUnknownOutlined,
   CloseCircleOutlined,
 } from "@ant-design/icons";
+import AttachFileIcon from "@mui/icons-material/AttachFile";
 
 const getFileIcon = (filename) => {
   if (!filename) return <FileUnknownOutlined style={{ color: "#595959" }} />;
@@ -47,13 +48,14 @@ const FileStructureView = ({ data }) => {
   const [showIcon, setShowIcon] = useState(true);
   const [showLeafIcon, setShowLeafIcon] = useState(false);
   const [gData, setGData] = useState([]); // Store the tree data
+  const [newDoc, setNewDoc] = useState({ file: null });
 
   // Function to transform the data into the required tree format
   const transformDataToTree = (documents) => {
     const treeStructure = {};
 
     documents.forEach((document) => {
-      let { document_type, document_name, path, folder_name, version } =
+      let { document_type, document_name, file_path, folder_name, version } =
         document;
       console.log("inside document", document);
       if (document_type === "Custom Regulatory") {
@@ -92,66 +94,89 @@ const FileStructureView = ({ data }) => {
             >
               {document_name}
             </span>
+
             {/* Tooltip for the download icon */}
-            {/* <Tooltip title="Download">
-              <DownloadOutlined
-                style={{
-                  marginLeft: 8,
-                  marginRight: 8,
-                  fontSize: 16,
-                  color: "green",
-                }}
-              />
-            </Tooltip> */}
+            {file_path && (
+              <Tooltip title="Download">
+                <DownloadOutlined
+                  style={{
+                    marginLeft: 8,
+                    marginRight: 8,
+                    fontSize: 16,
+                    color: "green",
+                  }}
+                />
+              </Tooltip>
+            )}
 
             {/* File input with icon */}
-            <Tooltip title="Upload Document">
-              <input
-                type="file"
-                hidden
-                id="file-input"
-                // onChange={(e) => {
-                //   const file = e.target.files[0];
-                //   if (file) {
-                //     setNewDoc((prev) => ({ ...prev, file }));
-                //   }
-                // }}
-              />
-              <label htmlFor="file-input">
+            {file_path ? (
+              <>
                 <IconButton
                   component="span"
-                  // color={newDoc.file ? "success" : "default"}
                   sx={{
                     padding: 0,
                     marginLeft: 1,
                     marginRight: 1,
                     fontSize: 16,
-                    color: "#3366ff",
                   }}
                 >
-                  {/* <InsertDriveFile /> */}
                   {getFileIcon(document_type)}
                 </IconButton>
-              </label>
-            </Tooltip>
-            <Tooltip title={`Version: ${version}`}>
-              <span
-                style={{
-                  width: "10%",
-                  overflow: "hidden",
-                  display: "inline-block",
-                  whiteSpace: "nowrap",
-                  textOverflow: "ellipsis",
-                  color: "gray",
-                  fontSize: "10px",
-                }}
-              >
-                {version}
-              </span>
-            </Tooltip>
+              </>
+            ) : (
+              <>
+                <Tooltip title="Upload Document">
+                  <input
+                    type="file"
+                    hidden
+                    id="file-input"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        setNewDoc((prev) => ({ ...prev, file }));
+                      }
+                    }}
+                  />
+                  <label htmlFor="file-input">
+                    <IconButton
+                      component="span"
+                      // color={newDoc.file ? "success" : "default"}
+                      sx={{
+                        padding: 0,
+                        marginLeft: 1,
+                        marginRight: 1,
+                        fontSize: 16,
+                        color: "#3366ff",
+                      }}
+                    >
+                      <AttachFileIcon />
+                    </IconButton>
+                  </label>
+                </Tooltip>
+              </>
+            )}
+
+            {file_path && version && (
+              <Tooltip title={`Version: ${version}`}>
+                <span
+                  style={{
+                    width: "10%",
+                    overflow: "hidden",
+                    display: "inline-block",
+                    whiteSpace: "nowrap",
+                    textOverflow: "ellipsis",
+                    color: "gray",
+                    fontSize: "10px",
+                  }}
+                >
+                  {version}
+                </span>
+              </Tooltip>
+            )}
           </div>
         ),
-        key: path, // Use document path as a unique key
+        key: file_path, // Use document path as a unique key
         isLeaf: true, // Mark the document as a leaf node
       });
     });

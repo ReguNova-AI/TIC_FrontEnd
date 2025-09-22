@@ -50,6 +50,7 @@ const CreateProjectForm = () => {
     type: "error",
   });
   const [documents, setDocuments] = useState([]);
+  const [submitLoding, setSubmitLoading] = useState(false);
 
   console.log("documents", documents);
 
@@ -84,12 +85,12 @@ const CreateProjectForm = () => {
   const fetchIndustryData = () => {
     UserApiService.industryDetails()
       .then((response) => {
-        setSnackData({
-          show: true,
-          message:
-            response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-          type: "success",
-        });
+        // setSnackData({
+        //   show: true,
+        //   message:
+        //     response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+        //   type: "success",
+        // });
         setIndustryData(
           response?.data?.details?.filter((data) =>
             industryDetails?.includes(data.industry_id)
@@ -119,12 +120,12 @@ const CreateProjectForm = () => {
           setUserData(filteredUsers); //
 
           // setUserData(response?.data?.activeUsers ); // Assuming response.data contains the user list
-          setSnackData({
-            show: true,
-            message:
-              response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-            type: "success",
-          });
+          //   setSnackData({
+          //     show: true,
+          //     message:
+          //       response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+          //     type: "success",
+          //   });
         }
       })
       .catch((errResponse) => {
@@ -147,12 +148,12 @@ const CreateProjectForm = () => {
         }
         setLoading(false);
 
-        setSnackData({
-          show: true,
-          message:
-            response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-          type: "success",
-        });
+        // setSnackData({
+        //   show: true,
+        //   message:
+        //     response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+        //   type: "success",
+        // });
       })
       .catch((errResponse) => {
         setLoading(false);
@@ -278,6 +279,10 @@ const CreateProjectForm = () => {
     return selectedMembers;
   };
 
+  const cleanDocuments = (documents) => {
+    return documents.map(({ file, progress, ...rest }) => rest);
+  };
+
   const handleSubmit = (e) => {
     if (documents?.length === 0) {
       setSnackData({
@@ -287,6 +292,7 @@ const CreateProjectForm = () => {
       });
       return; // Prevent form submission
     }
+    setSubmitLoading(true);
     e.preventDefault();
     const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
     const updatedStatus =
@@ -311,6 +317,7 @@ const CreateProjectForm = () => {
         status: updatedStatus,
       },
     };
+    const cleanedDocuments = cleanDocuments(documents);
 
     const payload = {
       project_name: formData.projectName,
@@ -320,7 +327,8 @@ const CreateProjectForm = () => {
       invite_members: selectedUserData,
       invited_user_list: formData.invited_user_list,
       //   documents: formData.document,
-      documents: documents,
+      //   documents: documents,
+      documents: cleanedDocuments,
       org_id: userdetails?.[0]?.org_id,
       org_name: userdetails?.[0]?.org_name,
       created_by_id: userdetails?.[0]?.user_id,
@@ -355,6 +363,7 @@ const CreateProjectForm = () => {
 
     ProjectApiService.projectCreate(payload)
       .then((response) => {
+        setSubmitLoading(false);
         setSnackData({
           show: true,
           message: response.message,
@@ -367,6 +376,7 @@ const CreateProjectForm = () => {
         });
       })
       .catch((errResponse) => {
+        setSubmitLoading(false);
         setSnackData({
           show: true,
           message:
@@ -576,6 +586,8 @@ const CreateProjectForm = () => {
                   onClick={() => {
                     setSubmissionStatus("Draft");
                   }}
+                  loading={submitLoding}
+                  disabled={submitLoding}
                   style={{
                     // background: "#003a8c",
                     float: "right",
