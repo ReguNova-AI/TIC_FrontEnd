@@ -216,7 +216,9 @@ const DocumentSection = ({ documents, setDocuments }) => {
       message.error("Document name and type are mandatory");
       return;
     }
-
+    if (newDoc.file) {
+      handleFileUpload(newDoc.file, newDoc.name, currentFolder);
+    }
     const docEntry = {
       //   document_id: Date.now(),
       document_id: generateOTP(),
