@@ -181,8 +181,13 @@ const ProjectView = () => {
         SetProjectData(response?.data?.details[0]);
         setHistoryData({ history: response?.data?.details[0].history || [] });
         setHistoryValue(response?.data?.details[0].history);
+        // setChatloading(
+        //   response?.data?.details[0]?.standardUploaded !== null ? false : true
+        // );
         setChatloading(
-          response?.data?.details[0]?.standardUploaded !== null ? false : true
+          response?.data?.details[0]?.project_documents?.length > 0
+            ? false
+            : true
         );
         // setLoading(false);
       })
@@ -1006,7 +1011,7 @@ const ProjectView = () => {
                   >
                     <Tab label={TAB_LABEL.OVERVIEW} {...a11yProps(0)} />
                     <Tab label={TAB_LABEL.SUMMARY_REPORT} {...a11yProps(1)} />
-                    {/* <Tab label={TAB_LABEL.CHAT_AI} {...a11yProps(2)} /> */}
+                    <Tab label={TAB_LABEL.CHAT_AI} {...a11yProps(2)} />
                     {/* <Tab label={TAB_LABEL.VERSION_HISTORY} {...a11yProps(3)} /> */}
                   </Tabs>
                 </Box>
@@ -1188,10 +1193,23 @@ const ProjectView = () => {
                   >
                     {/* <img src={chatAI} width="100%" /> */}
                     {/* <Spin tip="Just a moment, I'm gathering the information for you..." size="large" spinning={chatLoading} style={{background:"white"}}> */}
-                    {chatLoading ? (
+                    {/* {chatLoading ? (
                       <Result
                         icon={<img src={chatLoadingicon2} width={"20%"} />}
                         subTitle="Just a moment, I'm gathering the information for you..."
+                      />
+                    ) : (
+                      <ChatAIView
+                        onSubmit={(e) => handlechatUpdate(e)}
+                        data={projectData?.chatResponse?.data}
+                        projectId={projectData?.project_id}
+                        responseValue={chatResponse}
+                      />
+                    )} */}
+                    {chatLoading ? (
+                      <Result
+                        icon={<img src={chatLoadingicon2} width={"20%"} />}
+                        subTitle="Please upload the project documents to enable chat functionality."
                       />
                     ) : (
                       <ChatAIView

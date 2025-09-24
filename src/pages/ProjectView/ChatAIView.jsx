@@ -42,7 +42,7 @@ const ChatAIView = ({ data, onSubmit, responseValue, projectId }) => {
       const response = await ProjectApiService.projectChat(query, projectId);
       const newHistory = {
         question: query?.replace("'", " "),
-        answer: response.data.data.output_text,
+        answer: response.data?.output_text,
       };
       setHistory((prevHistory) => [...prevHistory, newHistory]);
       setResponse(response.data.data.output_text);

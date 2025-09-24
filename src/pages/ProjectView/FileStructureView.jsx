@@ -87,7 +87,7 @@ const FileStructureView = ({ data }) => {
 
       // Assume API returns the uploaded file path
       const filePath = response.data.details?.[0];
-
+      setUploadProgress(100);
       // Update the corresponding document in state
       setFilePath(filePath);
       // You might want to call a prop function to update the parent component's state
@@ -103,7 +103,7 @@ const FileStructureView = ({ data }) => {
     }
   };
 
-  const handleUploadDocument = (doc_data, uploaded_file_path) => {
+  const handleUploadDocument = (doc_data) => {
     const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
 
     const payload = {
@@ -117,7 +117,7 @@ const FileStructureView = ({ data }) => {
         userdetails?.[0]?.user_last_name,
       folder_name: doc_data?.folder_name,
       document_desc: doc_data?.document_desc || "",
-      file_path: uploaded_file_path || filePath,
+      file_path: doc_data?.file_path, // ✅ use passed-in value
       risk_information: {
         risk_level: data?.risk_information?.risk_level || " ",
         mitigation: data?.risk_information?.mitigation || " ",
@@ -126,7 +126,8 @@ const FileStructureView = ({ data }) => {
         summary: data?.information_extract?.summary || " ",
       },
     };
-    // Logic to handle document upload
+    console.log("Final payload", JSON.stringify(payload, null, 2));
+
     ProjectApiService.uploadProjectDocument(payload)
       .then((response) => {
         message.success(response.message || "Document uploaded successfully!");
@@ -139,12 +140,13 @@ const FileStructureView = ({ data }) => {
             "Document upload failed!"
         );
       });
+
+    // reset states
     setOpenModal(false);
     setUploadProgress(0);
     setUploadingFile(null);
     setUploadSuccess(false);
     setFilePath("");
-    // Reset the newDoc state after upload
     setNewDoc({ file: null });
   };
 
@@ -183,7 +185,7 @@ const FileStructureView = ({ data }) => {
           <div style={{ display: "flex", alignItems: "center" }}>
             <span
               style={{
-                width: "100%",
+                width: "48%",
                 overflow: "hidden",
                 display: "inline-block",
                 whiteSpace: "nowrap",

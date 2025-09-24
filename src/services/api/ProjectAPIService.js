@@ -47,7 +47,7 @@ const _projectListing = (page, limit) => {
           null
         );
       } else {
-        return BaseApiService.get(`/api/v1/org/projects`, null, null);
+        return BaseApiService.get(`/api/v1/org/projects`, params, null);
       }
     }
   }
@@ -86,9 +86,20 @@ const _projectCounts = (id) => {
   }
 };
 
+// const _projectChat = (query, projectId) => {
+//   return BaseApiService.get(
+//     `/api/v1/chat/askQuestion?user_question=${query}&project_id=${projectId}`,
+//     null,
+//     null
+//   );
+// };
+
+// New API for chat
 const _projectChat = (query, projectId) => {
+  const encodedQuery = encodeURIComponent(query);
   return BaseApiService.get(
-    `/api/v1/chat/askQuestion?user_question=${query}&project_id=${projectId}`,
+    // `/api/v3/chat/ask/question?project_id=${projectId}&user_question=${encodedQuery}`,
+    `/api/v3/chat/ask/question?project_id=1&user_question=${encodedQuery}`,
     null,
     null
   );
