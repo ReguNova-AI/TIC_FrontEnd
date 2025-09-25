@@ -951,12 +951,10 @@ const ProjectView = () => {
       try {
         await ProjectApiService.uploadFilesToAIserver(payload).then(
           (response) => {
-            setSnackData({
-              show: true,
-              message:
-                response?.message || API_SUCCESS_MESSAGE.UPDATED_SUCCESSFULLY,
-              type: "success",
-            });
+            message.success(
+              response?.data?.message ||
+                "Project documents uploaded to AI server successfully"
+            );
           }
         );
         setAiButtonLoading(false);
@@ -964,6 +962,8 @@ const ProjectView = () => {
       } catch (error) {
         console.log(error);
         setAiButtonLoading(false);
+
+        message.error(API_ERROR_MESSAGE.FAILED_TO_RUN_ASSESSMENT);
       }
     } else {
       setAiButtonLoading(false);
@@ -1132,6 +1132,7 @@ const ProjectView = () => {
                           width: "200%",
                           fontSize: 14,
                         }}
+                        disabled={aiButtonLoading}
                       >
                         {PROJECT_DETAIL_PAGE.RUN_AI_COMPLIANCE_ASSESSMENT}
                       </Button>

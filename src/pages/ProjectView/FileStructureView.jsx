@@ -41,7 +41,8 @@ const getFileIcon = (filename) => {
     case "txt":
       return <FileTextOutlined style={{ color: "#722ed1" }} />;
     default:
-      return <FileUnknownOutlined style={{ color: "#595959" }} />;
+      // return <FileUnknownOutlined style={{ color: "#595959" }} />;
+      return <FilePdfOutlined style={{ color: "#cf1322" }} />;
   }
 };
 
@@ -218,20 +219,6 @@ const FileStructureView = ({ data }) => {
               {document_name}
             </span>
 
-            {/* Tooltip for the download icon */}
-            {file_path && (
-              <Tooltip title="Download">
-                <DownloadOutlined
-                  style={{
-                    marginLeft: 8,
-                    marginRight: 8,
-                    fontSize: 16,
-                    color: "green",
-                  }}
-                />
-              </Tooltip>
-            )}
-
             {/* File input with icon */}
             {file_path ? (
               <>
@@ -255,7 +242,7 @@ const FileStructureView = ({ data }) => {
                     hidden
                     id="file-input"
                     onChange={(e) => handleFileChange(e)}
-                    onClick={() => setDocument(document)}
+                    onClick={(document) => setDocument(document)}
                   />
                   <label htmlFor="file-input">
                     <IconButton
@@ -276,7 +263,21 @@ const FileStructureView = ({ data }) => {
               </>
             )}
 
-            {file_path && version && (
+            {/* Tooltip for the download icon */}
+            {file_path && (
+              <Tooltip title="Download">
+                <DownloadOutlined
+                  style={{
+                    marginLeft: 8,
+                    marginRight: 8,
+                    fontSize: 16,
+                    color: "#3366ff",
+                  }}
+                />
+              </Tooltip>
+            )}
+
+            {/* {file_path && version && (
               <Tooltip title={`Version: ${version}`}>
                 <span
                   style={{
@@ -292,7 +293,7 @@ const FileStructureView = ({ data }) => {
                   {version}
                 </span>
               </Tooltip>
-            )}
+            )} */}
           </div>
         ),
         key: file_path, // Use document path as a unique key
