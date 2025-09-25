@@ -34,37 +34,69 @@ const ChatAIView = ({ data, onSubmit, responseValue, projectId }) => {
     config: { tension: 100, friction: 10 },
   });
 
+  // const handleSearch = useCallback(async () => {
+  //   if (!query) return;
+
+  //   setLoading(true);
+  //   try {
+  //     const response = await ProjectApiService.projectChat(query, projectId);
+  //     const newHistory = {
+  //       question: query?.replace("'", " "),
+  //       answer: response.data?.output_text,
+  //     };
+  //     setHistory((prevHistory) => [...prevHistory, newHistory]);
+  //     setResponse(response.data.data.output_text);
+
+  //     onSubmit([...history, newHistory]);
+  //   } catch (errResponse) {
+  //     console.error("Error fetching data:", errResponse);
+
+  //     const apiMessage =
+  //       errResponse?.response?.data?.message || // API-provided message
+  //       errResponse?.message || // Axios error message
+  //       API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR; // fallback
+
+  //     // setSnackData({
+  //     //   show: true,
+  //     //   message: apiMessage,
+  //     //   type: "error",
+  //     // });
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, [query, history, onSubmit]);
+
   const handleSearch = useCallback(async () => {
     if (!query) return;
 
     setLoading(true);
     try {
       const response = await ProjectApiService.projectChat(query, projectId);
-      const newHistory = {
+
+      const newHistoryEntry = {
         question: query?.replace("'", " "),
         answer: response.data?.output_text,
       };
-      setHistory((prevHistory) => [...prevHistory, newHistory]);
-      setResponse(response.data.data.output_text);
 
-      onSubmit([...history, newHistory]);
+      setHistory((prevHistory) => {
+        const updatedHistory = [...prevHistory, newHistoryEntry];
+
+        // ✅ Call onSubmit with the correct latest history
+        if (onSubmit) {
+          onSubmit(updatedHistory);
+        }
+
+        return updatedHistory;
+      });
+
+      setResponse(response.data?.output_text);
     } catch (errResponse) {
       console.error("Error fetching data:", errResponse);
-
-      const apiMessage =
-        errResponse?.response?.data?.message || // API-provided message
-        errResponse?.message || // Axios error message
-        API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR; // fallback
-
-      setSnackData({
-        show: true,
-        message: apiMessage,
-        type: "error",
-      });
+      // error handling...
     } finally {
       setLoading(false);
     }
-  }, [query, history, onSubmit]);
+  }, [query, projectId, onSubmit]);
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {

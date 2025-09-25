@@ -58,6 +58,7 @@ const FileStructureView = ({ data }) => {
   const [openModal, setOpenModal] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [filePath, setFilePath] = useState("");
+  const [document, setDocument] = useState(null);
 
   // --- File Upload logic
   const handleFileUpload = async (file) => {
@@ -150,6 +151,28 @@ const FileStructureView = ({ data }) => {
     setNewDoc({ file: null });
   };
 
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // store file locally
+    setNewDoc((prev) => ({ ...prev, file }));
+
+    try {
+      // Wait for upload to finish and get the path
+      const uploadedPath = await handleFileUpload(file);
+      console.log("Uploaded document:", document);
+      if (uploadedPath) {
+        handleUploadDocument({
+          ...document,
+          file_path: uploadedPath,
+        });
+      }
+    } catch (error) {
+      console.error("File upload failed:", error);
+    }
+  };
+
   // Function to transform the data into the required tree format
   const transformDataToTree = (documents) => {
     const treeStructure = {};
@@ -231,22 +254,8 @@ const FileStructureView = ({ data }) => {
                     type="file"
                     hidden
                     id="file-input"
-                    onChange={async (e) => {
-                      const file = e.target.files[0];
-                      if (file) {
-                        setNewDoc((prev) => ({ ...prev, file }));
-
-                        // Wait for upload to finish and get the path
-                        const uploadedPath = await handleFileUpload(file);
-
-                        if (uploadedPath) {
-                          handleUploadDocument({
-                            ...document,
-                            file_path: uploadedPath,
-                          });
-                        }
-                      }
-                    }}
+                    onChange={(e) => handleFileChange(e)}
+                    onClick={setDocument(document)}
                   />
                   <label htmlFor="file-input">
                     <IconButton
