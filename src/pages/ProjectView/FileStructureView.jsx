@@ -58,7 +58,7 @@ const FileStructureView = ({ data }) => {
   const [openModal, setOpenModal] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [filePath, setFilePath] = useState("");
-  const [document, setDocument] = useState(null);
+  const [document, setDocument] = useState({});
 
   // --- File Upload logic
   const handleFileUpload = async (file) => {
@@ -255,7 +255,7 @@ const FileStructureView = ({ data }) => {
                     hidden
                     id="file-input"
                     onChange={(e) => handleFileChange(e)}
-                    onClick={setDocument(document)}
+                    onClick={() => setDocument(document)}
                   />
                   <label htmlFor="file-input">
                     <IconButton

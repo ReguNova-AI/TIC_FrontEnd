@@ -28,7 +28,7 @@ import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { ProjectApiService } from "services/api/ProjectAPIService";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
-import { Spin, Modal, Result, Empty } from "antd";
+import { Spin, Modal, Result, Empty, message } from "antd";
 import Breadcrumbs from "@mui/material/Breadcrumbs";
 import Link from "@mui/material/Link";
 import {
@@ -110,6 +110,7 @@ const ProjectView = () => {
   const [isProgressModalVisible, setIsProgressModalVisible] = useState(false); // To control modal visibility
   const [historyValue, setHistoryValue] = useState([]);
   const [disableButton, setDisableButton] = useState(false);
+  const [aiButtonLoading, setAiButtonLoading] = useState(false);
   const navigate = useNavigate();
 
   // const chatLoadingIcon = (props) => <Icon component={chatLoadingicon} {...props} />;
@@ -929,6 +930,50 @@ const ProjectView = () => {
     // UpdateProjectDetails(updatedResponse, false);
   };
 
+  const handleRunAIassessment = async () => {
+    setAiButtonLoading(true);
+    let file_paths = [];
+    console.log("projectData", projectData?.project_documents);
+    if (projectData?.project_documents?.length > 0) {
+      projectData?.project_documents?.forEach((document) => {
+        let { document_type, file_path } = document;
+        if (file_path !== null && file_path !== "null") {
+          file_paths.push(file_path);
+        }
+      });
+    }
+    if (file_paths?.length > 0) {
+      console.log("file_paths", file_paths);
+      const payload = {
+        project_id: projectData?.project_id,
+        imageKeys: file_paths,
+      };
+      try {
+        await ProjectApiService.uploadFilesToAIserver(payload).then(
+          (response) => {
+            setSnackData({
+              show: true,
+              message:
+                response?.message || API_SUCCESS_MESSAGE.UPDATED_SUCCESSFULLY,
+              type: "success",
+            });
+          }
+        );
+        setAiButtonLoading(false);
+        fetchDetails(id);
+      } catch (error) {
+        console.log(error);
+        setAiButtonLoading(false);
+      }
+    } else {
+      setAiButtonLoading(false);
+      message.error(
+        "Please upload the project document to run the AI compliance assessment"
+      );
+      return;
+    }
+  };
+
   CustomTabPanel.propTypes = {
     children: PropTypes.node,
     index: PropTypes.number.isRequired,
@@ -1080,6 +1125,7 @@ const ProjectView = () => {
                             style={{ color: "white", fontSize: 24 }}
                           />
                         }
+                        onClick={() => handleRunAIassessment()}
                         sx={{
                           marginTop: "auto", // pushes button to bottom
                           mt: 2,

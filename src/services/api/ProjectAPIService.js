@@ -161,6 +161,10 @@ const _externalProjectListing = () => {
   return BaseApiService.get(`/api/v2/project/external-projects`, null, null);
 };
 
+const _uploadFilesToAIserver = (payload) => {
+  return BaseApiService.post(`/api/v3/files/upload/multiple`, null, payload);
+};
+
 export const ProjectApiService = {
   projectCreate: _projectCreate,
   projectListing: _projectListing,
@@ -177,4 +181,5 @@ export const ProjectApiService = {
   projectUpdateChecklist: _projectUpdateChecklist,
   externalProjectListing: _externalProjectListing,
   uploadProjectDocument: _uploadProjectDocument,
+  uploadFilesToAIserver: _uploadFilesToAIserver,
 };
