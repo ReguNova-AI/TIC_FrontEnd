@@ -157,6 +157,8 @@ export const PROJECT_DETAIL_PAGE = Object.freeze({
   TOTAL_FILES_UPLOADED: "Total files uploaded",
   RUN_AI_COMPLIANCE_ASSESSMENT: "Run AI Compliance Assessment",
   CSV_PARAMETERS: "CSV Parameters",
+  RISK_SUMMARY: "Risk Summary",
+  EXTRACTED_INFO: "Extracted Information",
 });
 
 export const STATUS = Object.freeze({
