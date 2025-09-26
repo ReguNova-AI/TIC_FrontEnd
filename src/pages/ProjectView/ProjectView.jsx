@@ -12,6 +12,12 @@ import {
   DialogContent,
   DialogTitle,
   Tooltip,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  IconButton,
 } from "@mui/material";
 import PropTypes from "prop-types";
 import FileStructureView from "./FileStructureView";
@@ -53,6 +59,7 @@ import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
 import AssessmentHistoryTable from "components/AssessmentHistoryTable";
 import ProgressRing from "pages/ProjectCreation/CircularDocumentProgress";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 // Helper function to create a history object based on changes
 export const createHistoryObject = (data, previousData, heading, userName) => {
@@ -95,6 +102,9 @@ export const createHistoryObject = (data, previousData, heading, userName) => {
   };
   return historyItem;
 };
+
+const documentTypes = ["short", "long", "int", "boolean", "array", "object"];
+
 const ProjectView = () => {
   const [value, setValue] = React.useState(0);
   const location = useLocation();
@@ -112,6 +122,11 @@ const ProjectView = () => {
   const [disableButton, setDisableButton] = useState(false);
   const [aiButtonLoading, setAiButtonLoading] = useState(false);
   const navigate = useNavigate();
+  const [newDoc, setNewDoc] = useState({
+    name: "",
+    type: "",
+  });
+  const [parameters, setParameters] = useState([]);
 
   // const chatLoadingIcon = (props) => <Icon component={chatLoadingicon} {...props} />;
 
@@ -974,6 +989,17 @@ const ProjectView = () => {
     }
   };
 
+  const handleAddParameters = () => {
+    if (!newDoc.name || !newDoc.type) return;
+
+    setParameters((prev) => [...prev, newDoc]);
+    setNewDoc({ name: "", type: "" }); // reset inputs
+  };
+
+  const handleDeleteParameter = (index) => {
+    setParameters((prev) => prev.filter((_, i) => i !== index));
+  };
+
   CustomTabPanel.propTypes = {
     children: PropTypes.node,
     index: PropTypes.number.isRequired,
@@ -1058,6 +1084,7 @@ const ProjectView = () => {
                     <Tab label={TAB_LABEL.SUMMARY_REPORT} {...a11yProps(1)} />
                     <Tab label={TAB_LABEL.CHAT_AI} {...a11yProps(2)} />
                     {/* <Tab label={TAB_LABEL.VERSION_HISTORY} {...a11yProps(3)} /> */}
+                    <Tab label={TAB_LABEL.RISK_ASSESSMENT} {...a11yProps(3)} />
                   </Tabs>
                 </Box>
 
@@ -1154,7 +1181,7 @@ const ProjectView = () => {
 
                 {/* 2nd Tab */}
                 <CustomTabPanel value={value} index={1}>
-                  <Box
+                  {/* <Box
                     style={{
                       display: "flex",
                       boxShadow: "0px 0px 41px #e4e4e4",
@@ -1174,6 +1201,7 @@ const ProjectView = () => {
                       projectData?.status === "Processing" && (
                         <img
                           src={processIcon}
+                          alt="Processing"
                           width="100px"
                           height="100px"
                           style={{ alignSelf: "center" }}
@@ -1195,11 +1223,104 @@ const ProjectView = () => {
                       projectData?.checkListResponse && (
                         <img
                           src={processIcon}
+                          alt="Processing"
                           width="100px"
                           height="100px"
                           style={{ alignSelf: "center" }}
                         />
                       )
+                    )}
+                  </Box> */}
+
+                  {/* Add parameters */}
+                  <Box
+                    sx={{
+                      p: 3,
+                      boxShadow: "0px 0px 41px #e4e4e4",
+                      borderRadius: "10px",
+                      border: "1px solid #e4e4e4",
+                      marginTop: "20px",
+                    }}
+                  >
+                    <Typography
+                      style={{ fontSize: "18px", marginBottom: "10px" }}
+                    >
+                      {PROJECT_DETAIL_PAGE.CSV_PARAMETERS}
+                    </Typography>
+                    {/* Inputs */}
+                    <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+                      <TextField
+                        label="Parameter Name"
+                        labelId="document-name-label"
+                        variant="outlined"
+                        required
+                        value={newDoc.name}
+                        onChange={(e) =>
+                          setNewDoc({ ...newDoc, name: e.target.value })
+                        }
+                      />
+
+                      <FormControl fullWidth sx={{ maxWidth: 160 }}>
+                        <InputLabel id="document-type-label">Type*</InputLabel>
+                        <Select
+                          labelId="document-type-label"
+                          label="Type"
+                          value={newDoc.type}
+                          onChange={(e) =>
+                            setNewDoc({ ...newDoc, type: e.target.value })
+                          }
+                          required
+                        >
+                          {documentTypes.map((type) => (
+                            <MenuItem key={type} value={type}>
+                              {type}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Box>
+
+                    {/* Add button below inputs */}
+                    <Button
+                      variant="contained"
+                      sx={{ mt: 2 }}
+                      onClick={handleAddParameters}
+                    >
+                      Add
+                    </Button>
+
+                    {/* List of parameters */}
+                    {parameters.length > 0 && (
+                      <Box sx={{ mt: 3 }}>
+                        <Typography variant="h6" gutterBottom>
+                          Added Parameters
+                        </Typography>
+
+                        {parameters.map((param, index) => (
+                          <Box
+                            key={index}
+                            sx={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              p: 1,
+                              mb: 1,
+                              border: "1px solid #ddd",
+                              borderRadius: "6px",
+                            }}
+                          >
+                            <Typography>
+                              <strong>{param.name}</strong> ({param.type})
+                            </Typography>
+                            <IconButton
+                              color="error"
+                              onClick={() => handleDeleteParameter(index)}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Box>
+                        ))}
+                      </Box>
                     )}
                   </Box>
 
@@ -1272,9 +1393,19 @@ const ProjectView = () => {
 
                 {/* 4th Tab */}
                 <CustomTabPanel value={value} index={3}>
-                  <AssessmentHistoryTable
+                  {/* <AssessmentHistoryTable
                     assessmentHistory={projectData?.assessment_history}
-                  />
+                  /> */}
+                  <Box
+                    sx={{
+                      boxShadow: "0px 0px 41px #e4e4e4",
+                      padding: "20px",
+                      borderRadius: "10px",
+                      border: "1px solid #e4e4e4",
+                    }}
+                  >
+                    <Typography>No Risk Assessment available.</Typography>
+                  </Box>
                 </CustomTabPanel>
               </Box>
             </Grid>

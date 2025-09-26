@@ -133,6 +133,7 @@ export const TAB_LABEL = Object.freeze({
   SUMMARY_REPORT: "Summary Report",
   CHAT_AI: "Chat AI",
   VERSION_HISTORY: "Version History",
+  RISK_ASSESSMENT: "Risk Assessment",
 });
 
 export const PROJECT_DETAIL_PAGE = Object.freeze({
@@ -155,6 +156,7 @@ export const PROJECT_DETAIL_PAGE = Object.freeze({
   RUN_BY: "Run by",
   TOTAL_FILES_UPLOADED: "Total files uploaded",
   RUN_AI_COMPLIANCE_ASSESSMENT: "Run AI Compliance Assessment",
+  CSV_PARAMETERS: "CSV Parameters",
 });
 
 export const STATUS = Object.freeze({
