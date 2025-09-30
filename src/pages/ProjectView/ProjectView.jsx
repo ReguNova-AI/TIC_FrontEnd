@@ -18,6 +18,13 @@ import {
   Select,
   MenuItem,
   IconButton,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
 } from "@mui/material";
 import PropTypes from "prop-types";
 import FileStructureView from "./FileStructureView";
@@ -60,6 +67,10 @@ import AssessmentHistoryTable from "components/AssessmentHistoryTable";
 import ProgressRing from "pages/ProjectCreation/CircularDocumentProgress";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import DeleteIcon from "@mui/icons-material/Delete";
+import UploadFileIcon from "@mui/icons-material/UploadFile";
+import EditIcon from "@mui/icons-material/Edit";
+import SaveIcon from "@mui/icons-material/Save";
+import CancelIcon from "@mui/icons-material/Cancel";
 
 // Helper function to create a history object based on changes
 export const createHistoryObject = (data, previousData, heading, userName) => {
@@ -127,6 +138,11 @@ const ProjectView = () => {
     type: "",
   });
   const [parameters, setParameters] = useState([]);
+  
+  // CSV related state variables
+  const [csvParameters, setCsvParameters] = useState([]);
+  const [editingIndex, setEditingIndex] = useState(-1);
+  const [editingValue, setEditingValue] = useState({ name: "", type: "" });
 
   // const chatLoadingIcon = (props) => <Icon component={chatLoadingicon} {...props} />;
 
@@ -1000,6 +1016,96 @@ const ProjectView = () => {
     setParameters((prev) => prev.filter((_, i) => i !== index));
   };
 
+  // CSV File handling functions
+  const handleCsvFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file && file.type === 'text/csv') {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const csv = e.target.result;
+        const lines = csv.split('\n');
+        const headers = lines[0].split(',');
+        
+        if (headers.length >= 2 && headers[0].toLowerCase().includes('parameter') && headers[1].toLowerCase().includes('type')) {
+          const csvData = [];
+          for (let i = 1; i < lines.length; i++) {
+            const data = lines[i].split(',');
+            if (data.length >= 2 && data[0].trim() && data[1].trim()) {
+              csvData.push({
+                name: data[0].trim(),
+                type: data[1].trim()
+              });
+            }
+          }
+          setCsvParameters(csvData);
+          setSnackData({
+            show: true,
+            message: `Successfully loaded ${csvData.length} parameters from CSV`,
+            type: "success",
+          });
+        } else {
+          setSnackData({
+            show: true,
+            message: "Invalid CSV format. Expected columns: Parameter, Type",
+            type: "error",
+          });
+        }
+      };
+      reader.readAsText(file);
+    } else {
+      setSnackData({
+        show: true,
+        message: "Please select a valid CSV file",
+        type: "error",
+      });
+    }
+  };
+
+  const handleEditParameter = (index) => {
+    setEditingIndex(index);
+    setEditingValue({ 
+      name: csvParameters[index].name, 
+      type: csvParameters[index].type 
+    });
+  };
+
+  const handleSaveEdit = () => {
+    if (!editingValue.name || !editingValue.type) {
+      setSnackData({
+        show: true,
+        message: "Parameter name and type are required",
+        type: "error",
+      });
+      return;
+    }
+
+    const updatedParams = [...csvParameters];
+    updatedParams[editingIndex] = { ...editingValue };
+    setCsvParameters(updatedParams);
+    setEditingIndex(-1);
+    setEditingValue({ name: "", type: "" });
+    
+    setSnackData({
+      show: true,
+      message: "Parameter updated successfully",
+      type: "success",
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingIndex(-1);
+    setEditingValue({ name: "", type: "" });
+  };
+
+  const handleDeleteCsvParameter = (index) => {
+    setCsvParameters((prev) => prev.filter((_, i) => i !== index));
+    setSnackData({
+      show: true,
+      message: "Parameter deleted successfully",
+      type: "success",
+    });
+  };
+
   CustomTabPanel.propTypes = {
     children: PropTypes.node,
     index: PropTypes.number.isRequired,
@@ -1242,13 +1348,30 @@ const ProjectView = () => {
                       marginTop: "20px",
                     }}
                   >
-                    <Typography
-                      style={{ fontSize: "18px", marginBottom: "10px" }}
-                    >
-                      {PROJECT_DETAIL_PAGE.CSV_PARAMETERS}
-                    </Typography>
-                    {/* Inputs */}
-                    <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                      <Typography style={{ fontSize: "18px" }}>
+                        {PROJECT_DETAIL_PAGE.CSV_PARAMETERS}
+                      </Typography>
+                      
+                      {/* CSV Upload Button */}
+                      <Button
+                        variant="outlined"
+                        component="label"
+                        startIcon={<UploadFileIcon />}
+                        sx={{ ml: 2 }}
+                      >
+                        Load CSV
+                        <input
+                          type="file"
+                          accept=".csv"
+                          hidden
+                          onChange={handleCsvFileUpload}
+                        />
+                      </Button>
+                    </Box>
+
+                    {/* Manual Input Section */}
+                    <Box sx={{ display: "flex", gap: 2, alignItems: "center", mb: 2 }}>
                       <TextField
                         label="Parameter Name"
                         labelId="document-name-label"
@@ -1278,22 +1401,120 @@ const ProjectView = () => {
                           ))}
                         </Select>
                       </FormControl>
+
+                      <Button
+                        variant="contained"
+                        onClick={handleAddParameters}
+                      >
+                        Add
+                      </Button>
                     </Box>
 
-                    {/* Add button below inputs */}
-                    <Button
-                      variant="contained"
-                      sx={{ mt: 2 }}
-                      onClick={handleAddParameters}
-                    >
-                      Add
-                    </Button>
+                    {/* CSV Parameters Table */}
+                    {csvParameters.length > 0 && (
+                      <Box sx={{ mt: 3 }}>
+                        <Typography variant="h6" gutterBottom>
+                          CSV Parameters
+                        </Typography>
+                        
+                        <TableContainer component={Paper} sx={{ mt: 2 }}>
+                          <Table>
+                            <TableHead>
+                              <TableRow>
+                                <TableCell><strong>Parameter Name</strong></TableCell>
+                                <TableCell><strong>Type</strong></TableCell>
+                                <TableCell align="center"><strong>Actions</strong></TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {csvParameters.map((param, index) => (
+                                <TableRow key={`csv-param-${index}`}>
+                                  <TableCell>
+                                    {editingIndex === index ? (
+                                      <TextField
+                                        value={editingValue.name}
+                                        onChange={(e) =>
+                                          setEditingValue({ ...editingValue, name: e.target.value })
+                                        }
+                                        size="small"
+                                        fullWidth
+                                        autoFocus
+                                        variant="outlined"
+                                      />
+                                    ) : (
+                                      param.name
+                                    )}
+                                  </TableCell>
+                                  <TableCell>
+                                    {editingIndex === index ? (
+                                      <FormControl size="small" fullWidth variant="outlined">
+                                        <Select
+                                          value={editingValue.type}
+                                          onChange={(e) =>
+                                            setEditingValue({ ...editingValue, type: e.target.value })
+                                          }
+                                        >
+                                          {documentTypes.map((type) => (
+                                            <MenuItem key={type} value={type}>
+                                              {type}
+                                            </MenuItem>
+                                          ))}
+                                        </Select>
+                                      </FormControl>
+                                    ) : (
+                                      param.type
+                                    )}
+                                  </TableCell>
+                                  <TableCell align="center">
+                                    {editingIndex === index ? (
+                                      <Box sx={{ display: "flex", gap: 1, justifyContent: "center" }}>
+                                        <IconButton
+                                          color="primary"
+                                          onClick={handleSaveEdit}
+                                          size="small"
+                                        >
+                                          <SaveIcon />
+                                        </IconButton>
+                                        <IconButton
+                                          color="secondary"
+                                          onClick={handleCancelEdit}
+                                          size="small"
+                                        >
+                                          <CancelIcon />
+                                        </IconButton>
+                                      </Box>
+                                    ) : (
+                                      <Box sx={{ display: "flex", gap: 1, justifyContent: "center" }}>
+                                        <IconButton
+                                          color="primary"
+                                          onClick={() => handleEditParameter(index)}
+                                          size="small"
+                                        >
+                                          <EditIcon />
+                                        </IconButton>
+                                        <IconButton
+                                          color="error"
+                                          onClick={() => handleDeleteCsvParameter(index)}
+                                          size="small"
+                                        >
+                                          <DeleteIcon />
+                                        </IconButton>
+                                      </Box>
+                                    )}
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </TableContainer>
+                      </Box>
+                    )}
 
-                    {/* List of parameters */}
+                    {/* Manual Added Parameters List */}
                     {parameters.length > 0 && (
                       <Box sx={{ mt: 3 }}>
                         <Typography variant="h6" gutterBottom>
-                          Added Parameters
+                          Manually Added Parameters
                         </Typography>
 
                         {parameters.map((param, index) => (

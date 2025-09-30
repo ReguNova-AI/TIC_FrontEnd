@@ -442,12 +442,12 @@ export default function UserCreation({ onHandleClose, type, selecteddata }) {
   const fetchIndustryDetails = () => {
     UserApiService.industryDetails()
       .then((response) => {
-        setSnackData({
+        /* setSnackData({
           show: true,
           message:
             response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
           type: "success",
-        });
+        }); */
         setIndustryData(response?.data?.details || []); // Use an empty array as fallback
       })
       .catch((errResponse) => {
@@ -464,12 +464,12 @@ export default function UserCreation({ onHandleClose, type, selecteddata }) {
   const fetchSectorDetails = () => {
     UserApiService.sectorDetails()
       .then((response) => {
-        setSnackData({
+        /* setSnackData({
           show: true,
           message:
             response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
           type: "success",
-        });
+        }); */
         const sectors = response?.data?.details || []; // Use an empty array as fallback
         setSectorData(sectors);
         // setFilteredSectors(
@@ -490,12 +490,12 @@ export default function UserCreation({ onHandleClose, type, selecteddata }) {
   const fetchRole = () => {
     UserApiService.roleDetails()
       .then((response) => {
-        setSnackData({
+        /* setSnackData({
           show: true,
           message:
             response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
           type: "success",
-        });
+        }); */
         let filteredRoles = response?.data?.details || [];
 
         // Get the logged-in user's role from `userdetails`
