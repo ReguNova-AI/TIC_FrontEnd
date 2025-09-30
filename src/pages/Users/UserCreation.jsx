@@ -834,7 +834,7 @@ export default function UserCreation({ onHandleClose, type, selecteddata }) {
                     required
                     disabled={type !== "new" ? true : false}
                     inputProps={{
-                      maxLength: 30, // Restrict input to 40 characters
+                      maxLength: 350, // Restrict input to 350 characters
                     }}
                   />
                 </Grid>
@@ -866,7 +866,7 @@ export default function UserCreation({ onHandleClose, type, selecteddata }) {
                     value={formData.user_address.street}
                     onChange={handleInputChange}
                     inputProps={{
-                      maxLength: 30, // Restrict input to 40 characters
+                      maxLength: 40, // Restrict input to 40 characters
                     }}
                   />
                 </Grid>
@@ -879,7 +879,7 @@ export default function UserCreation({ onHandleClose, type, selecteddata }) {
                     value={formData.user_address.city}
                     onChange={handleInputChange}
                     inputProps={{
-                      maxLength: 30, // Restrict input to 40 characters
+                      maxLength: 40, // Restrict input to 40 characters
                     }}
                   />
                 </Grid>
@@ -892,7 +892,7 @@ export default function UserCreation({ onHandleClose, type, selecteddata }) {
                     value={formData.user_address.state}
                     onChange={handleInputChange}
                     inputProps={{
-                      maxLength: 30, // Restrict input to 40 characters
+                      maxLength: 40, // Restrict input to 40 characters
                     }}
                   />
                 </Grid>
@@ -905,7 +905,7 @@ export default function UserCreation({ onHandleClose, type, selecteddata }) {
                     value={formData.user_address.zip}
                     onChange={handleInputChange}
                     inputProps={{
-                      maxLength: 30, // Restrict input to 40 characters
+                      maxLength: 40, // Restrict input to 40 characters
                     }}
                   />
                 </Grid>
