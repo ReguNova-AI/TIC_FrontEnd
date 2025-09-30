@@ -341,7 +341,16 @@ const UserListing = () => {
         );
       },
     },
-    { title: LISTING_PAGE.EMAIL, dataIndex: "email", key: "email" },
+    {
+      title: LISTING_PAGE.EMAIL,
+      dataIndex: "email",
+      key: "email",
+      render: (text) => (
+        <span style={{ wordBreak: "break-word", whiteSpace: "normal" }}>
+          {text}
+        </span>
+      ),
+    },
     { title: LISTING_PAGE.PHONE_NO, dataIndex: "phone_no", key: "phone_no" },
     { title: LISTING_PAGE.ORG_NAME, dataIndex: "org_name", key: "org_name" },
     {
