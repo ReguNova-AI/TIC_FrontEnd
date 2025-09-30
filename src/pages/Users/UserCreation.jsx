@@ -834,7 +834,7 @@ export default function UserCreation({ onHandleClose, type, selecteddata }) {
                     required
                     disabled={type !== "new" ? true : false}
                     inputProps={{
-                      maxLength: 30, // Restrict input to 40 characters
+                      maxLength: 350, // Restrict input to 40 characters
                     }}
                   />
                 </Grid>
