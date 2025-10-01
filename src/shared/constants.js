@@ -183,7 +183,7 @@ export const BUTTON_LABEL = Object.freeze({
   RUN_CHECKLIST: "Run Checklist",
   SAVE_DRAFT: "Save as Draft",
   SAVE_PROJECT: "Save Project",
-  CREATE_PROJECT: "Add New Project",
+  CREATE_PROJECT: "Add Project Configuration",
   VIEW: "View",
   UPLOAD_DOCUMENTS: "Upload Documents",
   UPLOAD_ADDITIONAL_DOCUMENTS: "Upload additional project documents",
@@ -289,7 +289,7 @@ export const FILE_TYPE = Object.freeze({
 });
 
 export const HEADING = Object.freeze({
-  CREATE_NEW_PROJECT: "Create a New Project",
+  CREATE_NEW_PROJECT: "Create New Project Configuration",
   CREATE_USER: "Create User",
   CREATE_ORG: "Create Organization",
   EDIT_PROJECT: "Edit Project Details",

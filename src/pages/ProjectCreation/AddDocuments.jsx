@@ -274,15 +274,12 @@ const DocumentSection = ({ documents, setDocuments }) => {
   return (
     <section
       style={{
-        border: "1px dashed #aba8a8",
-        padding: "10px",
-        borderRadius: "10px",
+
+       
       }}
     >
-      <Box sx={{ mt: 4 }}>
-        <h4 style={{ fontWeight: 500, margin: "4px" }}>
-          {FORM_LABEL.DOCUMENT_UPLOAD}
-        </h4>
+      <Box sx={{ mt: 2 }}>
+       
         <div
           style={{
             textAlign: "center",
