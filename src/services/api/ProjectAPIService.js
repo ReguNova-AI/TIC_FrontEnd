@@ -12,8 +12,22 @@ const _projectChatUpdate = (payload) => {
   return BaseApiService.post(`/api/v2/chat/updateChatResponse`, null, payload);
 };
 
-const _uploadProjectDocument = (payload) => {
+const _uploadProjectDocument = (payload, versionId) => {
+  return BaseApiService.put(
+    `/api/v1/project_document/update/${versionId}`,
+    null,
+    payload
+  );
+};
+
+const _createProjectDocument = (payload) => {
   return BaseApiService.post(`/api/v1/project_document/create`, null, payload);
+};
+
+const _deleteProjectDocument = (documentId, versionId) => {
+  return BaseApiService.delete(
+    `/api/v1/project_document/delete/${documentId}/${versionId}`
+  );
 };
 
 const _projectListing = (page, limit) => {
@@ -98,8 +112,8 @@ const _projectCounts = (id) => {
 const _projectChat = (query, projectId) => {
   const encodedQuery = encodeURIComponent(query);
   return BaseApiService.get(
-    // `/api/v3/chat/ask/question?project_id=${projectId}&user_question=${encodedQuery}`,
-    `/api/v3/chat/ask/question?project_id=1&user_question=${encodedQuery}`,
+    `/api/v3/chat/ask/question?project_id=${projectId}&user_question=${encodedQuery}`,
+    //`/api/v3/chat/ask/question?project_id=1&user_question=${encodedQuery}`,
     null,
     null
   );
@@ -181,5 +195,7 @@ export const ProjectApiService = {
   projectUpdateChecklist: _projectUpdateChecklist,
   externalProjectListing: _externalProjectListing,
   uploadProjectDocument: _uploadProjectDocument,
+  createProjectDocument: _createProjectDocument,
+  deleteProjectDocument: _deleteProjectDocument,
   uploadFilesToAIserver: _uploadFilesToAIserver,
 };

@@ -1,189 +1,150 @@
-import React, { useEffect, useState } from "react";
-import BreadcrumbsView from "components/Breadcrumbs";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   Typography,
   Box,
   Tabs,
   Tab,
-  Grid,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Tooltip,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  IconButton,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
+  LinearProgress,
+  Chip,
 } from "@mui/material";
 import PropTypes from "prop-types";
-import FileStructureView from "./FileStructureView";
-import AnalyticEcommerce from "components/cards/statistics/AnalyticEcommerce";
-import ProjectDetailsCardView from "./ProjectDetailCardView2";
-import RecentHistory from "./RecentHistory";
-import ProgressBarView from "./ProgressBarView";
-// import chatAI from "../../assets/images/chatAI.png";
-import ChatAIView from "./ChatAIView";
-import FileCard from "./FileCard";
+import OverviewTab from "./OverviewTab";
+import SummaryReportTab from "./SummaryReportTab";
+import ChatAITab from "./ChatAITab";
+import RiskAssessmentTab from "./RiskAssessmentTab";
 import EditProject from "./EditProject";
-import HistoryDetails from "./HistoryDetails";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
-import { ProjectApiService } from "services/api/ProjectAPIService";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
-import { Spin, Modal, Result, Empty, message } from "antd";
+import { Spin, Modal, Result } from "antd";
 import Breadcrumbs from "@mui/material/Breadcrumbs";
 import Link from "@mui/material/Link";
 import {
-  API_ERROR_MESSAGE,
-  API_SUCCESS_MESSAGE,
-  BUTTON_LABEL,
   TAB_LABEL,
-  COUNT_CARD_LABELS,
-  PROJECT_DETAIL_PAGE,
   HEADING,
-  FORM_LABEL,
 } from "shared/constants";
 import DropZoneFileUpload from "pages/ProjectCreation/DropZoneFileUpload";
-import chatLoadingicon2 from "../../assets/images/icons/chatLoadingIcon2.svg";
-import successIcon from "../../assets/images/icons/successIcon2.svg";
-import failedIcon from "../../assets/images/icons/failedIcon2.svg";
-import runIcon from "../../assets/images/icons/runIcon.svg";
 import reportIcon from "../../assets/images/icons/report1.png";
-import processIcon from "../../assets/images/process.png";
-import { formatDate, formatDateToCustomFormat } from "shared/utility";
-import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
-import AssessmentHistoryTable from "components/AssessmentHistoryTable";
-import ProgressRing from "pages/ProjectCreation/CircularDocumentProgress";
-import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
-import DeleteIcon from "@mui/icons-material/Delete";
-import UploadFileIcon from "@mui/icons-material/UploadFile";
-import EditIcon from "@mui/icons-material/Edit";
-import SaveIcon from "@mui/icons-material/Save";
-import CancelIcon from "@mui/icons-material/Cancel";
+
+// React Query hooks
+import {
+  useProjectDetails,
+  useStandardData,
+} from "./useProjectQueries";
+
+// Custom hooks
+import { useProjectOperations, createHistoryObject } from "./useProjectOperations";
+import { useModalManager, useSnackbarManager } from "./useUIManager";
+import { getStatusChipProps } from "shared/utility";
 
 // Helper function to create a history object based on changes
-export const createHistoryObject = (data, previousData, heading, userName) => {
-  const historyItem = {
-    changedby: userName,
-    date: new Date().toISOString(),
-    changes: {
-      projectName:
-        heading === "projectDetails"
-          ? data?.projectName !== previousData.project_name
-            ? data.projectName
-            : ""
-          : "",
-      projectNo:
-        heading === "projectDetails"
-          ? data?.projectNo !== previousData.project_no
-            ? data.projectNo
-            : ""
-          : "",
-      description:
-        heading === "projectDetails"
-          ? data?.projectDesc !== previousData.project_description
-            ? data.projectDesc
-            : ""
-          : "",
-      invite: "",
-      documents: heading === "documentUpload" ? (data ? data : "") : "",
-      checklistRun:
-        heading === "checklistRun" ? "Run to generated checklist report" : "",
-      assessmentRun:
-        heading === "assessmentRun" ? "Run to generate Assessment report" : "",
-      standardUplaoded:
-        heading === "StandardUpdates"
-          ? data.standardUploaded !== previousData.standardUploaded
-            ? data.standardUploaded
-            : ""
-          : "",
-      status: previousData.status,
-    },
-  };
-  return historyItem;
-};
-
-const documentTypes = ["short", "long", "int", "boolean", "array", "object"];
+export { createHistoryObject };
 
 const ProjectView = () => {
   const [value, setValue] = React.useState(0);
   const location = useLocation();
-  const { projectName, runAssessmentState } = location.state || {};
+  const { runAssessmentState } = location.state || {};
   const { id } = useParams();
-  const [loading, setLoading] = useState(true);
-  const [projectData, SetProjectData] = useState([]);
-  const [standardData, setStandardData] = useState([]);
-  const [uploadedDocument, setUploadedDocument] = useState([]);
+  const navigate = useNavigate();
   const [chatResponse, setChatResponse] = useState([]);
   const [chatLoading, setChatloading] = useState(false);
-  const [isModalVisible, setIsModalVisible] = useState(false); // To control modal visibility
-  const [isProgressModalVisible, setIsProgressModalVisible] = useState(false); // To control modal visibility
-  const [historyValue, setHistoryValue] = useState([]);
-  const [disableButton, setDisableButton] = useState(false);
-  const [aiButtonLoading, setAiButtonLoading] = useState(false);
-  const navigate = useNavigate();
-  const [newDoc, setNewDoc] = useState({
-    name: "",
-    type: "",
-  });
-  const [parameters, setParameters] = useState([]);
-  
-  // CSV related state variables
-  const [csvParameters, setCsvParameters] = useState([]);
-  const [editingIndex, setEditingIndex] = useState(-1);
-  const [editingValue, setEditingValue] = useState({ name: "", type: "" });
-
-  // const chatLoadingIcon = (props) => <Icon component={chatLoadingicon} {...props} />;
-
-  const [snackData, setSnackData] = useState({
-    show: false,
-    message: "",
-    type: "error",
-  });
-  const [modalType, setModalType] = useState("");
-  const [openModal, setOpenModal] = useState(false); // State to control modal visibility
-  const [historyData, setHistoryData] = useState({ history: [] });
-  const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
-  const userName =
-    userdetails?.[0].user_first_name + " " + userdetails?.[0].user_last_name;
   const [runState, setRunState] = useState(true);
   const [standardChatState, setStandardChatState] = useState(true);
 
+  // React Query hooks
+  const {
+    data: projectQueryData,
+    isLoading: projectLoading,
+    error: projectError,
+    refetch: refetchProjectData,
+  } = useProjectDetails(id);
+
+  const {
+    data: standardData = [],
+    isLoading: standardLoading,
+    error: standardError,
+  } = useStandardData();
+
+  // Extracted data from React Query
+  const projectData = useMemo(() => projectQueryData?.project || {}, [projectQueryData?.project]);
+  const historyData = projectQueryData?.history || [];
+
+  // Custom hooks
+  const {
+    isProgressModalVisible,
+    handleProgressModalClose,
+    handleChatUpdate,
+    updateProjectDetails,
+    handleRunAIAssessment,
+    runComplianceAssessment,
+    runChecklistCRT,
+    runChecklistAPI,
+    aiButtonLoading,
+  } = useProjectOperations(projectData, getUserName());
+
+  const {
+    openModal,
+    modalType,
+    isModalVisible,
+    uploadedDocument,
+    handleModalOpen,
+    handleModalClose,
+    handleFileModalClose,
+    handleFileChange,
+    setUploadedDocument,
+  } = useModalManager();
+
+  const {
+    snackData,
+    setSnackData,
+    hideSnackbar,
+  } = useSnackbarManager();
+
+  const statusChip = (status) => {
+    const { title, color, borderColor } = getStatusChipProps(status);
+    return (
+      <Chip
+        key={status}
+        label={title}
+        color={borderColor}
+        variant="outlined"
+        sx={{
+          bgcolor: color,
+          borderRadius: "20px",
+          fontSize: "11px",
+          fontWeight: 600,
+          margin: "1px", // Optional to add some spacing between chips
+        }}
+      />
+    );
+  };
+
+  // Combined loading state
+  const loading = projectLoading || standardLoading;
+
+  function getUserName() {
+    const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
+    return userdetails?.[0].user_first_name + " " + userdetails?.[0].user_last_name;
+  }
+
   useEffect(() => {
-    fetchDetails(id);
-    fetchStandardData();
-
-    const intervalId = setInterval(() => {
-      fetchDetails(id);
-    }, 120000); // 120000 ms = 2 minutes
-
-    // Cleanup interval on component unmount
-    return () => clearInterval(intervalId);
-  }, [id]);
-
-  useEffect(() => {
-    if (runAssessmentState === "run" && runState) {
+    if (runAssessmentState === "run" && runState && projectData?.project_id) {
       projectData?.checkListResponse
-        ? runComplianceAssessmenet(
-            projectData?.checkListResponse,
-            projectData?.project_id,
-            "partial"
-          )
-        : runChecklkistCRT();
+        ? runComplianceAssessment(
+          projectData?.checkListResponse,
+          projectData?.project_id,
+          "partial",
+          standardData
+        )
+        : runChecklistCRT(standardData);
       setRunState(false);
     }
-  }, [projectData, standardData]);
+  }, [projectData, standardData, runAssessmentState, runState, runComplianceAssessment, runChecklistCRT]);
 
   useEffect(() => {
     if (
@@ -194,692 +155,69 @@ const ProjectView = () => {
       projectData.standardUploaded === "null" ||
       projectData?.standardUploaded === undefined
     ) {
-      if (standardChatState) {
-        runChecklistAPI();
+      if (standardChatState && standardData.length > 0) {
+        runChecklistAPI(standardData);
+        setStandardChatState(false);
       }
     }
-  }, [standardData]);
+  }, [standardData, projectData?.standardUploaded, standardChatState, runChecklistAPI]);
 
-  const fetchDetails = (id) => {
-    setLoading(true);
-    ProjectApiService.projectDetails(id)
-      .then((response) => {
-        // setSnackData({
-        //   show: true,
-        //   message:
-        //     response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-        //   type: "success",
-        // });
-        SetProjectData(response?.data?.details[0]);
-        setHistoryData({ history: response?.data?.details[0].history || [] });
-        setHistoryValue(response?.data?.details[0].history);
-        // setChatloading(
-        //   response?.data?.details[0]?.standardUploaded !== null ? false : true
-        // );
-        setChatloading(
-          response?.data?.details[0]?.project_documents?.length > 0
-            ? false
-            : true
-        );
-        // setLoading(false);
-      })
-      .catch((errResponse) => {
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
-        // setLoading(false);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  };
-
-  const fetchStandardData = () => {
-    AdminConfigAPIService.standardListing()
-      .then((response) => {
-        // Check the response structure and map data accordingly
-        if (response?.data?.details) {
-          setStandardData(response?.data?.details);
-        }
-        setLoading(false);
-
-        // setSnackData({
-        //   show: true,
-        //   message:
-        //     response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-        //   type: "success",
-        // });
-      })
-      .catch((errResponse) => {
-        setLoading(false);
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
-      });
-  };
-
-  const handlechatUpdate = (data) => {
-    const updatedResponse = {
-      project_id: projectData.project_id,
-      chatResponse: { data: data },
-    };
-
-    // updatedResponse.chatResponse = { data: data };
-    setChatResponse(data[data.length - 1]?.answer);
-    UpdateProjectChatDetails(updatedResponse, false);
-  };
-
-  const parseApiResponse = (response) => {
-    let dataArray = [];
-    // If the response contains 'checklist' (new checklist format)
-    if (response.checklist && Array.isArray(response.checklist)) {
-      let checklist = response.checklist;
-
-      // Process checklist into sections and annexes
-      const sections = [];
-      const annexes = [];
-
-      checklist.forEach((item) => {
-        // Split checklist items based on whether they contain a section or annex
-        if (item.includes("##")) {
-          // Check if it's an Annex or Section
-          if (item.toLowerCase().startsWith("## annex")) {
-            annexes.push({
-              title: item
-                .split("##")[1]
-                ?.trim()
-                .replace(/^Annex\s*[:\-]?\s*/i, ""), // Remove "Annex"
-              points: [],
-            });
-          } else {
-            sections.push({
-              title: item
-                .split("##")[1]
-                ?.trim()
-                .replace(/^Section\s*[:\-]?\s*/i, "")
-                .replace(/^\d+\s*/, ""), // Remove "Section" and leading digits
-              points: [],
-            });
-          }
-        } else if (item.includes("**")) {
-          // Check if it's an Annex or Section
-          if (item.toLowerCase().startsWith("** annex")) {
-            annexes.push({
-              title: item
-                .split("**")[1]
-                ?.trim()
-                .replace(/^Annex\s*[:\-]?\s*/i, ""), // Remove "Annex"
-              points: [],
-            });
-          } else {
-            sections.push({
-              title: item
-                .split("**")[1]
-                ?.trim()
-                .replace(/^Section\s*[:\-]?\s*/i, "")
-                .replace(/^\d+\s*/, ""), // Remove "Section" and leading digits
-              points: [],
-            });
-          }
-        } else {
-          const lastSection = sections[sections.length - 1];
-          const lastAnnex = annexes[annexes.length - 1];
-
-          if (lastSection) {
-            const raw = item
-              .replace(/^\d+\.\s*/, "")
-              .replace("---", "")
-              .replace(/\\"/g, "")
-              .trim();
-            if (raw !== "") {
-              dataArray.push(raw);
-            }
-            lastSection.points.push(item.replace(/^\d+\.\s*/, "").trim());
-          } else if (lastAnnex) {
-            const raw = item
-              .replace(/^\d+\.\s*/, "")
-              .replace("---", "")
-              .replace(/\\"/g, "")
-              .trim();
-            if (raw !== "") {
-              dataArray.push(raw);
-            }
-            lastAnnex.points.push(item.replace(/^\d+\.\s*/, "").trim());
-          }
-        }
-      });
-
-      return dataArray;
-    }
-
-    // Default case (if the response doesn't match either format)
-    else {
-      console.error("Unknown response format");
-      return [];
-    }
-  };
-
-  const runComplianceAssessmenet = async (query, projectId, type) => {
-    setDisableButton(true);
-
-    const regex = /\/([^/]+)$/; // Match the part after the last "/"
-    let file = null;
-    let docArray = [];
-    let match = null;
-    projectData?.documents?.forEach((document) => {
-      let { documenttype, name, path } = document;
-      if (documenttype === FORM_LABEL.PROJECT_DOCUMENT) {
-        file = path;
-        match = file?.match(regex);
-        docArray.push(match?.[1]);
-      }
-    });
-
-    // const match = file?.match(regex);
-
-    // const payload = new FormData();
-    // payload.append("imageKey", docArray);
-
-    let data = [];
-    if (query) {
-      data = parseApiResponse(query);
-    }
-
-    let customImageKeyValue = null;
-
-    let fileName = standardData?.find(
-      (data) => data?.standard_name === projectData?.regulatory_standard
-    )?.standard_url;
-    let customFileName = projectData?.documents
-      ?.filter((f) => f.documenttype === FORM_LABEL.CUSTOM_REGULATORY)
-      ?.map((f) => f.path);
-
-    if (
-      (fileName === undefined || fileName === null) &&
-      customFileName?.length <= 0
-    ) {
-      fileName = projectData?.mapping_standards;
-    }
-
-    if (fileName !== undefined) {
-      const regex1 = /\/([^/]+)$/; // Match the part after the last "/"
-      const match =
-        customFileName?.length > 0
-          ? customFileName?.[0].match(regex1)
-          : fileName?.match(regex1);
-
-      customImageKeyValue = match?.[1];
-    }
-
-    const payload = {
-      imageKey: docArray,
-      project_id: projectId,
-      requirements: data,
-      user_name: userName,
-      checkListImageKey: customImageKeyValue,
-    };
-
-    if (match !== undefined && match?.length > 0) {
-      // setLoading(true);
-      ProjectApiService.projectDocumentUpload(payload, type)
-        .then((response) => {
-          // setLoading(false);
-
-          let payload1 = {
-            requirements: data,
-            project_id: projectId,
-          };
-          handleprogressModalOpen();
-
-          //   ProjectApiService.projectComplianceAssessment(payload1)
-          // .then((response) => {
-          //   // setSnackData({
-          //   //   show: true,
-          //   //   message:
-          //   //     response?.data?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-          //   //   type: "success",
-          //   // });
-          //   // SetProjectData(response?.data?.details[0]);
-          //   setLoading(false);
-          //   let status = null;
-
-          //   if(response?.data?.success === false || response?.data?.error ==="An error occurred while fetching data")
-          //   {
-          //     status = "error";
-          //   }
-
-          //   const array = response?.data?.data;
-          //   const delimiter = "|,|";  // You can use any delimiter you want
-          //   const result = array.join(delimiter);
-
-          //   const updatedResponse = { ...projectData };
-          //   const previousData = {...projectData};
-          //   updatedResponse.complianceAssesment = `${result}`;
-          //   updatedResponse.no_of_runs = updatedResponse?.no_of_runs + 1;
-          //   if(status === "error")
-          //   {
-          //     updatedResponse.fail_count= updatedResponse?.fail_count + 1;
-          //   }
-          //   else{
-          //     updatedResponse.success_count= updatedResponse?.success_count + 1;
-          //   }
-          //   // updatedResponse.success_count= updatedResponse?.success_count + 1;
-          //   updatedResponse.status = status === "error" ? "Failed" : "Success";
-          //   updatedResponse.last_run = formatDateToCustomFormat(new Date());
-          //   const newHistory = createHistoryObject(projectData, previousData,"assessmentRun", userName);
-          //   setHistoryData((prevState) => {
-          //     const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
-          //     // After the state update, include the updated history in the updatedResponse
-          //     const updatedResponseWithHistory = { ...updatedResponse, history: updatedHistory };
-
-          //     if(status === "error")
-          //     {
-          //       setSnackData({
-          //         show: true,
-          //         message:API_ERROR_MESSAGE.FAILED_TO_RUN_ASSESSMENT,
-          //         type: "error",
-          //       });
-          //     }
-
-          //     // You can also call UpdateProjectDetails here, using the updated response with history
-          //     // setLoading(true);
-          //     UpdateProjectDetails(updatedResponseWithHistory, false);
-
-          //     return { history: updatedHistory }; // Update state with the new history array
-          //   });
-
-          //   // UpdateProjectDetails(updatedResponse, true);
-          // })
-          // .catch((errResponse) => {
-          //   setSnackData({
-          //     show: true,
-          //     message:
-          //       errResponse?.error?.message ||
-          //       API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          //     type: "error",
-          //   });
-          //   setLoading(false);
-          //   const updatedResponse = { ...projectData };
-          //   const previousData = {...projectData};
-          //   updatedResponse.no_of_runs = updatedResponse?.no_of_runs + 1;
-          //   updatedResponse.fail_count= updatedResponse?.fail_count + 1;
-          //   updatedResponse.status = "Failed";
-          //   updatedResponse.last_run = formatDateToCustomFormat(new Date());
-          //   const newHistory = createHistoryObject(projectData, previousData,"assessmentRun",userName);
-          //   setHistoryData((prevState) => {
-          //     const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
-          //     // After the state update, include the updated history in the updatedResponse
-          //     const updatedResponseWithHistory = { ...updatedResponse, history: updatedHistory };
-
-          //     // You can also call UpdateProjectDetails here, using the updated response with history
-          //     // setLoading(true);
-          //     UpdateProjectDetails(updatedResponseWithHistory, false);
-
-          //     return { history: updatedHistory };
-          //   });
-
-          // });
-          // UpdateProjectDetails(updatedResponse, true);
-        })
-        .catch((errResponse) => {
-          setDisableButton(false);
-          setSnackData({
-            show: true,
-            message:
-              errResponse?.error?.message ||
-              API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-            type: "error",
-          });
-          setLoading(false);
-          const updatedResponse = { ...projectData };
-          const previousData = { ...projectData };
-          updatedResponse.no_of_runs = updatedResponse?.no_of_runs + 1;
-          updatedResponse.fail_count = updatedResponse?.fail_count + 1;
-          updatedResponse.status = "Failed";
-          updatedResponse.last_run = formatDateToCustomFormat(new Date());
-
-          const newHistory = createHistoryObject(
-            projectData,
-            previousData,
-            "assessmentRun",
-            userName
-          );
-          setHistoryData((prevState) => {
-            const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
-            // After the state update, include the updated history in the updatedResponse
-            const updatedResponseWithHistory = {
-              ...updatedResponse,
-              history: updatedHistory,
-            };
-
-            // You can also call UpdateProjectDetails here, using the updated response with history
-            // setLoading(true);
-            UpdateProjectDetails(updatedResponseWithHistory, false);
-
-            return { history: updatedHistory };
-          });
-        });
-    } else {
-      setDisableButton(false);
-      setLoading(false);
-      setSnackData({
-        show: true,
-        message: API_ERROR_MESSAGE.DOCUMENT_NOT_FOUND,
-        type: "error",
-      });
-    }
-  };
-
-  const runChecklkistCRT = async () => {
-    setDisableButton(true);
-    let fileName = standardData?.find(
-      (data) => data?.standard_name === projectData?.regulatory_standard
-    )?.standard_url;
-    let customFileName = projectData?.documents
-      ?.filter((f) => f.documenttype === FORM_LABEL.CUSTOM_REGULATORY)
-      ?.map((f) => f.path);
-
-    if (
-      (fileName === undefined || fileName === null) &&
-      customFileName?.length <= 0
-    ) {
-      fileName = projectData?.mapping_standards;
-    }
-
-    if (fileName !== undefined) {
-      const regex = /\/([^/]+)$/; // Match the part after the last "/"
-      const match =
-        customFileName?.length > 0
-          ? customFileName?.[0].match(regex)
-          : fileName?.match(regex);
-
-      const payload = new FormData();
-      payload.append("imageKey", match?.[1]);
-      payload.append("project_id", projectData?.project_id);
-      payload.append("user_name", userName);
-      // const payload = {
-      //   imageKey :match[1]
-      // };
-      // setLoading(true);
-
-      ProjectApiService.projectStandardChecklist(payload)
-        .then((response) => {
-          console.log("response", response);
-          // setSnackData({
-          //   show: true,
-          //   message:
-          //     response?.data?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-          //   type: "success",
-          // });
-          // SetProjectData(response?.data?.details[0]);
-          // setLoading(false);
-
-          handleprogressModalOpen();
-
-          // handleCRTUpdate(response);
-
-          // UpdateProjectDetails(updatedResponse, true);
-        })
-        .catch((errResponse) => {
-          setDisableButton(false);
-          setSnackData({
-            show: true,
-            message:
-              errResponse?.error?.message ||
-              API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-            type: "error",
-          });
-          // setLoading(false);
-        });
-    }
-  };
-
-  const handleCRTUpdate = (response) => {
-    const updatedResponse = { ...projectData };
-    const previousData = { ...projectData };
-    updatedResponse.checkListResponse = response?.data?.data;
-    // updatedResponse.no_of_runs = updatedResponse.no_of_runs + 1;
-    updatedResponse.status = "Processing";
-    updatedResponse.last_run = formatDateToCustomFormat(new Date());
-
-    const newHistory = createHistoryObject(
-      projectData,
-      previousData,
-      "checklistRun",
-      userName
+  // Set chat loading based on project documents
+  useEffect(() => {
+    setChatloading(
+      projectData?.project_documents?.length > 0 ? false : true
     );
-    setHistoryData((prevState) => {
-      const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
-      // After the state update, include the updated history in the updatedResponse
-      const updatedResponseWithHistory = {
-        ...updatedResponse,
-        history: updatedHistory,
-      };
+  }, [projectData?.project_documents]);
 
-      // You can also call UpdateProjectDetails here, using the updated response with history
-      // setLoading(true);
-      UpdateProjectDetails(updatedResponseWithHistory, false);
-
-      return { history: updatedHistory }; // Update state with the new history array
-    });
-  };
-
-  const runChecklistAPI = async () => {
-    let fileName = standardData?.find(
-      (data) => data?.standard_name === projectData?.regulatory_standard
-    )?.standard_url;
-    if (fileName === undefined || fileName === null) {
-      fileName = projectData?.mapping_standards;
+  // Handle chat response updates
+  useEffect(() => {
+    if (projectData?.chatResponse?.data) {
+      const data = projectData.chatResponse.data;
+      setChatResponse(data[data.length - 1]?.answer);
     }
+  }, [projectData?.chatResponse]);
 
-    if (fileName !== undefined) {
-      const regex = /\/([^/]+)$/; // Match the part after the last "/"
-
-      const match = fileName.match(regex);
-
-      const payload = new FormData();
-      payload.append("imageKey", match?.[1]);
-      payload.append("project_id", projectData?.project_id);
-      payload.append("user_name", userName);
-      // const payload = {
-      //   imageKey :match[1]
-      // };
-      // setChatloading(true);
-      setStandardChatState(false);
-      ProjectApiService.projectUploadStandardChat(payload)
-        .then((response) => {
-          // console.log("response",response)
-          // setSnackData({
-          //   show: true,
-          //   message: response?.data?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-          //   type: "success",
-          // });
-          // SetProjectData(response?.data?.details[0]);
-
-          // setChatloading(false);
-          // handlestandardChatUploadUpdate();
-          setStandardChatState(false);
-        })
-        .catch((errResponse) => {
-          // setSnackData({
-          //   show: true,
-          //   message: errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          //   type: "error",
-          // });
-          setChatloading(false);
-        });
+  // Reset tab to Overview if completion becomes 0 and user is on other tabs
+  useEffect(() => {
+    if ((projectData?.completion_percentage || 0) <= 0 && value > 0) {
+      setValue(0);
     }
-  };
-
-  const handlestandardChatUploadUpdate = () => {
-    const updatedResponse = { ...projectData };
-    updatedResponse.standardUploaded = "true";
-
-    const previousData = { ...projectData };
-    const newHistory = createHistoryObject(
-      updatedResponse,
-      previousData,
-      "StandardUpdates",
-      userName
-    );
-
-    setHistoryData((prevState) => {
-      const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
-      // After the state update, include the updated history in the updatedResponse
-      const updatedResponseWithHistory = {
-        ...updatedResponse,
-        history: updatedHistory,
-      };
-
-      // You can also call UpdateProjectDetails here, using the updated response with history
-      UpdateProjectDetails(updatedResponseWithHistory, false);
-
-      return { history: updatedHistory }; // Update state with the new history array
-    });
-    // UpdateProjectDetails(updatedResponse, false);
-  };
-
-  const UpdateProjectChatDetails = (payload, countUpdate = false) => {
-    ProjectApiService.projectChatUpdate(payload)
-      .then((response) => {
-        setSnackData({
-          show: true,
-          message:
-            response?.message || API_SUCCESS_MESSAGE.UPDATED_SUCCESSFULLY,
-          type: "success",
-        });
-        SetProjectData(response?.data?.details[0]);
-        setLoading(false);
-      })
-      .catch((errResponse) => {
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
-        setLoading(false);
-      });
-  };
-
-  const UpdateProjectDetails = (payload, countUpdate = false) => {
-    ProjectApiService.projectUpdate(payload)
-      .then((response) => {
-        setSnackData({
-          show: true,
-          message:
-            response?.message || API_SUCCESS_MESSAGE.UPDATED_SUCCESSFULLY,
-          type: "success",
-        });
-        SetProjectData(response?.data?.details[0]);
-        setLoading(false);
-      })
-      .catch((errResponse) => {
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
-        setLoading(false);
-      });
-  };
-
-  const updateProjectComplianceAssessment = async (payload) => {
-    try {
-      await ProjectApiService.projectUpdateComplianceAssessment(payload).then(
-        (response) => {
-          setSnackData({
-            show: true,
-            message:
-              response?.message || API_SUCCESS_MESSAGE.UPDATED_SUCCESSFULLY,
-            type: "success",
-          });
-          // setLoading(false);
-        }
-      );
-      setLoading(true);
-      fetchDetails(id);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const updateProjectChecklist = async (payload) => {
-    try {
-      await ProjectApiService.projectUpdateChecklist(payload).then(
-        (response) => {
-          setSnackData({
-            show: true,
-            message:
-              response?.message || API_SUCCESS_MESSAGE.UPDATED_SUCCESSFULLY,
-            type: "success",
-          });
-          // setLoading(false);
-        }
-      );
-      fetchDetails(id);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const handleChange = (event, newValue) => {
-    setValue(newValue);
-  };
+  }, [projectData?.completion_percentage, value]);
 
   const handleFileUpload = () => {
-    // Handle the file upload logic here
-    const updatedResponse = { ...projectData };
-
-    if (uploadedDocument) {
-      // Append the new documents to the existing documents array
+    if (uploadedDocument?.length > 0) {
+      const updatedResponse = { ...projectData };
       updatedResponse.documents = [
         ...updatedResponse.documents,
         ...uploadedDocument,
       ];
-      SetProjectData(updatedResponse);
-      setOpenModal(false); // Close the modal after upload
-      setLoading(true);
 
       const previousData = { ...projectData };
       const newHistory = createHistoryObject(
         uploadedDocument,
         previousData,
         "documentUpload",
-        userName
+        getUserName()
       );
-      setHistoryData((prevState) => {
-        const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
-        // After the state update, include the updated history in the updatedResponse
-        const updatedResponseWithHistory = {
-          ...updatedResponse,
-          history: updatedHistory,
-        };
 
-        // You can also call UpdateProjectDetails here, using the updated response with history
-        setLoading(true);
-        UpdateProjectDetails(updatedResponseWithHistory, false);
+      const updatedHistory = [...historyData, newHistory];
+      const updatedResponseWithHistory = {
+        ...updatedResponse,
+        history: updatedHistory,
+      };
 
-        return { history: updatedHistory }; // Update state with the new history array
-      });
+      updateProjectDetails(updatedResponseWithHistory, "documentUpload");
+      handleFileModalClose();
+      setUploadedDocument([]);
     }
-
-    // UpdateProjectDetails(updatedResponse, false);
   };
 
-  const handleFileChange = (file) => {
-    setUploadedDocument(file);
+  const handleChange = (event, newValue) => {
+    // Prevent navigation to disabled tabs when completion is 0 or less
+    if ((projectData?.completion_percentage || 0) <= 0 && newValue > 0) {
+      return;
+    }
+    setValue(newValue);
   };
 
   function CustomTabPanel(props) {
@@ -892,219 +230,40 @@ const ProjectView = () => {
         id={`simple-tabpanel-${index}`}
         aria-labelledby={`simple-tab-${index}`}
         {...other}
+        style={{
+          height: '100%',
+          overflow: 'hidden', // Prevent double scrollbars
+        }}
       >
-        {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+        {value === index && (
+          <Box
+            sx={{
+              p: 2,
+              height: '100%',
+              overflowY: 'auto',
+              overflowX: 'hidden',
+              '&::-webkit-scrollbar': {
+                width: '6px',
+              },
+              '&::-webkit-scrollbar-track': {
+                background: '#f1f1f1',
+                borderRadius: '3px',
+              },
+              '&::-webkit-scrollbar-thumb': {
+                background: '#c1c1c1',
+                borderRadius: '3px',
+                '&:hover': {
+                  background: '#a8a8a8',
+                },
+              },
+            }}
+          >
+            {children}
+          </Box>
+        )}
       </div>
     );
   }
-
-  const handleModalOpen = (type) => {
-    setModalType(type);
-    setIsModalVisible(true);
-  };
-
-  const handleModalClose = () => {
-    setIsModalVisible(false);
-    // fetchData();
-  };
-  const handleClose = () => {
-    setIsModalVisible(false);
-    // fetchData();
-  };
-
-  const handleprogressModalOpen = (type) => {
-    setModalType(type);
-    setIsProgressModalVisible(true);
-    setDisableButton(false);
-  };
-
-  const handleprogressModalClose = () => {
-    setIsProgressModalVisible(false);
-    fetchDetails(projectData?.project_id);
-    fetchStandardData();
-  };
-  const handleprogressClose = () => {
-    setIsProgressModalVisible(false);
-    // fetchData();
-  };
-
-  const updateDetails = (data) => {
-    const updatedResponse = { ...projectData };
-    const previousData = { ...projectData };
-    updatedResponse.project_name = data.projectName;
-    updatedResponse.project_description = data.projectDesc;
-    updatedResponse.project_no = data.projectNo;
-    updatedResponse.invite_members = data.invite_Users;
-    updatedResponse.invited_user_list = data.invited_user_list;
-    const newHistory = createHistoryObject(
-      data,
-      previousData,
-      "projectDetails",
-      userName
-    );
-    setHistoryData((prevState) => {
-      const updatedHistory = [...prevState.history, newHistory]; // Append the new history item
-      // After the state update, include the updated history in the updatedResponse
-      const updatedResponseWithHistory = {
-        ...updatedResponse,
-        history: updatedHistory,
-      };
-
-      // You can also call UpdateProjectDetails here, using the updated response with history
-      setLoading(true);
-      UpdateProjectDetails(updatedResponseWithHistory, false);
-
-      return { history: updatedHistory }; // Update state with the new history array
-    });
-
-    // setLoading(true);
-    // UpdateProjectDetails(updatedResponse, false);
-  };
-
-  const handleRunAIassessment = async () => {
-    setAiButtonLoading(true);
-    let file_paths = [];
-    console.log("projectData", projectData?.project_documents);
-    if (projectData?.project_documents?.length > 0) {
-      projectData?.project_documents?.forEach((document) => {
-        let { document_type, file_path } = document;
-        if (file_path !== null && file_path !== "null") {
-          file_paths.push(file_path);
-        }
-      });
-    }
-    if (file_paths?.length > 0) {
-      console.log("file_paths", file_paths);
-      const payload = {
-        project_id: projectData?.project_id,
-        imageKeys: file_paths,
-      };
-      try {
-        await ProjectApiService.uploadFilesToAIserver(payload).then(
-          (response) => {
-            message.success(
-              response?.data?.message ||
-                "Project documents uploaded to AI server successfully"
-            );
-          }
-        );
-        setAiButtonLoading(false);
-        fetchDetails(id);
-      } catch (error) {
-        console.log(error);
-        setAiButtonLoading(false);
-
-        message.error(API_ERROR_MESSAGE.FAILED_TO_RUN_ASSESSMENT);
-      }
-    } else {
-      setAiButtonLoading(false);
-      message.error(
-        "Please upload the project document to run the AI compliance assessment"
-      );
-      return;
-    }
-  };
-
-  const handleAddParameters = () => {
-    if (!newDoc.name || !newDoc.type) return;
-
-    setParameters((prev) => [...prev, newDoc]);
-    setNewDoc({ name: "", type: "" }); // reset inputs
-  };
-
-  const handleDeleteParameter = (index) => {
-    setParameters((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  // CSV File handling functions
-  const handleCsvFileUpload = (event) => {
-    const file = event.target.files[0];
-    if (file && file.type === 'text/csv') {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const csv = e.target.result;
-        const lines = csv.split('\n');
-        const headers = lines[0].split(',');
-        
-        if (headers.length >= 2 && headers[0].toLowerCase().includes('parameter') && headers[1].toLowerCase().includes('type')) {
-          const csvData = [];
-          for (let i = 1; i < lines.length; i++) {
-            const data = lines[i].split(',');
-            if (data.length >= 2 && data[0].trim() && data[1].trim()) {
-              csvData.push({
-                name: data[0].trim(),
-                type: data[1].trim()
-              });
-            }
-          }
-          setCsvParameters(csvData);
-          setSnackData({
-            show: true,
-            message: `Successfully loaded ${csvData.length} parameters from CSV`,
-            type: "success",
-          });
-        } else {
-          setSnackData({
-            show: true,
-            message: "Invalid CSV format. Expected columns: Parameter, Type",
-            type: "error",
-          });
-        }
-      };
-      reader.readAsText(file);
-    } else {
-      setSnackData({
-        show: true,
-        message: "Please select a valid CSV file",
-        type: "error",
-      });
-    }
-  };
-
-  const handleEditParameter = (index) => {
-    setEditingIndex(index);
-    setEditingValue({ 
-      name: csvParameters[index].name, 
-      type: csvParameters[index].type 
-    });
-  };
-
-  const handleSaveEdit = () => {
-    if (!editingValue.name || !editingValue.type) {
-      setSnackData({
-        show: true,
-        message: "Parameter name and type are required",
-        type: "error",
-      });
-      return;
-    }
-
-    const updatedParams = [...csvParameters];
-    updatedParams[editingIndex] = { ...editingValue };
-    setCsvParameters(updatedParams);
-    setEditingIndex(-1);
-    setEditingValue({ name: "", type: "" });
-    
-    setSnackData({
-      show: true,
-      message: "Parameter updated successfully",
-      type: "success",
-    });
-  };
-
-  const handleCancelEdit = () => {
-    setEditingIndex(-1);
-    setEditingValue({ name: "", type: "" });
-  };
-
-  const handleDeleteCsvParameter = (index) => {
-    setCsvParameters((prev) => prev.filter((_, i) => i !== index));
-    setSnackData({
-      show: true,
-      message: "Parameter deleted successfully",
-      type: "success",
-    });
-  };
 
   CustomTabPanel.propTypes = {
     children: PropTypes.node,
@@ -1119,14 +278,19 @@ const ProjectView = () => {
     };
   }
 
+  // Show error if project fails to load
+  if (projectError || standardError) {
+    return (
+      <Result
+        status="error"
+        title="Failed to load project data"
+        subTitle="Please try refreshing the page"
+      />
+    );
+  }
+
   return (
     <>
-      {/* <BreadcrumbsView
-        previousLink="/projects"
-        previousPage="My Projects"
-        currentPage={projectData?.project_name}
-      /> */}
-
       <div role="presentation" style={{ margin: "0px 0px 20px 0px" }}>
         <Breadcrumbs aria-label="breadcrumb">
           <Link
@@ -1150,7 +314,6 @@ const ProjectView = () => {
           </Link>
 
           <Link
-            //   underline="hover"
             color="inherit"
             aria-current="page"
           >
@@ -1160,519 +323,132 @@ const ProjectView = () => {
           </Link>
         </Breadcrumbs>
       </div>
+
       <Spin tip="Loading" size="large" spinning={loading}>
         <Box
           sx={{
-            margin: "auto",
-            padding: 3,
             background: "#fff",
             borderRadius: "10px",
-            boxShadow: "6px 12px 20px #e4e4e4",
+            border: "1px solid #e4e4e4",
+            height: 'calc(100vh - 160px)', // Fixed height with proper spacing
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden', // Prevent outer container from scrolling
           }}
         >
-          <Grid container rowSpacing={4.5} columnSpacing={2.75}>
-            {/* <Grid item xs={3} sm={3} md={3} lg={3}>
-              <ProjectDetailsCardView
-                data={projectData}
-                handleClick={(e) => handleModalOpen(e)}
-              />
-            </Grid> */}
+          {/* Tab Headers */}
+          <Box sx={{ borderBottom: 1, borderColor: "divider", flexShrink: 0, }}>
+            {/* Linear Progress Bar - Attached to Tabs */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
+              <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', paddingTop: "16px", paddingLeft: '16px', paddingRight: '16px' }}>
+                <Typography variant="h5" color="text.primary">
+                  {projectData?.project_name}
+                </Typography>
 
-            <Grid item xs={9} sm={9} md={9} lg={9}>
-              <Box sx={{ width: "100%" }}>
-                <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-                  <Tabs
-                    value={value}
-                    onChange={handleChange}
-                    aria-label="basic tabs example"
-                  >
-                    <Tab label={TAB_LABEL.OVERVIEW} {...a11yProps(0)} />
-                    <Tab label={TAB_LABEL.SUMMARY_REPORT} {...a11yProps(1)} />
-                    <Tab label={TAB_LABEL.CHAT_AI} {...a11yProps(2)} />
-                    {/* <Tab label={TAB_LABEL.VERSION_HISTORY} {...a11yProps(3)} /> */}
-                    <Tab label={TAB_LABEL.RISK_ASSESSMENT} {...a11yProps(3)} />
-                  </Tabs>
-                </Box>
-
-                {/* 1st Tab */}
-                <CustomTabPanel value={value} index={0}>
-                  <Grid container spacing={2} alignItems="stretch">
-                    {/* Left: Project Details */}
-                    <Grid item xs={12} md={4}>
-                      <ProjectDetailsCardView
-                        data={projectData}
-                        handleClick={(e) => handleModalOpen(e)}
-                      />
-                    </Grid>
-
-                    {/* Middle: File Structure */}
-                    <Grid item xs={12} md={6}>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          boxShadow: "0px 0px 41px #e4e4e4",
-                          padding: "20px",
-                          borderRadius: "10px",
-                          border: "1px solid #e4e4e4",
-                          width: "100%",
-                          height: "100%",
-                        }}
-                      >
-                        <Box>
-                          {PROJECT_DETAIL_PAGE.UPLOADED_PROJECT_DOCUMENTS}
-                          <FileStructureView data={projectData} />
-                        </Box>
-                      </Box>
-                    </Grid>
-
-                    {/* Right: Progress Ring */}
-                    <Grid item xs={12} md={2}>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          flexDirection: "column",
-                          justifyContent: "center",
-                          alignItems: "center",
-                          width: "200%",
-                          height: "auto", // makes it stretch evenly with siblings
-                          boxShadow: "0px 0px 41px #e4e4e4",
-                          padding: "20px",
-                          borderRadius: "10px",
-                          border: "1px solid #e4e4e4",
-                        }}
-                      >
-                        <ProgressRing
-                          label="Completion Progress"
-                          totalFiles={100}
-                          currentFiles={projectData?.completion_percentage}
-                        />
-                      </Box>
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        size="medium"
-                        startIcon={
-                          <AutoAwesomeIcon
-                            style={{ color: "white", fontSize: 24 }}
-                          />
-                        }
-                        onClick={() => handleRunAIassessment()}
-                        sx={{
-                          marginTop: "auto", // pushes button to bottom
-                          mt: 2,
-                          width: "200%",
-                          fontSize: 14,
-                        }}
-                        disabled={aiButtonLoading}
-                      >
-                        {PROJECT_DETAIL_PAGE.RUN_AI_COMPLIANCE_ASSESSMENT}
-                      </Button>
-                    </Grid>
-                  </Grid>
-
-                  {/* Extra Row for Processing status */}
-                  {projectData?.status === "Processing" && (
-                    <Grid
-                      item
-                      xs={12}
-                      style={{ textAlign: "center", marginTop: "40px" }}
-                    >
-                      <img src={processIcon} width="150px" alt="Processing" />
-                      <ProgressBarView />
-                    </Grid>
-                  )}
-                </CustomTabPanel>
-
-                {/* 2nd Tab */}
-                <CustomTabPanel value={value} index={1}>
-                  {/* <Box
-                    style={{
-                      display: "flex",
-                      boxShadow: "0px 0px 41px #e4e4e4",
-                      padding: "20px",
-                      borderRadius: "10px",
-                      border: "1px solid #e4e4e4",
-                    }}
-                  >
-                    {projectData?.checkListResponse ? (
-                      <FileCard
-                        fileName={PROJECT_DETAIL_PAGE.CHECKLIST_REPORT}
-                        data={projectData?.checkListResponse}
-                        projectData={projectData}
-                        updateProjectChecklist={updateProjectChecklist}
-                      />
-                    ) : (
-                      projectData?.status === "Processing" && (
-                        <img
-                          src={processIcon}
-                          alt="Processing"
-                          width="100px"
-                          height="100px"
-                          style={{ alignSelf: "center" }}
-                        />
-                      )
-                    )}
-                    {projectData?.complianceAssesment ? (
-                      <FileCard
-                        fileName={PROJECT_DETAIL_PAGE.ASSESSMENT_REPORT}
-                        data1={projectData?.complianceAssesment}
-                        data={projectData?.checkListResponse}
-                        projectData={projectData}
-                        updateProjectComplianceAssessment={
-                          updateProjectComplianceAssessment
-                        }
-                      />
-                    ) : (
-                      projectData?.status === "Processing" &&
-                      projectData?.checkListResponse && (
-                        <img
-                          src={processIcon}
-                          alt="Processing"
-                          width="100px"
-                          height="100px"
-                          style={{ alignSelf: "center" }}
-                        />
-                      )
-                    )}
-                  </Box> */}
-
-                  {/* Add parameters */}
-                  <Box
-                    sx={{
-                      p: 3,
-                      boxShadow: "0px 0px 41px #e4e4e4",
-                      borderRadius: "10px",
-                      border: "1px solid #e4e4e4",
-                      marginTop: "20px",
-                    }}
-                  >
-                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                      <Typography style={{ fontSize: "18px" }}>
-                        {PROJECT_DETAIL_PAGE.CSV_PARAMETERS}
-                      </Typography>
-                      
-                      {/* CSV Upload Button */}
-                      <Button
-                        variant="outlined"
-                        component="label"
-                        startIcon={<UploadFileIcon />}
-                        sx={{ ml: 2 }}
-                      >
-                        Load CSV
-                        <input
-                          type="file"
-                          accept=".csv"
-                          hidden
-                          onChange={handleCsvFileUpload}
-                        />
-                      </Button>
-                    </Box>
-
-                    {/* Manual Input Section */}
-                    <Box sx={{ display: "flex", gap: 2, alignItems: "center", mb: 2 }}>
-                      <TextField
-                        label="Parameter Name"
-                        labelId="document-name-label"
-                        variant="outlined"
-                        required
-                        value={newDoc.name}
-                        onChange={(e) =>
-                          setNewDoc({ ...newDoc, name: e.target.value })
-                        }
-                      />
-
-                      <FormControl fullWidth sx={{ maxWidth: 160 }}>
-                        <InputLabel id="document-type-label">Type*</InputLabel>
-                        <Select
-                          labelId="document-type-label"
-                          label="Type"
-                          value={newDoc.type}
-                          onChange={(e) =>
-                            setNewDoc({ ...newDoc, type: e.target.value })
-                          }
-                          required
-                        >
-                          {documentTypes.map((type) => (
-                            <MenuItem key={type} value={type}>
-                              {type}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-
-                      <Button
-                        variant="contained"
-                        onClick={handleAddParameters}
-                      >
-                        Add
-                      </Button>
-                    </Box>
-
-                    {/* CSV Parameters Table */}
-                    {csvParameters.length > 0 && (
-                      <Box sx={{ mt: 3 }}>
-                        <Typography variant="h6" gutterBottom>
-                          CSV Parameters
-                        </Typography>
-                        
-                        <TableContainer component={Paper} sx={{ mt: 2 }}>
-                          <Table>
-                            <TableHead>
-                              <TableRow>
-                                <TableCell><strong>Parameter Name</strong></TableCell>
-                                <TableCell><strong>Type</strong></TableCell>
-                                <TableCell align="center"><strong>Actions</strong></TableCell>
-                              </TableRow>
-                            </TableHead>
-                            <TableBody>
-                              {csvParameters.map((param, index) => (
-                                <TableRow key={`csv-param-${index}`}>
-                                  <TableCell>
-                                    {editingIndex === index ? (
-                                      <TextField
-                                        value={editingValue.name}
-                                        onChange={(e) =>
-                                          setEditingValue({ ...editingValue, name: e.target.value })
-                                        }
-                                        size="small"
-                                        fullWidth
-                                        autoFocus
-                                        variant="outlined"
-                                      />
-                                    ) : (
-                                      param.name
-                                    )}
-                                  </TableCell>
-                                  <TableCell>
-                                    {editingIndex === index ? (
-                                      <FormControl size="small" fullWidth variant="outlined">
-                                        <Select
-                                          value={editingValue.type}
-                                          onChange={(e) =>
-                                            setEditingValue({ ...editingValue, type: e.target.value })
-                                          }
-                                        >
-                                          {documentTypes.map((type) => (
-                                            <MenuItem key={type} value={type}>
-                                              {type}
-                                            </MenuItem>
-                                          ))}
-                                        </Select>
-                                      </FormControl>
-                                    ) : (
-                                      param.type
-                                    )}
-                                  </TableCell>
-                                  <TableCell align="center">
-                                    {editingIndex === index ? (
-                                      <Box sx={{ display: "flex", gap: 1, justifyContent: "center" }}>
-                                        <IconButton
-                                          color="primary"
-                                          onClick={handleSaveEdit}
-                                          size="small"
-                                        >
-                                          <SaveIcon />
-                                        </IconButton>
-                                        <IconButton
-                                          color="secondary"
-                                          onClick={handleCancelEdit}
-                                          size="small"
-                                        >
-                                          <CancelIcon />
-                                        </IconButton>
-                                      </Box>
-                                    ) : (
-                                      <Box sx={{ display: "flex", gap: 1, justifyContent: "center" }}>
-                                        <IconButton
-                                          color="primary"
-                                          onClick={() => handleEditParameter(index)}
-                                          size="small"
-                                        >
-                                          <EditIcon />
-                                        </IconButton>
-                                        <IconButton
-                                          color="error"
-                                          onClick={() => handleDeleteCsvParameter(index)}
-                                          size="small"
-                                        >
-                                          <DeleteIcon />
-                                        </IconButton>
-                                      </Box>
-                                    )}
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </TableContainer>
-                      </Box>
-                    )}
-
-                    {/* Manual Added Parameters List */}
-                    {parameters.length > 0 && (
-                      <Box sx={{ mt: 3 }}>
-                        <Typography variant="h6" gutterBottom>
-                          Manually Added Parameters
-                        </Typography>
-
-                        {parameters.map((param, index) => (
-                          <Box
-                            key={index}
-                            sx={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center",
-                              p: 1,
-                              mb: 1,
-                              border: "1px solid #ddd",
-                              borderRadius: "6px",
-                            }}
-                          >
-                            <Typography>
-                              <strong>{param.name}</strong> ({param.type})
-                            </Typography>
-                            <IconButton
-                              color="error"
-                              onClick={() => handleDeleteParameter(index)}
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </Box>
-                        ))}
-                      </Box>
-                    )}
-                  </Box>
-
-                  <Box
-                    style={{
-                      boxShadow: "0px 0px 41px #e4e4e4",
-                      padding: "20px",
-                      borderRadius: "10px",
-                      border: "1px solid #e4e4e4",
-                      marginTop: "20px",
-                    }}
-                  >
-                    <Typography style={{ fontSize: "18px" }}>
-                      {PROJECT_DETAIL_PAGE.HISTORY_DETAILS}
-                    </Typography>
-
-                    {projectData?.history !== undefined &&
-                    projectData?.history !== null ? (
-                      <HistoryDetails
-                        data={projectData?.history || historyValue}
-                      />
-                    ) : (
-                      <Empty />
-                    )}
-                    {/* <TimelineView /> */}
-                  </Box>
-                </CustomTabPanel>
-
-                {/* 3rd Tab */}
-                <CustomTabPanel value={value} index={2}>
-                  <Box
-                    style={{
-                      boxShadow: "0px 0px 41px #e4e4e4",
-                      padding: "20px",
-                      borderRadius: "10px",
-                      border: "1px solid #e4e4e4",
-                    }}
-                  >
-                    {/* <img src={chatAI} width="100%" /> */}
-                    {/* <Spin tip="Just a moment, I'm gathering the information for you..." size="large" spinning={chatLoading} style={{background:"white"}}> */}
-                    {/* {chatLoading ? (
-                      <Result
-                        icon={<img src={chatLoadingicon2} width={"20%"} />}
-                        subTitle="Just a moment, I'm gathering the information for you..."
-                      />
-                    ) : (
-                      <ChatAIView
-                        onSubmit={(e) => handlechatUpdate(e)}
-                        data={projectData?.chatResponse?.data}
-                        projectId={projectData?.project_id}
-                        responseValue={chatResponse}
-                      />
-                    )} */}
-                    {chatLoading ? (
-                      <Result
-                        icon={<img src={chatLoadingicon2} width={"20%"} />}
-                        subTitle="Please upload the project documents to enable chat functionality."
-                      />
-                    ) : (
-                      <ChatAIView
-                        onSubmit={(e) => handlechatUpdate(e)}
-                        data={projectData?.chatResponse?.data}
-                        projectId={projectData?.project_id}
-                        responseValue={chatResponse}
-                      />
-                    )}
-                    {/* </Spin> */}
-                  </Box>
-                </CustomTabPanel>
-
-                {/* 4th Tab */}
-                <CustomTabPanel value={value} index={3}>
-                  {/* <AssessmentHistoryTable
-                    assessmentHistory={projectData?.assessment_history}
-                  /> */}
-                  <Box
-                    sx={{
-                      boxShadow: "0px 0px 41px #e4e4e4",
-                      padding: "20px",
-                      borderRadius: "10px",
-                      border: "1px solid #e4e4e4",
-                      marginBottom: "20px",
-                    }}
-                  >
-                    {" "}
-                    <Typography
-                      style={{ fontSize: "18px", marginBottom: "10px" }}
-                    >
-                      {PROJECT_DETAIL_PAGE.RISK_SUMMARY}
-                    </Typography>
-                    {projectData?.risk_summary?.risks_summary ? (
-                      <Typography>
-                        {projectData?.risk_summary?.risks_summary}
-                      </Typography>
-                    ) : (
-                      <Typography>No Risk Summary available.</Typography>
-                    )}
-                  </Box>
-                  <Box
-                    sx={{
-                      boxShadow: "0px 0px 41px #e4e4e4",
-                      padding: "20px",
-                      borderRadius: "10px",
-                      border: "1px solid #e4e4e4",
-                    }}
-                  >
-                    <Typography
-                      style={{ fontSize: "18px", marginBottom: "10px" }}
-                    >
-                      {PROJECT_DETAIL_PAGE.EXTRACTED_INFO}
-                    </Typography>
-                    {projectData?.extracted_information ? (
-                      <Typography>
-                        {projectData?.extracted_information}
-                      </Typography>
-                    ) : (
-                      <Typography>
-                        No Extracted Information available.
-                      </Typography>
-                    )}
-                  </Box>
-                </CustomTabPanel>
+                {statusChip(projectData?.status)}
               </Box>
-            </Grid>
-          </Grid>
+              <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Project Progress :
+                  </Typography>
+                  <Typography variant="body2" fontWeight="bold" style={{ marginLeft: '8px', marginRight: '8px' }}>
+                    {Math.round(projectData?.completion_percentage || 0)}%
+                  </Typography>
+
+                  {(projectData?.completion_percentage || 0) && <Typography variant="body2" color="text.secondary" >
+                    ( Upload project files to enable AI features)
+                  </Typography>}
+                </Box>
+                <LinearProgress
+                  variant="determinate"
+                  value={projectData?.completion_percentage || 0}
+                  sx={{
+                    height: 6,
+                    padding: 0,
+                    margin: 0,
+                    borderRadius: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.08)',
+                    '& .MuiLinearProgress-bar': {
+                      borderRadius: 0,
+                    },
+                  }}
+                />
+              </Box>
+              <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '0 16px' }}>
+                <Tabs
+                  value={value}
+                  onChange={handleChange}
+                  aria-label="basic tabs example"
+                >
+                  <Tab label={TAB_LABEL.OVERVIEW} {...a11yProps(0)} />
+                  <Tab
+                    label={TAB_LABEL.SUMMARY_REPORT}
+                    {...a11yProps(1)}
+                    disabled={(projectData?.completion_percentage || 0) <= 0}
+                  />
+                  <Tab
+                    label={TAB_LABEL.CHAT_AI}
+                    {...a11yProps(2)}
+                    disabled={(projectData?.completion_percentage || 0) <= 0}
+                  />
+                  <Tab
+                    label={TAB_LABEL.RISK_ASSESSMENT}
+                    {...a11yProps(3)}
+                    disabled={(projectData?.completion_percentage || 0) <= 0}
+                  />
+                </Tabs>
+              </Box>
+            </Box>
+
+
+            {/* Linear Progress Bar - Attached to Tabs */}
+
+          </Box>
+
+          {/* Tab Content Container */}
+          <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
+            {/* Overview Tab */}
+            <CustomTabPanel value={value} index={0}>
+              <OverviewTab
+                projectData={projectData}
+                handleModalOpen={handleModalOpen}
+                handleRunAIAssessment={handleRunAIAssessment}
+                aiButtonLoading={aiButtonLoading}
+                onFileUploadSuccess={refetchProjectData}
+              />
+            </CustomTabPanel>
+
+            {/* Summary Report Tab */}
+            <CustomTabPanel value={value} index={1}>
+              <SummaryReportTab
+                projectData={projectData}
+                setSnackData={setSnackData}
+              />
+            </CustomTabPanel>
+
+            {/* Chat AI Tab */}
+            <CustomTabPanel value={value} index={2}>
+              <ChatAITab
+                chatLoading={chatLoading}
+                handleChatUpdate={handleChatUpdate}
+                projectData={projectData}
+                chatResponse={chatResponse}
+              />
+            </CustomTabPanel>
+
+            {/* Risk Assessment Tab */}
+            <CustomTabPanel value={value} index={3}>
+              <RiskAssessmentTab projectData={projectData} />
+            </CustomTabPanel>
+          </Box>
         </Box>
 
         {/* File Upload Modal */}
         <Dialog
           open={openModal}
-          onClose={() => setOpenModal(false)}
+          onClose={handleFileModalClose}
           style={{ zIndex: "999" }}
         >
           <DialogTitle>Upload Documents</DialogTitle>
@@ -1685,7 +461,7 @@ const ProjectView = () => {
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setOpenModal(false)} color="primary">
+            <Button onClick={handleFileModalClose} color="primary">
               Cancel
             </Button>
             <Button
@@ -1699,6 +475,7 @@ const ProjectView = () => {
           </DialogActions>
         </Dialog>
 
+        {/* Edit Project Modal */}
         <Modal
           title={
             modalType === "Edit" ? HEADING.EDIT_PROJECT : HEADING.INVITE_USERS
@@ -1708,30 +485,30 @@ const ProjectView = () => {
           footer={null}
           width={800}
         >
-          {/* <UserCreation onHandleClose={(e)=>handleClose()}/> */}
           <EditProject
             data={projectData}
-            onHandleClose={(e) => handleClose()}
-            editDetails={(e) => updateDetails(e)}
+            onHandleClose={handleModalClose}
+            editDetails={updateProjectDetails}
             type={modalType}
           />
         </Modal>
 
+        {/* Progress Modal */}
         <Modal
           title=""
           visible={isProgressModalVisible}
-          onCancel={handleprogressModalClose}
+          onCancel={handleProgressModalClose}
           footer={null}
           width={500}
         >
           <Box style={{ justifyItems: "center" }}>
-            <img src={reportIcon} width={"100px"} />
+            <img src={reportIcon} width={"100px"} alt="Report" />
             <Typography style={{ margin: "27px 5px" }}>
               We got your request and will notify you once it is ready.
             </Typography>
             <Button
               variant="contained"
-              onClick={() => handleprogressModalClose()}
+              onClick={handleProgressModalClose}
             >
               Close
             </Button>
@@ -1744,10 +521,10 @@ const ProjectView = () => {
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
           open={snackData.show}
           autoHideDuration={3000}
-          onClose={() => setSnackData({ show: false })}
+          onClose={hideSnackbar}
         >
           <Alert
-            onClose={() => setSnackData({ show: false })}
+            onClose={hideSnackbar}
             severity={snackData.type}
           >
             {snackData.message}

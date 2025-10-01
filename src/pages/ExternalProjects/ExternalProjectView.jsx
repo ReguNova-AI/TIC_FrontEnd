@@ -100,7 +100,7 @@ const ExternalProjectView = () => {
       setLoading(false);
     }
   };
-  const handleModalOpen = () => {};
+  const handleModalOpen = () => { };
 
   const handleFileChange = (file) => {
     setUploadedDocument(file);
@@ -224,7 +224,10 @@ const ExternalProjectView = () => {
                         }}
                       >
                         {PROJECT_DETAIL_PAGE.UPLOADED_FILES}
-                        <FileStructureView data={projectData} />
+                        <FileStructureView
+                          data={projectData}
+                          onFileUploadSuccess={() => fetchProjectData(id)}
+                        />
                       </Box>
                     </Grid>
                     {projectData?.status === "Processing" && (

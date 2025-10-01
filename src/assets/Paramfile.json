@@ -1,0 +1,38 @@
+[
+  {
+    "Parameter": "Contract Price",
+    "Type": "short"
+  },
+  {
+    "Parameter": "Owner name",
+    "Type": "short"
+  },
+  {
+    "Parameter": "Delivery Requirements",
+    "Type": "long"
+  },
+  {
+    "Parameter": "spare parts",
+    "Type": "long"
+  },
+  {
+    "Parameter": "Limitation of Liability",
+    "Type": "long"
+  },
+  {
+    "Parameter": "Limit on delay liquidated damages",
+    "Type": "short"
+  },
+  {
+    "Parameter": "Limitation of Liability",
+    "Type": "long"
+  },
+  {
+    "Parameter": "Payment schedule",
+    "Type": "long"
+  },
+  {
+    "Parameter": "Initial sworn statement",
+    "Type": "long"
+  }
+]

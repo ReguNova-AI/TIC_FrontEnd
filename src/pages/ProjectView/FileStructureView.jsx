@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 import {
   CheckOutlined,
   DownloadOutlined,
@@ -17,6 +18,7 @@ import {
   FileImageOutlined,
   FileUnknownOutlined,
   CloseCircleOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
 import { FileUploadApiService } from "services/api/FileUploadAPIService";
@@ -46,11 +48,12 @@ const getFileIcon = (filename) => {
   }
 };
 
-const FileStructureView = ({ data }) => {
+const FileStructureView = ({ data, onFileUploadSuccess }) => {
   const [showLine, setShowLine] = useState(true);
   const [showIcon, setShowIcon] = useState(true);
   const [showLeafIcon, setShowLeafIcon] = useState(false);
   const [gData, setGData] = useState([]); // Store the tree data
+  const [expandedKeys, setExpandedKeys] = useState([]); // Store keys to expand
   const [newDoc, setNewDoc] = useState({ file: null });
 
   // --- Upload modal state
@@ -107,7 +110,7 @@ const FileStructureView = ({ data }) => {
 
   const handleUploadDocument = (doc_data) => {
     const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
-
+    console.log("Document data to upload", doc_data);
     const payload = {
       project_id: data?.project_id,
       document_name: doc_data?.document_name,
@@ -130,16 +133,22 @@ const FileStructureView = ({ data }) => {
     };
     console.log("Final payload", JSON.stringify(payload, null, 2));
 
-    ProjectApiService.uploadProjectDocument(payload)
+    ProjectApiService.uploadProjectDocument(payload, doc_data.version_id
+    )
       .then((response) => {
         message.success(response.message || "Document uploaded successfully!");
         console.log("payload", payload);
+
+        // Call the callback to refresh project data in parent component
+        if (onFileUploadSuccess) {
+          onFileUploadSuccess();
+        }
       })
       .catch((errResponse) => {
         message.error(
           errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR ||
-            "Document upload failed!"
+          API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR ||
+          "Document upload failed!"
         );
       });
 
@@ -152,13 +161,57 @@ const FileStructureView = ({ data }) => {
     setNewDoc({ file: null });
   };
 
-  const handleFileChange = async (e) => {
+  const handleDeleteDocument = async (document) => {
+    try {
+      if (!document.version_id || !document.document_id) {
+        message.error("Document ID or version ID not found!");
+        return;
+      }
+
+      // Show Antd Modal confirmation dialog
+      Modal.confirm({
+        title: 'Delete Document',
+        content: `Are you sure you want to delete "${document.document_name}"? This action cannot be undone.`,
+        okText: 'Delete',
+        okType: 'danger',
+        cancelText: 'Cancel',
+        onOk: async () => {
+          try {
+            const response = await ProjectApiService.deleteProjectDocument(
+              document.document_id,
+              document.version_id
+            );
+
+            message.success(response.message || "Document deleted successfully!");
+
+            // Call the callback to refresh project data in parent component
+            if (onFileUploadSuccess) {
+              onFileUploadSuccess();
+            }
+          } catch (error) {
+            console.error("Delete failed:", error);
+            message.error(
+              error?.error?.message ||
+              API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR ||
+              "Failed to delete document!"
+            );
+          }
+        },
+      });
+    } catch (error) {
+      console.error("Delete setup failed:", error);
+      message.error("Failed to initiate delete operation!");
+    }
+  };
+
+  const handleFileChange = async (e, document) => {
     const file = e.target.files[0];
     if (!file) return;
 
     // store file locally
     setNewDoc((prev) => ({ ...prev, file }));
-
+    console.log("Selected file:", file);
+    console.log("Selected document:", document);
     try {
       // Wait for upload to finish and get the path
       const uploadedPath = await handleFileUpload(file);
@@ -177,6 +230,7 @@ const FileStructureView = ({ data }) => {
   // Function to transform the data into the required tree format
   const transformDataToTree = (documents) => {
     const treeStructure = {};
+    const folderKeys = []; // Collect all folder keys
 
     documents.forEach((document) => {
       let { document_type, document_name, file_path, folder_name, version } =
@@ -185,22 +239,31 @@ const FileStructureView = ({ data }) => {
       if (document_type === "Custom Regulatory") {
         document_type = FORM_LABEL.CUSTOM_REGULATORY;
       }
+
+      const folderKey = document_type?.replace(/\s+/g, "-");
+
       // If the tree structure doesn't have the folder (documenttype), create it
       if (!treeStructure[document_type]) {
         treeStructure[document_type] = {
           // title: document_type,
           title: `${folder_name} (${document_type})`,
-          key: document_type?.replace(/\s+/g, "-"), // Key to be unique (no spaces)
+          key: folderKey, // Key to be unique (no spaces)
           // icon: <FolderFilled style={{ color: "blue" }} />,
           icon: (
             <img
               src={folderIcon}
               width="20px"
               style={{ marginRight: "10px" }}
+              alt="folder"
             />
           ),
           children: [],
         };
+
+        // Add folder key to the list for expansion
+        if (!folderKeys.includes(folderKey)) {
+          folderKeys.push(folderKey);
+        }
       }
 
       // Add the document under the correct folder
@@ -241,7 +304,7 @@ const FileStructureView = ({ data }) => {
                     type="file"
                     hidden
                     id="file-input"
-                    onChange={(e) => handleFileChange(e)}
+                    onChange={(e) => handleFileChange(e, document)}
                     onClick={(document) => setDocument(document)}
                   />
                   <label htmlFor="file-input">
@@ -265,16 +328,32 @@ const FileStructureView = ({ data }) => {
 
             {/* Tooltip for the download icon */}
             {file_path && (
-              <Tooltip title="Download">
-                <DownloadOutlined
-                  style={{
-                    marginLeft: 8,
-                    marginRight: 8,
-                    fontSize: 16,
-                    color: "#3366ff",
-                  }}
-                />
-              </Tooltip>
+              <>
+                <Tooltip title="Download">
+                  <DownloadOutlined
+                    style={{
+                      marginLeft: 8,
+                      marginRight: 8,
+                      fontSize: 16,
+                      color: "#3366ff",
+                    }}
+                  />
+                </Tooltip>
+
+                {/* Delete button */}
+                <Tooltip title="Delete Document">
+                  <DeleteOutlined
+                    onClick={() => handleDeleteDocument(document)}
+                    style={{
+                      marginLeft: 4,
+                      marginRight: 8,
+                      fontSize: 16,
+                      color: "#ff4d4f",
+                      cursor: "pointer",
+                    }}
+                  />
+                </Tooltip>
+              </>
             )}
 
             {/* {file_path && version && (
@@ -302,15 +381,19 @@ const FileStructureView = ({ data }) => {
     });
 
     // Convert the treeStructure object to an array of trees
-    return Object.values(treeStructure);
+    return {
+      treeData: Object.values(treeStructure),
+      folderKeys: folderKeys
+    };
   };
 
   // Set the tree data when the component mounts or when `data` changes
   useEffect(() => {
     if (data && Array.isArray(data?.project_documents)) {
-      const transformedData = transformDataToTree(data?.project_documents);
+      const { treeData, folderKeys } = transformDataToTree(data?.project_documents);
 
-      setGData(transformedData); // Set the tree data
+      setGData(treeData); // Set the tree data
+      setExpandedKeys(folderKeys); // Set keys to expand all folders
     }
   }, [data]);
 
@@ -363,13 +446,19 @@ const FileStructureView = ({ data }) => {
         className="draggable-tree"
         showLine={showLine ? { showLeafIcon } : false}
         showIcon={showIcon}
-        defaultExpandedKeys={["0-0", "0-1"]} // Expands both parent nodes by default
+        expandedKeys={expandedKeys} // Controlled expansion
+        onExpand={setExpandedKeys} // Handle expand/collapse
         onSelect={onSelect}
         treeData={gData} // Set the dynamic tree data
         blockNode
       />
     </div>
   );
+};
+
+FileStructureView.propTypes = {
+  data: PropTypes.object,
+  onFileUploadSuccess: PropTypes.func,
 };
 
 export default FileStructureView;
