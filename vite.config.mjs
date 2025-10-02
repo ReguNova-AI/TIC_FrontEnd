@@ -25,9 +25,20 @@ export default defineConfig({
       },
     ],
   },
+  // Optimize for production and memory usage
+  esbuild: {
+    // Reduce memory usage
+    target: "es2015",
+    logLevel: "error",
+  },
+  optimizeDeps: {
+    // Reduce memory usage during dependency optimization
+    force: false,
+    include: ["react", "react-dom"],
+  },
   server: {
     // this ensures that the browser opens upon server start
-    open: true,
+    open: false, // Don't auto-open browser on server
     host: "0.0.0.0",
     // this sets a default port to 3000
     port: 3000,
@@ -37,12 +48,12 @@ export default defineConfig({
       "www.diligence2ai.com",
       "localhost",
       "127.0.0.1",
-      ".diligence2ai.com" // This allows all subdomains
+      ".diligence2ai.com", // This allows all subdomains
     ],
   },
   preview: {
     // this ensures that the browser opens upon preview start
-    open: true,
+    open: false, // Don't auto-open browser
     // this sets a default port to 3000
     port: 3000,
     host: "0.0.0.0",
@@ -52,7 +63,21 @@ export default defineConfig({
       "www.diligence2ai.com",
       "localhost",
       "127.0.0.1",
-      ".diligence2ai.com" // This allows all subdomains
+      ".diligence2ai.com", // This allows all subdomains
     ],
+  },
+  build: {
+    // Optimize build for smaller memory usage
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Split large libraries into separate chunks
+          "react-vendor": ["react", "react-dom"],
+          "ui-vendor": ["@mui/material", "@emotion/react", "@emotion/styled"],
+          "antd-vendor": ["antd"],
+        },
+      },
+    },
   },
 });
