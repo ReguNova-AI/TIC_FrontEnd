@@ -180,7 +180,7 @@ const RiskAssessmentTab = ({ projectData }) => {
                 }
               }}
             >
-              Download PDF
+              Download Report
             </Button>
 
             <Button
