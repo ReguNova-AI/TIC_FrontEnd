@@ -10,6 +10,9 @@ export const PROJECT_QUERY_KEYS = {
   projectDetails: (id) => ["projects", "details", id],
   standardData: "standardData",
   chatResponse: (projectId) => ["projects", "chat", projectId],
+  riskSummary: (projectId) => ["projects", "riskSummary", projectId],
+  chatHistory: (projectId) => ["projects", "chatHistory", projectId],
+  extractedInfo: (projectId) => ["projects", "extractedInfo", projectId],
 };
 
 // Custom Hooks for Project Data
@@ -226,6 +229,128 @@ export const useUpdateProjectChecklist = () => {
     onError: (error) => {
       message.error(
         error?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR
+      );
+    },
+  });
+};
+
+// Risk Summary Hook
+export const useRiskSummary = (projectId) => {
+  return useQuery({
+    queryKey: PROJECT_QUERY_KEYS.riskSummary(projectId),
+    queryFn: () => ProjectApiService.getRiskSummary(projectId),
+    enabled: !!projectId,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: false,
+    select: (response) => {
+      // Handle different response formats
+      if (response?.data?.risk_summary?.risks_summary) {
+        return response.data.risk_summary?.risks_summary;
+      }
+      return null;
+    },
+    onError: (error) => {
+      console.error("Failed to fetch risk summary:", error);
+    },
+  });
+};
+
+// Chat History Hook
+export const useChatHistory = (projectId) => {
+  return useQuery({
+    queryKey: PROJECT_QUERY_KEYS.chatHistory(projectId),
+    queryFn: () => ProjectApiService.getChatHistory(projectId),
+    enabled: !!projectId,
+    staleTime: 1000 * 60 * 2, // 2 minutes
+    refetchOnWindowFocus: false,
+    select: (response) => {
+      console.log("Chat history response:", response);
+      console.log("Chat history response:", response?.data);
+      console.log("Chat history response:", response?.data?.chat_history);
+      console.log(
+        "Chat history response:",
+        Array.isArray(response?.data?.chat_history)
+      );
+      console.log(
+        "Chat history response:",
+        Array.isArray(response?.data?.chat_history)
+      );
+      // Handle different response formats
+      if (
+        response?.data &&
+        response?.data?.chat_history &&
+        Array.isArray(response?.data?.chat_history)
+      ) {
+        console.log(
+          "Chat history response:",
+          Array.isArray(response?.data?.chat_history)
+        );
+        return response.data.chat_history;
+      }
+      if (response?.data?.history && Array.isArray(response.data.history)) {
+        return response.data.history;
+      }
+      return [];
+    },
+    onError: (error) => {
+      console.error("Failed to fetch chat history:", error);
+    },
+  });
+};
+
+// Extracted Info Hook
+export const useExtractedInfo = (projectId) => {
+  return useQuery({
+    queryKey: PROJECT_QUERY_KEYS.extractedInfo(projectId),
+    queryFn: () => ProjectApiService.getExtractedInfo(projectId),
+    enabled: !!projectId,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: false,
+    select: (response) => response?.data?.extracted_information || null,
+    onError: (error) => {
+      console.error("Failed to fetch extracted info:", error);
+    },
+  });
+};
+
+// Chat Mutation Hook
+export const useChatMutation = (projectId) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ query }) => ProjectApiService.projectChat(query, projectId),
+    onSuccess: (response, variables) => {
+      // Invalidate and refetch chat history to include the new chat
+      queryClient.invalidateQueries({
+        queryKey: PROJECT_QUERY_KEYS.chatHistory(projectId),
+      });
+    },
+    onError: (error) => {
+      console.error("Chat mutation failed:", error);
+    },
+  });
+};
+
+// Regenerate Risk Summary Mutation Hook
+export const useRegenerateRiskSummary = (projectId) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => ProjectApiService.regenerateRiskSummary(projectId),
+    onSuccess: (response) => {
+      // Invalidate and refetch risk summary to show the new data
+      queryClient.invalidateQueries({
+        queryKey: PROJECT_QUERY_KEYS.riskSummary(projectId),
+      });
+
+      message.success("Risk assessment regenerated successfully!");
+    },
+    onError: (error) => {
+      console.error("Risk summary regeneration failed:", error);
+      message.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Failed to regenerate risk assessment. Please try again."
       );
     },
   });

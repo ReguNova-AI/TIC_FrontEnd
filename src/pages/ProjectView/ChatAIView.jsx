@@ -6,97 +6,110 @@ import {
   CircularProgress,
   Typography,
 } from "@mui/material";
-import axios from "axios";
 import { useSpring, animated } from "react-spring"; // For animations
-import { API_ERROR_MESSAGE, API_SUCCESS_MESSAGE } from "shared/constants";
+import { API_ERROR_MESSAGE } from "shared/constants";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
-import { ProjectApiService } from "services/api/ProjectAPIService";
+import { useChatHistory, useChatMutation } from "./useProjectQueries";
+import { useQueryClient } from "@tanstack/react-query";
+import { PROJECT_QUERY_KEYS } from "./useProjectQueries";
 
-const ChatAIView = ({ data, onSubmit, responseValue, projectId }) => {
-  if (responseValue?.length === 0) {
-    responseValue = "";
-  }
+const ChatAIView = ({ data, projectId }) => {
+
   const [query, setQuery] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [response, setResponse] = useState(responseValue || "");
-  const [history, setHistory] = useState(data || []); // State to store history of questions and responses
+  const [currentQuestion, setCurrentQuestion] = useState("");
+  const [response, setResponse] = useState();
+  const [isQuestionActive, setIsQuestionActive] = useState(false); // Track if we're in the middle of asking a question
   const [snackData, setSnackData] = useState({
     show: false,
     message: "",
     type: "error",
   });
 
+  // Get query client for manual cache invalidation
+  const queryClient = useQueryClient();
+
+  // Use React Query hook to fetch chat history
+  const {
+    data: chatHistoryData,
+    isLoading: isLoadingHistory,
+  } = useChatHistory(projectId);
+
+  // Use React Query mutation for chat operations
+  const chatMutation = useChatMutation(projectId);
+
+  // Use chatHistoryData directly or fallback to provided data
+  const history = chatHistoryData ?? [];
+
   // Spring animation for the response text
   const animationProps = useSpring({
-    opacity: response ? 1 : 0,
-    transform: response ? "translateY(0)" : "translateY(10px)",
+    opacity: currentQuestion && response ? 1 : 0,
+    transform: currentQuestion && response ? "translateY(0)" : "translateY(10px)",
     config: { tension: 100, friction: 10 },
   });
 
-  // const handleSearch = useCallback(async () => {
-  //   if (!query) return;
-
-  //   setLoading(true);
-  //   try {
-  //     const response = await ProjectApiService.projectChat(query, projectId);
-  //     const newHistory = {
-  //       question: query?.replace("'", " "),
-  //       answer: response.data?.output_text,
-  //     };
-  //     setHistory((prevHistory) => [...prevHistory, newHistory]);
-  //     setResponse(response.data.data.output_text);
-
-  //     onSubmit([...history, newHistory]);
-  //   } catch (errResponse) {
-  //     console.error("Error fetching data:", errResponse);
-
-  //     const apiMessage =
-  //       errResponse?.response?.data?.message || // API-provided message
-  //       errResponse?.message || // Axios error message
-  //       API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR; // fallback
-
-  //     // setSnackData({
-  //     //   show: true,
-  //     //   message: apiMessage,
-  //     //   type: "error",
-  //     // });
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // }, [query, history, onSubmit]);
-
   const handleSearch = useCallback(async () => {
-    if (!query) return;
+    if (!query.trim()) return;
 
-    setLoading(true);
     try {
-      const response = await ProjectApiService.projectChat(query, projectId);
+      // Set question active state
+      setIsQuestionActive(true);
 
-      const newHistoryEntry = {
-        question: query?.replace("'", " "),
-        answer: response.data?.output_text,
-      };
+      // Store the current question before any operations
+      const questionToAsk = query;
 
-      setHistory((prevHistory) => {
-        const updatedHistory = [...prevHistory, newHistoryEntry];
+      // Clear current response and prepare for new question
+      if (currentQuestion || response) {
+        setResponse(""); // Clear only response first
 
-        // ✅ Call onSubmit with the correct latest history
-        if (onSubmit) {
-          onSubmit(updatedHistory);
-        }
+        // Silently refetch chat history without showing loading indicator
+        queryClient.invalidateQueries({
+          queryKey: PROJECT_QUERY_KEYS.chatHistory(projectId),
+          refetchType: 'none', // Don't trigger a refetch immediately
+        });
 
-        return updatedHistory;
-      });
+        // Manually refetch in background
+        queryClient.refetchQueries({
+          queryKey: PROJECT_QUERY_KEYS.chatHistory(projectId),
+          type: 'active',
+        });
+      }
 
-      setResponse(response.data?.output_text);
+      // Set the new question immediately
+      setCurrentQuestion(questionToAsk);
+
+      // Clear the query input immediately
+      setQuery("");
+
+      // Make the API call
+      const apiResponse = await chatMutation.mutateAsync({ query: questionToAsk });
+
+      // Set the current response for immediate display
+      setResponse(apiResponse.data?.output_text);
+
+      // Reset question active state
+      setIsQuestionActive(false);
+
+      // Note: React Query will automatically invalidate and refetch chat history
+
     } catch (errResponse) {
       console.error("Error fetching data:", errResponse);
-      // error handling...
-    } finally {
-      setLoading(false);
+
+      // Reset question active state on error
+      setIsQuestionActive(false);
+
+      const apiMessage =
+        errResponse?.response?.data?.message ||
+        errResponse?.message ||
+        API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR;
+
+      setSnackData({
+        show: true,
+        message: apiMessage,
+        type: "error",
+      });
     }
-  }, [query, projectId, onSubmit]);
+  }, [query, chatMutation, currentQuestion, response, queryClient, projectId]);
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
@@ -105,81 +118,144 @@ const ChatAIView = ({ data, onSubmit, responseValue, projectId }) => {
   };
 
   return (
-    <Box sx={{ width: "100%", marginTop: 2, padding: 2, textAlign: "center" }}>
-      <TextField
-        label="Ask something"
-        variant="outlined"
-        fullWidth
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        onKeyDown={handleKeyDown} // Add the keydown event here
-        sx={{ marginBottom: 2 }}
-      />
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={handleSearch}
-        sx={{ marginBottom: 2 }}
-        disabled={loading}
-      >
-        {loading ? <CircularProgress size={24} color="inherit" /> : "Search"}
-      </Button>
+    <Box sx={{
+      width: "100%",
+      height: "100%",
+      display: "flex",
+      flexDirection: "column",
+      textAlign: "center"
+    }}>
+      {/* Input and Search Button in same row */}
+      <Box sx={{ display: "flex", paddingTop: 2, gap: 2, marginBottom: 2, alignItems: "center", flexShrink: 0 }}>
+        <TextField
+          label="Ask something"
+          variant="outlined"
+          fullWidth
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleKeyDown}
+        />
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleSearch}
+          disabled={chatMutation.isPending}
+          sx={{ minWidth: "80px", height: "36px" }}
+        >
+          {chatMutation.isPending ? <CircularProgress size={24} color="inherit" /> : "Ask"}
+        </Button>
+      </Box>
 
-      {/* Animation for the response */}
-      <animated.div style={animationProps}>
-        {response && (
-          <Typography
-            variant="body1"
-            sx={{
-              marginTop: 2,
-              padding: 2,
-              backgroundColor: "#f0f0f0",
-              borderRadius: 2,
-            }}
-          >
-            {response}
-          </Typography>
-        )}
-      </animated.div>
+      {/* Animation for the current question and response */}
+      <Box sx={{ flexShrink: 0 }}>
+        <animated.div style={animationProps}>
+          {currentQuestion && response && (
+            <Box sx={{ marginTop: 2, textAlign: "left" }}>
+              {/* Display the current question */}
+              <Typography
+                variant="body2"
+                sx={{
+                  fontWeight: "bold",
+                  marginBottom: 1,
+                  padding: 2,
+                  backgroundColor: "#e3f2fd",
+                  borderRadius: 2,
+                }}
+              >
+                Q: {currentQuestion}
+              </Typography>
+
+              {/* Display the current response */}
+              <Typography
+                variant="body1"
+                sx={{
+                  padding: 2,
+                  backgroundColor: "#f0f0f0",
+                  borderRadius: 2,
+                }}
+              >
+                A: {response}
+              </Typography>
+            </Box>
+          )}
+        </animated.div>
+      </Box>
 
       {/* Render the history of questions and responses */}
       <Box
         sx={{
-          marginTop: 3,
+
           textAlign: "left",
-          paddingRight: "10px", // Space for scrollbar
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          minHeight: 0, // This is crucial for flex children to shrink
         }}
       >
-        <Typography variant="h6" sx={{ marginBottom: 1 }}>
-          {history.length > 0 &&
-            `Previously Asked ${history.length === 1 ? "Question" : "Questions"}`}
+        <Typography variant="h6" sx={{ marginBottom: 2, flexShrink: 0 }}>
+          Previously Asked Questions
         </Typography>
-        <Box
-          sx={{
-            marginTop: 3,
-            textAlign: "left",
-            maxHeight: "600px",
-            overflowY: "auto",
-            paddingRight: "10px", // Space for scrollbar
-          }}
-        >
-          {history.map((entry, index) => (
-            <Box
-              key={index}
-              sx={{
-                marginBottom: 2,
-                padding: 2,
-                backgroundColor: "#f9f9f9",
-                borderRadius: 2,
-              }}
-            >
-              <Typography variant="body2" sx={{ fontWeight: "bold" }}>
-                Q: {entry.question}
+
+        {isLoadingHistory && !isQuestionActive ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 2 }}>
+            <CircularProgress size={24} />
+            <Typography sx={{ ml: 2 }}>Loading chat history...</Typography>
+          </Box>
+        ) : (
+          <Box
+            sx={{
+              flex: 1,
+              overflowY: "auto",
+              paddingRight: "10px", // Space for scrollbar
+              border: "1px solid #e0e0e0",
+              borderRadius: 2,
+              padding: 2,
+              backgroundColor: "#fafafa",
+              minHeight: 0, // Important for scrolling
+              // Ensure smooth scrolling
+              scrollBehavior: "smooth",
+              // Add custom scrollbar styling
+              "&::-webkit-scrollbar": {
+                width: "8px",
+              },
+              "&::-webkit-scrollbar-track": {
+                backgroundColor: "#f1f1f1",
+                borderRadius: "4px",
+              },
+              "&::-webkit-scrollbar-thumb": {
+                backgroundColor: "#c1c1c1",
+                borderRadius: "4px",
+                "&:hover": {
+                  backgroundColor: "#a8a8a8",
+                },
+              },
+            }}
+          >
+            {history.length > 0 ? (
+              [...history].reverse().map((entry, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    marginBottom: 2,
+                    padding: 2,
+                    backgroundColor: "#f9f9f9",
+                    borderRadius: 2,
+                    border: "1px solid #e0e0e0",
+                  }}
+                >
+                  <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+                    Q: {entry.question}
+                  </Typography>
+                  <Typography variant="body1">A: {entry.answer}</Typography>
+                </Box>
+              ))
+            ) : (
+              <Typography variant="body2" sx={{ color: "#666", fontStyle: "italic", textAlign: "center", py: 2 }}>
+                No questions asked yet. Start by asking something above!
               </Typography>
-              <Typography variant="body1">A: {entry.answer}</Typography>
-            </Box>
-          ))}
-        </Box>
+            )}
+          </Box>
+        )}
       </Box>
 
       {/* Snackbar for displaying messages */}

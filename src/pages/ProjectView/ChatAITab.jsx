@@ -7,21 +7,20 @@ import chatLoadingicon2 from "../../assets/images/icons/chatLoadingIcon2.svg";
 
 const ChatAITab = ({
   chatLoading,
-  handleChatUpdate,
+
   projectData,
-  chatResponse,
+
 }) => {
   return (
     <Box
       sx={{
-        boxShadow: "0px 0px 41px #e4e4e4",
-        padding: "20px",
+
+
         borderRadius: "10px",
-        border: "1px solid #e4e4e4",
+
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        overflow: "hidden",
       }}
     >
       {chatLoading ? (
@@ -30,12 +29,12 @@ const ChatAITab = ({
           subTitle="Please upload the project documents to enable chat functionality."
         />
       ) : (
-        <Box sx={{ flex: 1, overflow: "hidden" }}>
+        <Box sx={{ flex: 1, overflow: "auto", minHeight: 0 }}>
           <ChatAIView
-            onSubmit={(e) => handleChatUpdate(e)}
+
             data={projectData?.chatResponse?.data}
             projectId={projectData?.project_id}
-            responseValue={chatResponse}
+
           />
         </Box>
       )}

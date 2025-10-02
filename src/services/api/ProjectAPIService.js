@@ -26,7 +26,45 @@ const _createProjectDocument = (payload) => {
 
 const _deleteProjectDocument = (documentId, versionId) => {
   return BaseApiService.delete(
-    `/api/v1/project_document/delete/${documentId}/${versionId}`
+    `/api/v1/project_document/delete/${documentId}/${versionId}`,
+    null,
+    null
+  );
+};
+
+const _extractParameters = (payload) => {
+  return BaseApiService.post(`/api/v3/parameters/extract`, null, payload);
+};
+
+const _getRiskSummary = (projectId) => {
+  return BaseApiService.get(
+    `/api/v1/project_document/risk-summary/${projectId}`,
+    null,
+    null
+  );
+};
+
+const _regenerateRiskSummary = (projectId) => {
+  return BaseApiService.get(
+    `/api/v3/risk/summary?project_id=${projectId}`,
+    null,
+    null
+  );
+};
+
+const _getChatHistory = (projectId) => {
+  return BaseApiService.get(
+    `/api/v1/project_document/chat-history/${projectId}`,
+    null,
+    null
+  );
+};
+
+const _getExtractedInfo = (projectId) => {
+  return BaseApiService.get(
+    `/api/v1/project_document/extracted-info/${projectId}`,
+    null,
+    null
   );
 };
 
@@ -197,5 +235,10 @@ export const ProjectApiService = {
   uploadProjectDocument: _uploadProjectDocument,
   createProjectDocument: _createProjectDocument,
   deleteProjectDocument: _deleteProjectDocument,
+  extractParameters: _extractParameters,
+  getRiskSummary: _getRiskSummary,
+  regenerateRiskSummary: _regenerateRiskSummary,
+  getChatHistory: _getChatHistory,
+  getExtractedInfo: _getExtractedInfo,
   uploadFilesToAIserver: _uploadFilesToAIserver,
 };

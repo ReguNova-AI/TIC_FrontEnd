@@ -130,7 +130,7 @@ export const LISTING_PAGE = Object.freeze({
 
 export const TAB_LABEL = Object.freeze({
   OVERVIEW: "Overview",
-  SUMMARY_REPORT: "Summary Report",
+  SUMMARY_REPORT: "Data Query",
   CHAT_AI: "Chat AI",
   VERSION_HISTORY: "Version History",
   RISK_ASSESSMENT: "Risk Assessment",
@@ -144,7 +144,7 @@ export const PROJECT_DETAIL_PAGE = Object.freeze({
   ASSESSMENT_REPORT: "Assessment Report",
   HISTORY_DETAILS: "History Details",
   RUN_DETAILS: "Run Details",
-  UPLOADED_PROJECT_DOCUMENTS: "Uploaded Project Documents",
+  UPLOADED_PROJECT_DOCUMENTS: "Documents",
   UPLOADED_STANDARD_DOCUMENTS: "Uploaded Standard Documents",
   UPLOADED_CUSTOM_STANDARD_DOCUMENTS: "Uploaded Custom Standard Documents",
   NO_OF_RUNS: "No. of runs",

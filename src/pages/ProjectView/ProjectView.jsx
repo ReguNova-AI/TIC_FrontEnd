@@ -78,7 +78,7 @@ const ProjectView = () => {
   const {
     isProgressModalVisible,
     handleProgressModalClose,
-    handleChatUpdate,
+
     updateProjectDetails,
     handleRunAIAssessment,
     runComplianceAssessment,
@@ -340,26 +340,26 @@ const ProjectView = () => {
           <Box sx={{ borderBottom: 1, borderColor: "divider", flexShrink: 0, }}>
             {/* Linear Progress Bar - Attached to Tabs */}
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
-              <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', paddingTop: "16px", paddingLeft: '16px', paddingRight: '16px' }}>
-                <Typography variant="h5" color="text.primary">
-                  {projectData?.project_name}
-                </Typography>
 
-                {statusChip(projectData?.status)}
-              </Box>
               <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
 
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    Project Progress :
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1, paddingTop: "8px", paddingLeft: '16px', paddingRight: '16px' }}>
+                  <Typography variant="h5" color="text.primary">
+                    {projectData?.project_name}
                   </Typography>
-                  <Typography variant="body2" fontWeight="bold" style={{ marginLeft: '8px', marginRight: '8px' }}>
-                    {Math.round(projectData?.completion_percentage || 0)}%
-                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Progress :
+                    </Typography>
+                    <Typography variant="body2" fontWeight="bold" style={{ marginLeft: '8px', marginRight: '8px' }}>
+                      {Math.round(projectData?.completion_percentage || 0)}%
+                    </Typography>
+                    {((projectData?.completion_percentage || 0) === 0) && <Typography variant="body2" color="text.secondary" >
+                      ( Upload project files to enable AI features)
+                    </Typography>}
+                  </Box>
 
-                  {(projectData?.completion_percentage || 0) && <Typography variant="body2" color="text.secondary" >
-                    ( Upload project files to enable AI features)
-                  </Typography>}
+                  {statusChip(projectData?.status)}
                 </Box>
                 <LinearProgress
                   variant="determinate"
@@ -424,7 +424,6 @@ const ProjectView = () => {
             <CustomTabPanel value={value} index={1}>
               <SummaryReportTab
                 projectData={projectData}
-                setSnackData={setSnackData}
               />
             </CustomTabPanel>
 
@@ -432,9 +431,9 @@ const ProjectView = () => {
             <CustomTabPanel value={value} index={2}>
               <ChatAITab
                 chatLoading={chatLoading}
-                handleChatUpdate={handleChatUpdate}
+
                 projectData={projectData}
-                chatResponse={chatResponse}
+
               />
             </CustomTabPanel>
 
