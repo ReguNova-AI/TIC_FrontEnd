@@ -921,7 +921,7 @@ export default function UserCreation({ onHandleClose, type, selecteddata }) {
                     <Select
                       value={selectedOrg}
                       onChange={handleOrgChange}
-                      // disabled={type !== "new" ? true : false}
+                    // disabled={type !== "new" ? true : false}
                     >
                       {/* <MenuItem value="">
                       <em>None</em>
@@ -985,7 +985,7 @@ export default function UserCreation({ onHandleClose, type, selecteddata }) {
                           .map((industry) => industry.industry_name)
                           .join(", ");
                       }}
-                      // disabled={filteredIndustries.length === 0 || type !== "new"}
+                    // disabled={filteredIndustries.length === 0 || type !== "new"}
                     >
                       {filteredIndustries.map((industry) => (
                         <MenuItem
