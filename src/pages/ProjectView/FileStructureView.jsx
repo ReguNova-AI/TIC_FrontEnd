@@ -1,15 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import PropTypes from "prop-types";
 import {
   CheckOutlined,
-  DownloadOutlined,
-  FolderFilled,
+  FolderAddOutlined,
+  FileAddOutlined,
+  SaveOutlined,
+  CloseOutlined,
+  PlusCircleOutlined,
+  FolderOpenOutlined,
 } from "@ant-design/icons";
-import { message, Progress, Tree, Modal, Tooltip } from "antd";
+import { message, Progress, Tree, Modal, Tooltip, Button, Input, Select, Space, Card, Typography } from "antd";
 import { IconButton } from "@mui/material";
 import { API_ERROR_MESSAGE, FORM_LABEL } from "shared/constants";
 import folderIcon from "../../assets/images/icons/folderIcon1.svg";
-import { InsertDriveFile } from "@mui/icons-material";
 import {
   FilePdfOutlined,
   FileWordOutlined,
@@ -17,7 +20,6 @@ import {
   FileTextOutlined,
   FileImageOutlined,
   FileUnknownOutlined,
-  CloseCircleOutlined,
   DeleteOutlined,
 } from "@ant-design/icons";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
@@ -55,6 +57,14 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
   const [gData, setGData] = useState([]); // Store the tree data
   const [expandedKeys, setExpandedKeys] = useState([]); // Store keys to expand
   const [newDoc, setNewDoc] = useState({ file: null });
+
+  // New folder and file creation states
+  const [isCreatingFolder, setIsCreatingFolder] = useState(false);
+  const [isCreatingFile, setIsCreatingFile] = useState(false);
+  const [newFolderName, setNewFolderName] = useState("");
+  const [newFileName, setNewFileName] = useState("");
+  const [newFileType, setNewFileType] = useState("");
+  const [addingFileToFolder, setAddingFileToFolder] = useState(null); // Track which folder is getting a new file
 
   // --- Upload modal state
   const [uploadingFile, setUploadingFile] = useState(null);
@@ -204,6 +214,152 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
     }
   };
 
+  // Handler for creating new folder
+  const handleCreateFolder = () => {
+    if (!newFolderName.trim()) {
+      message.error("Please enter a folder name");
+      return;
+    }
+
+    // Check if folder already exists (check existing folders from data + manually created ones)
+    const existingFolders = data?.project_documents
+      ?.map(doc => doc.folder_name)
+      .filter(name => name && name !== "null") || [];
+
+    const manuallyCreatedFolders = gData
+      .filter(item => !item.isLeaf && !item.documentData)
+      .map(item => {
+        // Extract folder name from the complex title structure
+        if (typeof item.title === 'string') return item.title;
+        // For React elements, we'll use the key to extract the name
+        return item.key?.replace(/^folder-/, '').replace(/-\d+$/, '').replace(/-/g, ' ');
+      })
+      .filter(Boolean);
+
+    const allFolders = [...existingFolders, ...manuallyCreatedFolders];
+
+    if (allFolders.includes(newFolderName)) {
+      message.error("Folder with this name already exists");
+      return;
+    }
+
+    // Create new folder node
+    const newFolderNode = {
+      title: (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <img
+              src={folderIcon}
+              width="20px"
+              style={{ marginRight: "8px" }}
+              alt="folder"
+            />
+            <span style={{ fontWeight: 500, color: "#1890ff" }}>{newFolderName}</span>
+          </div>
+          <Tooltip title="Add document to this folder">
+            <Button
+              type="text"
+              size="small"
+              icon={<PlusCircleOutlined />}
+              onClick={(e) => {
+                e.stopPropagation();
+                setAddingFileToFolder(newFolderName);
+                setIsCreatingFile(true);
+              }}
+              style={{
+                fontSize: 12,
+                padding: "4px 8px",
+                marginLeft: 8,
+                color: "#1890ff",
+                borderRadius: 4,
+                background: "rgba(24, 144, 255, 0.1)",
+                border: "1px solid rgba(24, 144, 255, 0.2)",
+                transition: "all 0.2s"
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = "rgba(24, 144, 255, 0.15)";
+                e.target.style.borderColor = "rgba(24, 144, 255, 0.3)";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = "rgba(24, 144, 255, 0.1)";
+                e.target.style.borderColor = "rgba(24, 144, 255, 0.2)";
+              }}
+            />
+          </Tooltip>
+        </div>
+      ),
+      key: `folder-${newFolderName.replace(/\s+/g, "-")}-${Date.now()}`,
+      children: [],
+    };
+
+    // Add to tree data
+    setGData(prevData => [newFolderNode, ...prevData]);
+
+    // Expand the new folder
+    setExpandedKeys(prev => [...prev, newFolderNode.key]);
+
+    // Reset state
+    setNewFolderName("");
+    setIsCreatingFolder(false);
+
+    message.success("Folder created successfully!");
+  };
+
+  // Handler for creating new file
+  const handleCreateFile = (folderName = null) => {
+    if (!newFileName.trim() || !newFileType.trim()) {
+      message.error("Please enter file name and select document type");
+      return;
+    }
+
+    const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
+
+    // Create API payload
+    const payload = {
+      project_id: data?.project_id,
+      document_name: newFileName,
+      document_type: newFileType,
+      uploaded_by_id: userdetails?.[0]?.user_id,
+      uploaded_by_name:
+        userdetails?.[0]?.user_first_name +
+        " " +
+        userdetails?.[0]?.user_last_name,
+      folder_name: folderName || "null", // Use provided folder name or root level
+      document_desc: "",
+      file_path: null,
+      risk_information: {
+        risk_level: " ",
+        mitigation: " ",
+      },
+      information_extract: {
+        summary: " ",
+      },
+    };
+
+    // Call API to create document
+    ProjectApiService.createProjectDocument(payload)
+      .then((response) => {
+        message.success(response.message || "Document created successfully!");
+
+        // Call the callback to refresh project data in parent component
+        if (onFileUploadSuccess) {
+          onFileUploadSuccess();
+        }
+
+        // Reset state
+        setNewFileName("");
+        setNewFileType("");
+        setIsCreatingFile(false);
+        setAddingFileToFolder(null);
+      })
+      .catch((errResponse) => {
+        message.error(
+          errResponse?.error?.message ||
+          "Failed to create document!"
+        );
+      });
+  };
+
   const handleFileChange = async (e, document) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -228,93 +384,69 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
   };
 
   // Function to transform the data into the required tree format
-  const transformDataToTree = (documents) => {
+  const transformDataToTree = useCallback((documents) => {
     const treeStructure = {};
     const folderKeys = []; // Collect all folder keys
+    const rootFiles = []; // Files without a folder
 
     documents.forEach((document) => {
-      let { document_type, document_name, file_path, folder_name, version } =
+      let { document_type, document_name, file_path, folder_name } =
         document;
       console.log("inside document", document);
+
       if (document_type === "Custom Regulatory") {
         document_type = FORM_LABEL.CUSTOM_REGULATORY;
       }
 
-      const folderKey = document_type?.replace(/\s+/g, "-");
-
-      // If the tree structure doesn't have the folder (documenttype), create it
-      if (!treeStructure[document_type]) {
-        treeStructure[document_type] = {
-          // title: document_type,
-          title: `${folder_name} (${document_type})`,
-          key: folderKey, // Key to be unique (no spaces)
-          // icon: <FolderFilled style={{ color: "blue" }} />,
-          icon: (
-            <img
-              src={folderIcon}
-              width="20px"
-              style={{ marginRight: "10px" }}
-              alt="folder"
-            />
-          ),
-          children: [],
-        };
-
-        // Add folder key to the list for expansion
-        if (!folderKeys.includes(folderKey)) {
-          folderKeys.push(folderKey);
-        }
-      }
-
-      // Add the document under the correct folder
-      treeStructure[document_type].children.push({
+      // Create the file node
+      const fileNode = {
         title: (
-          <div style={{ display: "flex", alignItems: "center" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
             <span
               style={{
-                width: "48%",
+                flex: 1,
                 overflow: "hidden",
-                display: "inline-block",
                 whiteSpace: "nowrap",
                 textOverflow: "ellipsis",
+                marginRight: 8
               }}
             >
-              {document_name}
+              {document_name} ({document_type})
             </span>
 
-            {/* File input with icon */}
-            {file_path ? (
-              <>
-                <IconButton
-                  component="span"
-                  sx={{
-                    padding: 0,
-                    marginLeft: 1,
-                    marginRight: 1,
-                    fontSize: 16,
-                  }}
-                >
-                  {getFileIcon(document_type)}
-                </IconButton>
-              </>
-            ) : (
-              <>
+            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              {/* File type icon - always show at the end */}
+              <div style={{ display: "flex", alignItems: "center" }}>
+                {getFileIcon(document_type)}
+              </div>
+
+              {/* Upload/Delete actions */}
+              {file_path ? (
+                <Tooltip title="Delete Document">
+                  <DeleteOutlined
+                    onClick={() => handleDeleteDocument(document)}
+                    style={{
+                      fontSize: 16,
+                      color: "#ff4d4f",
+                      cursor: "pointer",
+                      marginLeft: 4
+                    }}
+                  />
+                </Tooltip>
+              ) : (
                 <Tooltip title="Upload Document">
                   <input
                     type="file"
                     hidden
-                    id="file-input"
+                    id={`file-input-${document.document_id}-${document.version_id}`}
                     onChange={(e) => handleFileChange(e, document)}
                     onClick={(document) => setDocument(document)}
                   />
-                  <label htmlFor="file-input">
+                  <label htmlFor={`file-input-${document.document_id}-${document.version_id}`}>
                     <IconButton
                       component="span"
-                      // color={newDoc.file ? "success" : "default"}
                       sx={{
                         padding: 0,
-                        marginLeft: 1,
-                        marginRight: 1,
                         fontSize: 16,
                         color: "#3366ff",
                       }}
@@ -323,69 +455,116 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
                     </IconButton>
                   </label>
                 </Tooltip>
-              </>
-            )}
-
-            {/* Tooltip for the download icon */}
-            {file_path && (
-              <>
-                <Tooltip title="Download">
-                  <DownloadOutlined
-                    style={{
-                      marginLeft: 8,
-                      marginRight: 8,
-                      fontSize: 16,
-                      color: "#3366ff",
-                    }}
-                  />
-                </Tooltip>
-
-                {/* Delete button */}
-                <Tooltip title="Delete Document">
-                  <DeleteOutlined
-                    onClick={() => handleDeleteDocument(document)}
-                    style={{
-                      marginLeft: 4,
-                      marginRight: 8,
-                      fontSize: 16,
-                      color: "#ff4d4f",
-                      cursor: "pointer",
-                    }}
-                  />
-                </Tooltip>
-              </>
-            )}
-
-            {/* {file_path && version && (
-              <Tooltip title={`Version: ${version}`}>
-                <span
-                  style={{
-                    width: "10%",
-                    overflow: "hidden",
-                    display: "inline-block",
-                    whiteSpace: "nowrap",
-                    textOverflow: "ellipsis",
-                    color: "gray",
-                    fontSize: "10px",
-                  }}
-                >
-                  {version}
-                </span>
-              </Tooltip>
-            )} */}
+              )}
+            </div>
           </div>
         ),
-        key: file_path, // Use document path as a unique key
-        isLeaf: true, // Mark the document as a leaf node
+        key: `${document.document_id}-${document.version_id}`, // Use unique key
+        isLeaf: true,
+        documentData: document, // Store original document data
+      };
+
+      // Check if document has a folder_name and it's not "null" or empty
+      if (folder_name && folder_name !== "null" && folder_name.trim() !== "") {
+        const folderKey = folder_name.replace(/\s+/g, "-");
+
+        // If the tree structure doesn't have the folder, create it
+        if (!treeStructure[folder_name]) {
+          treeStructure[folder_name] = {
+            title: (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  <img
+                    src={folderIcon}
+                    width="20px"
+                    style={{ marginRight: "8px" }}
+                    alt="folder"
+                  />
+                  <span style={{ fontWeight: 500, color: "#1890ff" }}>{folder_name}</span>
+                </div>
+                <Tooltip title="Add document to this folder">
+                  <Button
+                    type="text"
+                    size="small"
+                    icon={<PlusCircleOutlined />}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setAddingFileToFolder(folder_name);
+                      setIsCreatingFile(true);
+                    }}
+                    style={{
+                      fontSize: 12,
+                      padding: "4px 8px",
+                      marginLeft: 8,
+                      color: "#1890ff",
+                      borderRadius: 4,
+                      background: "rgba(24, 144, 255, 0.1)",
+                      border: "1px solid rgba(24, 144, 255, 0.2)",
+                      transition: "all 0.2s"
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = "rgba(24, 144, 255, 0.15)";
+                      e.target.style.borderColor = "rgba(24, 144, 255, 0.3)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = "rgba(24, 144, 255, 0.1)";
+                      e.target.style.borderColor = "rgba(24, 144, 255, 0.2)";
+                    }}
+                  />
+                </Tooltip>
+              </div>
+            ),
+            key: folderKey,
+            children: [],
+          };
+
+          // Add folder key to the list for expansion
+          if (!folderKeys.includes(folderKey)) {
+            folderKeys.push(folderKey);
+          }
+        }
+
+        // Add the document under the correct folder
+        treeStructure[folder_name].children.push(fileNode);
+      } else {
+        // Document doesn't have a folder, add it to root level
+        rootFiles.push(fileNode);
+      }
+    });
+
+    // Sort files within each folder alphabetically
+    Object.keys(treeStructure).forEach(folderName => {
+      treeStructure[folderName].children.sort((a, b) => {
+        const nameA = a.documentData?.document_name || '';
+        const nameB = b.documentData?.document_name || '';
+        return nameA.localeCompare(nameB);
       });
     });
 
-    // Convert the treeStructure object to an array of trees
+    // Sort root files alphabetically
+    rootFiles.sort((a, b) => {
+      const nameA = a.documentData?.document_name || '';
+      const nameB = b.documentData?.document_name || '';
+      return nameA.localeCompare(nameB);
+    });
+
+    // Convert the treeStructure object to an array and sort folders alphabetically
+    const folderNodes = Object.values(treeStructure).sort((a, b) => {
+      console.log(a)
+      return (a.key
+        ?? "").localeCompare(b.key
+          ?? '')
+    });
+
+    // Combine folders and root files
+    const treeData = [...folderNodes, ...rootFiles];
+
     return {
-      treeData: Object.values(treeStructure),
+      treeData: treeData,
       folderKeys: folderKeys
     };
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Set the tree data when the component mounts or when `data` changes
   useEffect(() => {
@@ -395,26 +574,243 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
       setGData(treeData); // Set the tree data
       setExpandedKeys(folderKeys); // Set keys to expand all folders
     }
-  }, [data]);
+  }, [data, transformDataToTree]);
 
   const onSelect = (selectedKeys, info) => {
     console.log("selected", selectedKeys, info);
   };
 
-  const handleLeafIconChange = (value) => {
-    if (value === "custom") {
-      return setShowLeafIcon(<CheckOutlined />);
-    }
-    if (value === "true") {
-      return setShowLeafIcon(true);
-    }
-    return setShowLeafIcon(false);
-  };
-
   return (
     <div>
-      <div style={{ marginBottom: 16 }}>
-        {/* Your additional controls can go here */}
+      <div style={{ marginBottom: 20 }}>
+        {/* Create Buttons Row */}
+        <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
+          <Button
+            type="primary"
+            ghost
+            icon={<FolderAddOutlined />}
+            onClick={() => setIsCreatingFolder(true)}
+            style={{
+              borderRadius: 8,
+              height: 40,
+              fontSize: 14,
+              fontWeight: 500,
+              borderColor: "#52c41a",
+              color: "#52c41a"
+            }}
+          >
+            Create New Folder
+          </Button>
+
+          <Button
+            type="primary"
+            icon={<FileAddOutlined />}
+            onClick={() => setIsCreatingFile(true)}
+            style={{
+              borderRadius: 8,
+              height: 40,
+              fontSize: 14,
+              fontWeight: 500,
+              background: "linear-gradient(135deg, #1890ff 0%, #40a9ff 100%)",
+              border: "none"
+            }}
+          >
+            Create New Document
+          </Button>
+        </div>
+
+        {/* Create Folder Modal/Card */}
+        {isCreatingFolder && (
+          <Card
+            size="small"
+            style={{
+              background: "#f6ffed",
+              border: "1px solid #b7eb8f",
+              borderRadius: 8,
+              marginBottom: 16
+            }}
+          >
+            <Space align="center" style={{ width: "100%" }}>
+              <FolderAddOutlined style={{ color: "#52c41a", fontSize: 16 }} />
+              <Input
+                placeholder="Enter folder name..."
+                value={newFolderName}
+                onChange={(e) => setNewFolderName(e.target.value)}
+                onPressEnter={handleCreateFolder}
+                style={{
+                  borderRadius: 6,
+                  border: "1px solid #d9f7be"
+                }}
+                autoFocus
+              />
+              <Button
+                type="primary"
+                icon={<SaveOutlined />}
+                onClick={handleCreateFolder}
+                style={{ borderRadius: 6, background: "#52c41a", borderColor: "#52c41a" }}
+              >
+                Create
+              </Button>
+              <Button
+                icon={<CloseOutlined />}
+                onClick={() => {
+                  setIsCreatingFolder(false);
+                  setNewFolderName("");
+                }}
+                style={{ borderRadius: 6 }}
+              >
+                Cancel
+              </Button>
+            </Space>
+          </Card>
+        )}
+
+        {/* Create File Modal/Card */}
+        {isCreatingFile && (
+          <Card
+            size="small"
+            style={{
+              background: "#f0f9ff",
+              border: "1px solid #91d5ff",
+              borderRadius: 8,
+              marginBottom: 16
+            }}
+          >
+            <Space direction="vertical" style={{ width: "100%" }} size="small">
+              {addingFileToFolder && (
+                <div style={{
+                  padding: "8px 12px",
+                  background: "#e6f7ff",
+                  borderRadius: 6,
+                  border: "1px solid #bae7ff"
+                }}>
+                  <Typography.Text style={{ fontSize: 13, color: "#1890ff" }}>
+                    <FolderOpenOutlined style={{ marginRight: 6 }} />
+                    Adding to folder: <strong>{addingFileToFolder}</strong>
+                  </Typography.Text>
+                </div>
+              )}
+
+              <Space align="center" style={{ width: "100%", flexWrap: "wrap" }}>
+                <FileAddOutlined style={{ color: "#1890ff", fontSize: 16 }} />
+                <Input
+                  placeholder="Enter document name..."
+                  value={newFileName}
+                  onChange={(e) => setNewFileName(e.target.value)}
+                  style={{
+                    minWidth: 200,
+                    borderRadius: 6,
+                    border: "1px solid #91d5ff"
+                  }}
+                  autoFocus
+                />
+                <Select
+                  placeholder="Select document type"
+                  value={newFileType}
+                  onChange={setNewFileType}
+                  style={{
+                    minWidth: 180,
+                    borderRadius: 6
+                  }}
+                  options={[
+                    {
+                      value: "Technical Specification",
+                      label: (
+                        <Space>
+                          <FilePdfOutlined style={{ color: "#cf1322" }} />
+                          Technical Specification
+                        </Space>
+                      )
+                    },
+                    {
+                      value: "Safety Standard",
+                      label: (
+                        <Space>
+                          <FileTextOutlined style={{ color: "#722ed1" }} />
+                          Safety Standard
+                        </Space>
+                      )
+                    },
+                    {
+                      value: "Test Report",
+                      label: (
+                        <Space>
+                          <FileExcelOutlined style={{ color: "#52c41a" }} />
+                          Test Report
+                        </Space>
+                      )
+                    },
+                    {
+                      value: "Certificate",
+                      label: (
+                        <Space>
+                          <FilePdfOutlined style={{ color: "#cf1322" }} />
+                          Certificate
+                        </Space>
+                      )
+                    },
+                    {
+                      value: "Manual",
+                      label: (
+                        <Space>
+                          <FileWordOutlined style={{ color: "#1890ff" }} />
+                          Manual
+                        </Space>
+                      )
+                    },
+                    {
+                      value: "Custom Regulatory",
+                      label: (
+                        <Space>
+                          <FileUnknownOutlined style={{ color: "#595959" }} />
+                          Custom Regulatory
+                        </Space>
+                      )
+                    },
+                    {
+                      value: "Other",
+                      label: (
+                        <Space>
+                          <FileUnknownOutlined style={{ color: "#595959" }} />
+                          Other
+                        </Space>
+                      )
+                    },
+                  ]}
+                />
+              </Space>
+
+              <Space style={{ marginTop: 8 }}>
+                <Button
+                  type="primary"
+                  icon={<SaveOutlined />}
+                  onClick={() => handleCreateFile(addingFileToFolder)}
+                  style={{
+                    borderRadius: 6,
+                    background: "#1890ff",
+                    borderColor: "#1890ff"
+                  }}
+                  disabled={!newFileName.trim() || !newFileType}
+                >
+                  Create Document
+                </Button>
+                <Button
+                  icon={<CloseOutlined />}
+                  onClick={() => {
+                    setIsCreatingFile(false);
+                    setNewFileName("");
+                    setNewFileType("");
+                    setAddingFileToFolder(null);
+                  }}
+                  style={{ borderRadius: 6 }}
+                >
+                  Cancel
+                </Button>
+              </Space>
+            </Space>
+          </Card>
+        )}
+
         {/* Upload Progress Modal */}
 
         <Modal

@@ -5,6 +5,7 @@ import Typography from "@mui/material/Typography";
 import { Chip, Grid, Box, Divider, Button, Tooltip } from "@mui/material";
 import Avatar from "@mui/material/Avatar";
 import AvatarGroup from "@mui/material/AvatarGroup";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import avatar1 from "../../assets/images/users/avatar-1.png";
 import avatar2 from "../../assets/images/users/avatar-2.png";
 import avatar3 from "../../assets/images/users/avatar-3.png";
@@ -46,6 +47,8 @@ const ProjectDetailsCardView = ({
   data,
   handleClick,
   isExternalProject = false,
+  handleRunAIAssessment,
+  aiButtonLoading,
 }) => {
   const statusChip = (status) => {
     const { title, color, borderColor } = getStatusChipProps(status);
