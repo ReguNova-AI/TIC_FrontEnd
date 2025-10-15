@@ -11,7 +11,7 @@ import IconButton from '@mui/material/IconButton';
 import AppBarStyled from './AppBarStyled';
 import HeaderContent from './HeaderContent';
 // import logo from "../../../assets/images/logo.png";
-import logo from "../../../assets/images/GridConform2.jpg";
+import logo from "../../../assets/images/gridConform2.png";
 
 
 import { handlerDrawerOpen, useGetMenuMaster } from 'api/menu';
@@ -38,7 +38,7 @@ export default function Header() {
   // common header
   const mainHeader = (
     <Toolbar>
-      <img src={logo} width="150px" />
+      <img src={logo} width="100px" height="63px" />
       {/* <IconButton
         disableRipple
         aria-label="open drawer"

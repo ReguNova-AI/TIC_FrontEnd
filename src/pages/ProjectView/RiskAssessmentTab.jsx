@@ -6,7 +6,9 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import DownloadIcon from "@mui/icons-material/Download";
 import html2pdf from "html2pdf.js";
 import { PROJECT_DETAIL_PAGE } from "shared/constants";
-import { useRiskSummary, useRegenerateRiskSummary } from "./useProjectQueries";
+import { useRiskSummary } from "./useProjectQueries";
+import { useRiskSummaryOperations } from "../../components/hooks/useRiskSummaryOperations";
+import RiskSummaryStatusIndicator from "../../components/RiskSummaryStatusIndicator";
 
 const RiskAssessmentTab = ({ projectData }) => {
   // Ref to track if we've already attempted auto-regeneration
@@ -20,8 +22,12 @@ const RiskAssessmentTab = ({ projectData }) => {
     isError
   } = useRiskSummary(projectData?.project_id);
 
-  // Use React Query mutation for regenerating risk summary
-  const regenerateRiskSummary = useRegenerateRiskSummary(projectData?.project_id);
+  // Use global state for regenerating risk summary
+  const {
+    isRiskSummaryLoading,
+    currentRiskSummaryStatus,
+    handleRegenerateRiskSummary,
+  } = useRiskSummaryOperations(projectData);
 
   // Auto-regenerate risk summary if it's null and we haven't tried before
   useEffect(() => {
@@ -30,23 +36,20 @@ const RiskAssessmentTab = ({ projectData }) => {
       !isLoading && // Not currently loading
       !error && // No error from initial fetch
       riskSummary === null && // Risk summary is null
-      !regenerateRiskSummary.isPending && // Not already regenerating
+      !isRiskSummaryLoading && // Not already regenerating
       !hasAttemptedAutoRegeneration.current // Haven't tried auto-regeneration before
     ) {
       hasAttemptedAutoRegeneration.current = true;
-      regenerateRiskSummary.mutate();
+      handleRegenerateRiskSummary();
     }
   }, [
     projectData?.project_id,
     isLoading,
     error,
     riskSummary,
-    regenerateRiskSummary
+    isRiskSummaryLoading,
+    handleRegenerateRiskSummary
   ]);
-
-  const handleRegenerateRiskSummary = () => {
-    regenerateRiskSummary.mutate();
-  };
 
   const handleDownloadRiskReport = () => {
     if (!riskSummary) return;
@@ -159,16 +162,23 @@ const RiskAssessmentTab = ({ projectData }) => {
         }}
       >
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-          <Typography style={{ fontSize: "18px" }}>
-            {PROJECT_DETAIL_PAGE.RISK_SUMMARY}
-          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Typography style={{ fontSize: "18px" }}>
+              {PROJECT_DETAIL_PAGE.RISK_SUMMARY}
+            </Typography>
+            <RiskSummaryStatusIndicator 
+              projectId={projectData?.project_id} 
+              variant="progress" 
+              size="small" 
+            />
+          </Box>
 
           <Box sx={{ display: "flex", gap: 1 }}>
             <Button
               variant="outlined"
               startIcon={<DownloadIcon />}
               onClick={handleDownloadRiskReport}
-              disabled={!riskSummary || regenerateRiskSummary.isPending || isLoading}
+              disabled={!riskSummary || isRiskSummaryLoading || isLoading}
               size="small"
               sx={{
                 textTransform: 'none',
@@ -187,7 +197,7 @@ const RiskAssessmentTab = ({ projectData }) => {
               variant="outlined"
               startIcon={<RefreshIcon />}
               onClick={handleRegenerateRiskSummary}
-              disabled={regenerateRiskSummary.isPending || isLoading}
+              disabled={isRiskSummaryLoading || isLoading}
               size="small"
               sx={{
                 textTransform: 'none',
@@ -199,7 +209,7 @@ const RiskAssessmentTab = ({ projectData }) => {
                 }
               }}
             >
-              {regenerateRiskSummary.isPending ? (
+              {isRiskSummaryLoading ? (
                 <>
                   <CircularProgress size={16} sx={{ mr: 1 }} />
                   Regenerating...

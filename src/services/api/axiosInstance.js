@@ -19,6 +19,9 @@ const instance = axios.create({
   headers: { ...postHeaders },
 });
 
+// Ensure browser will send cookies (session) with requests when CORS allows credentials
+instance.defaults.withCredentials = true;
+
 instance.CancelToken = axios.CancelToken;
 instance.isCancel = axios.isCancel;
 

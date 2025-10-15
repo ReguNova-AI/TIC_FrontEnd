@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Typography,
   Box,
@@ -35,16 +35,50 @@ import { PROJECT_DETAIL_PAGE } from "shared/constants";
 import { useParameterManager } from "./useParameterManager";
 import { ProjectApiService } from "services/api/ProjectAPIService";
 import { useExtractedInfo } from "./useProjectQueries";
+import { useDataQuery } from "../../contexts/DataQueryContext";
+import DataExtractionLoader from "../../components/DataExtractionLoader";
 
 const documentTypes = ["short", "long", "int", "boolean", "array", "object"];
 
 const SummaryReportTab = ({ projectData }) => {
   const { parameters, handleAddParameters, handleDeleteParameter } = useParameterManager();
+  
+  // Global state from context
+  const { 
+    isExtracting, 
+    isProjectExtracting, 
+    startDataExtraction, 
+    stopDataExtraction,
+    setCsvParameters,
+    getCsvParameters,
+    setExtractedParameters,
+    getExtractedParameters,
+    setShowResults,
+    getShowResults,
+    clearProjectData
+  } = useDataQuery();
 
-  // State for parameter extraction
-  const [extractedParameters, setExtractedParameters] = useState(null);
-  const [isExtracting, setIsExtracting] = useState(false);
-  const [showResults, setShowResults] = useState(false);
+  // Get project-specific data from global context
+  const projectId = projectData?.project_id;
+  const csvParameters = getCsvParameters(projectId);
+  const extractedParameters = getExtractedParameters(projectId);
+  
+  // Use local state for showResults to avoid persistence issues
+  const [localShowResults, setLocalShowResults] = useState(false);
+  
+  // Sync with global state on mount and when extracted parameters change
+  useEffect(() => {
+    const globalShowResults = getShowResults(projectId);
+    setLocalShowResults(globalShowResults);
+  }, [projectId, extractedParameters]);
+  
+  // Use local state instead of global state
+  const showResults = localShowResults;
+  
+  // Monitor CSV parameters changes
+  useEffect(() => {
+    // Force re-render when CSV parameters change
+  }, [csvParameters.length, showResults, projectId]);
 
   // Accordion state - only one can be open at a time
   const [expandedAccordion, setExpandedAccordion] = useState(false);
@@ -161,10 +195,10 @@ const SummaryReportTab = ({ projectData }) => {
     error: extractedInfoError
   } = useExtractedInfo(projectData?.project_id);
 
-  // CSV Parameters state - moved to component level to prevent remounting issues
-  const [csvParameters, setCsvParameters] = useState([]);
+  // Local state for editing
   const [editingIndex, setEditingIndex] = useState(-1);
   const [editingValue, setEditingValue] = useState({ name: "", type: "" });
+
 
   // CSV Upload handler
   const handleCsvFileUpload = async (event) => {
@@ -192,7 +226,11 @@ const SummaryReportTab = ({ projectData }) => {
                 });
               }
             }
-            setCsvParameters([...csvData]);
+            // Save to global context
+            setCsvParameters(projectId, csvData);
+            
+            // Reset showResults to false when loading new CSV data
+            setLocalShowResults(false);
 
             // Add a small delay to ensure state update is processed
             setTimeout(() => {
@@ -326,13 +364,16 @@ Initial sworn statement,long`;
 
   const handleExtractParameters = async () => {
     if (csvParameters.length === 0) {
-
       return;
     }
 
-    setIsExtracting(true);
+    const projectId = projectData?.project_id;
+    const projectName = projectData?.project_name || 'Unknown Project';
 
     try {
+      // Start global loading state
+      startDataExtraction(projectId, projectName);
+
       // Convert csvParameters to the required format
       const formattedParameters = csvParameters.map(param => ({
         Parameter: param.name,
@@ -340,7 +381,7 @@ Initial sworn statement,long`;
       }));
 
       const payload = {
-        project_id: projectData?.project_id,
+        project_id: projectId,
         parameters: formattedParameters
       };
 
@@ -363,20 +404,26 @@ Initial sworn statement,long`;
         extractedData = response.data || {};
       }
 
-      setExtractedParameters(extractedData);
-      setShowResults(true);
+      setExtractedParameters(projectId, extractedData);
+      setShowResults(projectId, true);
+      setLocalShowResults(true);
 
+      // Stop global loading state with success
+      stopDataExtraction(projectId, projectName, 'Completed', true);
 
     } catch (error) {
       console.error("Parameter extraction failed:", error);
-
-    } finally {
-      setIsExtracting(false);
+      
+      // Stop global loading state with error
+      stopDataExtraction(projectId, projectName, 'Failed', false);
     }
   };
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      {/* Data Extraction Status Indicator - Moved to top */}
+      <DataExtractionLoader projectId={projectId} variant="progress" />
+      
       {/* CSV Parameters Section */}
       <Box
         sx={{
@@ -420,6 +467,7 @@ Initial sworn statement,long`;
           </Button>
         </Box>
 
+
         {/* CSV Parameters Table - Hide when showing results */}
         {csvParameters.length > 0 && !showResults && (
           <Box sx={{ mt: 3 }}>
@@ -431,10 +479,17 @@ Initial sworn statement,long`;
                 variant="contained"
                 color="primary"
                 onClick={handleExtractParameters}
-                disabled={isExtracting || csvParameters.length === 0}
-                startIcon={isExtracting ? <CircularProgress size={20} /> : null}
+                disabled={isProjectExtracting(projectData?.project_id) || csvParameters.length === 0}
+                startIcon={isProjectExtracting(projectData?.project_id) ? <CircularProgress size={20} /> : null}
+                sx={{ 
+                  minWidth: 150,
+                  bgcolor: 'primary.main',
+                  '&:hover': {
+                    bgcolor: 'primary.dark',
+                  }
+                }}
               >
-                {isExtracting ? "Extracting..." : "Extract Data"}
+                {isProjectExtracting(projectData?.project_id) ? "Extracting Data..." : "Extract Data"}
               </Button>
             </Box>
 
@@ -550,8 +605,11 @@ Initial sworn statement,long`;
               <Button
                 variant="outlined"
                 onClick={() => {
-                  setShowResults(false);
-                  setExtractedParameters(null);
+                  setShowResults(projectId, false);
+                  setLocalShowResults(false);
+                  setExtractedParameters(projectId, null);
+                  // Clear project data
+                  clearProjectData(projectId);
                 }}
               >
                 Back to Input Mode

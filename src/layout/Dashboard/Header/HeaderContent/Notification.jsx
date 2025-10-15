@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 // material-ui
 import { useTheme } from "@mui/material/styles";
@@ -74,20 +74,34 @@ export default function Notification() {
   const [visible, setVisible] = useState(false);
   const [modalContent, setModalContent] = useState({});
   const [selectedCategory, setSelectedCategory] = useState("PROJECT");
+  const [timeKey, setTimeKey] = useState(0); // Force re-render for time updates
+  const [forceUpdate, setForceUpdate] = useState(0); // Additional force update mechanism
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
   const roleName = userdetails?.[0]?.role_name;
   const handleToggle = () => {
     setOpen((prevOpen) => !prevOpen);
   };
 
+
   useEffect(() => {
     fetchNotification();
-    const intervalId = setInterval(() => {
+    
+    // Fetch notifications every 2 minutes
+    const notificationIntervalId = setInterval(() => {
       fetchNotification();
     }, 120000); // 120000 ms = 2 minutes
 
-    // Cleanup interval on component unmount
-    return () => clearInterval(intervalId);
+    // Update time display every 30 seconds for accurate relative time
+    const timeUpdateIntervalId = setInterval(() => {
+      setTimeKey(prev => prev + 1);
+      setForceUpdate(prev => prev + 1);
+    }, 30000); // 30000 ms = 30 seconds
+
+    // Cleanup intervals on component unmount
+    return () => {
+      clearInterval(notificationIntervalId);
+      clearInterval(timeUpdateIntervalId);
+    };
   }, []);
 
   const handleButtonClick = (e, tab) => {
@@ -110,24 +124,35 @@ export default function Notification() {
 
   const iconBackColorOpen = "grey.100";
 
-  const fetchNotification = () => {
-    NotificationApiService.notification()
-      .then((response) => {
-        setNotificationData(response?.data?.details?.slice(0, 4));
-        setAllNotification(response?.data?.details);
-        let count = 0;
-        response?.data?.details?.map((item) => {
-          if (!item?.is_read) {
-            arrayId.push(item?.notification_id);
-            count = count + 1;
-          }
-        });
-        setRead(count);
-      })
-      .catch((errResponse) => {
-        console.log(errResponse);
+
+const fetchNotification = () => {
+  NotificationApiService.notification()
+    .then((response) => {
+      const details = response?.data?.details || [];
+      
+      // show first 4 in popover
+      setNotificationData(details.slice(0, 4));
+      setAllNotification(details);
+
+      // build unread ids locally (avoid mutating state directly)
+      const ids = [];
+      let count = 0;
+      details.forEach((item) => {
+        if (!item?.is_read) {
+          ids.push(item?.notification_id);
+          count += 1;
+        }
       });
-  };
+
+      setArrayId(ids);
+      setRead(count);
+    })
+    .catch((errResponse) => {
+      console.log(errResponse);
+    });
+};
+
+  
 
   const handleRead = (id, type, projectId) => {
     let payload = { notifications: type === "single" ? [id] : arrayId };
@@ -148,10 +173,8 @@ export default function Notification() {
   };
 
   const getDate = (date) => {
-    const currentDate = new Date();
-    const inputDate = new Date(date);
-
-    // Array of month names
+    const inputDate = new Date(date); // Use direct parsing for UTC dates
+  
     const monthNames = [
       "Jan",
       "Feb",
@@ -166,42 +189,82 @@ export default function Notification() {
       "Nov",
       "Dec",
     ];
-
-    // Extract Month and Day from the input date
-    const month = monthNames[inputDate.getMonth()]; // Get month name
+  
+    const month = monthNames[inputDate.getMonth()];
     const day = inputDate.getDate();
-
-    return `${month} ${day}`; // Format as "Jan 7", "Feb 10", etc.
+  
+    return `${month} ${day}`;
   };
 
-  const getTimeDifference = (date) => {
-    const currentDate = new Date();
-    const inputDate = new Date(date);
-
-    // Calculate the difference in milliseconds
-    const timeDifference = currentDate - inputDate;
+  const getTimeDifference = useCallback((date) => {
+    // Parse the server date and keep it in UTC
+    const inputDate = new Date(date); // Server date is already in UTC format
+    const now = new Date();
+  
+    // Calculate difference using UTC times to avoid timezone conversion issues
+    const timeDifference = now.getTime() - inputDate.getTime();
+    // handle future dates
+    if (timeDifference < 0) {
+      return "Just now";
+    }
+  
     const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
-    const hoursDifference = Math.floor(timeDifference / (1000 * 60 * 60)) % 24;
+    const totalHoursDifference = Math.floor(timeDifference / (1000 * 60 * 60));
     const minutesDifference = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
     const secondsDifference = Math.floor((timeDifference % (1000 * 60)) / 1000);
 
-    // You can choose to show either days or exact time difference
+    let result;
     if (daysDifference > 0) {
-      return `${daysDifference} day(s) ago`;
-    } else if (hoursDifference > 0) {
-      return `${hoursDifference} hour(s) ago`;
+      if (daysDifference === 1) result = "1 day ago";
+      else if (daysDifference < 7) result = `${daysDifference} days ago`;
+      else if (daysDifference < 30) {
+        const weeks = Math.floor(daysDifference / 7);
+        result = weeks === 1 ? "1 week ago" : `${weeks} weeks ago`;
+      } else if (daysDifference < 365) {
+        const months = Math.floor(daysDifference / 30);
+        result = months === 1 ? "1 month ago" : `${months} months ago`;
+      } else {
+        const years = Math.floor(daysDifference / 365);
+        result = years === 1 ? "1 year ago" : `${years} years ago`;
+      }
+    } else if (totalHoursDifference > 0) {
+      if (totalHoursDifference === 1) result = "1 hour ago";
+      else if (totalHoursDifference < 24) {
+        if (minutesDifference > 0 && totalHoursDifference < 6) {
+          result = `${totalHoursDifference}h ${minutesDifference}m ago`;
+        } else {
+          result = `${totalHoursDifference} hours ago`;
+        }
+      } else {
+        result = `${totalHoursDifference} hours ago`;
+      }
+    } else if (minutesDifference > 0) {
+      if (minutesDifference === 1) result = "1 minute ago";
+      else if (minutesDifference < 60) {
+        if (secondsDifference > 0 && minutesDifference < 5) {
+          result = `${minutesDifference}m ${secondsDifference}s ago`;
+        } else {
+          result = `${minutesDifference} minutes ago`;
+        }
+      } else {
+        result = `${minutesDifference} minutes ago`;
+      }
+    } else if (secondsDifference > 0) {
+      if (secondsDifference < 10) result = "Just now";
+      else result = `${secondsDifference} seconds ago`;
     } else {
-      return `${minutesDifference} minute(s) and ${secondsDifference} second(s) ago`;
+      result = "Just now";
     }
-  };
-
+    
+    return result;
+  }, [timeKey, forceUpdate]);
   const filteredNotifications = allNotification.filter((item) => {
     if (selectedCategory === "USER_CREATION") {
       return item?.type === "USER_CREATION";
     } else if (selectedCategory === "INVITE_USER") {
       return item?.type === "INVITE_USER";
     } else if (selectedCategory === "PROJECT") {
-      return item?.project_id != null;
+      return item?.project_id != null || ['success', 'error', 'info'].includes(item?.type);
     }
     return true;
   });
@@ -309,9 +372,9 @@ export default function Notification() {
                     {notificationData?.length === 0 && (
                       <Empty description="No notification to show" />
                     )}
-                    {notificationData?.map((item) => {
+                    {notificationData?.map((item, index) => {
                       return (
-                        <>
+                        <React.Fragment key={`${item?.notification_id}-${timeKey}-${forceUpdate}-${index}`}>
                           <ListItemButton
                             selected={!item?.is_read}
                             style={{
@@ -395,7 +458,7 @@ export default function Notification() {
                               border: "1.2px solid #ffffff",
                             }}
                           />
-                        </>
+                        </React.Fragment>
                       );
                     })}
                     {allNotification?.length > 4 && (
@@ -480,8 +543,8 @@ export default function Notification() {
           </Tabs>
 
           {/* Notification List */}
-          {filteredNotifications.map((item) => (
-            <React.Fragment key={item?.notification_id}>
+          {filteredNotifications.map((item, index) => (
+            <React.Fragment key={`${item?.notification_id}-${timeKey}-${forceUpdate}-${index}`}>
               <ListItemButton
                 selected={!item?.is_read}
                 style={{
