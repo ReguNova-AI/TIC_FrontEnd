@@ -25,7 +25,10 @@ import {
 import AttachFileIcon from "@mui/icons-material/AttachFile";
 import { FileUploadApiService } from "services/api/FileUploadAPIService";
 import { ProjectApiService } from "services/api/ProjectAPIService";
-
+import GoogleDrivePicker from "./GoogleDrivePicker";
+import GoogleDriveFileCard from "./GoogleDriveFileCard";
+import { GoogleDrivePickerService } from "services/api/googleDrivePickerService";
+import { padding } from "polished";
 const getFileIcon = (filename) => {
   if (!filename) return <FileUnknownOutlined style={{ color: "#595959" }} />;
   const ext = filename.split(".").pop().toLowerCase();
@@ -73,6 +76,67 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [filePath, setFilePath] = useState("");
   const [document, setDocument] = useState({});
+  const [hasGoogleToken, setHasGoogleToken] = useState(false);
+  const [isTokenLoading, setIsTokenLoading] = useState(false);
+
+  // Check Google token status
+  const checkGoogleToken = async () => {
+    setIsTokenLoading(true);
+    try {
+      const userdetails = JSON.parse(sessionStorage.getItem('userDetails'));
+      const userId = userdetails?.[0]?.user_id;
+      
+      if (userId) {
+        const response = await GoogleDrivePickerService.getGoogleAccessTokenWithCache(userId);
+        const hasToken = response && (response.access_token || response.accessToken);
+        setHasGoogleToken(hasToken);
+      }
+    } catch (error) {
+      setHasGoogleToken(false);
+    } finally {
+      setIsTokenLoading(false);
+    }
+  };
+
+  // Check for Google authorization completion on component mount
+  useEffect(() => {
+    const checkForGoogleAuthCompletion = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const googleAuthSuccess = urlParams.get('google_auth_success');
+      const googleAuthCode = urlParams.get('code');
+      const state = urlParams.get('state');
+      const error = urlParams.get('error');
+      const gdrive = urlParams.get('gdrive');
+      
+      // Check for any indication of Google auth completion
+      if (googleAuthSuccess === 'true' || googleAuthCode || (state && !error) || gdrive === '1') {
+        console.log('Google authorization detected, checking token immediately');
+        // Check token immediately without delay
+        checkGoogleToken();
+        
+        // Clean up URL parameters
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+      }
+    };
+
+    // Check on mount
+    checkForGoogleAuthCompletion();
+    
+    // Also check token on mount
+    checkGoogleToken();
+  }, []);
+
+  // Check when window regains focus (user returns from Google)
+  useEffect(() => {
+    const handleFocus = () => {
+      checkGoogleToken();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
+
 
   // --- File Upload logic
   const handleFileUpload = async (file) => {
@@ -237,14 +301,14 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
       .filter(Boolean);
 
     const allFolders = [...existingFolders, ...manuallyCreatedFolders];
-
+ 
     if (allFolders.includes(newFolderName)) {
       message.error("Folder with this name already exists");
       return;
     }
 
     // Create new folder node
-    const newFolderNode = {
+    const newFolderNode = { 
       title: (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
           <div style={{ display: "flex", alignItems: "center" }}>
@@ -311,7 +375,7 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
       message.error("Please enter file name and select document type");
       return;
     }
-
+   
     const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
 
     // Create API payload
@@ -392,7 +456,6 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
     documents.forEach((document) => {
       let { document_type, document_name, file_path, folder_name } =
         document;
-      console.log("inside document", document);
 
       if (document_type === "Custom Regulatory") {
         document_type = FORM_LABEL.CUSTOM_REGULATORY;
@@ -584,40 +647,53 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
     <div>
       <div style={{ marginBottom: 20 }}>
         {/* Create Buttons Row */}
-        <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
-          <Button
-            type="primary"
-            ghost
-            icon={<FolderAddOutlined />}
-            onClick={() => setIsCreatingFolder(true)}
-            style={{
-              borderRadius: 8,
-              height: 40,
-              fontSize: 14,
-              fontWeight: 500,
-              borderColor: "#52c41a",
-              color: "#52c41a"
-            }}
-          >
-            Create New Folder
-          </Button>
+        <div style={{ display: "flex", gap: 12, marginBottom: 16, alignItems: "center" }}>
+  <Button
+    type="primary"
+    ghost
+    icon={<FolderAddOutlined />}
+    onClick={() => setIsCreatingFolder(true)}
+    style={{
+      borderRadius: 8,
+      height: 40,
+      fontSize: 14,
+      fontWeight: 500,
+      borderColor: "#52c41a",
+      color: "#52c41a",
+    }}
+  >
+    Create New Folder
+  </Button>
 
-          <Button
-            type="primary"
-            icon={<FileAddOutlined />}
-            onClick={() => setIsCreatingFile(true)}
-            style={{
-              borderRadius: 8,
-              height: 40,
-              fontSize: 14,
-              fontWeight: 500,
-              background: "linear-gradient(135deg, #1890ff 0%, #40a9ff 100%)",
-              border: "none"
-            }}
-          >
-            Create New Document
-          </Button>
-        </div>
+  <Button
+    type="primary"
+    icon={<FileAddOutlined />}
+    onClick={() => setIsCreatingFile(true)}
+    style={{
+      borderRadius: 8,
+      height: 40,
+      fontSize: 14,
+      fontWeight: 500,
+      background: "linear-gradient(135deg, #1890ff 0%, #40a9ff 100%)",
+      border: "none",
+    }}
+  >
+    Create New Document
+  </Button>
+
+  {hasGoogleToken ? (
+  <div style={{ display: "flex", alignItems: "center", marginTop: -2, flex: 1 }}>
+    <GoogleDriveFileCard
+      projectId={data?.project_id}
+      onUploadSuccess={onFileUploadSuccess}
+      style={{ width: "50%" }} 
+    />
+  </div>
+) : (
+  <GoogleDrivePicker projectId={data?.project_id} />
+)}
+
+</div>
 
         {/* Create Folder Modal/Card */}
         {isCreatingFolder && (
@@ -666,7 +742,6 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
         )}
 
         {/* Create File Modal/Card */}
-        {isCreatingFile && (
           <Card
             size="small"
             style={{
@@ -809,8 +884,7 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
               </Space>
             </Space>
           </Card>
-        )}
-
+      
         {/* Upload Progress Modal */}
 
         <Modal

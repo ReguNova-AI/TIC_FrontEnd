@@ -19,6 +19,8 @@ import standardsIcon from "../../assets/images/icons/standards2.svg";
 import StandardListing from "./StandardListing";
 import StandardCreation from "./StandardCreation";
 import PermissionListing from "./PermissionListing";
+import EmailPermissionSettings from "./EmailPermissionSettings";
+import { MailOutlined } from "@ant-design/icons";
 
 const { Text } = Typography;
 
@@ -80,6 +82,13 @@ const AdminConfig = () => {
       listing: "true",
       creation: "false",
     },
+    {
+      title: "Email Permissions",
+      icon: <MailOutlined />,
+      description: "Manage email notification settings.",
+      listing: "true",
+      creation: "false",
+    }
   ];
 
   const handleButtonClick = (action, tab) => {
@@ -185,6 +194,9 @@ const AdminConfig = () => {
         ) : modalContent.action === "List" &&
           modalContent?.tab?.title === "Regulatory Standards" ? (
           <StandardListing />
+        ) : modalContent.action === "List" &&
+          modalContent?.tab?.title === "Email Permissions" ? (
+          <EmailPermissionSettings />
         ) : modalContent.action === "Create" &&
           modalContent?.tab?.title === "Sectors" ? (
           <SectorCreation onHandleClose={(e) => handleClose(e)} />

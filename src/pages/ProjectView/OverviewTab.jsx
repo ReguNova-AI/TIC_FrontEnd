@@ -87,7 +87,7 @@ const OverviewTab = ({
           }}
           disabled={aiButtonLoading}
         >
-          Run AI Assessment
+          {aiButtonLoading ? 'Processing...' : 'Run AI Assessment'}
         </Button>
 
         <Button

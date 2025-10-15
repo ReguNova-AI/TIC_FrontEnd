@@ -40,6 +40,8 @@ import {
 // Custom hooks
 import { useProjectOperations, createHistoryObject } from "./useProjectOperations";
 import { useModalManager, useSnackbarManager } from "./useUIManager";
+import { useAIAssessmentOperations } from "../../components/hooks/useAIAssessmentOperations";
+import AIAssessmentStatusIndicator from "../../components/AIAssessmentStatusIndicator";
 import { getStatusChipProps } from "shared/utility";
 
 // Helper function to create a history object based on changes
@@ -78,14 +80,19 @@ const ProjectView = () => {
   const {
     isProgressModalVisible,
     handleProgressModalClose,
-
     updateProjectDetails,
-    handleRunAIAssessment,
     runComplianceAssessment,
     runChecklistCRT,
     runChecklistAPI,
-    aiButtonLoading,
   } = useProjectOperations(projectData, getUserName());
+
+  // AI Assessment operations with global state
+  const {
+    isAIAssessmentLoading,
+    currentProjectStatus,
+    handleRunAIAssessment,
+  } = useAIAssessmentOperations(projectData);
+
 
   const {
     openModal,
@@ -359,11 +366,18 @@ const ProjectView = () => {
                     </Typography>}
                   </Box>
 
-                  {statusChip(projectData?.status)}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {statusChip(projectData?.status)}
+                    <AIAssessmentStatusIndicator 
+                      projectId={projectData?.project_id} 
+                      variant="progress" 
+                      size="small" 
+                     />
+                  </Box>
                 </Box>
                 <LinearProgress
                   variant="determinate"
-                  value={projectData?.completion_percentage || 0}
+                  value={parseFloat(projectData?.completion_percentage) || 0}
                   sx={{
                     height: 6,
                     padding: 0,
@@ -415,7 +429,7 @@ const ProjectView = () => {
                 projectData={projectData}
                 handleModalOpen={handleModalOpen}
                 handleRunAIAssessment={handleRunAIAssessment}
-                aiButtonLoading={aiButtonLoading}
+                aiButtonLoading={isAIAssessmentLoading}
                 onFileUploadSuccess={refetchProjectData}
               />
             </CustomTabPanel>

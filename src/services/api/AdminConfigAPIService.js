@@ -1,4 +1,6 @@
 import BaseApiService from "./BaseApiService";
+import SessionService from "../SessionService";
+import { STORAGE_KEYS } from "../../shared/constants";
 
 const _sectorCreate = (payload) => {
   return BaseApiService.post(`/api/v1/sectors/create`, null, payload);
@@ -84,6 +86,30 @@ const _standardChecklistUpdate = (payload) => {
   return BaseApiService.post(`/api/v1/regulatories/update`, null, payload);
 };
 
+const _emailPermissionsGet = () => {
+  let userId = null;
+  try {
+    const storedUserInfo = SessionService.getItem(STORAGE_KEYS.USER_INFO);
+    const parsedUserInfo = typeof storedUserInfo === 'string' ? JSON.parse(storedUserInfo) : storedUserInfo;
+    userId = parsedUserInfo?.id || parsedUserInfo?.userId || parsedUserInfo?.user?.id || null;
+  } catch (e) {
+    console.error(e);
+  }
+
+  const params = userId ? { user_id: userId } : null;
+  return BaseApiService.get(`/api/v1/email-permissions`, params, null);
+};
+
+const _emailPermissionsUpdate = (payload) => {
+  // Only send key and enabled flags to backend
+  const body = {
+    permissions: Array.isArray(payload?.permissions)
+      ? payload.permissions.map(({ key, enabled }) => ({ key, enabled }))
+      : [],
+  };
+  return BaseApiService.put(`/api/v1/email-permissions/update`, null, body);
+};
+
 export const AdminConfigAPIService = {
   sectorCreate: _sectorCreate,
   sectorListing: _sectorListing,
@@ -101,4 +127,6 @@ export const AdminConfigAPIService = {
   standardListing: _standardListing,
   standardDelete: _standardDelete,
   standardChecklistUpdate: _standardChecklistUpdate,
+  emailPermissionsGet: _emailPermissionsGet,
+  emailPermissionsUpdate: _emailPermissionsUpdate,
 };

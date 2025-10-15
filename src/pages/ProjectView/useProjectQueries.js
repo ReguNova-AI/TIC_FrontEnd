@@ -113,6 +113,8 @@ export const useUploadFilesToAIServer = () => {
       queryClient.invalidateQueries({
         queryKey: PROJECT_QUERY_KEYS.projectDetails(variables.project_id),
       });
+      // Show completion notification
+      message.success("Assessment completed");
     },
     onError: (error) => {
       message.error(API_ERROR_MESSAGE.FAILED_TO_RUN_ASSESSMENT);
@@ -264,27 +266,12 @@ export const useChatHistory = (projectId) => {
     staleTime: 1000 * 60 * 2, // 2 minutes
     refetchOnWindowFocus: false,
     select: (response) => {
-      console.log("Chat history response:", response);
-      console.log("Chat history response:", response?.data);
-      console.log("Chat history response:", response?.data?.chat_history);
-      console.log(
-        "Chat history response:",
-        Array.isArray(response?.data?.chat_history)
-      );
-      console.log(
-        "Chat history response:",
-        Array.isArray(response?.data?.chat_history)
-      );
       // Handle different response formats
       if (
         response?.data &&
         response?.data?.chat_history &&
         Array.isArray(response?.data?.chat_history)
       ) {
-        console.log(
-          "Chat history response:",
-          Array.isArray(response?.data?.chat_history)
-        );
         return response.data.chat_history;
       }
       if (response?.data?.history && Array.isArray(response.data.history)) {

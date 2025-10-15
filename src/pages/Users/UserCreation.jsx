@@ -13,6 +13,7 @@ import {
   MenuItem,
   InputLabel,
   Checkbox,
+  FormControlLabel,
 } from "@mui/material";
 import AvatarUpload from "./AvatarUpload";
 import {
@@ -86,6 +87,9 @@ export default function UserCreation({ onHandleClose, type, selecteddata }) {
     emailError: "",
     phoneError: "",
   });
+
+  // Whether to send an email notification to the newly created user. Default: true
+  const [sendEmail, setSendEmail] = React.useState(true);
 
   const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
   const phoneRegex = /^[0-9]{10}$/; // For a 10-digit phone number (adjust as needed)
@@ -189,7 +193,7 @@ export default function UserCreation({ onHandleClose, type, selecteddata }) {
       //     });
       //   });
 
-      let payload = formData;
+  let payload = { ...formData, send_email: sendEmail };
 
       if (type === "new") {
         const response = await UserApiService.userCreate(payload);
