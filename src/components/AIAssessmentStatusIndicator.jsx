@@ -72,7 +72,7 @@ const AIAssessmentStatusIndicator = ({
         fontSize: '0.75rem',
         whiteSpace: 'nowrap'
       }}>
-        Processing...
+      AI Assessment Processing...
       </Typography>
     </Box>
   );

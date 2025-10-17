@@ -8,7 +8,6 @@ import ProjectDetailsCardView from "./ProjectDetailCardView2";
 import FileStructureView from "./FileStructureView";
 import ProgressBarView from "./ProgressBarView";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import processIcon from "../../assets/images/process.png";
 import { PROJECT_DETAIL_PAGE } from "shared/constants";
 
@@ -18,7 +17,6 @@ const OverviewTab = ({
   handleRunAIAssessment,
   aiButtonLoading,
   onFileUploadSuccess,
-  handleCompleteProject, // Add this prop
 }) => {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, height: '100%' }}>
@@ -90,27 +88,6 @@ const OverviewTab = ({
           {aiButtonLoading ? 'Processing...' : 'Run AI Assessment'}
         </Button>
 
-        <Button
-          variant="contained"
-          color="success"
-          size="large"
-          startIcon={
-            <CheckCircleIcon
-              style={{ color: "white", fontSize: 24 }}
-            />
-          }
-          onClick={handleCompleteProject}
-          sx={{
-            minWidth: 200,
-            fontSize: 14,
-            fontWeight: 600,
-            borderRadius: 2,
-            padding: "12px 24px"
-          }}
-          disabled={projectData?.status === "Completed"}
-        >
-          Complete Project
-        </Button>
       </Box>
 
       {/* Processing Status Row */}
@@ -130,7 +107,6 @@ OverviewTab.propTypes = {
   handleRunAIAssessment: PropTypes.func.isRequired,
   aiButtonLoading: PropTypes.bool.isRequired,
   onFileUploadSuccess: PropTypes.func,
-  handleCompleteProject: PropTypes.func.isRequired,
 };
 
 export default OverviewTab;
