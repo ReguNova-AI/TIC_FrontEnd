@@ -366,13 +366,17 @@ const ProjectView = () => {
                     </Typography>}
                   </Box>
 
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    {statusChip(projectData?.status)}
-                    <AIAssessmentStatusIndicator 
-                      projectId={projectData?.project_id} 
-                      variant="progress" 
-                      size="small" 
-                     />
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Box sx={{ marginRight: 3 }}>
+                      {statusChip(projectData?.status)}
+                    </Box>
+                    <Box>
+                      <AIAssessmentStatusIndicator 
+                        projectId={projectData?.project_id} 
+                        variant="progress" 
+                        size="small" 
+                       />
+                    </Box>
                   </Box>
                 </Box>
                 <LinearProgress

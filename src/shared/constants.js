@@ -225,7 +225,6 @@ export const FORM_LABEL = Object.freeze({
   PROJECT_NAME: "Project Name",
   PROJECT_NO: "Project No.",
   PROJECT_DESC: "Project Description",
-  REGULATORY_STANDARDS: "Regulatory Standards",
   REGULATORY: "Regulatory",
   INVITE_MEMBERS: "Invite Team Members",
   DOCUMENT_UPLOAD: "Project Document Upload",
@@ -259,7 +258,6 @@ export const FORM_LABEL = Object.freeze({
 export const STEPPER_LABEL = Object.freeze({
   PROJECT_CREATION: "Project Creation",
   PROJECT_DOCUMENT: "Project Document",
-  STANDARD_DOCUMENT: "Regulatory Standards",
   CUSTOM_STANDARD_DOCUMENT: "Custom Standard Document",
   IN_PROGRESS: "In Progress",
   CHECKLIST_REPORT: "Checklist",

@@ -15,9 +15,6 @@ import { BUTTON_LABEL } from "shared/constants";
 import RoleCreation from "./RoleCreation";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
-import standardsIcon from "../../assets/images/icons/standards2.svg";
-import StandardListing from "./StandardListing";
-import StandardCreation from "./StandardCreation";
 import PermissionListing from "./PermissionListing";
 import EmailPermissionSettings from "./EmailPermissionSettings";
 import { MailOutlined } from "@ant-design/icons";
@@ -68,13 +65,6 @@ const AdminConfig = () => {
       creation: "true",
     },
 
-    {
-      title: "Regulatory Standards",
-      icon: <img src={standardsIcon} width="30px" />,
-      description: "Manage Standards for each industry.",
-      listing: "true",
-      creation: "true",
-    },
     {
       title: "Permissions",
       icon: <LockOutlined />,
@@ -173,8 +163,7 @@ const AdminConfig = () => {
           (modalContent.action === "Create" &&
             modalContent?.tab?.title === "Industries")
             ? 400
-            : modalContent?.tab?.title === "Roles" ||
-                modalContent?.tab?.title === "Regulatory Standards"
+            : modalContent?.tab?.title === "Roles"
               ? 900
               : 600
         }
@@ -192,9 +181,6 @@ const AdminConfig = () => {
           modalContent?.tab?.title === "Permissions" ? (
           <PermissionListing />
         ) : modalContent.action === "List" &&
-          modalContent?.tab?.title === "Regulatory Standards" ? (
-          <StandardListing />
-        ) : modalContent.action === "List" &&
           modalContent?.tab?.title === "Email Permissions" ? (
           <EmailPermissionSettings />
         ) : modalContent.action === "Create" &&
@@ -206,9 +192,6 @@ const AdminConfig = () => {
         ) : modalContent.action === "Create" &&
           modalContent?.tab?.title === "Roles" ? (
           <RoleCreation onHandleClose={(e) => handleClose(e)} />
-        ) : modalContent.action === "Create" &&
-          modalContent?.tab?.title === "Regulatory Standards" ? (
-          <StandardCreation onHandleClose={(e) => handleClose(e)} />
         ) : null}
       </Modal>
       <Snackbar
