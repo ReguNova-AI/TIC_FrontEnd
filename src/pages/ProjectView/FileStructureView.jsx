@@ -25,10 +25,10 @@ import {
 import AttachFileIcon from "@mui/icons-material/AttachFile";
 import { FileUploadApiService } from "services/api/FileUploadAPIService";
 import { ProjectApiService } from "services/api/ProjectAPIService";
-// Temporarily disabled Google Drive functionality
-// import GoogleDrivePicker from "./GoogleDrivePicker";
-// import GoogleDriveFileCard from "./GoogleDriveFileCard";
-// import { GoogleDrivePickerService } from "services/api/googleDrivePickerService";
+// Google Drive functionality
+import GoogleDrivePicker from "./GoogleDrivePicker";
+import GoogleDriveFileCard from "./GoogleDriveFileCard";
+import { GoogleDrivePickerService } from "services/api/googleDrivePickerService";
 import { padding } from "polished";
 const getFileIcon = (filename) => {
   if (!filename) return <FileUnknownOutlined style={{ color: "#595959" }} />;
@@ -80,65 +80,65 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
   const [hasGoogleToken, setHasGoogleToken] = useState(false);
   const [isTokenLoading, setIsTokenLoading] = useState(false);
 
-  // Temporarily disabled Google Drive functionality
+  // Google Drive functionality
   // Check Google token status
-  // const checkGoogleToken = async () => {
-  //   setIsTokenLoading(true);
-  //   try {
-  //     const userdetails = JSON.parse(sessionStorage.getItem('userDetails'));
-  //     const userId = userdetails?.[0]?.user_id;
+  const checkGoogleToken = async () => {
+    setIsTokenLoading(true);
+    try {
+      const userdetails = JSON.parse(sessionStorage.getItem('userDetails'));
+      const userId = userdetails?.[0]?.user_id;
       
-  //     if (userId) {
-  //       const response = await GoogleDrivePickerService.getGoogleAccessTokenWithCache(userId);
-  //       const hasToken = response && (response.access_token || response.accessToken);
-  //       setHasGoogleToken(hasToken);
-  //     }
-  //   } catch (error) {
-  //     setHasGoogleToken(false);
-  //   } finally {
-  //     setIsTokenLoading(false);
-  //   }
-  // };
+      if (userId) {
+        const response = await GoogleDrivePickerService.getGoogleAccessTokenWithCache(userId);
+        const hasToken = response && (response.access_token || response.accessToken);
+        setHasGoogleToken(hasToken);
+      }
+    } catch (error) {
+      setHasGoogleToken(false);
+    } finally {
+      setIsTokenLoading(false);
+    }
+  };
 
-  // Temporarily disabled Google Drive functionality
+  // Google Drive functionality
   // Check for Google authorization completion on component mount
-  // useEffect(() => {
-  //   const checkForGoogleAuthCompletion = () => {
-  //     const urlParams = new URLSearchParams(window.location.search);
-  //     const googleAuthSuccess = urlParams.get('google_auth_success');
-  //     const googleAuthCode = urlParams.get('code');
-  //     const state = urlParams.get('state');
-  //     const error = urlParams.get('error');
-  //     const gdrive = urlParams.get('gdrive');
+  useEffect(() => {
+    const checkForGoogleAuthCompletion = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const googleAuthSuccess = urlParams.get('google_auth_success');
+      const googleAuthCode = urlParams.get('code');
+      const state = urlParams.get('state');
+      const error = urlParams.get('error');
+      const gdrive = urlParams.get('gdrive');
       
-  //     // Check for any indication of Google auth completion
-  //     if (googleAuthSuccess === 'true' || googleAuthCode || (state && !error) || gdrive === '1') {
-  //       console.log('Google authorization detected, checking token immediately');
-  //       // Check token immediately without delay
-  //       checkGoogleToken();
+      // Check for any indication of Google auth completion
+      if (googleAuthSuccess === 'true' || googleAuthCode || (state && !error) || gdrive === '1') {
+        console.log('Google authorization detected, checking token immediately');
+        // Check token immediately without delay
+        checkGoogleToken();
         
-  //       // Clean up URL parameters
-  //       const newUrl = window.location.pathname;
-  //       window.history.replaceState({}, document.title, newUrl);
-  //     }
-  //   };
+        // Clean up URL parameters
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+      }
+    };
 
-  //   // Check on mount
-  //   checkForGoogleAuthCompletion();
+    // Check on mount
+    checkForGoogleAuthCompletion();
     
-  //   // Also check token on mount
-  //   checkGoogleToken();
-  // }, []);
+    // Also check token on mount
+    checkGoogleToken();
+  }, []);
 
   // Check when window regains focus (user returns from Google)
-  // useEffect(() => {
-  //   const handleFocus = () => {
-  //     checkGoogleToken();
-  //   };
+  useEffect(() => {
+    const handleFocus = () => {
+      checkGoogleToken();
+    };
 
-  //   window.addEventListener('focus', handleFocus);
-  //   return () => window.removeEventListener('focus', handleFocus);
-  // }, []);
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
 
 
   // --- File Upload logic
@@ -684,8 +684,8 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
     Create New Document
   </Button>
 
-  {/* Temporarily disabled Google Drive functionality */}
-  {/* {hasGoogleToken ? (
+  {/* Google Drive functionality */}
+  {hasGoogleToken ? (
   <div style={{ display: "flex", alignItems: "center", marginTop: -2, flex: 1 }}>
     <GoogleDriveFileCard
       projectId={data?.project_id}
@@ -695,7 +695,7 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
   </div>
 ) : (
   <GoogleDrivePicker projectId={data?.project_id} />
-)} */}
+)}
 
 </div>
 
