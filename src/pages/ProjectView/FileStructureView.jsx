@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import PropTypes from "prop-types";
 import {
   CheckOutlined,
@@ -8,6 +8,7 @@ import {
   CloseOutlined,
   PlusCircleOutlined,
   FolderOpenOutlined,
+  UploadOutlined,
 } from "@ant-design/icons";
 import { message, Progress, Tree, Modal, Tooltip, Button, Input, Select, Space, Card, Typography } from "antd";
 import { IconButton } from "@mui/material";
@@ -79,6 +80,15 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
   const [document, setDocument] = useState({});
   const [hasGoogleToken, setHasGoogleToken] = useState(false);
   const [isTokenLoading, setIsTokenLoading] = useState(false);
+
+  // Multiple file upload states
+  const [isUploadingMultiple, setIsUploadingMultiple] = useState(false);
+  const [multipleUploadProgress, setMultipleUploadProgress] = useState(0);
+  const [uploadedFilesCount, setUploadedFilesCount] = useState(0);
+  const [totalFilesCount, setTotalFilesCount] = useState(0);
+
+  // Hidden file input ref for multiple file uploads
+  const fileInputRef = useRef(null);
 
   // Google Drive functionality
   // Check Google token status
@@ -210,24 +220,46 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
     };
     console.log("Final payload", JSON.stringify(payload, null, 2));
 
-    ProjectApiService.uploadProjectDocument(payload, doc_data.version_id
-    )
-      .then((response) => {
-        message.success(response.message || "Document uploaded successfully!");
-        console.log("payload", payload);
+    // Use createProjectDocument for new uploads, uploadProjectDocument for updates
+    if (doc_data.version_id) {
+      // This is an update to an existing document
+      ProjectApiService.uploadProjectDocument(payload, doc_data.version_id)
+        .then((response) => {
+          message.success(response.message || "Document updated successfully!");
+          console.log("payload", payload);
 
-        // Call the callback to refresh project data in parent component
-        if (onFileUploadSuccess) {
-          onFileUploadSuccess();
-        }
-      })
-      .catch((errResponse) => {
-        message.error(
-          errResponse?.error?.message ||
-          API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR ||
-          "Document upload failed!"
-        );
-      });
+          // Call the callback to refresh project data in parent component
+          if (onFileUploadSuccess) {
+            onFileUploadSuccess();
+          }
+        })
+        .catch((errResponse) => {
+          message.error(
+            errResponse?.error?.message ||
+            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR ||
+            "Document update failed!"
+          );
+        });
+    } else {
+      // This is a new document upload
+      ProjectApiService.createProjectDocument(payload)
+        .then((response) => {
+          message.success(response.message || "Document uploaded successfully!");
+          console.log("payload", payload);
+
+          // Call the callback to refresh project data in parent component
+          if (onFileUploadSuccess) {
+            onFileUploadSuccess();
+          }
+        })
+        .catch((errResponse) => {
+          message.error(
+            errResponse?.error?.message ||
+            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR ||
+            "Document upload failed!"
+          );
+        });
+    }
 
     // reset states
     setOpenModal(false);
@@ -236,6 +268,112 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
     setUploadSuccess(false);
     setFilePath("");
     setNewDoc({ file: null });
+  };
+
+  // Handle multiple file uploads
+  const handleMultipleFileUpload = async (files) => {
+    if (!files || files.length === 0) return;
+
+    setIsUploadingMultiple(true);
+    setMultipleUploadProgress(0);
+    setUploadedFilesCount(0);
+    setTotalFilesCount(files.length);
+    setOpenModal(true);
+
+    let successfulUploads = 0;
+    let failedUploads = 0;
+    const uploadResults = [];
+
+    try {
+      // Process files sequentially to avoid overwhelming the server
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        
+        try {
+          console.log(`Uploading file ${i + 1}/${files.length}: ${file.name}`);
+          
+          // Upload file to S3
+          const uploadedPath = await handleFileUpload(file);
+          
+          if (uploadedPath) {
+            // Create document record
+            const documentData = {
+              document_name: file.name,
+              document_type: file.type || 'application/octet-stream',
+              file_path: uploadedPath,
+            };
+            
+            // Upload document metadata
+            await handleUploadDocument(documentData);
+            
+            successfulUploads++;
+            uploadResults.push({ file: file.name, status: 'success' });
+            console.log(`Successfully uploaded: ${file.name}`);
+          } else {
+            failedUploads++;
+            uploadResults.push({ file: file.name, status: 'failed', error: 'No upload path returned' });
+            console.error(`Failed to upload: ${file.name} - No upload path`);
+          }
+        } catch (error) {
+          failedUploads++;
+          uploadResults.push({ file: file.name, status: 'failed', error: error.message });
+          console.error(`Failed to upload: ${file.name}`, error);
+        }
+        
+        // Update progress
+        const currentProgress = ((i + 1) / files.length) * 100;
+        setUploadedFilesCount(i + 1);
+        setMultipleUploadProgress(currentProgress);
+      }
+
+      // Show completion message
+      if (successfulUploads === files.length) {
+        message.success(`🎉 All ${files.length} files uploaded successfully!`);
+      } else if (successfulUploads > 0) {
+        message.warning(`⚠️ ${successfulUploads} of ${files.length} files uploaded successfully. ${failedUploads} failed.`);
+      } else {
+        message.error(`❌ All ${files.length} files failed to upload.`);
+      }
+
+      // Log detailed results
+      console.log('Upload Results:', uploadResults);
+
+      // Refresh the file structure
+      if (onFileUploadSuccess && successfulUploads > 0) {
+        onFileUploadSuccess();
+      }
+
+    } catch (error) {
+      console.error("Multiple file upload failed:", error);
+      message.error(`❌ Upload process failed: ${error.message}`);
+    } finally {
+      setIsUploadingMultiple(false);
+      setOpenModal(false);
+      
+      // Reset progress after a delay to show completion
+      setTimeout(() => {
+        setMultipleUploadProgress(0);
+        setUploadedFilesCount(0);
+        setTotalFilesCount(0);
+      }, 2000);
+    }
+  };
+
+  // Handle file picker for multiple selection
+  const handleMultipleFileSelect = () => {
+    console.log('handleMultipleFileSelect called');
+    try {
+      if (fileInputRef.current) {
+        console.log('Triggering file input click');
+        fileInputRef.current.click();
+      } else {
+        console.error('File input ref not found');
+        message.error('File input not available. Please refresh the page.');
+      }
+    } catch (error) {
+      console.error('Error in handleMultipleFileSelect:', error);
+      message.error('Failed to open file picker. Please try again.');
+    }
   };
 
   const handleDeleteDocument = async (document) => {
@@ -684,6 +822,27 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
     Create New Document
   </Button>
 
+  <Button
+    type="primary"
+    icon={<UploadOutlined />}
+    onClick={(e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('Upload Multiple Files button clicked');
+      handleMultipleFileSelect();
+    }}
+    style={{
+      borderRadius: 8,
+      height: 40,
+      fontSize: 14,
+      fontWeight: 500,
+      background: "linear-gradient(135deg, #722ed1 0%, #9254de 100%)",
+      border: "none",
+    }}
+  >
+    Upload Multiple Files
+  </Button>
+
   {/* Google Drive functionality */}
   {hasGoogleToken ? (
   <div style={{ display: "flex", alignItems: "center", marginTop: -2, flex: 1 }}>
@@ -895,24 +1054,58 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
           open={openModal}
           footer={null}
           onCancel={() => setOpenModal(false)}
-          title="Uploading Document"
+          title={isUploadingMultiple ? "Uploading Multiple Files" : "Uploading Document"}
           centered
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            {getFileIcon(uploadingFile?.name)}
-            <span
-              style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis" }}
-            >
-              {uploadingFile?.name}
-            </span>
-            {uploadSuccess && (
-              <CheckOutlined style={{ color: "green", fontSize: 20 }} />
-            )}
-          </div>
-          <Progress
-            percent={uploadProgress}
-            status={uploadSuccess ? "success" : "active"}
-          />
+          {isUploadingMultiple ? (
+            <div>
+              <div style={{ marginBottom: 16 }}>
+                <Typography.Text strong>
+                  Uploading {uploadedFilesCount} of {totalFilesCount} files
+                </Typography.Text>
+                <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>
+                  Progress: {Math.round(multipleUploadProgress)}% complete
+                </div>
+              </div>
+              <Progress
+                percent={Math.round(multipleUploadProgress)}
+                status="active"
+                format={(percent) => `${percent}%`}
+                strokeColor={{
+                  '0%': '#108ee9',
+                  '100%': '#87d068',
+                }}
+              />
+              <div style={{ marginTop: 8, fontSize: 12, color: '#666' }}>
+                Files will be uploaded to the root directory
+              </div>
+              {uploadedFilesCount === totalFilesCount && (
+                <div style={{ marginTop: 12, padding: 8, backgroundColor: '#f6ffed', border: '1px solid #b7eb8f', borderRadius: 4 }}>
+                  <Typography.Text style={{ color: '#52c41a', fontSize: 12 }}>
+                    ✅ Upload completed! Refreshing file structure...
+                  </Typography.Text>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                {getFileIcon(uploadingFile?.name)}
+                <span
+                  style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis" }}
+                >
+                  {uploadingFile?.name}
+                </span>
+                {uploadSuccess && (
+                  <CheckOutlined style={{ color: "green", fontSize: 20 }} />
+                )}
+              </div>
+              <Progress
+                percent={uploadProgress}
+                status={uploadSuccess ? "success" : "active"}
+              />
+            </div>
+          )}
         </Modal>
       </div>
 
@@ -925,6 +1118,24 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
         onSelect={onSelect}
         treeData={gData} // Set the dynamic tree data
         blockNode
+      />
+
+      {/* Hidden file input for multiple file uploads */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.jpg,.jpeg,.png"
+        style={{ display: 'none' }}
+        onChange={(e) => {
+          console.log('File input changed, files:', e.target.files);
+          const files = Array.from(e.target.files);
+          if (files.length > 0) {
+            console.log('Selected files:', files);
+            handleMultipleFileUpload(files);
+          }
+          e.target.value = ''; // Reset the input value so the same files can be selected again
+        }}
       />
     </div>
   );
