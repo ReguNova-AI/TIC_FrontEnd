@@ -90,10 +90,19 @@ const _emailPermissionsGet = () => {
   let userId = null;
   try {
     const storedUserInfo = SessionService.getItem(STORAGE_KEYS.USER_INFO);
-    const parsedUserInfo = typeof storedUserInfo === 'string' ? JSON.parse(storedUserInfo) : storedUserInfo;
+    let parsedUserInfo;
+    
+    if (typeof storedUserInfo === 'string') {
+      parsedUserInfo = JSON.parse(storedUserInfo);
+    } else if (typeof storedUserInfo === 'object' && storedUserInfo !== null) {
+      parsedUserInfo = storedUserInfo;
+    } else {
+      parsedUserInfo = null;
+    }
+    
     userId = parsedUserInfo?.id || parsedUserInfo?.userId || parsedUserInfo?.user?.id || null;
   } catch (e) {
-    console.error(e);
+    console.error('Error parsing user info:', e);
   }
 
   const params = userId ? { user_id: userId } : null;
