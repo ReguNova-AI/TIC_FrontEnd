@@ -22,6 +22,7 @@ export const useRiskSummaryOperations = (projectData) => {
   // Regenerate risk summary mutation
   const regenerateRiskSummaryMutation = useMutation({
     mutationFn: () => ProjectApiService.regenerateRiskSummary(projectData?.project_id),
+    retry: false, // Disable retries to prevent repeated calls on errors
     onMutate: async () => {
       // Start processing state
       await startRiskSummaryProcessing(

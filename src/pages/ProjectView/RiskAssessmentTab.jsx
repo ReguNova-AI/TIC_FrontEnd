@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import { Typography, Box, CircularProgress, Alert, Button } from "@mui/material";
 import PropTypes from "prop-types";
 import ReactMarkdown from "react-markdown";
@@ -11,9 +11,6 @@ import { useRiskSummaryOperations } from "../../components/hooks/useRiskSummaryO
 import RiskSummaryStatusIndicator from "../../components/RiskSummaryStatusIndicator";
 
 const RiskAssessmentTab = ({ projectData }) => {
-  // Ref to track if we've already attempted auto-regeneration
-  const hasAttemptedAutoRegeneration = useRef(false);
-
   // Use React Query hook to fetch risk summary
   const {
     data: riskSummary,
@@ -29,27 +26,27 @@ const RiskAssessmentTab = ({ projectData }) => {
     handleRegenerateRiskSummary,
   } = useRiskSummaryOperations(projectData);
 
-  // Auto-regenerate risk summary if it's null and we haven't tried before
-  useEffect(() => {
-    if (
-      projectData?.project_id && // Project ID exists
-      !isLoading && // Not currently loading
-      !error && // No error from initial fetch
-      riskSummary === null && // Risk summary is null
-      !isRiskSummaryLoading && // Not already regenerating
-      !hasAttemptedAutoRegeneration.current // Haven't tried auto-regeneration before
-    ) {
-      hasAttemptedAutoRegeneration.current = true;
-      handleRegenerateRiskSummary();
-    }
-  }, [
-    projectData?.project_id,
-    isLoading,
-    error,
-    riskSummary,
-    isRiskSummaryLoading,
-    handleRegenerateRiskSummary
-  ]);
+  // Auto-regeneration disabled - user must explicitly click "Regenerate Assessment" button
+  // useEffect(() => {
+  //   if (
+  //     projectData?.project_id && // Project ID exists
+  //     !isLoading && // Not currently loading
+  //     !error && // No error from initial fetch
+  //     riskSummary === null && // Risk summary is null
+  //     !isRiskSummaryLoading && // Not already regenerating
+  //     !hasAttemptedAutoRegeneration.current // Haven't tried auto-regeneration before
+  //   ) {
+  //     hasAttemptedAutoRegeneration.current = true;
+  //     handleRegenerateRiskSummary();
+  //   }
+  // }, [
+  //   projectData?.project_id,
+  //   isLoading,
+  //   error,
+  //   riskSummary,
+  //   isRiskSummaryLoading,
+  //   handleRegenerateRiskSummary
+  // ]);
 
   const handleDownloadRiskReport = () => {
     if (!riskSummary) return;
