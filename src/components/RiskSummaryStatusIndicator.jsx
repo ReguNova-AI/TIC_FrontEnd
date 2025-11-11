@@ -7,7 +7,7 @@ import { useAIAssessment } from '../contexts/AIAssessmentContext';
  * Project-specific Risk Summary Status Indicator Component
  * Shows the current status of Risk Summary regeneration for a specific project
  */
-const RiskSummaryStatusIndicator = ({ 
+const RiskSummaryStatusIndicator = ({
   projectId, // Required: The project ID to show status for
   variant = 'chip', // 'chip', 'progress', 'text'
   size = 'medium'
@@ -38,7 +38,7 @@ const RiskSummaryStatusIndicator = ({
       icon={<AssessmentIcon />}
       label={
         <Typography variant="body2" sx={{ fontWeight: 600 }}>
-          Risk Assessment Regenerating
+          Risk Assessment Generating
         </Typography>
       }
       color="info"
@@ -56,40 +56,40 @@ const RiskSummaryStatusIndicator = ({
   const renderProgress = () => (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 200 }}>
       <AssessmentIcon color="info" sx={{ fontSize: 16 }} />
-      <LinearProgress 
-        variant="indeterminate" 
+      <LinearProgress
+        variant="indeterminate"
         color="info"
-        sx={{ 
-          height: 4, 
-          borderRadius: 2, 
+        sx={{
+          height: 4,
+          borderRadius: 2,
           flexGrow: 1,
           backgroundColor: 'rgba(33, 150, 243, 0.1)'
         }}
       />
-      <Typography variant="caption" sx={{ 
-        fontWeight: 600, 
+      <Typography variant="caption" sx={{
+        fontWeight: 600,
         color: 'info.main',
         fontSize: '0.75rem',
         whiteSpace: 'nowrap'
       }}>
-        Regenerating...
+        Generating...
       </Typography>
     </Box>
   );
 
   const renderText = () => (
-    <Typography 
-      variant="body2" 
-      sx={{ 
-        display: 'flex', 
-        alignItems: 'center', 
+    <Typography
+      variant="body2"
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
         gap: 1,
         fontWeight: 600,
         color: 'info.main'
       }}
     >
       <AssessmentIcon fontSize="small" />
-      Risk Assessment Regenerating
+      Risk Assessment Generating
     </Typography>
   );
 

@@ -173,48 +173,48 @@ const CreateProjectForm = () => {
     setLoading(true);
     const processedFiles = await Promise.all(
       filesArray &&
-        filesArray?.map(async (file) => {
-          let uploadedLink = null;
+      filesArray?.map(async (file) => {
+        let uploadedLink = null;
 
-          // Create a new FileReader to read the file as Base64
-          const reader = new FileReader();
+        // Create a new FileReader to read the file as Base64
+        const reader = new FileReader();
 
-          const fileDataUrl = await new Promise((resolve, reject) => {
-            reader.onloadend = () => resolve(reader.result);
-            reader.onerror = reject; // Handle any errors while reading the file
-            reader.readAsDataURL(file); // Start reading the file
-          });
+        const fileDataUrl = await new Promise((resolve, reject) => {
+          reader.onloadend = () => resolve(reader.result);
+          reader.onerror = reject; // Handle any errors while reading the file
+          reader.readAsDataURL(file); // Start reading the file
+        });
 
-          // Now that the file is read, upload the Base64 data to the API
-          try {
-            const fileType = file.name.split(".").pop();
-            const filepayload = {
-              documents: [fileDataUrl],
-              type: fileType,
-            };
+        // Now that the file is read, upload the Base64 data to the API
+        try {
+          const fileType = file.name.split(".").pop();
+          const filepayload = {
+            documents: [fileDataUrl],
+            type: fileType,
+          };
 
-            const response = await FileUploadApiService.fileUpload(filepayload);
+          const response = await FileUploadApiService.fileUpload(filepayload);
 
-            if (response) {
-              setSnackData({
-                show: true,
-                message:
-                  response?.message ||
-                  API_SUCCESS_MESSAGE.UPLOADED_SUCCESSFULLY,
-                type: "success",
-              });
-              setLoading(false);
-              setFormData({
-                ...formData,
-                mapping_standards: response.data.details[0], // Set file name in the select field
-                regulatory: files?.[0]?.name,
-              });
-            }
-          } catch (errResponse) {
-            console.log("errResponse", errResponse);
-            return null;
+          if (response) {
+            setSnackData({
+              show: true,
+              message:
+                response?.message ||
+                API_SUCCESS_MESSAGE.UPLOADED_SUCCESSFULLY,
+              type: "success",
+            });
+            setLoading(false);
+            setFormData({
+              ...formData,
+              mapping_standards: response.data.details[0], // Set file name in the select field
+              regulatory: files?.[0]?.name,
+            });
           }
-        })
+        } catch (errResponse) {
+          console.log("errResponse", errResponse);
+          return null;
+        }
+      })
     );
   };
 
@@ -263,11 +263,11 @@ const CreateProjectForm = () => {
         }
         return member
           ? {
-              user_id: member.user_id,
-              user_name: `${member.user_first_name} ${member.user_last_name}`,
-              user_email: member.user_email,
-              user_profile: member.user_profile,
-            }
+            user_id: member.user_id,
+            user_name: `${member.user_first_name} ${member.user_last_name}`,
+            user_email: member.user_email,
+            user_profile: member.user_profile,
+          }
           : null;
       })
       .filter(Boolean);
@@ -280,20 +280,44 @@ const CreateProjectForm = () => {
   };
 
   const cleanDocuments = (documents) => {
-    return documents.map(({ file, progress, ...rest }) => rest);
+    // Filter out documents without document_name and then clean them
+    return documents
+      .filter((doc) => doc.docuemnt_name && doc.docuemnt_name.trim() !== "")
+      .map(({ file, progress, ...rest }) => rest);
   };
 
   const handleSubmit = (e) => {
-    if (documents?.length === 0) {
+    e.preventDefault(); // Prevent form submission first
+
+    // Filter documents with valid names
+    const validDocuments = documents.filter((doc) => doc.docuemnt_name && doc.docuemnt_name.trim() !== "");
+
+    if (validDocuments.length === 0) {
       setSnackData({
         show: true,
         message: "Please add at least one document.",
         type: "error",
       });
-      return; // Prevent form submission
+      return; // Stop execution, but form won't reset due to preventDefault above
     }
+
+    // Check for empty folders
+    const allFolders = [...new Set(documents.map(doc => doc.folder_name).filter(folder => folder && folder.trim() !== ""))];
+    const emptyFolders = allFolders.filter(folderName => {
+      const documentsInFolder = validDocuments.filter(doc => doc.folder_name === folderName);
+      return documentsInFolder.length === 0;
+    });
+
+    if (emptyFolders.length > 0) {
+      setSnackData({
+        show: true,
+        message: `Please add at least one document to the following folder(s): ${emptyFolders.join(', ')}`,
+        type: "error",
+      });
+      return; // Stop execution if there are empty folders
+    }
+
     setSubmitLoading(true);
-    e.preventDefault();
     const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
     const updatedStatus =
       submissionStatus === "Draft" ? "Draft" : "In Progress";

@@ -128,15 +128,15 @@ const Listing = () => {
   const invitedProjects = transformProjects(projectData?.invited_projects);
   const TotalProjectRecords =
     userRole === "Super Admin" ||
-    userRole === "Org Super Admin" ||
-    userRole === "Admin"
+      userRole === "Org Super Admin" ||
+      userRole === "Admin"
       ? projectData?.total_count || 0
       : projectData?.total_project_count || 0;
 
   const TotalInvitedProjectRecords =
     userRole === "Super Admin" ||
-    userRole === "Org Super Admin" ||
-    userRole === "Admin"
+      userRole === "Org Super Admin" ||
+      userRole === "Admin"
       ? projectData?.total_count || 0
       : projectData?.total_invited_project_count || 0;
 
@@ -218,15 +218,15 @@ const Listing = () => {
       key: "runs",
     },
     ...(userRole === "Super Admin" ||
-    userRole === "Org Super Admin" ||
-    userRole === "Admin"
+      userRole === "Org Super Admin" ||
+      userRole === "Admin"
       ? [
-          {
-            title: LISTING_PAGE.INDUSTRY,
-            dataIndex: "industry",
-            key: "industry",
-          },
-        ]
+        {
+          title: LISTING_PAGE.INDUSTRY,
+          dataIndex: "industry",
+          key: "industry",
+        },
+      ]
       : []),
     {
       title: LISTING_PAGE.REGULATORY_SANTARDS,
@@ -379,12 +379,12 @@ const Listing = () => {
                           {(userRole === "Super Admin" ||
                             userRole === "Org Super Admin" ||
                             userRole === "Admin") && (
-                            <MultiSelectWithChip
-                              label="Industry"
-                              value={industryFilter}
-                              onChange={setIndustryFilter}
-                            />
-                          )}
+                              <MultiSelectWithChip
+                                label="Industry"
+                                value={industryFilter}
+                                onChange={setIndustryFilter}
+                              />
+                            )}
                           <div style={{ marginTop: "10px" }}>
                             <label>
                               <b>Sort Project Name by:</b>

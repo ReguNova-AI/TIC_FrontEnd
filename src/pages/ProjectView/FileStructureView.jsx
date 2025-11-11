@@ -97,7 +97,7 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
     try {
       const userdetails = JSON.parse(sessionStorage.getItem('userDetails'));
       const userId = userdetails?.[0]?.user_id;
-      
+
       if (userId) {
         const response = await GoogleDrivePickerService.getGoogleAccessTokenWithCache(userId);
         const hasToken = response && (response.access_token || response.accessToken);
@@ -120,13 +120,13 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
       const state = urlParams.get('state');
       const error = urlParams.get('error');
       const gdrive = urlParams.get('gdrive');
-      
+
       // Check for any indication of Google auth completion
       if (googleAuthSuccess === 'true' || googleAuthCode || (state && !error) || gdrive === '1') {
         console.log('Google authorization detected, checking token immediately');
         // Check token immediately without delay
         checkGoogleToken();
-        
+
         // Clean up URL parameters
         const newUrl = window.location.pathname;
         window.history.replaceState({}, document.title, newUrl);
@@ -135,7 +135,7 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
 
     // Check on mount
     checkForGoogleAuthCompletion();
-    
+
     // Also check token on mount
     checkGoogleToken();
   }, []);
@@ -288,13 +288,13 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
       // Process files sequentially to avoid overwhelming the server
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        
+
         try {
           console.log(`Uploading file ${i + 1}/${files.length}: ${file.name}`);
-          
+
           // Upload file to S3
           const uploadedPath = await handleFileUpload(file);
-          
+
           if (uploadedPath) {
             // Create document record
             const documentData = {
@@ -302,10 +302,10 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
               document_type: file.type || 'application/octet-stream',
               file_path: uploadedPath,
             };
-            
+
             // Upload document metadata
             await handleUploadDocument(documentData);
-            
+
             successfulUploads++;
             uploadResults.push({ file: file.name, status: 'success' });
             console.log(`Successfully uploaded: ${file.name}`);
@@ -319,7 +319,7 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
           uploadResults.push({ file: file.name, status: 'failed', error: error.message });
           console.error(`Failed to upload: ${file.name}`, error);
         }
-        
+
         // Update progress
         const currentProgress = ((i + 1) / files.length) * 100;
         setUploadedFilesCount(i + 1);
@@ -349,7 +349,7 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
     } finally {
       setIsUploadingMultiple(false);
       setOpenModal(false);
-      
+
       // Reset progress after a delay to show completion
       setTimeout(() => {
         setMultipleUploadProgress(0);
@@ -442,14 +442,14 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
       .filter(Boolean);
 
     const allFolders = [...existingFolders, ...manuallyCreatedFolders];
- 
+
     if (allFolders.includes(newFolderName)) {
       message.error("Folder with this name already exists");
       return;
     }
 
     // Create new folder node
-    const newFolderNode = { 
+    const newFolderNode = {
       title: (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
           <div style={{ display: "flex", alignItems: "center" }}>
@@ -516,7 +516,7 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
       message.error("Please enter file name and select document type");
       return;
     }
-   
+
     const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
 
     // Create API payload
@@ -619,10 +619,12 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
             </span>
 
             <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-              {/* File type icon - always show at the end */}
-              <div style={{ display: "flex", alignItems: "center" }}>
-                {getFileIcon(document_type)}
-              </div>
+              {/* File type icon - only show when file is attached */}
+              {file_path && (
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  {getFileIcon(document_type)}
+                </div>
+              )}
 
               {/* Upload/Delete actions */}
               {file_path ? (
@@ -789,74 +791,74 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
       <div style={{ marginBottom: 20 }}>
         {/* Create Buttons Row */}
         <div style={{ display: "flex", gap: 12, marginBottom: 16, alignItems: "center" }}>
-  <Button
-    type="primary"
-    ghost
-    icon={<FolderAddOutlined />}
-    onClick={() => setIsCreatingFolder(true)}
-    style={{
-      borderRadius: 8,
-      height: 40,
-      fontSize: 14,
-      fontWeight: 500,
-      borderColor: "#52c41a",
-      color: "#52c41a",
-    }}
-  >
-    Create New Folder
-  </Button>
+          <Button
+            type="primary"
+            ghost
+            icon={<FolderAddOutlined />}
+            onClick={() => setIsCreatingFolder(true)}
+            style={{
+              borderRadius: 8,
+              height: 40,
+              fontSize: 14,
+              fontWeight: 500,
+              borderColor: "#52c41a",
+              color: "#52c41a",
+            }}
+          >
+            Create New Folder
+          </Button>
 
-  <Button
-    type="primary"
-    icon={<FileAddOutlined />}
-    onClick={() => setIsCreatingFile(true)}
-    style={{
-      borderRadius: 8,
-      height: 40,
-      fontSize: 14,
-      fontWeight: 500,
-      background: "linear-gradient(135deg, #1890ff 0%, #40a9ff 100%)",
-      border: "none",
-    }}
-  >
-    Create New Document
-  </Button>
+          <Button
+            type="primary"
+            icon={<FileAddOutlined />}
+            onClick={() => setIsCreatingFile(true)}
+            style={{
+              borderRadius: 8,
+              height: 40,
+              fontSize: 14,
+              fontWeight: 500,
+              background: "linear-gradient(135deg, #1890ff 0%, #40a9ff 100%)",
+              border: "none",
+            }}
+          >
+            Create New Document
+          </Button>
 
-  <Button
-    type="primary"
-    icon={<UploadOutlined />}
-    onClick={(e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      console.log('Upload Multiple Files button clicked');
-      handleMultipleFileSelect();
-    }}
-    style={{
-      borderRadius: 8,
-      height: 40,
-      fontSize: 14,
-      fontWeight: 500,
-      background: "linear-gradient(135deg, #722ed1 0%, #9254de 100%)",
-      border: "none",
-    }}
-  >
-    Upload Multiple Files
-  </Button>
+          <Button
+            type="primary"
+            icon={<UploadOutlined />}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('Upload Multiple Files button clicked');
+              handleMultipleFileSelect();
+            }}
+            style={{
+              borderRadius: 8,
+              height: 40,
+              fontSize: 14,
+              fontWeight: 500,
+              background: "linear-gradient(135deg, #722ed1 0%, #9254de 100%)",
+              border: "none",
+            }}
+          >
+            Upload Multiple Files
+          </Button>
 
-  {/* Google Drive functionality */}
-  {hasGoogleToken ? (
-  <div style={{ display: "flex", alignItems: "center", marginTop: -2, flex: 1 }}>
-    <GoogleDriveFileCard
-      projectId={data?.project_id}
-      onUploadSuccess={onFileUploadSuccess}
-      style={{ width: "50%" }} 
-    />
-  </div>
-) : (
-  <GoogleDrivePicker projectId={data?.project_id} />
-)}
+          {/* Google Drive functionality */}
+          {hasGoogleToken ? (
+            <div style={{ display: "flex", alignItems: "center", marginTop: -2, flex: 1 }}>
+              <GoogleDriveFileCard
+                projectId={data?.project_id}
+                onUploadSuccess={onFileUploadSuccess}
+                style={{ width: "50%" }}
+              />
+            </div>
+          ) : (
+            <GoogleDrivePicker projectId={data?.project_id} />
+          )}
 
-</div>
+        </div>
 
         {/* Create Folder Modal/Card */}
         {isCreatingFolder && (
@@ -905,149 +907,149 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
         )}
 
         {/* Create File Modal/Card */}
-          <Card
-            size="small"
-            style={{
-              background: "#f0f9ff",
-              border: "1px solid #91d5ff",
-              borderRadius: 8,
-              marginBottom: 16
-            }}
-          >
-            <Space direction="vertical" style={{ width: "100%" }} size="small">
-              {addingFileToFolder && (
-                <div style={{
-                  padding: "8px 12px",
-                  background: "#e6f7ff",
+        <Card
+          size="small"
+          style={{
+            background: "#f0f9ff",
+            border: "1px solid #91d5ff",
+            borderRadius: 8,
+            marginBottom: 16
+          }}
+        >
+          <Space direction="vertical" style={{ width: "100%" }} size="small">
+            {addingFileToFolder && (
+              <div style={{
+                padding: "8px 12px",
+                background: "#e6f7ff",
+                borderRadius: 6,
+                border: "1px solid #bae7ff"
+              }}>
+                <Typography.Text style={{ fontSize: 13, color: "#1890ff" }}>
+                  <FolderOpenOutlined style={{ marginRight: 6 }} />
+                  Adding to folder: <strong>{addingFileToFolder}</strong>
+                </Typography.Text>
+              </div>
+            )}
+
+            <Space align="center" style={{ width: "100%", flexWrap: "wrap" }}>
+              <FileAddOutlined style={{ color: "#1890ff", fontSize: 16 }} />
+              <Input
+                placeholder="Enter document name..."
+                value={newFileName}
+                onChange={(e) => setNewFileName(e.target.value)}
+                style={{
+                  minWidth: 200,
                   borderRadius: 6,
-                  border: "1px solid #bae7ff"
-                }}>
-                  <Typography.Text style={{ fontSize: 13, color: "#1890ff" }}>
-                    <FolderOpenOutlined style={{ marginRight: 6 }} />
-                    Adding to folder: <strong>{addingFileToFolder}</strong>
-                  </Typography.Text>
-                </div>
-              )}
-
-              <Space align="center" style={{ width: "100%", flexWrap: "wrap" }}>
-                <FileAddOutlined style={{ color: "#1890ff", fontSize: 16 }} />
-                <Input
-                  placeholder="Enter document name..."
-                  value={newFileName}
-                  onChange={(e) => setNewFileName(e.target.value)}
-                  style={{
-                    minWidth: 200,
-                    borderRadius: 6,
-                    border: "1px solid #91d5ff"
-                  }}
-                  autoFocus
-                />
-                <Select
-                  placeholder="Select document type"
-                  value={newFileType}
-                  onChange={setNewFileType}
-                  style={{
-                    minWidth: 180,
-                    borderRadius: 6
-                  }}
-                  options={[
-                    {
-                      value: "Technical Specification",
-                      label: (
-                        <Space>
-                          <FilePdfOutlined style={{ color: "#cf1322" }} />
-                          Technical Specification
-                        </Space>
-                      )
-                    },
-                    {
-                      value: "Safety Standard",
-                      label: (
-                        <Space>
-                          <FileTextOutlined style={{ color: "#722ed1" }} />
-                          Safety Standard
-                        </Space>
-                      )
-                    },
-                    {
-                      value: "Test Report",
-                      label: (
-                        <Space>
-                          <FileExcelOutlined style={{ color: "#52c41a" }} />
-                          Test Report
-                        </Space>
-                      )
-                    },
-                    {
-                      value: "Certificate",
-                      label: (
-                        <Space>
-                          <FilePdfOutlined style={{ color: "#cf1322" }} />
-                          Certificate
-                        </Space>
-                      )
-                    },
-                    {
-                      value: "Manual",
-                      label: (
-                        <Space>
-                          <FileWordOutlined style={{ color: "#1890ff" }} />
-                          Manual
-                        </Space>
-                      )
-                    },
-                    {
-                      value: "Custom Regulatory",
-                      label: (
-                        <Space>
-                          <FileUnknownOutlined style={{ color: "#595959" }} />
-                          Custom Regulatory
-                        </Space>
-                      )
-                    },
-                    {
-                      value: "Other",
-                      label: (
-                        <Space>
-                          <FileUnknownOutlined style={{ color: "#595959" }} />
-                          Other
-                        </Space>
-                      )
-                    },
-                  ]}
-                />
-              </Space>
-
-              <Space style={{ marginTop: 8 }}>
-                <Button
-                  type="primary"
-                  icon={<SaveOutlined />}
-                  onClick={() => handleCreateFile(addingFileToFolder)}
-                  style={{
-                    borderRadius: 6,
-                    background: "#1890ff",
-                    borderColor: "#1890ff"
-                  }}
-                  disabled={!newFileName.trim() || !newFileType}
-                >
-                  Create Document
-                </Button>
-                <Button
-                  icon={<CloseOutlined />}
-                  onClick={() => {
-                    setIsCreatingFile(false);
-                    setNewFileName("");
-                    setNewFileType("");
-                    setAddingFileToFolder(null);
-                  }}
-                  style={{ borderRadius: 6 }}
-                >
-                  Cancel
-                </Button>
-              </Space>
+                  border: "1px solid #91d5ff"
+                }}
+                autoFocus
+              />
+              <Select
+                placeholder="Select document type"
+                value={newFileType}
+                onChange={setNewFileType}
+                style={{
+                  minWidth: 180,
+                  borderRadius: 6
+                }}
+                options={[
+                  {
+                    value: "Technical Specification",
+                    label: (
+                      <Space>
+                        <FilePdfOutlined style={{ color: "#cf1322" }} />
+                        Technical Specification
+                      </Space>
+                    )
+                  },
+                  {
+                    value: "Safety Standard",
+                    label: (
+                      <Space>
+                        <FileTextOutlined style={{ color: "#722ed1" }} />
+                        Safety Standard
+                      </Space>
+                    )
+                  },
+                  {
+                    value: "Test Report",
+                    label: (
+                      <Space>
+                        <FileExcelOutlined style={{ color: "#52c41a" }} />
+                        Test Report
+                      </Space>
+                    )
+                  },
+                  {
+                    value: "Certificate",
+                    label: (
+                      <Space>
+                        <FilePdfOutlined style={{ color: "#cf1322" }} />
+                        Certificate
+                      </Space>
+                    )
+                  },
+                  {
+                    value: "Manual",
+                    label: (
+                      <Space>
+                        <FileWordOutlined style={{ color: "#1890ff" }} />
+                        Manual
+                      </Space>
+                    )
+                  },
+                  {
+                    value: "Custom Regulatory",
+                    label: (
+                      <Space>
+                        <FileUnknownOutlined style={{ color: "#595959" }} />
+                        Custom Regulatory
+                      </Space>
+                    )
+                  },
+                  {
+                    value: "Other",
+                    label: (
+                      <Space>
+                        <FileUnknownOutlined style={{ color: "#595959" }} />
+                        Other
+                      </Space>
+                    )
+                  },
+                ]}
+              />
             </Space>
-          </Card>
-      
+
+            <Space style={{ marginTop: 8 }}>
+              <Button
+                type="primary"
+                icon={<SaveOutlined />}
+                onClick={() => handleCreateFile(addingFileToFolder)}
+                style={{
+                  borderRadius: 6,
+                  background: "#1890ff",
+                  borderColor: "#1890ff"
+                }}
+                disabled={!newFileName.trim() || !newFileType}
+              >
+                Create Document
+              </Button>
+              <Button
+                icon={<CloseOutlined />}
+                onClick={() => {
+                  setIsCreatingFile(false);
+                  setNewFileName("");
+                  setNewFileType("");
+                  setAddingFileToFolder(null);
+                }}
+                style={{ borderRadius: 6 }}
+              >
+                Cancel
+              </Button>
+            </Space>
+          </Space>
+        </Card>
+
         {/* Upload Progress Modal */}
 
         <Modal

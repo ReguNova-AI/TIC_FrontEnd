@@ -140,7 +140,7 @@ const DocumentSection = ({ documents, setDocuments }) => {
           setDocuments((prev) =>
             prev.map((doc) =>
               doc.docuemnt_name === docName &&
-              doc.folder_name === (folderName || "")
+                doc.folder_name === (folderName || "")
                 ? { ...doc, progress: percent }
                 : doc
             )
@@ -151,13 +151,13 @@ const DocumentSection = ({ documents, setDocuments }) => {
       setDocuments((prev) =>
         prev.map((doc) =>
           doc.docuemnt_name === docName &&
-          doc.folder_name === (folderName || "")
+            doc.folder_name === (folderName || "")
             ? {
-                ...doc,
-                file,
-                path: response.data.details[0],
-                progress: 100,
-              }
+              ...doc,
+              file,
+              path: response.data.details[0],
+              progress: 100,
+            }
             : doc
         )
       );
@@ -210,7 +210,7 @@ const DocumentSection = ({ documents, setDocuments }) => {
     }
   };
 
-  // --- Add Document entry
+  // --- Add Document entry (for folders)
   const handleAddDocument = () => {
     if (!newDoc.name || !newDoc.type) {
       message.error("Document name and type are mandatory");
@@ -248,6 +248,31 @@ const DocumentSection = ({ documents, setDocuments }) => {
     setNewDoc({ name: "", type: "", desc: "", file: null });
   };
 
+  // --- Add Standalone Document entry (always outside folders)
+  const handleAddStandaloneDocument = () => {
+    if (!newDoc.name || !newDoc.type) {
+      message.error("Document name and type are mandatory");
+      return;
+    }
+    if (newDoc.file) {
+      handleFileUpload(newDoc.file, newDoc.name, null); // null for no folder
+    }
+    const docEntry = {
+      document_id: generateOTP(),
+      version: "V1",
+      docuemnt_name: newDoc.name,
+      docuemnt_type: newDoc.type,
+      docuemnt_desc: newDoc.desc || "",
+      folder_name: "", // Always empty for standalone documents
+      path: "",
+      file: newDoc.file,
+      progress: 0,
+    };
+
+    setDocuments((prev) => [...prev, docEntry]);
+    setNewDoc({ name: "", type: "", desc: "", file: null });
+  };
+
   // --- Group docs by folder_name
   //   const groupedDocs = documents.reduce((acc, doc) => {
   //     const folder = doc.folder_name || "Uncategorized";
@@ -275,11 +300,11 @@ const DocumentSection = ({ documents, setDocuments }) => {
     <section
       style={{
 
-       
+
       }}
     >
       <Box sx={{ mt: 2 }}>
-       
+
         <div
           style={{
             textAlign: "center",
@@ -322,7 +347,7 @@ const DocumentSection = ({ documents, setDocuments }) => {
                 label="Type"
                 value={newDoc.type}
                 onChange={(e) => setNewDoc({ ...newDoc, type: e.target.value })}
-                // required
+              // required
               >
                 {documentTypes.map((type) => (
                   <MenuItem key={type} value={type}>
@@ -365,7 +390,7 @@ const DocumentSection = ({ documents, setDocuments }) => {
             {/* Add Document button */}
             <Button
               variant="contained"
-              onClick={handleAddDocument}
+              onClick={handleAddStandaloneDocument}
               endIcon={<InsertDriveFile sx={{ height: 20, width: "auto" }} />}
             >
               Add
@@ -396,6 +421,24 @@ const DocumentSection = ({ documents, setDocuments }) => {
                 <Folder sx={{ mr: 1 }} />
                 <ListItemText primary={folder} />
 
+                {/* --- Add Document Button --- */}
+                <Fab
+                  color="primary"
+                  aria-label="add"
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCurrentFolder(folder);
+                    setOpenAddFile(true);
+                  }}
+                  style={{
+                    marginRight: 10,
+                    zIndex: 1000,
+                  }}
+                >
+                  <AddIcon />
+                </Fab>
+
                 <Popconfirm
                   title="Delete Folder"
                   description="Delete this folder and all files inside?"
@@ -404,24 +447,6 @@ const DocumentSection = ({ documents, setDocuments }) => {
                   cancelText="Cancel"
                   icon={<CloseCircleOutlined style={{ color: "red" }} />}
                 >
-                  {/* --- Floating button only when a folder is selected/open */}
-
-                  <Fab
-                    color="gray"
-                    aria-label="add"
-                    size="small"
-                    onClick={() => {
-                      handleToggleFolder(folder);
-                      setOpenAddFile(true);
-                    }}
-                    style={{
-                      marginRight: 50,
-                      zIndex: 1000,
-                    }}
-                  >
-                    <AddIcon />
-                  </Fab>
-
                   <IconButton onClick={(e) => e.stopPropagation()}>
                     <DeleteIcon color="error" />
                   </IconButton>

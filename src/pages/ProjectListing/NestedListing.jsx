@@ -50,7 +50,7 @@ const NestedListing = ({ data, filterStatusValue }) => {
         role_name: user?.role_name,
         industry: user?.industry_names,
         project_count: user?.projects?.length,
-        projects: user?.projects || [],
+        projects: (user?.projects || []).sort((a, b) => new Date(b.created_at) - new Date(a.created_at)),
       }));
 
       setDataSource(users);

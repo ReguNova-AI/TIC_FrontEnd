@@ -163,10 +163,10 @@ const RiskAssessmentTab = ({ projectData }) => {
             <Typography style={{ fontSize: "18px" }}>
               {PROJECT_DETAIL_PAGE.RISK_SUMMARY}
             </Typography>
-            <RiskSummaryStatusIndicator 
-              projectId={projectData?.project_id} 
-              variant="progress" 
-              size="small" 
+            <RiskSummaryStatusIndicator
+              projectId={projectData?.project_id}
+              variant="progress"
+              size="small"
             />
           </Box>
 
@@ -209,10 +209,12 @@ const RiskAssessmentTab = ({ projectData }) => {
               {isRiskSummaryLoading ? (
                 <>
                   <CircularProgress size={16} sx={{ mr: 1 }} />
-                  Regenerating...
+                  {(
+                    !riskSummary ? "Generating..." : 'Regenerating...'
+                  )}
                 </>
               ) : (
-                'Regenerate Assessment'
+                !riskSummary ? "Generate Assessment" : 'Regenerate Assessment'
               )}
             </Button>
           </Box>
