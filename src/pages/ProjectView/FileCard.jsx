@@ -146,44 +146,15 @@ export const parseApiResponse = (response) => {
       }
     });
 
-    /*  return [
-       ...sections.map((section, index) => ({
-         title: section.title,
-         points: section.points,
-       })),
-       ...annexes.map((annex, index) => ({
-         title: annex.title,
-         points: annex.points,
-       })),
-     ]; */
-
     return [
-      {
-        title: 'General Requirements',
-        points: [" Scope Definition: The standard specifies requirements for a single grade of corrosion preventive, water displacing, suitable for gas turbine engines and metal surfaces in use or short-term storage. It can be applied by pressure circulation, brushing, spraying, or dipping.",
-          "Application on Electrical Equipment: The product is suitable for use on low voltage electrical equipment up to 440 volts and can act as a rust-penetrating fluid.",
-          "Water Separation and Reusability: The fluid allows water to separate upon standing, enabling reuse. Removal is possible through flushing, brushing, spraying, or wiping with hydrocarbon solvents like white spirit or kerosene.",
-          "Material Composition: The corrosion preventive must be a homogeneous blend of film-forming petroleum materials, corrosion inhibitors, and additives in a hydrocarbon solvent with less than 1% m/m aromatics. Chlorinated solvents are prohibited.",
-          "Product Conformity Certification (PCC): Manufacturers must demonstrate compliance with all standard requirements to the Technical Authority, including a confidential declaration of formulation and component sources.",
-          "Technically Acceptable Products List (TAPL): Only products listed on the TAPL, assigned a unique identification reference, are considered compliant. Any formulation changes require prior notification and certification of continued compliance.",
-          "Testing and Compliance: Finished products must be tested according to Table 1, with the Technical Authority reserving the right to request additional compliance evidence during manufacturing.",
-          "Storage and Shelf Life: The product must retain its properties for at least 12 months in temperate climates and 6 months in tropical climates when stored in original sealed containers.",
-          "Container Specifications: Products must be supplied in sound, clean, and dry containers, with coatings and markings compliant with contract requirements and Def Stan 05-52 (Part 1).",
-          "Legal Compliance: Contractors are responsible for adhering to legal requirements for container marking and ensuring product compliance with this standard.",],
-      },
-      {
-        title: 'Method for the Determination of Water Displacing Properties and Protection Against Corrosion',
-        points: ["Scope: This method evaluates the test fluid's ability to displace salt water and protect mild steel from corrosion.",
-          "Apparatus Requirements: Includes a humidity cabinet operating at 85% to 92% relative humidity at 23°C, and double-ended glass hooks.",
-          "Materials: Requires mild steel panels, sodium chloride solution, humidity control solution, petroleum spirit, and cotton cambric.",
-          "Panel Preparation: Steel panels must be prepared as per Def Stan 05-50: Part 25 specifications.",
-          "Testing Procedure: Panels are immersed in sodium chloride solution, drained, then immersed in the sample. After exposure to high humidity, panels are examined for corrosion.",
-          "Humidity Exposure: Panels are suspended in a humidity cabinet for 72 hours.",
-          "Post-Test Cleaning: Panels are wiped with cotton cambric soaked in petroleum spirit to remove the test sample.",
-          "Visual Examination: Panels are inspected for rusting, pitting, etching, or staining, and results are reported.",
-          "Precision: Not applicable for this method."],
-      },
-
+      ...sections.map((section, index) => ({
+        title: section.title,
+        points: section.points,
+      })),
+      ...annexes.map((annex, index) => ({
+        title: annex.title,
+        points: annex.points,
+      })),
     ];
 
     // const sections = [];
