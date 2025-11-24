@@ -52,7 +52,6 @@ import { formatDate, formatDateToCustomFormat } from "shared/utility";
 import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
 import AssessmentHistoryTable from "components/AssessmentHistoryTable";
 
-
 // Helper function to create a history object based on changes
 export const createHistoryObject = (data, previousData, heading, userName) => {
   const historyItem = {
@@ -140,23 +139,6 @@ const ProjectView = () => {
   }, [id]);
 
   useEffect(() => {
-    console.log("chatLoading", chatLoading);
-    let intervalId;
-    
-    if (chatLoading === true) {
-      intervalId = setInterval(() => {
-        fetchChatLoadDetails(id);
-      }, 5000); // 5 seconds
-    }
-
-    return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
-    };
-  }, [chatLoading,id]);
-
-  useEffect(() => {
     if (runAssessmentState === "run" && runState) {
       projectData?.checkListResponse
         ? runComplianceAssessmenet(
@@ -214,42 +196,6 @@ const ProjectView = () => {
       })
       .finally(() => {
         setLoading(false);
-      });
-  };
-
-  const fetchChatLoadDetails = (id) => {
-    
-    ProjectApiService.projectDetails(id)
-      .then((response) => {
-        // setSnackData({
-        //   show: true,
-        //   message:
-        //     response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-        //   type: "success",
-        // });
-        if( response?.data?.details[0]?.standardUploaded !== null && chatLoading === true){
-          SetProjectData(response?.data?.details[0]);
-        setHistoryData({ history: response?.data?.details[0].history || [] });
-        setHistoryValue(response?.data?.details[0].history);
-        setChatloading(
-          response?.data?.details[0]?.standardUploaded !== null ? false : true
-        );
-        }
-        
-        
-      })
-      .catch((errResponse) => {
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
-       
-      })
-      .finally(() => {
-        
       });
   };
 
@@ -851,9 +797,6 @@ const ProjectView = () => {
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
-    if(chatLoading ===true && newValue === 3){
-      fetchChatLoadDetails(id);
-    }
   };
 
   const handleFileUpload = () => {
