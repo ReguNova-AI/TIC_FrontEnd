@@ -43,6 +43,126 @@ import _ from "lodash";
 
 // Function to parse the API response into a structured format (skipping the title)
 export const parseApiResponse = (response) => {
+  // Check if the response is the new format with oldFormat
+  if (response.oldFormat) {
+    response = response.oldFormat;
+  }
+
+  // If the response is an array (oldFormat or checklist array)
+  if (Array.isArray(response)) {
+    let checklist = response;
+
+    // Process checklist into sections and annexes
+    const sections = [];
+    const annexes = [];
+    let currentSectionIndex = -1;
+    let currentAnnexIndex = -1;
+    let isAnnex = false;
+
+    checklist.forEach((item) => {
+      // Split checklist items based on whether they contain a section or annex
+      if (item.includes("##")) {
+        // Check if it's an Annex or Section
+        if (item.toLowerCase().startsWith("## title")) {
+          sections.push({
+            title: item,
+            points: [],
+          });
+          currentSectionIndex = sections.length - 1;
+          isAnnex = false;
+        } else if (item.toLowerCase().startsWith("## annex")) {
+          annexes.push({
+            title: item
+              .split("##")[1]
+              ?.trim()
+              .replace(/^Annex\s*[:\-]?\s*/i, ""), // Remove "Annex"
+            points: [],
+          });
+          currentAnnexIndex = annexes.length - 1;
+          isAnnex = true;
+        } else if (item.toLowerCase().startsWith("## section")) {
+          sections.push({
+            title: item
+              .split("##")[1]
+              ?.trim()
+              .replace(/^Section\s*[:\-]?\s*/i, "")
+              .replace(/^\d+(\.\d+)?\s*/, "")
+              .replace(/\**/g, ""), // Remove "Section" and leading digits
+            points: [],
+          });
+          currentSectionIndex = sections.length - 1;
+          isAnnex = false;
+        }
+      } else if (item.includes("**")) {
+        // Check if it's an Annex or Section
+        if (item.toLowerCase().startsWith("**title")) {
+          sections.push({
+            title: item
+              .split("**")
+              ?.join(" ")
+              ?.trim()
+              .replace(/^\d+(\.\d+)?\s*/, ""),
+            points: [],
+          });
+          currentSectionIndex = sections.length - 1;
+          isAnnex = false;
+        } else if (item.toLowerCase().startsWith("**annex")) {
+          annexes.push({
+            title: item
+              .split("**")[1]
+              ?.trim()
+              .replace(/^Annex\s*[:\-]?\s*/i, "")
+              .replace(/^\d+(\.\d+)?\s*/, ""), // Remove "Annex"
+            points: [],
+          });
+          currentAnnexIndex = annexes.length - 1;
+          isAnnex = true;
+        } else if (item.toLowerCase().includes("**section")) {
+          sections.push({
+            title: item
+              .split("**")[1]
+              ?.trim()
+              .replace(/^Section\s*[:\-]?\s*/i, "")
+              .replace(/^\d+(\.\d+)?\s*/, ""), // Remove "Section" and leading digits
+            points: [],
+          });
+          currentSectionIndex = sections.length - 1;
+          isAnnex = false;
+        }
+      } else {
+        // Push points to the correct list
+        if (isAnnex && currentAnnexIndex >= 0) {
+          annexes[currentAnnexIndex].points.push(
+            item
+              .replace(/^\d+\.\s*/, "")
+              .replace("---", "")
+              .replace(/\\"/g, "")
+              .trim()
+          );
+        } else if (!isAnnex && currentSectionIndex >= 0) {
+          sections[currentSectionIndex].points.push(
+            item
+              .replace(/^\d+\.\s*/, "")
+              .replace("---", "")
+              .replace(/\\"/g, "")
+              .trim()
+          );
+        }
+      }
+    });
+
+    return [
+      ...sections.map((section, index) => ({
+        title: section.title,
+        points: section.points,
+      })),
+      ...annexes.map((annex, index) => ({
+        title: annex.title,
+        points: annex.points,
+      })),
+    ];
+  }
+
   // If the response contains 'checklist' (new checklist format)
   if (response.checklist && Array.isArray(response.checklist)) {
     let checklist = response.checklist;
