@@ -19,7 +19,8 @@ const ChatAIView = ({ data, onSubmit, responseValue, projectId }) => {
   }
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
-  const [response, setResponse] = useState(responseValue || "");
+  const [response, setResponse] = useState(responseValue?.answer || "");
+  const [question, setQuestion] = useState(responseValue?.question || "");
   const [history, setHistory] = useState(data || []); // State to store history of questions and responses
   const [snackData, setSnackData] = useState({
     show: false,
@@ -44,10 +45,13 @@ const ChatAIView = ({ data, onSubmit, responseValue, projectId }) => {
         question: query?.replace("'", " "),
         answer: response.data.data.output_text,
       };
-      setHistory((prevHistory) => [...prevHistory, newHistory]);
       setResponse(response.data.data.output_text);
-
-      onSubmit([...history, newHistory]);
+      setQuestion(response.data.question);
+      setHistory((prevHistory) => {
+        const updatedHistory = [...prevHistory, newHistory];
+        onSubmit(updatedHistory);
+        return updatedHistory;
+      });
     } catch (errResponse) {
       console.error("Error fetching data:", errResponse);
 
@@ -64,7 +68,7 @@ const ChatAIView = ({ data, onSubmit, responseValue, projectId }) => {
     } finally {
       setLoading(false);
     }
-  }, [query, history, onSubmit]);
+  }, [query, history, onSubmit]); 
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
@@ -103,9 +107,11 @@ const ChatAIView = ({ data, onSubmit, responseValue, projectId }) => {
               padding: 2,
               backgroundColor: "#f0f0f0",
               borderRadius: 2,
+              textAlign: "left",
+              whiteSpace: "pre-line", // preserves line breaks
             }}
           >
-            {response}
+            {`Q: ${question}\nA: ${response}`}
           </Typography>
         )}
       </animated.div>

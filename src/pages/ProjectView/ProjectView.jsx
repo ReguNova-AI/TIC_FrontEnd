@@ -228,13 +228,20 @@ const ProjectView = () => {
   };
 
   const handlechatUpdate = (data) => {
+    const lastEntry = data[data.length - 1]; // get the last chat
+    if (!lastEntry) return;
+
     const updatedResponse = {
       project_id: projectData.project_id,
       chatResponse: { data: data },
     };
 
-    // updatedResponse.chatResponse = { data: data };
-    setChatResponse(data[data.length - 1]?.answer);
+    // Store both question and answer
+    setChatResponse({
+      question: lastEntry.question,
+      answer: lastEntry.answer,
+    });
+
     UpdateProjectChatDetails(updatedResponse, false);
   };
 
