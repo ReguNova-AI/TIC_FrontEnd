@@ -184,23 +184,44 @@ const DropZoneFileUpload = (props) => {
   };
 
   const renderFileData = async (files) => {
+    const checkFileType = uploadedFiles?.map(
+      (data) => data.documenttype === FORM_LABEL.CUSTOM_REGULATORY
+    );
 
-    const checkFileType = uploadedFiles?.map(data=>data.documenttype === FORM_LABEL.CUSTOM_REGULATORY)
-    
-    if (selectedType === FORM_LABEL.CUSTOM_REGULATORY || (checkFileType?.includes(true) && selectedType !==FORM_LABEL.PROJECT_DOCUMENT)) {
+    if (
+      selectedType === FORM_LABEL.CUSTOM_REGULATORY ||
+      (checkFileType?.includes(true) &&
+        selectedType !== FORM_LABEL.PROJECT_DOCUMENT)
+    ) {
       if (files.length > 1 || checkFileType?.includes(true)) {
         setError(API_ERROR_MESSAGE.CUSTOM_REGULATORY_SINGLE_FILE_ONLY);
         return;
       }
     }
 
-    const processedFiles = await Promise.all(
-      files && files?.map(async (file) => {
-        let uploadedLink = null;
+    // Step 1: Add files immediately with progress 0
+    const filesWithProgress = files.map((file) => ({
+      relativePath: file.relativePath,
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      documenttype:
+        props.typeSelect === false
+          ? props.maxFile === 0
+            ? "Project Document"
+            : ""
+          : selectedType,
+      path: "",
+      uploadedOn: null,
+      progress: 0,
+    }));
 
-        // Create a new FileReader to read the file as Base64
+    setUploadedFiles((prevFiles) => [...prevFiles, ...filesWithProgress]);
+
+    // Step 2: Upload each file and track progress
+    const uploadResults = await Promise.all(
+      files.map(async (file) => {
         const reader = new FileReader();
-
         const fileDataUrl = await new Promise((resolve, reject) => {
           reader.onloadend = () => resolve(reader.result);
           reader.onerror = reject; // Handle any errors while reading the file
@@ -223,7 +244,7 @@ const DropZoneFileUpload = (props) => {
               );
 
               setUploadedFiles((prevFiles) =>
-              prevFiles && prevFiles?.map((uploadedFile) =>
+                prevFiles.map((uploadedFile) =>
                   uploadedFile.name === file.name
                     ? { ...uploadedFile, progress: percent }
                     : uploadedFile
@@ -232,41 +253,45 @@ const DropZoneFileUpload = (props) => {
             },
           });
 
-          if (response) {
-            setSnackData({
-              show: true,
-              message:
-                response?.message || API_SUCCESS_MESSAGE.UPLOADED_SUCCESSFULLY,
-              type: "success",
-            });
-          }
-          setTempFiles([])
+          // Update file info after successful upload
+          setUploadedFiles((prevFiles) =>
+            prevFiles.map((uploadedFile) =>
+              uploadedFile.name === file.name
+                ? {
+                  ...uploadedFile,
+                  path: response.data.details[0],
+                  uploadedOn: new Date(),
+                  progress: 100,
+                }
+                : uploadedFile
+            )
+          );
 
-          return {
-            relativePath: file.relativePath,
-            name: file.name,
-            size: file.size,
-            type: file.type,
-            documenttype:
-              props.typeSelect === false
-                ? props.maxFile === 0
-                  ? "Project Document"
-                  : ""
-                : selectedType,
-            path: response.data.details[0],
-            uploadedOn: new Date(),
-            progress: 100, // After successful upload, set progress to 100%
-          };
-        } catch (errResponse) {
-          console.log("errResponse", errResponse);
-          return null;
+          return true; // success
+        } catch (err) {
+          console.error("Upload error:", err);
+
+          // Remove failed file from state
+          setUploadedFiles((prevFiles) =>
+            prevFiles.filter((f) => f.name !== file.name)
+          );
+
+          return false; // failure
         }
       })
     );
 
-    const validFiles = processedFiles.filter((file) => file !== null);
+    // Step 3: Show success message ONLY after all files are uploaded
+    if (uploadResults.every((r) => r === true)) {
+      setSnackData({
+        show: true,
+        message:
+          API_SUCCESS_MESSAGE.UPLOADED_SUCCESSFULLY,
+        type: "success",
+      });
+    }
 
-    setUploadedFiles((prevFiles) => [...prevFiles, ...validFiles]);
+    setTempFiles([]);
   };
 
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
