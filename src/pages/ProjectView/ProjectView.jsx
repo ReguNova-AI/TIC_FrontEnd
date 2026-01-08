@@ -51,6 +51,7 @@ import processIcon from "../../assets/images/process.png";
 import { formatDate, formatDateToCustomFormat } from "shared/utility";
 import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
 import AssessmentHistoryTable from "components/AssessmentHistoryTable";
+import UploadChecklistModal from "./UploadChecklistModal";
 
 // Helper function to create a history object based on changes
 export const createHistoryObject = (data, previousData, heading, userName) => {
@@ -109,6 +110,7 @@ const ProjectView = () => {
   const [historyValue, setHistoryValue] = useState([]);
   const [disableButton, setDisableButton] = useState(false);
   const navigate = useNavigate();
+  const [showUploadModal, setShowUploadModal] = useState(false);
 
   // const chatLoadingIcon = (props) => <Icon component={chatLoadingicon} {...props} />;
 
@@ -228,13 +230,20 @@ const ProjectView = () => {
   };
 
   const handlechatUpdate = (data) => {
+    const lastEntry = data[data.length - 1]; // get the last chat
+    if (!lastEntry) return;
+
     const updatedResponse = {
       project_id: projectData.project_id,
       chatResponse: { data: data },
     };
 
-    // updatedResponse.chatResponse = { data: data };
-    setChatResponse(data[data.length - 1]?.answer);
+    // Store both question and answer
+    setChatResponse({
+      question: lastEntry.question,
+      answer: lastEntry.answer,
+    });
+
     UpdateProjectChatDetails(updatedResponse, false);
   };
 
@@ -539,7 +548,7 @@ const ProjectView = () => {
     }
   };
 
-  const runChecklkistCRT = async () => {
+  const runChecklkistCRT = async ({ include_ocr, detail_level }) => {
     setDisableButton(true);
     let fileName = standardData?.find(
       (data) => data?.standard_name === projectData?.regulatory_standard
@@ -570,6 +579,10 @@ const ProjectView = () => {
       //   imageKey :match[1]
       // };
       // setLoading(true);
+
+      // ✅ ADD MODAL PARAMS
+      payload.append("include_ocr", include_ocr);
+      payload.append("detail_level", detail_level);
 
       ProjectApiService.projectStandardChecklist(payload)
         .then((response) => {
@@ -1149,11 +1162,20 @@ const ProjectView = () => {
                                       : false
                                 : true
                             }
-                            onClick={() => runChecklkistCRT()}
+                            onClick={() => setShowUploadModal(true)}
                           >
                             {BUTTON_LABEL.RUN_CHECKLIST}
                           </Button>
                         </Tooltip>
+                        <UploadChecklistModal
+                          isOpen={showUploadModal}
+                          onClose={() => setShowUploadModal(false)}
+                          onConfirm={(params) => {
+                            // params = { include_ocr: true, detail_level: "detailed" }
+                            runChecklkistCRT(params);
+                          }}
+                        />
+
                         <Tooltip
                           title={
                             projectData.checkListResponse
