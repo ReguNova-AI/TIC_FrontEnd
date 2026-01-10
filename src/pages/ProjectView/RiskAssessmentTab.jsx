@@ -230,7 +230,7 @@ const RiskAssessmentTab = ({ projectData }) => {
                     Downloading...
                   </>
                 ) : (
-                  "Download DOCX"
+                  "Download Report"
                 )}
               </Button>
             ) : (
