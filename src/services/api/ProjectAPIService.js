@@ -217,6 +217,15 @@ const _uploadFilesToAIserver = (payload) => {
   return BaseApiService.post(`/api/v3/files/upload/multiple`, null, payload);
 };
 
+const _downloadRiskSummary = (projectId) => {
+  return BaseApiService.get(
+    `/api/v1/project_document/download-risk-summary/${projectId}`,
+    null,
+    null,
+    { responseType: "blob" }
+  );
+};
+
 export const ProjectApiService = {
   projectCreate: _projectCreate,
   projectListing: _projectListing,
@@ -238,6 +247,7 @@ export const ProjectApiService = {
   extractParameters: _extractParameters,
   getRiskSummary: _getRiskSummary,
   regenerateRiskSummary: _regenerateRiskSummary,
+  downloadRiskSummary: _downloadRiskSummary,
   getChatHistory: _getChatHistory,
   getExtractedInfo: _getExtractedInfo,
   uploadFilesToAIserver: _uploadFilesToAIserver,

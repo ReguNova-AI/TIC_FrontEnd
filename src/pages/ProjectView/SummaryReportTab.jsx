@@ -21,7 +21,7 @@ import {
   AccordionDetails,
 } from "@mui/material";
 import PropTypes from "prop-types";
-import { Empty } from "antd";
+import { Empty, message } from "antd";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ParameterInput from "./ParameterInput";
 import HistoryDetails from "./HistoryDetails";
@@ -42,12 +42,12 @@ const documentTypes = ["short", "long", "int", "boolean", "array", "object"];
 
 const SummaryReportTab = ({ projectData }) => {
   const { parameters, handleAddParameters, handleDeleteParameter } = useParameterManager();
-  
+
   // Global state from context
-  const { 
-    isExtracting, 
-    isProjectExtracting, 
-    startDataExtraction, 
+  const {
+    isExtracting,
+    isProjectExtracting,
+    startDataExtraction,
     stopDataExtraction,
     setCsvParameters,
     getCsvParameters,
@@ -62,19 +62,19 @@ const SummaryReportTab = ({ projectData }) => {
   const projectId = projectData?.project_id;
   const csvParameters = getCsvParameters(projectId);
   const extractedParameters = getExtractedParameters(projectId);
-  
+
   // Use local state for showResults to avoid persistence issues
   const [localShowResults, setLocalShowResults] = useState(false);
-  
+
   // Sync with global state on mount and when extracted parameters change
   useEffect(() => {
     const globalShowResults = getShowResults(projectId);
     setLocalShowResults(globalShowResults);
   }, [projectId, extractedParameters]);
-  
+
   // Use local state instead of global state
   const showResults = localShowResults;
-  
+
   // Monitor CSV parameters changes
   useEffect(() => {
     // Force re-render when CSV parameters change
@@ -228,7 +228,7 @@ const SummaryReportTab = ({ projectData }) => {
             }
             // Save to global context
             setCsvParameters(projectId, csvData);
-            
+
             // Reset showResults to false when loading new CSV data
             setLocalShowResults(false);
 
@@ -313,11 +313,16 @@ const SummaryReportTab = ({ projectData }) => {
     }
 
     try {
-      await handleCsvFileUpload(event);
-      // Handle success result if needed
+      const result = await handleCsvFileUpload(event);
+      if (result && result.success) {
+        message.success(result.message);
+      }
     } catch (error) {
       console.error('CSV upload error:', error);
-      // Handle error if needed
+      message.error(error.message || "Failed to upload CSV file");
+    } finally {
+      // Clear the input so the same file can be selected again if needed
+      event.target.value = '';
     }
   };
 
@@ -413,7 +418,7 @@ Initial sworn statement,long`;
 
     } catch (error) {
       console.error("Parameter extraction failed:", error);
-      
+
       // Stop global loading state with error
       stopDataExtraction(projectId, projectName, 'Failed', false);
     }
@@ -423,7 +428,7 @@ Initial sworn statement,long`;
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Data Extraction Status Indicator - Moved to top */}
       <DataExtractionLoader projectId={projectId} variant="progress" />
-      
+
       {/* CSV Parameters Section */}
       <Box
         sx={{
@@ -481,7 +486,7 @@ Initial sworn statement,long`;
                 onClick={handleExtractParameters}
                 disabled={isProjectExtracting(projectData?.project_id) || csvParameters.length === 0}
                 startIcon={isProjectExtracting(projectData?.project_id) ? <CircularProgress size={20} /> : null}
-                sx={{ 
+                sx={{
                   minWidth: 150,
                   bgcolor: 'primary.main',
                   '&:hover': {

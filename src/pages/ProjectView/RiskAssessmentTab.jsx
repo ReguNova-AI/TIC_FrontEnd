@@ -6,11 +6,14 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import DownloadIcon from "@mui/icons-material/Download";
 import html2pdf from "html2pdf.js";
 import { PROJECT_DETAIL_PAGE } from "shared/constants";
+import { apiHost } from "../../config";
 import { useRiskSummary } from "./useProjectQueries";
+import { ProjectApiService } from "../../services/api/ProjectAPIService";
 import { useRiskSummaryOperations } from "../../components/hooks/useRiskSummaryOperations";
 import RiskSummaryStatusIndicator from "../../components/RiskSummaryStatusIndicator";
 
 const RiskAssessmentTab = ({ projectData }) => {
+  const [isDownloading, setIsDownloading] = React.useState(false);
   // Use React Query hook to fetch risk summary
   const {
     data: riskSummary,
@@ -56,7 +59,7 @@ const RiskAssessmentTab = ({ projectData }) => {
       <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto;">
         <h1 style="color: #1976d2; border-bottom: 2px solid #1976d2; padding-bottom: 10px;">Risk Summary Report - ${projectData?.project_name} </h1>
         <div style="margin-top: 20px; line-height: 1.6;">
-          ${document.querySelector('.risk-summary-content')?.innerHTML || riskSummary}
+          ${document.querySelector('.risk-summary-content')?.innerHTML || riskSummary?.summary}
         </div>
         <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; font-size: 12px; color: #666;">
           Generated on: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}
@@ -73,6 +76,39 @@ const RiskAssessmentTab = ({ projectData }) => {
     };
 
     html2pdf().set(opt).from(element).save();
+  };
+
+  const handleDownloadDocx = async () => {
+    try {
+      if (riskSummary?.doc_path_aws) {
+        setIsDownloading(true);
+        const response = await ProjectApiService.downloadRiskSummary(projectData?.project_id);
+
+        // Extract filename from the path or use default
+        const fileName = riskSummary.doc_path_aws.split('/').pop() ||
+          `risk-assessment-${projectData?.project_name || 'project'}.docx`;
+
+        // Create blob link to download
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', fileName);
+
+        // Append to html link element page
+        document.body.appendChild(link);
+
+        // Start download
+        link.click();
+
+        // Clean up and remove the link
+        link.parentNode.removeChild(link);
+      }
+    } catch (error) {
+      console.error("Download failed:", error);
+      // Optional: Show error message
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   const renderRiskSummary = () => {
@@ -138,7 +174,7 @@ const RiskAssessmentTab = ({ projectData }) => {
         }}
           className="risk-summary-content"
         >
-          <ReactMarkdown>{riskSummary}</ReactMarkdown>
+          <ReactMarkdown>{riskSummary.summary}</ReactMarkdown>
         </Box>
       );
     }
@@ -171,24 +207,52 @@ const RiskAssessmentTab = ({ projectData }) => {
           </Box>
 
           <Box sx={{ display: "flex", gap: 1 }}>
-            <Button
-              variant="outlined"
-              startIcon={<DownloadIcon />}
-              onClick={handleDownloadRiskReport}
-              disabled={!riskSummary || isRiskSummaryLoading || isLoading}
-              size="small"
-              sx={{
-                textTransform: 'none',
-                borderColor: '#1976d2',
-                color: '#1976d2',
-                '&:hover': {
-                  borderColor: '#1565c0',
-                  backgroundColor: '#e3f2fd',
-                }
-              }}
-            >
-              Download Report
-            </Button>
+            {riskSummary?.doc_path_aws ? (
+              <Button
+                variant="outlined"
+                startIcon={!isDownloading && <DownloadIcon />}
+                onClick={handleDownloadDocx}
+                disabled={isRiskSummaryLoading || isLoading || isDownloading}
+                size="small"
+                sx={{
+                  textTransform: 'none',
+                  borderColor: '#1976d2',
+                  color: '#1976d2',
+                  '&:hover': {
+                    borderColor: '#1565c0',
+                    backgroundColor: '#e3f2fd',
+                  }
+                }}
+              >
+                {isDownloading ? (
+                  <>
+                    <CircularProgress size={16} sx={{ mr: 1 }} />
+                    Downloading...
+                  </>
+                ) : (
+                  "Download DOCX"
+                )}
+              </Button>
+            ) : (
+              <Button
+                variant="outlined"
+                startIcon={<DownloadIcon />}
+                onClick={handleDownloadRiskReport}
+                disabled={!riskSummary || isRiskSummaryLoading || isLoading}
+                size="small"
+                sx={{
+                  textTransform: 'none',
+                  borderColor: '#1976d2',
+                  color: '#1976d2',
+                  '&:hover': {
+                    borderColor: '#1565c0',
+                    backgroundColor: '#e3f2fd',
+                  }
+                }}
+              >
+                Download Report
+              </Button>
+            )}
 
             <Button
               variant="outlined"

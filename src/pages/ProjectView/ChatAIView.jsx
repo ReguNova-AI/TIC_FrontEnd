@@ -43,8 +43,8 @@ const ChatAIView = ({ data, projectId }) => {
 
   // Spring animation for the response text
   const animationProps = useSpring({
-    opacity: currentQuestion && response ? 1 : 0,
-    transform: currentQuestion && response ? "translateY(0)" : "translateY(10px)",
+    opacity: currentQuestion ? 1 : 0,
+    transform: currentQuestion ? "translateY(0)" : "translateY(10px)",
     config: { tension: 100, friction: 10 },
   });
 
@@ -149,7 +149,7 @@ const ChatAIView = ({ data, projectId }) => {
       {/* Animation for the current question and response */}
       <Box sx={{ flexShrink: 0 }}>
         <animated.div style={animationProps}>
-          {currentQuestion && response && (
+          {currentQuestion && (
             <Box sx={{ marginTop: 2, textAlign: "left" }}>
               {/* Display the current question */}
               <Typography
@@ -165,17 +165,28 @@ const ChatAIView = ({ data, projectId }) => {
                 Q: {currentQuestion}
               </Typography>
 
-              {/* Display the current response */}
-              <Typography
-                variant="body1"
-                sx={{
-                  padding: 2,
-                  backgroundColor: "#f0f0f0",
-                  borderRadius: 2,
-                }}
-              >
-                A: {response}
-              </Typography>
+              {/* Display the current response or loading state */}
+              {isQuestionActive && !response ? (
+                <Box sx={{ padding: 2, display: "flex", alignItems: "center", gap: 1 }}>
+                  <CircularProgress size={20} />
+                  <Typography variant="body2" sx={{ fontStyle: "italic", color: "text.secondary" }}>
+                    Thinking...
+                  </Typography>
+                </Box>
+              ) : (
+                response && (
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      padding: 2,
+                      backgroundColor: "#f0f0f0",
+                      borderRadius: 2,
+                    }}
+                  >
+                    A: {response}
+                  </Typography>
+                )
+              )}
             </Box>
           )}
         </animated.div>

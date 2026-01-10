@@ -118,20 +118,23 @@ export const useProjectOperations = (projectData, userName) => {
   const handleRunAIAssessment = useCallback(async () => {
     setAiButtonLoading(true);
 
-    let file_paths = [];
+    let files = [];
     if (projectData?.project_documents?.length > 0) {
       projectData.project_documents.forEach((document) => {
-        let { file_path } = document;
+        let { file_path, document_name } = document;
         if (file_path !== null && file_path !== "null") {
-          file_paths.push(file_path);
+          files.push({
+            path: file_path,
+            name: document_name || file_path.split('/').pop()
+          });
         }
       });
     }
 
-    if (file_paths?.length > 0) {
+    if (files?.length > 0) {
       const payload = {
         project_id: projectData?.project_id,
-        imageKeys: file_paths,
+        files: files,
       };
 
       uploadFilesToAIServerMutation.mutate(payload, {

@@ -106,7 +106,7 @@ export const useUploadFilesToAIServer = () => {
     onSuccess: (response, variables) => {
       message.success(
         response?.data?.message ||
-          "Project documents uploaded to AI server successfully"
+        "Project documents uploaded to AI server successfully"
       );
 
       // Refetch project details to get updated status
@@ -247,7 +247,10 @@ export const useRiskSummary = (projectId) => {
     select: (response) => {
       // Handle different response formats
       if (response?.data?.risk_summary?.risks_summary) {
-        return response.data.risk_summary?.risks_summary;
+        return {
+          summary: response.data.risk_summary?.risks_summary,
+          doc_path_aws: response.data.risk_summary?.doc_path_aws
+        };
       }
       return null;
     },
@@ -336,8 +339,8 @@ export const useRegenerateRiskSummary = (projectId) => {
       console.error("Risk summary regeneration failed:", error);
       message.error(
         error?.response?.data?.message ||
-          error?.message ||
-          "Failed to regenerate risk assessment. Please try again."
+        error?.message ||
+        "Failed to regenerate risk assessment. Please try again."
       );
     },
   });

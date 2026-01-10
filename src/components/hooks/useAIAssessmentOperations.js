@@ -21,8 +21,8 @@ export const useAIAssessmentOperations = (projectData) => {
   // Upload files to AI server mutation
   const uploadFilesToAIServerMutation = useMutation({
     mutationFn: (payload) => ProjectApiService.uploadFilesToAIserver(payload),
-           onMutate: async (payload) => {
-             // Start processing state
+    onMutate: async (payload) => {
+      // Start processing state
       await startAIAssessment(
         payload.project_id,
         projectData?.project_name || 'Unknown Project'
@@ -66,8 +66,8 @@ export const useAIAssessmentOperations = (projectData) => {
     },
   });
 
-         // Handle AI Assessment execution
-         const handleRunAIAssessment = useCallback(async () => {
+  // Handle AI Assessment execution
+  const handleRunAIAssessment = useCallback(async () => {
     if (!projectData?.project_id) {
       message.error('No project selected');
       return;
@@ -79,24 +79,27 @@ export const useAIAssessmentOperations = (projectData) => {
     }
 
     // Prepare file paths
-    let file_paths = [];
+    let files = [];
     if (projectData?.project_documents?.length > 0) {
       projectData.project_documents.forEach((document) => {
-        let { file_path } = document;
+        let { file_path, document_name } = document;
         if (file_path !== null && file_path !== "null" && file_path !== "") {
-          file_paths.push(file_path);
+          files.push({
+            path: file_path,
+            name: document_name || file_path.split('/').pop()
+          });
         }
       });
     }
 
-    if (file_paths?.length === 0) {
+    if (files?.length === 0) {
       message.error('No files found for AI Assessment. Please upload documents first.');
       return;
     }
 
     const payload = {
       project_id: projectData.project_id,
-      imageKeys: file_paths,
+      files: files,
     };
 
     // Execute the mutation
@@ -118,10 +121,10 @@ export const useAIAssessmentOperations = (projectData) => {
     isAIAssessmentLoading,
     currentProjectStatus,
     isProcessing: uploadFilesToAIServerMutation.isPending,
-    
+
     // Actions
     handleRunAIAssessment,
-    
+
     // Mutation object for advanced usage
     uploadFilesToAIServerMutation,
   };
