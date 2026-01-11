@@ -88,9 +88,9 @@ const SummaryReportTab = ({ projectData }) => {
     setExpandedAccordion(isExpanded ? panel : false);
   };
 
-  // Helper function to render extracted info as table data
-  const renderExtractedInfoTable = (data) => {
-    if (!data) return null;
+  // Helper function to render the table content
+  const renderTable = (data) => {
+    if (!data) return <Typography>No data available</Typography>;
 
     // Check if data is the expected format: array of objects with Parameter, Answer, Source Document
     if (Array.isArray(data) && data.length > 0 && data[0].Parameter !== undefined) {
@@ -139,7 +139,7 @@ const SummaryReportTab = ({ projectData }) => {
       );
     }
 
-    // Fallback for other data formats
+    // Fallback for other data formats (key-value)
     let tableData = [];
 
     if (typeof data === 'string') {
@@ -188,12 +188,72 @@ const SummaryReportTab = ({ projectData }) => {
     );
   };
 
+  // Main render function for extracted info
+  const renderExtractedInfoTable = (data) => {
+    if (!data) return null;
+
+    // Check for new history structure: Array of objects with 'date' and 'extracted_data'
+    if (Array.isArray(data) && data.length > 0 && data[0].date && data[0].extracted_data) {
+      return (
+        <Box sx={{ mt: 2 }}>
+          {data.map((historyItem, index) => (
+            <Accordion key={index} disableGutters elevation={0} sx={{ border: '1px solid #e0e0e0', borderRadius: '4px', mb: 1, '&:before': { display: 'none' } }}>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ backgroundColor: '#f5f5f5' }}>
+                <Typography variant="subtitle2">
+                  {new Date(historyItem.date).toLocaleString()}
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                {renderTable(historyItem.extracted_data)}
+              </AccordionDetails>
+            </Accordion>
+          ))}
+        </Box>
+      );
+    }
+
+    // Fallback to simpler table rendering if it's not the history format
+    return renderTable(data);
+  };
+
+  // Use React Query hook to fetch extracted info
   // Use React Query hook to fetch extracted info
   const {
     data: extractedInfo,
     isLoading: isLoadingExtractedInfo,
     error: extractedInfoError
   } = useExtractedInfo(projectData?.project_id);
+
+  // MOCK DATA FOR VERIFICATION
+  // const isLoadingExtractedInfo = false;
+  // const extractedInfoError = null;
+  // const extractedInfo = [
+  //   {
+  //     "date": "2026-01-11T20:29:10.125Z",
+  //     "extracted_data": [
+  //       {
+  //         "Answer": "Parameter doesn't exist",
+  //         "Parameter": "Contract Price",
+  //         "Source Document": "PPA_DOcument.pdf (page 102)"
+  //       },
+  //       {
+  //         "Answer": "La Chalupa, LLC",
+  //         "Parameter": "Owner name",
+  //         "Source Document": "PPA_DOcument.pdf (page 133)"
+  //       }
+  //     ]
+  //   },
+  //   {
+  //     "date": "2026-01-10T15:00:00.000Z",
+  //     "extracted_data": [
+  //       {
+  //         "Answer": "November 22, 2016",
+  //         "Parameter": "Date of the contract",
+  //         "Source Document": "PPA_DOcument.pdf (page 51)"
+  //       }
+  //     ]
+  //   }
+  // ];
 
   // Local state for editing
   const [editingIndex, setEditingIndex] = useState(-1);
@@ -276,7 +336,7 @@ const SummaryReportTab = ({ projectData }) => {
 
     const updatedParams = [...csvParameters];
     updatedParams[editingIndex] = { ...editingValue };
-    setCsvParameters(updatedParams);
+    setCsvParameters(projectId, updatedParams);
     setEditingIndex(-1);
     setEditingValue({ name: "", type: "" });
 
@@ -292,11 +352,22 @@ const SummaryReportTab = ({ projectData }) => {
   };
 
   const handleDeleteCsvParameter = (index) => {
-    setCsvParameters((prev) => prev.filter((_, i) => i !== index));
+    const updatedParams = csvParameters.filter((_, i) => i !== index);
+    setCsvParameters(projectId, updatedParams);
     return {
       success: true,
       message: "Parameter deleted successfully",
     };
+  };
+
+  const handleAddNewParameter = () => {
+    const newParam = { name: "", type: "short" };
+    const updatedParams = [...csvParameters, newParam];
+    setCsvParameters(projectId, updatedParams);
+
+    // Automatically start editing the new parameter
+    setEditingIndex(updatedParams.length - 1);
+    setEditingValue(newParam);
   };
 
   const updateEditingValue = (field, value) => {
@@ -372,6 +443,18 @@ Initial sworn statement,long`;
       return;
     }
 
+    // Filter out parameters with empty names before sending
+    const validParameters = csvParameters.filter(p => p.name && p.name.trim() !== "");
+
+    if (validParameters.length === 0) {
+      message.error("Please add at least one valid parameter name.");
+      return;
+    }
+
+    if (validParameters.length < csvParameters.length) {
+      message.warning(`Skipped ${csvParameters.length - validParameters.length} empty parameters.`);
+    }
+
     const projectId = projectData?.project_id;
     const projectName = projectData?.project_name || 'Unknown Project';
 
@@ -380,7 +463,7 @@ Initial sworn statement,long`;
       startDataExtraction(projectId, projectName);
 
       // Convert csvParameters to the required format
-      const formattedParameters = csvParameters.map(param => ({
+      const formattedParameters = validParameters.map(param => ({
         Parameter: param.name,
         Type: param.type
       }));
@@ -480,22 +563,31 @@ Initial sworn statement,long`;
               <Typography variant="h6" gutterBottom>
                 CSV Parameters ({csvParameters.length} parameters loaded)
               </Typography>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleExtractParameters}
-                disabled={isProjectExtracting(projectData?.project_id) || csvParameters.length === 0}
-                startIcon={isProjectExtracting(projectData?.project_id) ? <CircularProgress size={20} /> : null}
-                sx={{
-                  minWidth: 150,
-                  bgcolor: 'primary.main',
-                  '&:hover': {
-                    bgcolor: 'primary.dark',
-                  }
-                }}
-              >
-                {isProjectExtracting(projectData?.project_id) ? "Extracting Data..." : "Extract Data"}
-              </Button>
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <Button
+                  variant="outlined"
+                  onClick={handleAddNewParameter}
+                  startIcon={<EditIcon />} // Using EditIcon as a strict replacement for "Add" visual for now, or just text
+                >
+                  Add Parameter
+                </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleExtractParameters}
+                  disabled={isProjectExtracting(projectData?.project_id) || csvParameters.length === 0}
+                  startIcon={isProjectExtracting(projectData?.project_id) ? <CircularProgress size={20} /> : null}
+                  sx={{
+                    minWidth: 150,
+                    bgcolor: 'primary.main',
+                    '&:hover': {
+                      bgcolor: 'primary.dark',
+                    }
+                  }}
+                >
+                  {isProjectExtracting(projectData?.project_id) ? "Extracting Data..." : "Extract Data"}
+                </Button>
+              </Box>
             </Box>
 
             <TableContainer component={Paper} sx={{ mt: 2 }}>

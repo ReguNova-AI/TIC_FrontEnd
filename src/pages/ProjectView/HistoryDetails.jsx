@@ -10,7 +10,7 @@ const HistoryDetails = ({ data }) => {
   const renderChange = (change) => {
     const entries = Object.entries(change);
     return entries.map(([key, value]) => {
-      if (key === "documents" && value.length > 0) {
+      if ((key === "documents" || key === "documentsUploaded") && value.length > 0) {
         return (
           <div key={key}>
             <Space direction="vertical">
@@ -61,6 +61,27 @@ const HistoryDetails = ({ data }) => {
         return (
           <div key={key}>
             <strong>Assessment Report</strong>
+          </div>
+        );
+      }
+      if (key === "extractionRun" && value) {
+        return (
+          <div key={key}>
+            <strong>{value ?? "Bulk Extraction Run"}</strong>
+          </div>
+        );
+      }
+      if (key === "riskSummaryRun" && value) {
+        return (
+          <div key={key}>
+            <strong>{value ?? "Risk Summary Run"}</strong>
+          </div>
+        );
+      }
+      if (key === "chatInteraction" && value) {
+        return (
+          <div key={key}>
+            <strong>{value ?? "Chat Interaction"}</strong>
           </div>
         );
       }
