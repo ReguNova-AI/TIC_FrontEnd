@@ -659,6 +659,7 @@ Initial sworn statement,long`;
                                 color="primary"
                                 onClick={() => handleEditParameter(index)}
                                 size="small"
+                                disabled={isProjectExtracting(projectData?.project_id)}
                               >
                                 <EditIcon />
                               </IconButton>
@@ -666,6 +667,7 @@ Initial sworn statement,long`;
                                 color="error"
                                 onClick={() => onDeleteCsvParameter(index)}
                                 size="small"
+                                disabled={isProjectExtracting(projectData?.project_id)}
                               >
                                 <DeleteIcon />
                               </IconButton>
@@ -778,6 +780,7 @@ Initial sworn statement,long`;
                 <IconButton
                   color="error"
                   onClick={() => handleDeleteParameter(index)}
+                  disabled={isProjectExtracting(projectData?.project_id)}
                 >
                   <DeleteIcon />
                 </IconButton>

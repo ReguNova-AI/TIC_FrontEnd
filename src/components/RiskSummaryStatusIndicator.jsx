@@ -10,7 +10,8 @@ import { useAIAssessment } from '../contexts/AIAssessmentContext';
 const RiskSummaryStatusIndicator = ({
   projectId, // Required: The project ID to show status for
   variant = 'chip', // 'chip', 'progress', 'text'
-  size = 'medium'
+  size = 'medium',
+  isRegenerating = false // New prop to indicate if it's a regeneration
 }) => {
   const {
     riskSummaryProcessingProjects,
@@ -38,7 +39,7 @@ const RiskSummaryStatusIndicator = ({
       icon={<AssessmentIcon />}
       label={
         <Typography variant="body2" sx={{ fontWeight: 600 }}>
-          Risk Assessment Generating
+          {isRegenerating ? "Regenerating Risk Assessment" : "Risk Assessment Generating"}
         </Typography>
       }
       color="info"
@@ -72,7 +73,7 @@ const RiskSummaryStatusIndicator = ({
         fontSize: '0.75rem',
         whiteSpace: 'nowrap'
       }}>
-        Generating...
+        {isRegenerating ? "Regenerating..." : "Generating..."}
       </Typography>
     </Box>
   );
@@ -89,7 +90,7 @@ const RiskSummaryStatusIndicator = ({
       }}
     >
       <AssessmentIcon fontSize="small" />
-      Risk Assessment Generating
+      {isRegenerating ? "Regenerating Risk Assessment" : "Risk Assessment Generating"}
     </Typography>
   );
 

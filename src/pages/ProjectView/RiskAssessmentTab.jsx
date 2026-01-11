@@ -114,11 +114,13 @@ const RiskAssessmentTab = ({ projectData }) => {
   };
 
   const renderRiskSummary = () => {
-    if (isLoading) {
+    if (isLoading || isRiskSummaryLoading) {
       return (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
           <CircularProgress />
-          <Typography sx={{ ml: 2 }}>Loading risk summary...</Typography>
+          <Typography sx={{ ml: 2 }}>
+            {isRiskSummaryLoading && riskSummary ? "Regenerating risk summary..." : "Loading risk summary..."}
+          </Typography>
         </Box>
       );
     }
@@ -248,6 +250,7 @@ const RiskAssessmentTab = ({ projectData }) => {
               projectId={projectData?.project_id}
               variant="progress"
               size="small"
+              isRegenerating={!!riskSummary}
             />
           </Box>
 
