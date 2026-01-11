@@ -5,6 +5,8 @@ import ReactMarkdown from "react-markdown";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import DownloadIcon from "@mui/icons-material/Download";
 import html2pdf from "html2pdf.js";
+import mammoth from "mammoth";
+
 import { PROJECT_DETAIL_PAGE } from "shared/constants";
 import { apiHost } from "../../config";
 import { useRiskSummary } from "./useProjectQueries";
@@ -14,6 +16,8 @@ import RiskSummaryStatusIndicator from "../../components/RiskSummaryStatusIndica
 
 const RiskAssessmentTab = ({ projectData }) => {
   const [isDownloading, setIsDownloading] = React.useState(false);
+  const [docxText, setDocxText] = React.useState(null);
+
   // Use React Query hook to fetch risk summary
   const {
     data: riskSummary,
@@ -22,34 +26,32 @@ const RiskAssessmentTab = ({ projectData }) => {
     isError
   } = useRiskSummary(projectData?.project_id);
 
+  // Fetch DOCX blob and extract text
+  React.useEffect(() => {
+    const fetchAndProcessDocx = async () => {
+      if (riskSummary?.doc_path_aws) {
+        try {
+          const response = await ProjectApiService.downloadRiskSummary(projectData?.project_id);
+          const arrayBuffer = await new Response(response.data).arrayBuffer();
+
+          // Extract raw text from DOCX as it contains Markdown
+          const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+          setDocxText(result.value);
+        } catch (err) {
+          console.error("Failed to process DOCX:", err);
+        }
+      }
+    };
+
+    fetchAndProcessDocx();
+  }, [riskSummary?.doc_path_aws, projectData?.project_id]);
+
   // Use global state for regenerating risk summary
   const {
     isRiskSummaryLoading,
     currentRiskSummaryStatus,
     handleRegenerateRiskSummary,
   } = useRiskSummaryOperations(projectData);
-
-  // Auto-regeneration disabled - user must explicitly click "Regenerate Assessment" button
-  // useEffect(() => {
-  //   if (
-  //     projectData?.project_id && // Project ID exists
-  //     !isLoading && // Not currently loading
-  //     !error && // No error from initial fetch
-  //     riskSummary === null && // Risk summary is null
-  //     !isRiskSummaryLoading && // Not already regenerating
-  //     !hasAttemptedAutoRegeneration.current // Haven't tried auto-regeneration before
-  //   ) {
-  //     hasAttemptedAutoRegeneration.current = true;
-  //     handleRegenerateRiskSummary();
-  //   }
-  // }, [
-  //   projectData?.project_id,
-  //   isLoading,
-  //   error,
-  //   riskSummary,
-  //   isRiskSummaryLoading,
-  //   handleRegenerateRiskSummary
-  // ]);
 
   const handleDownloadRiskReport = () => {
     if (!riskSummary) return;
@@ -130,51 +132,86 @@ const RiskAssessmentTab = ({ projectData }) => {
     }
 
     if (riskSummary) {
+      const hasDocx = !!riskSummary.doc_path_aws;
+
+      // If we expect a Docx but haven't extracted text yet, show loading
+      if (hasDocx && !docxText) {
+        return (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 8 }}>
+            <CircularProgress />
+            <Typography sx={{ ml: 2 }}>Processing document...</Typography>
+          </Box>
+        );
+      }
+
+      const contentToRender = hasDocx && docxText ? docxText : riskSummary.summary;
+
       return (
-        <Box sx={{
-          '& h1, & h2, & h3, & h4, & h5, & h6': {
-            color: '#1976d2',
-            marginTop: '1rem',
-            marginBottom: '0.5rem'
-          },
-          '& p': {
-            marginBottom: '0.75rem',
-            lineHeight: 1.6
-          },
-          '& ul, & ol': {
-            marginBottom: '0.75rem',
-            paddingLeft: '1.5rem'
-          },
-          '& li': {
-            marginBottom: '0.25rem'
-          },
-          '& strong': {
-            fontWeight: 600
-          },
-          '& code': {
-            backgroundColor: '#f5f5f5',
-            padding: '0.2rem 0.4rem',
-            borderRadius: '4px',
-            fontSize: '0.875rem'
-          },
-          '& pre': {
-            backgroundColor: '#f5f5f5',
-            padding: '1rem',
-            borderRadius: '8px',
-            overflow: 'auto',
-            marginBottom: '1rem'
-          },
-          '& blockquote': {
-            borderLeft: '4px solid #1976d2',
-            paddingLeft: '1rem',
-            marginLeft: 0,
-            marginBottom: '1rem',
-            fontStyle: 'italic'
-          }
-        }}
+        <Box
+          sx={{
+            maxHeight: '65vh', // Fixed height for scrolling
+            overflowY: 'auto', // Enable internal scrolling
+            padding: '10px 10px 10px 0', // Padding for scrollbar
+            '&::-webkit-scrollbar': {
+              width: '8px',
+            },
+            '&::-webkit-scrollbar-track': {
+              background: '#f1f1f1',
+              borderRadius: '4px',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              background: '#888',
+              borderRadius: '4px',
+            },
+            '&::-webkit-scrollbar-thumb:hover': {
+              background: '#555',
+            },
+            // Markdown Styles
+            '& h1, & h2, & h3, & h4, & h5, & h6': {
+              color: '#333', // Changed from blue to standard text color
+              marginTop: '1.5rem',
+              marginBottom: '0.75rem'
+            },
+            '& p': {
+              marginBottom: '1rem',
+              lineHeight: 1.7
+            },
+            '& ul, & ol': {
+              marginBottom: '1rem',
+              paddingLeft: '2rem'
+            },
+            '& li': {
+              marginBottom: '0.5rem'
+            },
+            '& strong': {
+              fontWeight: 600,
+              color: '#333'
+            },
+            '& code': {
+              backgroundColor: '#f5f5f5',
+              padding: '0.2rem 0.4rem',
+              borderRadius: '4px',
+              fontSize: '0.875rem'
+            },
+            '& pre': {
+              backgroundColor: '#f5f5f5',
+              padding: '1rem',
+              borderRadius: '8px',
+              overflow: 'auto',
+              marginBottom: '1rem'
+            },
+            '& blockquote': {
+              borderLeft: '4px solid #1976d2',
+              paddingLeft: '1rem',
+              marginLeft: 0,
+              marginBottom: '1rem',
+              fontStyle: 'italic',
+              color: '#555'
+            }
+          }}
           className="risk-summary-content"
         >
-          <ReactMarkdown>{riskSummary.summary}</ReactMarkdown>
+          <ReactMarkdown>{contentToRender}</ReactMarkdown>
         </Box>
       );
     }
@@ -183,18 +220,26 @@ const RiskAssessmentTab = ({ projectData }) => {
       <Typography>No Risk Summary available.</Typography>
     );
   };
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Risk Summary Section */}
       <Box
         sx={{
-
           padding: "20px",
           borderRadius: "10px",
           border: "1px solid #e4e4e4",
+          backgroundColor: '#fff',
         }}
       >
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+        <Box sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "10px",
+          borderBottom: "1px solid #f0f0f0",
+          paddingBottom: "15px"
+        }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <Typography style={{ fontSize: "18px" }}>
               {PROJECT_DETAIL_PAGE.RISK_SUMMARY}
