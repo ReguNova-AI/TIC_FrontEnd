@@ -10,7 +10,7 @@ const HistoryDetails = ({ data }) => {
   const renderChange = (change) => {
     const entries = Object.entries(change);
     return entries.map(([key, value]) => {
-      if ((key === "documents" || key === "documentsUploaded") && value.length > 0) {
+      if ((key === "documents" || key === "documentsUploaded") && Array.isArray(value) && value.length > 0) {
         return (
           <div key={key}>
             <Space direction="vertical">

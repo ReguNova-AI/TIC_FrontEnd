@@ -85,7 +85,7 @@ export default function Notification() {
 
   useEffect(() => {
     fetchNotification();
-    
+
     // Fetch notifications every 2 minutes
     const notificationIntervalId = setInterval(() => {
       fetchNotification();
@@ -125,34 +125,34 @@ export default function Notification() {
   const iconBackColorOpen = "grey.100";
 
 
-const fetchNotification = () => {
-  NotificationApiService.notification()
-    .then((response) => {
-      const details = response?.data?.details || [];
-      
-      // show first 4 in popover
-      setNotificationData(details.slice(0, 4));
-      setAllNotification(details);
+  const fetchNotification = () => {
+    NotificationApiService.notification()
+      .then((response) => {
+        const details = response?.data?.details || [];
 
-      // build unread ids locally (avoid mutating state directly)
-      const ids = [];
-      let count = 0;
-      details.forEach((item) => {
-        if (!item?.is_read) {
-          ids.push(item?.notification_id);
-          count += 1;
-        }
+        // show first 4 in popover
+        setNotificationData(details.slice(0, 4));
+        setAllNotification(details);
+
+        // build unread ids locally (avoid mutating state directly)
+        const ids = [];
+        let count = 0;
+        details.forEach((item) => {
+          if (!item?.is_read) {
+            ids.push(item?.notification_id);
+            count += 1;
+          }
+        });
+
+        setArrayId(ids);
+        setRead(count);
+      })
+      .catch((errResponse) => {
+        console.log(errResponse);
       });
+  };
 
-      setArrayId(ids);
-      setRead(count);
-    })
-    .catch((errResponse) => {
-      console.log(errResponse);
-    });
-};
 
-  
 
   const handleRead = (id, type, projectId) => {
     let payload = { notifications: type === "single" ? [id] : arrayId };
@@ -173,8 +173,15 @@ const fetchNotification = () => {
   };
 
   const getDate = (date) => {
-    const inputDate = new Date(date); // Use direct parsing for UTC dates
-  
+    // Ensure date is treated as UTC
+    let normalizedDate = date;
+    if (typeof date === 'string' && !date.endsWith('Z') && !date.includes('+')) {
+      normalizedDate = date.replace(' ', 'T') + 'Z';
+    }
+    const inputDate = new Date(normalizedDate);
+    // Adjust for timezone offset
+    inputDate.setTime(inputDate.getTime() - inputDate.getTimezoneOffset() * 60000);
+
     const monthNames = [
       "Jan",
       "Feb",
@@ -189,25 +196,32 @@ const fetchNotification = () => {
       "Nov",
       "Dec",
     ];
-  
+
     const month = monthNames[inputDate.getMonth()];
     const day = inputDate.getDate();
-  
+
     return `${month} ${day}`;
   };
 
   const getTimeDifference = useCallback((date) => {
     // Parse the server date and keep it in UTC
-    const inputDate = new Date(date); // Server date is already in UTC format
+    let normalizedDate = date;
+    if (typeof date === 'string' && !date.endsWith('Z') && !date.includes('+')) {
+      normalizedDate = date.replace(' ', 'T') + 'Z';
+    }
+    const inputDate = new Date(normalizedDate);
+    // Adjust for timezone offset
+    inputDate.setTime(inputDate.getTime() - inputDate.getTimezoneOffset() * 60000);
+
     const now = new Date();
-  
+
     // Calculate difference using UTC times to avoid timezone conversion issues
     const timeDifference = now.getTime() - inputDate.getTime();
     // handle future dates
     if (timeDifference < 0) {
       return "Just now";
     }
-  
+
     const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
     const totalHoursDifference = Math.floor(timeDifference / (1000 * 60 * 60));
     const minutesDifference = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
@@ -255,7 +269,7 @@ const fetchNotification = () => {
     } else {
       result = "Just now";
     }
-    
+
     return result;
   }, [timeKey, forceUpdate]);
   const filteredNotifications = allNotification.filter((item) => {
@@ -352,7 +366,7 @@ const fetchNotification = () => {
                 >
                   <List
                     component="nav"
-                    style={{height: notificationData?.length === 0 ? "160px" : "400px", overflowY: "scroll" }}
+                    style={{ height: notificationData?.length === 0 ? "160px" : "400px", overflowY: "scroll" }}
                     sx={{
                       p: 0,
                       "& .MuiListItemButton-root": {
@@ -397,12 +411,12 @@ const fetchNotification = () => {
                                       : item?.type === "USER_CREATION"
                                         ? "primary.main"
                                         : item?.notification_message?.includes(
-                                              "failed"
-                                            )
+                                          "failed"
+                                        )
                                           ? "error.main"
                                           : item?.notification_message?.includes(
-                                                "created successfully"
-                                              )
+                                            "created successfully"
+                                          )
                                             ? "warning.main"
                                             : "success.main",
                                   bgcolor:
@@ -411,12 +425,12 @@ const fetchNotification = () => {
                                       : item?.type === "USER_CREATION"
                                         ? "primary.lighter"
                                         : item?.notification_message?.includes(
-                                              "failed"
-                                            )
+                                          "failed"
+                                        )
                                           ? "error.lighter"
                                           : item?.notification_message?.includes(
-                                                "created successfully"
-                                              )
+                                            "created successfully"
+                                          )
                                             ? "warning.lighter"
                                             : "success.lighter",
                                 }}
@@ -426,12 +440,12 @@ const fetchNotification = () => {
                                 ) : item?.type === "INVITE_USER" ? (
                                   <ShareAltOutlined />
                                 ) : item?.notification_message?.includes(
-                                    "failed"
-                                  ) ? (
+                                  "failed"
+                                ) ? (
                                   <ExclamationCircleOutlined />
                                 ) : item?.notification_message?.includes(
-                                    "created successfully"
-                                  ) ? (
+                                  "created successfully"
+                                ) ? (
                                   <FileAddOutlined />
                                 ) : (
                                   <FileDoneOutlined />
@@ -536,10 +550,10 @@ const fetchNotification = () => {
             },
           }}
         >
-          <Tabs value={selectedCategory} onChange={handleTabChange} centered style={{marginBottom:"10px"}}>
+          <Tabs value={selectedCategory} onChange={handleTabChange} centered style={{ marginBottom: "10px" }}>
             <Tab label="Projects" value="PROJECT" />
             <Tab label="Project Invites" value="INVITE_USER" />
-           {roleName === "Super Admin" || roleName ==="Org Super Admin" || roleName ==="Admin" ? <Tab label="User Creation" value="USER_CREATION" />:""}
+            {roleName === "Super Admin" || roleName === "Org Super Admin" || roleName === "Admin" ? <Tab label="User Creation" value="USER_CREATION" /> : ""}
           </Tabs>
 
           {/* Notification List */}
@@ -565,8 +579,8 @@ const fetchNotification = () => {
                             : item?.notification_message?.includes("failed")
                               ? "error.main"
                               : item?.notification_message?.includes(
-                                    "created successfully"
-                                  )
+                                "created successfully"
+                              )
                                 ? "warning.main"
                                 : "success.main",
                       bgcolor:
@@ -577,8 +591,8 @@ const fetchNotification = () => {
                             : item?.notification_message?.includes("failed")
                               ? "error.lighter"
                               : item?.notification_message?.includes(
-                                    "created successfully"
-                                  )
+                                "created successfully"
+                              )
                                 ? "warning.lighter"
                                 : "success.lighter",
                     }}
@@ -590,8 +604,8 @@ const fetchNotification = () => {
                     ) : item?.notification_message?.includes("failed") ? (
                       <ExclamationCircleOutlined />
                     ) : item?.notification_message?.includes(
-                        "created successfully"
-                      ) ? (
+                      "created successfully"
+                    ) ? (
                       <FileAddOutlined />
                     ) : (
                       <FileDoneOutlined />
