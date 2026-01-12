@@ -209,7 +209,7 @@ const UnifiedDocumentControl = ({
                                     sx={{ bgcolor: 'white' }}
                                 />
                             </Grid>
-                            <Grid item xs={12} md={3}>
+                            {/* <Grid item xs={12} md={3}>
                                 <Button
                                     fullWidth
                                     component="label"
@@ -230,7 +230,7 @@ const UnifiedDocumentControl = ({
                                         onChange={(e) => setNewDoc({ ...newDoc, file: e.target.files[0] })}
                                     />
                                 </Button>
-                            </Grid>
+                            </Grid> */}
                         </Grid>
                     </Box>
                 </Stack>
