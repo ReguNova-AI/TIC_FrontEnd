@@ -26,10 +26,13 @@ const RiskAssessmentTab = ({ projectData }) => {
     isError
   } = useRiskSummary(projectData?.project_id);
 
+  const [processingError, setProcessingError] = React.useState(null);
+
   // Fetch DOCX blob and extract text
   React.useEffect(() => {
     const fetchAndProcessDocx = async () => {
       if (riskSummary?.doc_path_aws) {
+        setProcessingError(null);
         try {
           const response = await ProjectApiService.downloadRiskSummary(projectData?.project_id);
           const arrayBuffer = await new Response(response.data).arrayBuffer();
@@ -39,6 +42,7 @@ const RiskAssessmentTab = ({ projectData }) => {
           setDocxText(result.value);
         } catch (err) {
           console.error("Failed to process DOCX:", err);
+          setProcessingError("Failed to load document preview. Please try downloading the report.");
         }
       }
     };
@@ -135,6 +139,14 @@ const RiskAssessmentTab = ({ projectData }) => {
 
     if (riskSummary) {
       const hasDocx = !!riskSummary.doc_path_aws;
+
+      if (processingError) {
+        return (
+          <Alert severity="warning" sx={{ mt: 2 }}>
+            {processingError}
+          </Alert>
+        );
+      }
 
       // If we expect a Docx but haven't extracted text yet, show loading
       if (hasDocx && !docxText) {
