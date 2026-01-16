@@ -32,28 +32,28 @@ const NestedListing = ({ data, filterStatusValue }) => {
   const [searchText, setSearchText] = useState(""); // State for search input
   const [selectedProjectStatuses, setSelectedProjectStatuses] = useState([]); // State for selected project statuses
   const [popoverVisible, setPopoverVisible] = useState(false);
-  const [statusData, setStatusData] = useState([
-    "Draft",
-    "In Progress",
-    "Processing",
-    "Success",
-    "Failed",
-  ]);
+  // const [statusData, setStatusData] = useState([
+  //   "Draft",
+  //   "In Progress",
+  //   "Processing",
+  //   "Success",
+  //   "Failed",
+  // ]);
 
   // Fetch data when the component mounts
   useEffect(() => {
     const fetchData = () => {
-      const users = data?.map((user) => ({
-        key: user?.user_id,
-        name: `${user?.user_first_name} ${user?.user_last_name}`,
-        profile: user?.user_profile,
-        role_name: user?.role_name,
-        industry: user?.industry_names,
+    const users = data?.map((user) => ({
+      key: user?.user_id,
+      name: `${user?.user_first_name} ${user?.user_last_name}`,
+      profile: user?.user_profile,
+      role_name: user?.role_name,
+      industry: user?.industry_names,
         project_count: user?.projects?.length,
         projects: (user?.projects || []).sort((a, b) => new Date(b.created_at) - new Date(a.created_at)),
-      }));
+    }));
 
-      setDataSource(users);
+    setDataSource(users);
     };
 
     fetchData();
@@ -76,19 +76,19 @@ const NestedListing = ({ data, filterStatusValue }) => {
       key: "project_name",
       render: (text, record) => {
         return (
-          <>
-            <img
-              src={projectIcon}
-              width="30px"
-              style={{ verticalAlign: "middle", marginRight: "10px" }}
-            />
-            <a
-              onClick={() => handleNavigateToProject(record.project_id)}
-              style={{ color: "#2ba9bc", cursor: "pointer" }}
-            >
-              {record.project_name}
-            </a>
-          </>
+        <>
+          <img
+            src={projectIcon}
+            width="30px"
+            style={{ verticalAlign: "middle", marginRight: "10px" }}
+          />
+          <a
+            onClick={() => handleNavigateToProject(record.project_id)}
+            style={{ color: "#2ba9bc", cursor: "pointer" }}
+          >
+            {record.project_name}
+          </a>
+        </>
         );
       },
     },
@@ -97,16 +97,16 @@ const NestedListing = ({ data, filterStatusValue }) => {
       dataIndex: "project_no",
       key: "project_no",
     },
-    {
-      title: LISTING_PAGE.NO_OF_RUNS,
-      dataIndex: "no_of_runs",
-      key: "no_of_runs",
-    },
-    {
-      title: LISTING_PAGE.REGULATORY_SANTARDS,
-      dataIndex: "regulatory_standard",
-      key: "regulatory_standard",
-    },
+    // {
+    //   title: LISTING_PAGE.NO_OF_RUNS,
+    //   dataIndex: "no_of_runs",
+    //   key: "no_of_runs",
+    // },
+    // {
+    //   title: LISTING_PAGE.REGULATORY_SANTARDS,
+    //   dataIndex: "regulatory_standard",
+    //   key: "regulatory_standard",
+    // },
     {
       title: LISTING_PAGE.INDUSTRY,
       dataIndex: "industry_name",
@@ -118,56 +118,56 @@ const NestedListing = ({ data, filterStatusValue }) => {
       key: "created_at",
       render: (created_at) => (created_at ? formatDate(created_at) : ""),
     },
-    {
-      title: LISTING_PAGE.LAST_RUN,
-      dataIndex: "last_run",
-      key: "last_run",
-      render: (last_run) =>
-        last_run !== "null" && last_run !== null && last_run !== ""
-          ? formatDate(last_run)
-          : "",
-    },
-    {
-      title: LISTING_PAGE.STATUS,
-      key: "status",
-      dataIndex: "status",
-      render: (_, { status }) => {
-        const statusArray = Array.isArray(status) ? status : [status];
-        return (
-          <>
-            {statusArray.map((tag, index) => {
-              const { title, color, borderColor } = getStatusChipProps(tag);
-              return (
-                <Stack
-                  direction="row"
-                  spacing={1}
-                  alignItems="center"
-                  key={index}
-                >
-                  <Chip
-                    label={title}
-                    color={borderColor}
-                    variant="outlined"
-                    sx={{
-                      bgcolor: color,
-                      borderRadius: "20px",
-                      fontSize: "12px",
-                      fontWeight: 600,
-                    }}
-                  />
-                </Stack>
-              );
-            })}
-          </>
-        );
-      },
-      onFilter: (value, record) => {
-        const statusArray = Array.isArray(record.status)
-          ? record.status
-          : [record.status];
-        return statusArray.includes(value);
-      },
-    },
+    // {
+    //   title: LISTING_PAGE.LAST_RUN,
+    //   dataIndex: "last_run",
+    //   key: "last_run",
+    //   render: (last_run) =>
+    //     last_run !== "null" && last_run !== null && last_run !== ""
+    //       ? formatDate(last_run)
+    //       : "",
+    // },
+    // {
+    //   title: LISTING_PAGE.STATUS,
+    //   key: "status",
+    //   dataIndex: "status",
+    //   render: (_, { status }) => {
+    //     const statusArray = Array.isArray(status) ? status : [status];
+    //     return (
+    //       <>
+    //         {statusArray.map((tag, index) => {
+    //           const { title, color, borderColor } = getStatusChipProps(tag);
+    //           return (
+    //             <Stack
+    //               direction="row"
+    //               spacing={1}
+    //               alignItems="center"
+    //               key={index}
+    //             >
+    //               <Chip
+    //                 label={title}
+    //                 color={borderColor}
+    //                 variant="outlined"
+    //                 sx={{
+    //                   bgcolor: color,
+    //                   borderRadius: "20px",
+    //                   fontSize: "12px",
+    //                   fontWeight: 600,
+    //                 }}
+    //               />
+    //             </Stack>
+    //           );
+    //         })}
+    //       </>
+    //     );
+    //   },
+    //   onFilter: (value, record) => {
+    //     const statusArray = Array.isArray(record.status)
+    //       ? record.status
+    //       : [record.status];
+    //     return statusArray.includes(value);
+    //   },
+    // },
   ];
 
   const columns = [
@@ -261,16 +261,16 @@ const NestedListing = ({ data, filterStatusValue }) => {
     setSearchText(e.target.value);
   };
 
-  const filterPopoverContent = (
-    <div style={{ marginBottom: "20px" }}>
-      <MultiSelectWithChip
-        label="Status"
-        value={selectedProjectStatuses}
-        options={statusData}
-        onChange={setSelectedProjectStatuses}
-      />
-    </div>
-  );
+  // const filterPopoverContent = (
+  //   <div style={{ marginBottom: "20px" }}>
+  //     <MultiSelectWithChip
+  //       label="Status"
+  //       value={selectedProjectStatuses}
+  //       options={statusData}
+  //       onChange={setSelectedProjectStatuses}
+  //     />
+  //   </div>
+  // );
 
   const filterData = (data) => {
     return data?.filter((user) => {
@@ -307,7 +307,7 @@ const NestedListing = ({ data, filterStatusValue }) => {
           />
         </FormControl>
 
-        <Popover
+        {/* <Popover
           content={filterPopoverContent}
           title={BUTTON_LABEL.FILTER}
           visible={popoverVisible}
@@ -320,7 +320,7 @@ const NestedListing = ({ data, filterStatusValue }) => {
           >
             {BUTTON_LABEL.FILTER}
           </Button>
-        </Popover>
+        </Popover> */}
       </Space>
 
       {/* Table rendering */}

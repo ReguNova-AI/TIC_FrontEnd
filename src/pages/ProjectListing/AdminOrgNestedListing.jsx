@@ -21,13 +21,13 @@ const AdminOrgNestedListing = ({ data }) => {
   const [searchText, setSearchText] = useState("");
   const [selectedStatuses, setSelectedStatuses] = useState([]);
   const [popoverVisible, setPopoverVisible] = useState(false);
-  const [projectStatuses, setprojectStatuses] = useState([
-    "Draft",
-    "In Progress",
-    "Processing",
-    "Success",
-    "Failed",
-  ]);
+  // const [projectStatuses, setprojectStatuses] = useState([
+  //   "Draft",
+  //   "In Progress",
+  //   "Processing",
+  //   "Success",
+  //   "Failed",
+  // ]);
   // Fetch data when the component mounts
   useEffect(() => {
     setDataSource(data);
@@ -82,16 +82,16 @@ const AdminOrgNestedListing = ({ data }) => {
       dataIndex: "project_no",
       key: "project_no",
     },
-    {
-      title: "No. of Runs",
-      dataIndex: "no_of_runs",
-      key: "no_of_runs",
-    },
-    {
-      title: "Regulatory Standards",
-      dataIndex: "regulatory_standard",
-      key: "regulatory_standard",
-    },
+    // {
+    //   title: "No. of Runs",
+    //   dataIndex: "no_of_runs",
+    //   key: "no_of_runs",
+    // },
+    // {
+    //   title: "Regulatory Standards",
+    //   dataIndex: "regulatory_standard",
+    //   key: "regulatory_standard",
+    // },
     {
       title: "Start Date",
       dataIndex: "created_at",
@@ -99,47 +99,47 @@ const AdminOrgNestedListing = ({ data }) => {
       render: (created_at) =>
         created_at && created_at !== "null" ? formatDate(created_at) : "",
     },
-    {
-      title: "Last Run",
-      dataIndex: "last_run",
-      key: "last_run",
-      render: (last_run) =>
-        last_run && last_run !== "null" ? formatDate(last_run) : "",
-    },
-    {
-      title: "Status",
-      key: "status",
-      render: (_, { status }) => {
-        const statusArray = Array.isArray(status) ? status : [status];
-        return (
-          <>
-            {statusArray.map((tag, index) => {
-              const { title, color, borderColor } = getStatusChipProps(tag);
-              return (
-                <Stack
-                  direction="row"
-                  spacing={1}
-                  alignItems="center"
-                  key={index}
-                >
-                  <Chip
-                    label={title}
-                    color={borderColor}
-                    variant="outlined"
-                    sx={{
-                      bgcolor: color,
-                      borderRadius: "20px",
-                      fontSize: "12px",
-                      fontWeight: 600,
-                    }}
-                  />
-                </Stack>
-              );
-            })}
-          </>
-        );
-      },
-    },
+    // {
+    //   title: "Last Run",
+    //   dataIndex: "last_run",
+    //   key: "last_run",
+    //   render: (last_run) =>
+    //     last_run && last_run !== "null" ? formatDate(last_run) : "",
+    // },
+    // {
+    //   title: "Status",
+    //   key: "status",
+    //   render: (_, { status }) => {
+    //     const statusArray = Array.isArray(status) ? status : [status];
+    //     return (
+    //       <>
+    //         {statusArray.map((tag, index) => {
+    //           const { title, color, borderColor } = getStatusChipProps(tag);
+    //           return (
+    //             <Stack
+    //               direction="row"
+    //               spacing={1}
+    //               alignItems="center"
+    //               key={index}
+    //             >
+    //               <Chip
+    //                 label={title}
+    //                 color={borderColor}
+    //                 variant="outlined"
+    //                 sx={{
+    //                   bgcolor: color,
+    //                   borderRadius: "20px",
+    //                   fontSize: "12px",
+    //                   fontWeight: 600,
+    //                 }}
+    //               />
+    //             </Stack>
+    //           );
+    //         })}
+    //       </>
+    //     );
+    //   },
+    // },
   ];
 
   // Columns for Industry table
@@ -268,16 +268,16 @@ const AdminOrgNestedListing = ({ data }) => {
     setSelectedStatuses(value);
   };
 
-  const filterPopoverContent = (
-    <div style={{ marginBottom: "20px" }}>
-      <MultiSelectWithChip
-        label="Status"
-        value={selectedStatuses}
-        options={projectStatuses}
-        onChange={handleStatusChange}
-      />
-    </div>
-  );
+  // const filterPopoverContent = (
+  //   <div style={{ marginBottom: "20px" }}>
+  //     <MultiSelectWithChip
+  //       label="Status"
+  //       value={selectedStatuses}
+  //       options={projectStatuses}
+  //       onChange={handleStatusChange}
+  //     />
+  //   </div>
+  // );
 
   // Expanded row render for organization level, showing industries
   const expandedRowRenderForOrg = (record) => {
@@ -295,8 +295,8 @@ const AdminOrgNestedListing = ({ data }) => {
                   selectedStatuses?.includes(project.status);
 
                 const matchesSearchText =
-                  project?.project_name
-                    ?.toLowerCase()
+              project?.project_name
+                ?.toLowerCase()
                     ?.includes(searchText?.toLowerCase()) ||
                   record?.name
                     ?.toLowerCase()
@@ -341,7 +341,7 @@ const AdminOrgNestedListing = ({ data }) => {
           />
         </FormControl>
 
-        <Popover
+        {/* <Popover
           content={filterPopoverContent}
           title={BUTTON_LABEL.FILTER}
           visible={popoverVisible}
@@ -354,7 +354,7 @@ const AdminOrgNestedListing = ({ data }) => {
           >
             {BUTTON_LABEL.FILTER}
           </Button>
-        </Popover>
+        </Popover> */}
       </Space>
 
       {/* Table rendering */}

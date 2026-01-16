@@ -12,29 +12,20 @@ import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import { Empty } from "antd";
 
-// third-party
-import { NumericFormat } from "react-number-format";
-
 // project import
-import Dot from "components/@extended/Dot";
-import { Chip } from "@mui/material";
 import { useEffect, useState } from "react";
 import { ProjectApiService } from "services/api/ProjectAPIService";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import { API_ERROR_MESSAGE } from "shared/constants";
-import { formatDate, getStatusChipProps } from "shared/utility";
+import { formatDate } from "shared/utility";
 import CardView from "pages/ProjectListing/CardView";
 import ToggleButtons from "pages/ProjectListing/ToggleButton";
 import { useNavigate } from "react-router";
 
 function descendingComparator(a, b, orderBy) {
-  if (b[orderBy] < a[orderBy]) {
-    return -1;
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1;
-  }
+  if (b[orderBy] < a[orderBy]) return -1;
+  if (b[orderBy] > a[orderBy]) return 1;
   return 0;
 }
 
@@ -48,9 +39,7 @@ function stableSort(array, comparator) {
   const stabilizedThis = array.map((el, index) => [el, index]);
   stabilizedThis.sort((a, b) => {
     const order = comparator(a[0], b[0]);
-    if (order !== 0) {
-      return order;
-    }
+    if (order !== 0) return order;
     return a[1] - b[1];
   });
   return stabilizedThis.map((el) => el[0]);
@@ -73,22 +62,10 @@ function ProjectTableHead({ order, orderBy }) {
       label: "Project no.",
     },
     {
-      id: "runs",
+      id: "start_date",
       align: "left",
       disablePadding: false,
-      label: "No. of runs",
-    },
-    {
-      id: "last_run",
-      align: "left",
-      disablePadding: false,
-      label: "Last Run",
-    },
-    {
-      id: "status",
-      align: "left",
-      disablePadding: false,
-      label: "Status",
+      label: "Created Date",
     },
   ];
 
@@ -110,28 +87,6 @@ function ProjectTableHead({ order, orderBy }) {
   );
 }
 
-function ProjectStatus({ status }) {
-  const { title, color, borderColor } = getStatusChipProps(status);
-
-  return (
-    <Stack direction="row" spacing={1} alignItems="center">
-      {/* <Dot color={color} /> */}
-      {/* <Typography>{title}</Typography> */}
-      <Chip
-        label={title}
-        color={borderColor}
-        variant="outlined"
-        sx={{
-          bgcolor: color,
-          borderRadius: "20px",
-          fontSize: "12px",
-          fontWeight: 600,
-        }}
-      />
-    </Stack>
-  );
-}
-
 // ==============================|| PROJECT TABLE ||============================== //
 
 export default function ProjectTable() {
@@ -140,7 +95,6 @@ export default function ProjectTable() {
   const navigate = useNavigate();
   let info = JSON.parse(sessionStorage.getItem("userDetails"));
   const userRole = info?.[0]?.role_name;
-  const userId = info?.[0]?.user_id;
 
   const [data, setData] = useState([]);
   const [viewMode, setViewMode] = useState(
@@ -158,30 +112,8 @@ export default function ProjectTable() {
     fetchData();
   }, []);
 
-  const createData = (
-    index,
-    project_no,
-    project_name,
-    runs,
-    industry,
-    mapping_no,
-    regulatory_standard,
-    start_date,
-    last_run,
-    status
-  ) => {
-    return {
-      index,
-      project_no,
-      project_name,
-      runs,
-      industry,
-      mapping_no,
-      regulatory_standard,
-      start_date,
-      last_run,
-      status,
-    };
+  const createData = (index, project_no, project_name, start_date) => {
+    return { index, project_no, project_name, start_date };
   };
 
   const fetchData = () => {
@@ -189,57 +121,35 @@ export default function ProjectTable() {
       .then((response) => {
         let newData = null;
 
-        // console.log("response",response)
         if (userRole === "Org Super Admin" || userRole === "Admin") {
-          newData = response?.data?.map((project, index) => {
-            return createData(
+          newData = response?.data?.map((project, index) =>
+            createData(
               project.project_id, // index
               project.project_no, // project_no
               project.project_name, // project_name
-              project.no_of_runs, // runs
-              project.industry_name, // industry
-              project.mapping_standards, // mapping_no
-              project.regulatory_standard,
               project.created_at !== "null" &&
                 project.created_at !== "" &&
                 project.created_at !== null
                 ? formatDate(project.created_at)
-                : "", // start_date
-              project.last_run !== "null" &&
-                project.last_run !== "" &&
-                project.last_run !== null
-                ? formatDate(project.last_run)
-                : "", // last_run
-              project.status // status
-            );
-          });
+                : "" // start_date
+            )
+          );
         } else {
-          newData = response?.data?.details.map((project, index) => {
-            return createData(
-              project.project_id, // index
-              project.project_no, // project_no
-              project.project_name, // project_name
-              project.no_of_runs, // runs
-              project.industry_name, // industry
-              project.mapping_standards, // mapping_no
-              project.regulatory_standard,
+          newData = response?.data?.details.map((project, index) =>
+            createData(
+              project.project_id,
+              project.project_no,
+              project.project_name,
               project.created_at !== "null" &&
                 project.created_at !== "" &&
                 project.created_at !== null
                 ? formatDate(project.created_at)
-                : "", // start_date
-              project.last_run !== "null" &&
-                project.last_run !== "" &&
-                project.last_run !== null
-                ? formatDate(project.last_run)
-                : "", // last_run
-              project.status // status
-            );
-          });
+                : ""
+            )
+          );
         }
 
         const limitedData = newData.slice(0, 6);
-
         setData(limitedData);
         setLoading(false);
       })
@@ -256,7 +166,7 @@ export default function ProjectTable() {
   };
 
   const handleViewModeChange = (newViewMode) => {
-    setViewMode(newViewMode); // Update view mode (list or card)
+    setViewMode(newViewMode);
   };
 
   const handleClick = (project_id) => {
@@ -314,19 +224,14 @@ export default function ProjectTable() {
                         <TableCell component="th" id={labelId} scope="row">
                           <Link
                             color="secondary"
-                            onClick={(e) => handleClick(row.index)}
+                            onClick={() => handleClick(row.index)}
+                            style={{ cursor: "pointer" }}
                           >
-                            {" "}
                             {row.project_name}
                           </Link>
                         </TableCell>
                         <TableCell>{row.project_no}</TableCell>
-                        <TableCell>{row.runs}</TableCell>
-                        <TableCell>{row.last_run}</TableCell>
-                        <TableCell align="right">
-                          <ProjectStatus status={row.status} />
-                          {/* <NumericFormat value={row.status} displayType="text" thousandSeparator prefix="$" /> */}
-                        </TableCell>
+                        <TableCell>{row.start_date}</TableCell>
                       </TableRow>
                     );
                   }
@@ -348,5 +253,3 @@ ProjectTableHead.propTypes = {
   order: PropTypes.any,
   orderBy: PropTypes.string,
 };
-
-ProjectStatus.propTypes = { status: PropTypes.number };
