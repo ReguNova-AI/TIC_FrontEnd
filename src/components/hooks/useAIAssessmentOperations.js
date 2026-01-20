@@ -110,15 +110,11 @@ export const useAIAssessmentOperations = (projectData) => {
     uploadFilesToAIServerMutation,
   ]);
 
-  // Check if AI Assessment is loading for current project
-  const isAIAssessmentLoading = isProjectProcessing(projectData?.project_id);
-
   // Get current project status
   const currentProjectStatus = getProjectStatus(projectData?.project_id);
 
   return {
     // State
-    isAIAssessmentLoading,
     currentProjectStatus,
     isProcessing: uploadFilesToAIServerMutation.isPending,
 

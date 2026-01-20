@@ -88,11 +88,26 @@ const ProjectView = () => {
 
   // AI Assessment operations with global state
   const {
-    isAIAssessmentLoading,
     currentProjectStatus,
     handleRunAIAssessment,
+    isProcessing,
   } = useAIAssessmentOperations(projectData);
 
+  // ✅ AI Assessment Status
+  const aiStatus = projectData?.AIAssesmentStatus;
+  // const isAIAssessmentLoading = aiStatus?.toLowerCase() === 'processing';
+  const isAIAssessmentLoading =
+    isProcessing || aiStatus?.toLowerCase() === 'processing';
+  
+  useEffect(() => {
+    if (isAIAssessmentLoading) {
+      const interval = setInterval(() => {
+        refetchProjectData(); // fetch latest project data from backend
+      }, 5000); // every 5 seconds
+
+      return () => clearInterval(interval); // cleanup when status changes or component unmounts
+    }
+  }, [isAIAssessmentLoading, refetchProjectData]);
 
   const {
     openModal,
@@ -373,6 +388,8 @@ const ProjectView = () => {
                     <Box>
                       <AIAssessmentStatusIndicator 
                         projectId={projectData?.project_id} 
+                        isLoading={isAIAssessmentLoading}
+                        backendStatus={projectData?.AIAssesmentStatus}
                         variant="progress" 
                         size="small" 
                        />

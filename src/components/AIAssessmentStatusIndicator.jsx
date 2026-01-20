@@ -7,31 +7,36 @@ import { useAIAssessment } from '../contexts/AIAssessmentContext';
  * Project-specific AI Assessment Status Indicator Component
  * Shows the current status of AI Assessment processing for a specific project
  */
-const AIAssessmentStatusIndicator = ({ 
-  projectId, // Required: The project ID to show status for
-  variant = 'chip', // 'chip', 'progress', 'text'
+const AIAssessmentStatusIndicator = ({
+  projectId,              // Required: Project ID
+  isLoading,              // Optional override loading state
+  backendStatus,
+  variant = 'chip',       // 'chip' | 'progress' | 'text'
   size = 'medium'
 }) => {
-  const {
-    processingProjects,
-    projectStatuses,
-    getProjectStatus,
-    isProjectProcessing,
-  } = useAIAssessment();
+  const { isProjectProcessing } = useAIAssessment();
 
   // Don't render if no projectId provided
   if (!projectId) {
     return null;
   }
 
-  // Check if this specific project is processing
-  const isThisProjectProcessing = isProjectProcessing(projectId);
-  const projectStatus = getProjectStatus(projectId);
+  /**
+   * Determine processing state
+   * Priority:
+   * 1. External isLoading prop (button, page-level control)
+   * 2. Global AI Assessment context
+   */
+  const isThisProjectProcessing =
+    typeof isLoading === 'boolean'
+      ? isLoading
+      : backendStatus?.toLowerCase() === 'processing'
+        ? true
+        : isProjectProcessing(projectId);
 
-         // Don't render if this project is not processing
-         if (!isThisProjectProcessing) {
-           return null;
-         }
+  if (!isThisProjectProcessing) {
+    return null;
+  }
 
   const renderChip = () => (
     <Chip
@@ -48,44 +53,47 @@ const AIAssessmentStatusIndicator = ({
         fontWeight: 600,
         '& .MuiChip-icon': {
           fontSize: size === 'small' ? 16 : 20,
-        }
+        },
       }}
     />
   );
 
   const renderProgress = () => (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 200 }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 220 }}>
       <AutoAwesomeIcon color="warning" sx={{ fontSize: 16 }} />
-      <LinearProgress 
-        variant="indeterminate" 
+      <LinearProgress
+        variant="indeterminate"
         color="warning"
-        sx={{ 
-          height: 4, 
-          borderRadius: 2, 
+        sx={{
+          height: 4,
+          borderRadius: 2,
           flexGrow: 1,
-          backgroundColor: 'rgba(255, 152, 0, 0.1)'
+          backgroundColor: 'rgba(255, 152, 0, 0.1)',
         }}
       />
-      <Typography variant="caption" sx={{ 
-        fontWeight: 600, 
-        color: 'warning.main',
-        fontSize: '0.75rem',
-        whiteSpace: 'nowrap'
-      }}>
-      AI Assessment Processing...
+      <Typography
+        variant="caption"
+        sx={{
+          fontWeight: 600,
+          color: 'warning.main',
+          fontSize: '0.75rem',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        AI Assessment Processing...
       </Typography>
     </Box>
   );
 
   const renderText = () => (
-    <Typography 
-      variant="body2" 
-      sx={{ 
-        display: 'flex', 
-        alignItems: 'center', 
+    <Typography
+      variant="body2"
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
         gap: 1,
         fontWeight: 600,
-        color: 'warning.main'
+        color: 'warning.main',
       }}
     >
       <AutoAwesomeIcon fontSize="small" />
@@ -93,15 +101,15 @@ const AIAssessmentStatusIndicator = ({
     </Typography>
   );
 
-         switch (variant) {
-           case 'progress':
-             return renderProgress();
-           case 'text':
-             return renderText();
-           case 'chip':
-           default:
-             return renderChip();
-         }
+  switch (variant) {
+    case 'progress':
+      return renderProgress();
+    case 'text':
+      return renderText();
+    case 'chip':
+    default:
+      return renderChip();
+  }
 };
 
 export default AIAssessmentStatusIndicator;
