@@ -82,11 +82,11 @@ const AdminOrgNestedListing = ({ data }) => {
       dataIndex: "project_no",
       key: "project_no",
     },
-    // {
-    //   title: "No. of Runs",
-    //   dataIndex: "no_of_runs",
-    //   key: "no_of_runs",
-    // },
+    {
+      title: "No. of Runs",
+      dataIndex: "no_of_runs",
+      key: "no_of_runs",
+    },
     // {
     //   title: "Regulatory Standards",
     //   dataIndex: "regulatory_standard",
@@ -99,13 +99,13 @@ const AdminOrgNestedListing = ({ data }) => {
       render: (created_at) =>
         created_at && created_at !== "null" ? formatDate(created_at) : "",
     },
-    // {
-    //   title: "Last Run",
-    //   dataIndex: "last_run",
-    //   key: "last_run",
-    //   render: (last_run) =>
-    //     last_run && last_run !== "null" ? formatDate(last_run) : "",
-    // },
+    {
+      title: "Last Run",
+      dataIndex: "last_run",
+      key: "last_run",
+      render: (last_run) =>
+        last_run && last_run !== "null" ? formatDate(last_run) : "",
+    },
     // {
     //   title: "Status",
     //   key: "status",

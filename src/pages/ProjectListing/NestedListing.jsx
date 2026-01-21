@@ -97,11 +97,11 @@ const NestedListing = ({ data, filterStatusValue }) => {
       dataIndex: "project_no",
       key: "project_no",
     },
-    // {
-    //   title: LISTING_PAGE.NO_OF_RUNS,
-    //   dataIndex: "no_of_runs",
-    //   key: "no_of_runs",
-    // },
+    {
+      title: LISTING_PAGE.NO_OF_RUNS,
+      dataIndex: "no_of_runs",
+      key: "no_of_runs",
+    },
     // {
     //   title: LISTING_PAGE.REGULATORY_SANTARDS,
     //   dataIndex: "regulatory_standard",
@@ -118,15 +118,15 @@ const NestedListing = ({ data, filterStatusValue }) => {
       key: "created_at",
       render: (created_at) => (created_at ? formatDate(created_at) : ""),
     },
-    // {
-    //   title: LISTING_PAGE.LAST_RUN,
-    //   dataIndex: "last_run",
-    //   key: "last_run",
-    //   render: (last_run) =>
-    //     last_run !== "null" && last_run !== null && last_run !== ""
-    //       ? formatDate(last_run)
-    //       : "",
-    // },
+    {
+      title: LISTING_PAGE.LAST_RUN,
+      dataIndex: "last_run",
+      key: "last_run",
+      render: (last_run) =>
+        last_run !== "null" && last_run !== null && last_run !== ""
+          ? formatDate(last_run)
+          : "",
+    },
     // {
     //   title: LISTING_PAGE.STATUS,
     //   key: "status",

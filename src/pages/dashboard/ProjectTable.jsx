@@ -23,6 +23,8 @@ import CardView from "pages/ProjectListing/CardView";
 import ToggleButtons from "pages/ProjectListing/ToggleButton";
 import { useNavigate } from "react-router";
 
+// ==============================|| SORTING HELPERS ||============================== //
+
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) return -1;
   if (b[orderBy] > a[orderBy]) return 1;
@@ -49,36 +51,18 @@ function stableSort(array, comparator) {
 
 function ProjectTableHead({ order, orderBy }) {
   const headCells = [
-    {
-      id: "project_name",
-      align: "left",
-      disablePadding: false,
-      label: "Project name",
-    },
-    {
-      id: "project_no",
-      align: "left",
-      disablePadding: true,
-      label: "Project no.",
-    },
-    {
-      id: "start_date",
-      align: "left",
-      disablePadding: false,
-      label: "Created Date",
-    },
+    { id: "project_name", label: "Project name", align: "left" },
+    { id: "project_no", label: "Project no.", align: "left" },
+    { id: "runs", label: "No. of runs", align: "left" },
+    { id: "last_run", label: "Last Run", align: "left" },
+    { id: "start_date", label: "Created Date", align: "left" },
   ];
 
   return (
     <TableHead>
       <TableRow>
         {headCells.map((headCell) => (
-          <TableCell
-            key={headCell.id}
-            align={headCell.align}
-            padding={headCell.disablePadding ? "none" : "normal"}
-            sortDirection={orderBy === headCell.id ? order : false}
-          >
+          <TableCell key={headCell.id} align={headCell.align}>
             {headCell.label}
           </TableCell>
         ))}
@@ -93,7 +77,8 @@ export default function ProjectTable() {
   const order = "asc";
   const orderBy = "index";
   const navigate = useNavigate();
-  let info = JSON.parse(sessionStorage.getItem("userDetails"));
+
+  const info = JSON.parse(sessionStorage.getItem("userDetails"));
   const userRole = info?.[0]?.role_name;
 
   const [data, setData] = useState([]);
@@ -112,45 +97,47 @@ export default function ProjectTable() {
     fetchData();
   }, []);
 
-  const createData = (index, project_no, project_name, start_date) => {
-    return { index, project_no, project_name, start_date };
+  const createData = (
+    index,
+    project_no,
+    project_name,
+    start_date,
+    runs,
+    last_run
+  ) => {
+    return { index, project_no, project_name, start_date, runs, last_run };
   };
 
   const fetchData = () => {
     ProjectApiService.projectListing()
       .then((response) => {
-        let newData = null;
+        let newData = [];
 
         if (userRole === "Org Super Admin" || userRole === "Admin") {
-          newData = response?.data?.map((project, index) =>
-            createData(
-              project.project_id, // index
-              project.project_no, // project_no
-              project.project_name, // project_name
-              project.created_at !== "null" &&
-                project.created_at !== "" &&
-                project.created_at !== null
-                ? formatDate(project.created_at)
-                : "" // start_date
-            )
-          );
-        } else {
-          newData = response?.data?.details.map((project, index) =>
+          newData = response?.data?.map((project) =>
             createData(
               project.project_id,
               project.project_no,
               project.project_name,
-              project.created_at !== "null" &&
-                project.created_at !== "" &&
-                project.created_at !== null
-                ? formatDate(project.created_at)
-                : ""
+              project.created_at ? formatDate(project.created_at) : "",
+              project.no_of_runs ?? 0,
+              project.last_run ?? "-"
+            )
+          );
+        } else {
+          newData = response?.data?.details.map((project) =>
+            createData(
+              project.project_id,
+              project.project_no,
+              project.project_name,
+              project.created_at ? formatDate(project.created_at) : "",
+              project.no_of_runs ?? 0,
+              project.last_run ?? "-"
             )
           );
         }
 
-        const limitedData = newData.slice(0, 6);
-        setData(limitedData);
+        setData(newData.slice(0, 6));
         setLoading(false);
       })
       .catch((errResponse) => {
@@ -175,66 +162,49 @@ export default function ProjectTable() {
 
   return (
     <Box
-      style={{
+      sx={{
         padding: "10px 20px",
         minHeight: "428px",
         alignContent: data.length > 0 ? "normal" : "space-around",
       }}
     >
       <Typography variant="h5">Recent Projects</Typography>
+
       {data.length > 0 &&
         userRole !== "Org Super Admin" &&
         userRole !== "Admin" && (
-          <Box style={{ float: "right" }}>
+          <Box sx={{ float: "right" }}>
             <ToggleButtons
               onViewModeChange={handleViewModeChange}
               viewSelected="card"
             />
           </Box>
         )}
+
       {data.length > 0 ? (
         viewMode === "list" ? (
-          <TableContainer
-            sx={{
-              width: "100%",
-              overflowX: "auto",
-              position: "relative",
-              display: "block",
-              maxWidth: "100%",
-              "& td, & th": { whiteSpace: "nowrap" },
-            }}
-          >
-            <Table aria-labelledby="tableTitle">
+          <TableContainer sx={{ overflowX: "auto" }}>
+            <Table>
               <ProjectTableHead order={order} orderBy={orderBy} />
               <TableBody>
                 {stableSort(data, getComparator(order, orderBy)).map(
-                  (row, index) => {
-                    const labelId = `enhanced-table-checkbox-${index}`;
-
-                    return (
-                      <TableRow
-                        hover
-                        role="checkbox"
-                        sx={{
-                          "&:last-child td, &:last-child th": { border: 0 },
-                        }}
-                        tabIndex={-1}
-                        key={row.project_name}
-                      >
-                        <TableCell component="th" id={labelId} scope="row">
-                          <Link
-                            color="secondary"
-                            onClick={() => handleClick(row.index)}
-                            style={{ cursor: "pointer" }}
-                          >
-                            {row.project_name}
-                          </Link>
-                        </TableCell>
-                        <TableCell>{row.project_no}</TableCell>
-                        <TableCell>{row.start_date}</TableCell>
-                      </TableRow>
-                    );
-                  }
+                  (row, index) => (
+                    <TableRow key={index} hover>
+                      <TableCell>
+                        <Link
+                          color="secondary"
+                          onClick={() => handleClick(row.index)}
+                          sx={{ cursor: "pointer" }}
+                        >
+                          {row.project_name}
+                        </Link>
+                      </TableCell>
+                      <TableCell>{row.project_no}</TableCell>
+                      <TableCell>{row.runs}</TableCell>
+                      <TableCell>{row.last_run}</TableCell>
+                      <TableCell>{row.start_date}</TableCell>
+                    </TableRow>
+                  )
                 )}
               </TableBody>
             </Table>
@@ -245,6 +215,14 @@ export default function ProjectTable() {
       ) : (
         <Empty />
       )}
+
+      <Snackbar
+        open={snackData.show}
+        autoHideDuration={4000}
+        onClose={() => setSnackData({ ...snackData, show: false })}
+      >
+        <Alert severity={snackData.type}>{snackData.message}</Alert>
+      </Snackbar>
     </Box>
   );
 }
