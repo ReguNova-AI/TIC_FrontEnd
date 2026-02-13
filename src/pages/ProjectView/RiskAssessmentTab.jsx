@@ -163,70 +163,183 @@ const RiskAssessmentTab = ({ projectData }) => {
       return (
         <Box
           sx={{
-            maxHeight: '65vh', // Fixed height for scrolling
-            overflowY: 'auto', // Enable internal scrolling
-            padding: '10px 10px 10px 0', // Padding for scrollbar
-            '&::-webkit-scrollbar': {
-              width: '8px',
-            },
+            maxHeight: '65vh',
+            overflowY: 'auto',
+            px: 4,
+            py: 3,
+            pr: 2,
+            background: '#fafbfc',
+            fontFamily: '"Inter", "Roboto", sans-serif',
+            fontSize: '0.96rem',
+            lineHeight: 1.8,
+            color: '#2d3748',
+
+            /* Scrollbar */
+            '&::-webkit-scrollbar': { width: '8px' },
             '&::-webkit-scrollbar-track': {
-              background: '#f1f1f1',
-              borderRadius: '4px',
+              background: 'transparent',
             },
             '&::-webkit-scrollbar-thumb': {
-              background: '#888',
-              borderRadius: '4px',
+              background: '#cbd5e1',
+              borderRadius: '8px',
             },
-            '&::-webkit-scrollbar-thumb:hover': {
-              background: '#555',
+
+            /* Main Title */
+            '& h1': {
+              fontSize: '1.8rem',
+              fontWeight: 700,
+              mb: 3,
+              pb: 1.5,
+              borderBottom: '3px solid #e2e8f0',
+              color: '#0f172a',
+              letterSpacing: '-0.5px',
             },
-            // Markdown Styles
-            '& h1, & h2, & h3, & h4, & h5, & h6': {
-              color: '#333', // Changed from blue to standard text color
-              marginTop: '1.5rem',
-              marginBottom: '0.75rem'
+
+            /* Section Headers */
+            '& h2': {
+              fontSize: '1.35rem',
+              fontWeight: 600,
+              mt: 4,
+              mb: 2,
+              padding: '10px 14px',
+              background: 'linear-gradient(90deg, #eef2ff 0%, #f8fafc 100%)',
+              borderLeft: '5px solid #4f46e5',
+              borderRadius: '6px',
+              color: '#1e293b',
             },
+
+            /* Subsection Headers */
+            '& h3': {
+              fontSize: '1.1rem',
+              fontWeight: 600,
+              mt: 3,
+              mb: 1,
+              color: '#334155',
+            },
+
+            /* Paragraph spacing */
             '& p': {
-              marginBottom: '1rem',
-              lineHeight: 1.7
+              mb: 1.2,
             },
+
+            /* Lists */
             '& ul, & ol': {
-              marginBottom: '1rem',
-              paddingLeft: '2rem'
+              pl: 3,
+              mb: 2,
             },
+
             '& li': {
-              marginBottom: '0.5rem'
+              mb: 0.6,
             },
+
+            /* Tables */
+            '& table': {
+              width: '100%',
+              borderCollapse: 'collapse',
+              mb: 3,
+              fontSize: '0.92rem',
+              backgroundColor: '#ffffff',
+              borderRadius: '8px',
+              overflow: 'hidden',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+            },
+
+            '& th': {
+              backgroundColor: '#f1f5f9',
+              fontWeight: 600,
+              padding: '10px',
+              textAlign: 'left',
+              borderBottom: '1px solid #e2e8f0',
+            },
+
+            '& td': {
+              padding: '10px',
+              borderBottom: '1px solid #f1f5f9',
+            },
+
+            /* Risk Block Styling */
+            '& p:has(strong:contains("Risk"))': {
+              mt: 3,
+              padding: '12px 16px',
+              backgroundColor: '#ffffff',
+              borderRadius: '8px',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
+              fontWeight: 600,
+              fontSize: '1.02rem',
+              borderLeft: '4px solid #6366f1',
+            },
+
+            '& p:has(strong:contains("Category"))': {
+              mt: 2,
+              fontWeight: 600,
+              color: '#4f46e5',
+              letterSpacing: '0.3px',
+            },
+
+            /* Clause Highlight */
+            '& p:has(strong:contains("Section/Clause"))': {
+              fontFamily: 'monospace',
+              backgroundColor: '#f1f5f9',
+              padding: '6px 10px',
+              borderRadius: '6px',
+              display: 'inline-block',
+              fontSize: '0.85rem',
+            },
+
+            /* Evidence Block */
+            '& p:has(strong:contains("Evidence"))': {
+              backgroundColor: '#f8fafc',
+              padding: '14px',
+              borderRadius: '8px',
+              borderLeft: '4px solid #94a3b8',
+              fontStyle: 'italic',
+              color: '#475569',
+            },
+
+            /* Severity Styling */
+            '& p:contains("Severity: High")': {
+              fontWeight: 600,
+              color: '#dc2626',
+            },
+
+            '& p:contains("Severity: Medium")': {
+              fontWeight: 600,
+              color: '#ea580c',
+            },
+
+            '& p:contains("Severity: Low")': {
+              fontWeight: 600,
+              color: '#16a34a',
+            },
+
+            /* Divider */
+            '& hr': {
+              border: 'none',
+              borderTop: '1px solid #e2e8f0',
+              my: 4,
+            },
+
+            /* Blockquote (Executive Notes) */
+            '& blockquote': {
+              backgroundColor: '#eef2ff',
+              padding: '16px',
+              borderLeft: '4px solid #6366f1',
+              borderRadius: '8px',
+              fontStyle: 'normal',
+              color: '#1e293b',
+            },
+
+            /* Strong emphasis */
             '& strong': {
               fontWeight: 600,
-              color: '#333'
             },
-            '& code': {
-              backgroundColor: '#f5f5f5',
-              padding: '0.2rem 0.4rem',
-              borderRadius: '4px',
-              fontSize: '0.875rem'
-            },
-            '& pre': {
-              backgroundColor: '#f5f5f5',
-              padding: '1rem',
-              borderRadius: '8px',
-              overflow: 'auto',
-              marginBottom: '1rem'
-            },
-            '& blockquote': {
-              borderLeft: '4px solid #1976d2',
-              paddingLeft: '1rem',
-              marginLeft: 0,
-              marginBottom: '1rem',
-              fontStyle: 'italic',
-              color: '#555'
-            }
           }}
           className="risk-summary-content"
         >
           <ReactMarkdown>{contentToRender}</ReactMarkdown>
         </Box>
+
+
       );
     }
 
