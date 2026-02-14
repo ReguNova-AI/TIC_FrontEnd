@@ -97,6 +97,10 @@ const _externalUserProjects = (userId, orgId, page, limit) => {
   );
 };
 
+const _userSelfRegister = (payload) => {
+  return BaseApiService.post(`/api/v1/auth/self-register`, null, payload);
+};
+
 export const UserApiService = {
   userCreate: _userCreate,
   userUpdate: _userUpdate,
@@ -111,4 +115,5 @@ export const UserApiService = {
   externalUserListing: _externalUserListing,
   getExternalUserPeojects: _externalUserProjects,
   addProjectsToExternalUser: _addProjectsToExternalUser,
+  userSelfRegister: _userSelfRegister,
 };

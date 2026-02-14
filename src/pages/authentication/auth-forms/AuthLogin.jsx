@@ -268,7 +268,7 @@ export default function AuthLogin() {
                   variant="outlined"
                   color="primary"
                 >
-                  {LOGIN_PAGE.REQUEST_BUTTON}
+                  {LOGIN_PAGE.SIGNUP_BUTTON}
                 </Button>
               </Grid>
             </Grid>
