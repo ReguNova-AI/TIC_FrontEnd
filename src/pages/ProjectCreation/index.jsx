@@ -10,7 +10,7 @@ import {
   Box,
   Chip,
   Typography,
-  Input
+  Input,
 } from "@mui/material";
 
 import DropZoneFileUpload from "./DropZoneFileUpload";
@@ -22,7 +22,13 @@ import { Link as RouterLink, useNavigate } from "react-router-dom";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import { formatDateToCustomFormat } from "shared/utility";
-import { API_ERROR_MESSAGE, API_SUCCESS_MESSAGE, BUTTON_LABEL, FORM_LABEL, HEADING } from "shared/constants";
+import {
+  API_ERROR_MESSAGE,
+  API_SUCCESS_MESSAGE,
+  BUTTON_LABEL,
+  FORM_LABEL,
+  HEADING,
+} from "shared/constants";
 import { UserApiService } from "services/api/UserAPIService";
 import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
 import { FileUploadApiService } from "services/api/FileUploadAPIService";
@@ -80,7 +86,11 @@ const MyForm = () => {
             response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
           type: "success",
         });
-        setIndustryData(response?.data?.details?.filter(data => industryDetails?.includes(data.industry_id)) || []); // Use an empty array as fallback
+        setIndustryData(
+          response?.data?.details?.filter((data) =>
+            industryDetails?.includes(data.industry_id),
+          ) || [],
+        ); // Use an empty array as fallback
       })
       .catch((errResponse) => {
         setSnackData({
@@ -98,14 +108,17 @@ const MyForm = () => {
       .then((response) => {
         if (response && response?.data) {
           const userEmailToExclude = userdetails?.[0]?.user_email;
-          const filteredUsers = response?.data?.activeUsers?.filter(user => user.user_email !== userEmailToExclude);
+          const filteredUsers = response?.data?.activeUsers?.filter(
+            (user) => user.user_email !== userEmailToExclude,
+          );
 
           setUserData(filteredUsers); //
 
           // setUserData(response?.data?.activeUsers ); // Assuming response.data contains the user list
           setSnackData({
             show: true,
-            message: response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
+            message:
+              response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
             type: "success",
           });
         }
@@ -114,7 +127,8 @@ const MyForm = () => {
         setSnackData({
           show: true,
           message:
-            errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+            errResponse?.error?.message ||
+            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
       });
@@ -153,48 +167,49 @@ const MyForm = () => {
 
     setLoading(true);
     const processedFiles = await Promise.all(
-      filesArray && filesArray?.map(async (file) => {
-        let uploadedLink = null;
+      filesArray &&
+        filesArray?.map(async (file) => {
+          let uploadedLink = null;
 
-        // Create a new FileReader to read the file as Base64
-        const reader = new FileReader();
+          // Create a new FileReader to read the file as Base64
+          const reader = new FileReader();
 
-        const fileDataUrl = await new Promise((resolve, reject) => {
-          reader.onloadend = () => resolve(reader.result);
-          reader.onerror = reject; // Handle any errors while reading the file
-          reader.readAsDataURL(file); // Start reading the file
-        });
+          const fileDataUrl = await new Promise((resolve, reject) => {
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject; // Handle any errors while reading the file
+            reader.readAsDataURL(file); // Start reading the file
+          });
 
-        // Now that the file is read, upload the Base64 data to the API
-        try {
-          const fileType = file.name.split(".").pop();
-          const filepayload = {
-            documents: [fileDataUrl],
-            type: fileType,
-          };
+          // Now that the file is read, upload the Base64 data to the API
+          try {
+            const fileType = file.name.split(".").pop();
+            const filepayload = {
+              documents: [fileDataUrl],
+              type: fileType,
+            };
 
-          const response = await FileUploadApiService.fileUpload(filepayload);
+            const response = await FileUploadApiService.fileUpload(filepayload);
 
-          if (response) {
-            setSnackData({
-              show: true,
-              message:
-                response?.message || API_SUCCESS_MESSAGE.UPLOADED_SUCCESSFULLY,
-              type: "success",
-            });
-            setLoading(false);
-            setFormData({
-              ...formData,
-              mapping_standards: response.data.details[0], // Set file name in the select field
-              regulatory: files?.[0]?.name,
-            });
+            if (response) {
+              setSnackData({
+                show: true,
+                message:
+                  response?.message ||
+                  API_SUCCESS_MESSAGE.UPLOADED_SUCCESSFULLY,
+                type: "success",
+              });
+              setLoading(false);
+              setFormData({
+                ...formData,
+                mapping_standards: response.data.details[0], // Set file name in the select field
+                regulatory: files?.[0]?.name,
+              });
+            }
+          } catch (errResponse) {
+            console.log("errResponse", errResponse);
+            return null;
           }
-
-        } catch (errResponse) {
-          console.log("errResponse", errResponse);
-          return null;
-        }
-      })
+        }),
     );
   };
 
@@ -235,39 +250,51 @@ const MyForm = () => {
 
   const handleMultiple = (selectedIds) => {
     const invitedId = formData.invited_user_list;
-    const selectedMembers = selectedIds?.map((userId) => {
-      const member = userData.find((user) => user.user_id === userId);
-      if (member) {
-        invitedId.push(member.user_id);
-      }
-      return member ? { user_id: member.user_id, user_name: `${member.user_first_name} ${member.user_last_name}`, user_email: member.user_email, user_profile: member.user_profile } : null;
-    }).filter(Boolean);
+    const selectedMembers = selectedIds
+      ?.map((userId) => {
+        const member = userData.find((user) => user.user_id === userId);
+        if (member) {
+          invitedId.push(member.user_id);
+        }
+        return member
+          ? {
+              user_id: member.user_id,
+              user_name: `${member.user_first_name} ${member.user_last_name}`,
+              user_email: member.user_email,
+              user_profile: member.user_profile,
+            }
+          : null;
+      })
+      .filter(Boolean);
     setFormData({
       ...formData,
       invite_Users: selectedMembers,
       invited_user_list: invitedId,
     });
     return selectedMembers;
-  }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
-    const updatedStatus = submissionStatus === 'Draft' ? 'Draft' : 'In Progress';
+    const updatedStatus =
+      submissionStatus === "Draft" ? "Draft" : "In Progress";
     const selectedUserData = handleMultiple(formData.teamMembers);
 
-
     const historyItem = {
-      changedby: userdetails?.[0]?.user_first_name + " " + userdetails?.[0]?.user_last_name,
+      changedby:
+        userdetails?.[0]?.user_first_name +
+        " " +
+        userdetails?.[0]?.user_last_name,
       date: new Date().toISOString(),
       changes: {
         projectName: formData.projectName || "",
         projectNo: formData.projectNo || "",
         description: formData.projectDesc || "",
-        invite: '',
+        invite: "",
         documents: formData.document || "",
         checklistRun: "",
-        assessmentRun: '',
+        assessmentRun: "",
         standardUplaoded: "",
         status: updatedStatus,
       },
@@ -285,11 +312,19 @@ const MyForm = () => {
       org_name: userdetails?.[0]?.org_name,
       created_by_id: userdetails?.[0]?.user_id,
       created_by_name:
-        userdetails?.[0]?.user_first_name + " " + userdetails?.[0]?.user_last_name,
+        userdetails?.[0]?.user_first_name +
+        " " +
+        userdetails?.[0]?.user_last_name,
       sector_id: userdetails?.[0]?.sector_id,
       sector_name: userdetails?.[0]?.sector_name,
-      industry_id: formData.industry_id || userdetails?.[0]?.industry_id || userdetails?.[0]?.industries?.[0],
-      industry_name: formData.industry_name || userdetails?.[0]?.industry_names || userdetails?.[0]?.industries?.[0],
+      industry_id:
+        formData.industry_id ||
+        userdetails?.[0]?.industry_id ||
+        userdetails?.[0]?.industries?.[0],
+      industry_name:
+        formData.industry_name ||
+        userdetails?.[0]?.industry_names ||
+        userdetails?.[0]?.industries?.[0],
       status: updatedStatus,
       // no_of_runs: updatedStatus === "Draft" ? 0 : 1,
       no_of_runs: 0,
@@ -301,7 +336,7 @@ const MyForm = () => {
       history: [historyItem],
       checkListResponse: formData?.checkListResponse,
     };
-    if (submissionStatus !== 'Draft') {
+    if (submissionStatus !== "Draft") {
       payload.last_run = formatDateToCustomFormat(new Date());
     }
 
@@ -314,12 +349,16 @@ const MyForm = () => {
         });
         console.log("payload", payload);
         const projectId = response?.data?.details?.[0].project_id;
-        navigate(`/projectView/${projectId}`, { state: { projectId: projectId, projectName: formData.projectName } });
+        navigate(`/projectView/${projectId}`, {
+          state: { projectId: projectId, projectName: formData.projectName },
+        });
       })
       .catch((errResponse) => {
         setSnackData({
           show: true,
-          message: errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          message:
+            errResponse?.error?.message ||
+            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
       });
@@ -338,27 +377,32 @@ const MyForm = () => {
     document.getElementById("fileInput").click(); // Trigger the file input field
   };
 
-
   const checklistResponseCheck = (value) => {
-    const result = standardData?.filter(data => data.standard_name === value);
+    const result = standardData?.filter((data) => data.standard_name === value);
     const finalarray = [];
 
-    result?.[0]?.checkListResponse?.checklist?.map(item => {
-      finalarray.push(item?.replace(/\\n/g, "")?.replace(/\n/g, "")?.replace(/\\"/g, "")?.replace(/\"/g, "")?.replace(/'/g, ""));
-    })
+    result?.[0]?.checkListResponse?.checklist?.map((item) => {
+      finalarray.push(
+        item
+          ?.replace(/\\n/g, "")
+          ?.replace(/\n/g, "")
+          ?.replace(/\\"/g, "")
+          ?.replace(/\"/g, "")
+          ?.replace(/'/g, ""),
+      );
+    });
 
     //  console.log("result",result?.[0]?.checkListResponse)
     return { checklist: finalarray };
     //  setFormData({...formData , checkListResponse:result?.[0]?.checkListResponse})
-  }
-
+  };
 
   const handleIndustryChange = (event) => {
     const industryId = event.target.value;
     setSelectedIndustry(industryId);
 
     const selectedIndustry = industryData.find(
-      (industry) => industry.industry_id === industryId
+      (industry) => industry.industry_id === industryId,
     );
 
     setFormData({
@@ -455,11 +499,11 @@ const MyForm = () => {
                     label={FORM_LABEL.REGULATORY}
                     name="regulatory"
                     // onChange={(e) => { setFormData({ ...formData, regulatory: e.target.value,checkListResponse:checklistResponseCheck(e.target.value) })}}
-                    onChange={(e) => { setFormData({ ...formData, regulatory: e.target.value }) }}
+                    onChange={(e) => {
+                      setFormData({ ...formData, regulatory: e.target.value });
+                    }}
                     required
                   >
-
-
                     {/* Show the file name if a file is selected */}
                     {file && (
                       <MenuItem key={file.name} value={file.name}>
@@ -468,17 +512,20 @@ const MyForm = () => {
                     )}
 
                     {/* Other options for standard data */}
-                    {standardData?.map(sData => (
-                      <MenuItem key={sData.standard_name} value={sData.standard_name}>
+                    {standardData?.map((sData) => (
+                      <MenuItem
+                        key={sData.standard_name}
+                        value={sData.standard_name}
+                      >
                         {sData.standard_name}
                       </MenuItem>
                     ))}
-                    <MenuItem >
+                    <MenuItem>
                       <Button
                         variant="outlined"
                         component="label"
                         size="small"
-                        style={{ textTransform: 'none' }}
+                        style={{ textTransform: "none" }}
                         onClick={handleAddFileClick} // Open the popover when clicked
                       >
                         Add Standard
@@ -494,7 +541,7 @@ const MyForm = () => {
                   onChange={handleFileUpload}
                 />
               </Grid>
-              {industryData?.length > 1 &&
+              {industryData?.length > 1 && (
                 <Grid item xs={12} sm={4}>
                   <FormControl fullWidth>
                     <InputLabel>
@@ -519,8 +566,7 @@ const MyForm = () => {
                     </Select>
                   </FormControl>
                 </Grid>
-              }
-
+              )}
 
               <Grid item xs={12} sm={industryData?.length > 1 ? 4 : 8}>
                 <FormControl fullWidth>
@@ -537,7 +583,7 @@ const MyForm = () => {
                       <Box sx={{ display: "flex", flexWrap: "wrap" }}>
                         {selected?.map((value) => {
                           const member = userData.find(
-                            (member) => member.user_id === value
+                            (member) => member.user_id === value,
                           );
                           return (
                             <Chip
@@ -556,13 +602,13 @@ const MyForm = () => {
                     ) : (
                       userData?.map((member) => (
                         <MenuItem key={member.user_id} value={member.user_id}>
-                          {member.user_first_name} {member.user_last_name} - {member.user_email}
+                          {member.user_first_name} {member.user_last_name} -{" "}
+                          {member.user_email}
                         </MenuItem>
                       ))
                     )}
                   </Select>
                 </FormControl>
-
               </Grid>
 
               {/* Render Profile Cards for Selected Team Members */}
@@ -570,7 +616,7 @@ const MyForm = () => {
                 <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
                   {formData.teamMembers?.map((selectedId) => {
                     const member = userData.find(
-                      (user) => user.user_id === selectedId
+                      (user) => user.user_id === selectedId,
                     );
                     return member ? (
                       <UserProfileCard
@@ -588,7 +634,12 @@ const MyForm = () => {
 
               {/* Upload File */}
               <Grid item xs={12} sm={8}>
-                <DropZoneFileUpload label={FORM_LABEL.DOCUMENT_UPLOAD} typeSelect={false} handleSubmitDocument={handleFileChange} maxFile={0} />
+                <DropZoneFileUpload
+                  label={FORM_LABEL.DOCUMENT_UPLOAD}
+                  typeSelect={false}
+                  handleSubmitDocument={handleFileChange}
+                  maxFile={0}
+                />
               </Grid>
 
               <Grid item xs={12} sm={12}>

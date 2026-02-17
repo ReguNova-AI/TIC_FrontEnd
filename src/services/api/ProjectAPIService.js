@@ -16,7 +16,7 @@ const _uploadProjectDocument = (payload, versionId) => {
   return BaseApiService.put(
     `/api/v1/project_document/update/${versionId}`,
     null,
-    payload
+    payload,
   );
 };
 
@@ -28,7 +28,7 @@ const _deleteProjectDocument = (documentId, versionId) => {
   return BaseApiService.delete(
     `/api/v1/project_document/delete/${documentId}/${versionId}`,
     null,
-    null
+    null,
   );
 };
 
@@ -40,7 +40,7 @@ const _getRiskSummary = (projectId) => {
   return BaseApiService.get(
     `/api/v1/project_document/risk-summary/${projectId}`,
     null,
-    null
+    null,
   );
 };
 
@@ -48,7 +48,7 @@ const _regenerateRiskSummary = (projectId) => {
   return BaseApiService.get(
     `/api/v3/risk/summary?project_id=${projectId}`,
     null,
-    null
+    null,
   );
 };
 
@@ -56,7 +56,7 @@ const _getChatHistory = (projectId) => {
   return BaseApiService.get(
     `/api/v1/project_document/chat-history/${projectId}`,
     null,
-    null
+    null,
   );
 };
 
@@ -64,7 +64,7 @@ const _getExtractedInfo = (projectId) => {
   return BaseApiService.get(
     `/api/v1/project_document/extracted-info/${projectId}`,
     null,
-    null
+    null,
   );
 };
 
@@ -96,7 +96,7 @@ const _projectListing = (page, limit) => {
         return BaseApiService.get(
           `/api/v1/org/recent-projects?limit=10`,
           null,
-          null
+          null,
         );
       } else {
         return BaseApiService.get(`/api/v1/org/projects`, params, null);
@@ -126,13 +126,13 @@ const _projectCounts = (id) => {
       return BaseApiService.get(
         `/api/v1/projects/counts?user_id=${id}`,
         null,
-        null
+        null,
       );
     } else {
       return BaseApiService.get(
         `/api/v1/org/projects/counts?industry_id=${industry_id}`,
         null,
-        null
+        null,
       );
     }
   }
@@ -153,7 +153,7 @@ const _projectChat = (query, projectId) => {
     `/api/v3/chat/ask/question?project_id=${projectId}&user_question=${encodedQuery}`,
     //`/api/v3/chat/ask/question?project_id=1&user_question=${encodedQuery}`,
     null,
-    null
+    null,
   );
 };
 
@@ -161,7 +161,7 @@ const _projectComplianceAssessment = (payload1) => {
   return BaseApiService.post(
     `/api/v1/chat/runComplainceAssessment`,
     null,
-    payload1
+    payload1,
   );
 };
 
@@ -182,7 +182,7 @@ const _projectStandardChecklist = (payload) => {
   return BaseApiService.post(
     `/api/v2/chat/newUploadStandardCheckList?num_segments=7&chunksize=6000&chunkoverlap=200`,
     null,
-    payload
+    payload,
   );
 };
 
@@ -198,14 +198,14 @@ const _projectUpdateComplianceAssessment = (payload) => {
   return BaseApiService.put(
     `/api/v2/project/update-compliance-assessment`,
     null,
-    payload
+    payload,
   );
 };
 const _projectUpdateChecklist = (payload) => {
   return BaseApiService.put(
     `/api/v2/project/update-checklist-response`,
     null,
-    payload
+    payload,
   );
 };
 
@@ -222,7 +222,7 @@ const _downloadRiskSummary = (projectId) => {
     `/api/v1/project_document/download-risk-summary/${projectId}`,
     null,
     null,
-    { responseType: "blob" }
+    { responseType: "blob" },
   );
 };
 

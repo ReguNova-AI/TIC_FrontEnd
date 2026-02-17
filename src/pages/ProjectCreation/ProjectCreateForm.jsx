@@ -34,6 +34,7 @@ import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
 import { FileUploadApiService } from "services/api/FileUploadAPIService";
 import { Spin } from "antd";
 import DocumentSection from "./AddDocuments";
+import { PaymentApiService } from "services/api/Payment";
 
 const CreateProjectForm = () => {
   const [submissionStatus, setSubmissionStatus] = useState("");
@@ -93,8 +94,8 @@ const CreateProjectForm = () => {
         // });
         setIndustryData(
           response?.data?.details?.filter((data) =>
-            industryDetails?.includes(data.industry_id)
-          ) || []
+            industryDetails?.includes(data.industry_id),
+          ) || [],
         ); // Use an empty array as fallback
       })
       .catch((errResponse) => {
@@ -114,7 +115,7 @@ const CreateProjectForm = () => {
         if (response && response?.data) {
           const userEmailToExclude = userdetails?.[0]?.user_email;
           const filteredUsers = response?.data?.activeUsers?.filter(
-            (user) => user.user_email !== userEmailToExclude
+            (user) => user.user_email !== userEmailToExclude,
           );
 
           setUserData(filteredUsers); //
@@ -173,48 +174,48 @@ const CreateProjectForm = () => {
     setLoading(true);
     const processedFiles = await Promise.all(
       filesArray &&
-      filesArray?.map(async (file) => {
-        let uploadedLink = null;
+        filesArray?.map(async (file) => {
+          let uploadedLink = null;
 
-        // Create a new FileReader to read the file as Base64
-        const reader = new FileReader();
+          // Create a new FileReader to read the file as Base64
+          const reader = new FileReader();
 
-        const fileDataUrl = await new Promise((resolve, reject) => {
-          reader.onloadend = () => resolve(reader.result);
-          reader.onerror = reject; // Handle any errors while reading the file
-          reader.readAsDataURL(file); // Start reading the file
-        });
+          const fileDataUrl = await new Promise((resolve, reject) => {
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject; // Handle any errors while reading the file
+            reader.readAsDataURL(file); // Start reading the file
+          });
 
-        // Now that the file is read, upload the Base64 data to the API
-        try {
-          const fileType = file.name.split(".").pop();
-          const filepayload = {
-            documents: [fileDataUrl],
-            type: fileType,
-          };
+          // Now that the file is read, upload the Base64 data to the API
+          try {
+            const fileType = file.name.split(".").pop();
+            const filepayload = {
+              documents: [fileDataUrl],
+              type: fileType,
+            };
 
-          const response = await FileUploadApiService.fileUpload(filepayload);
+            const response = await FileUploadApiService.fileUpload(filepayload);
 
-          if (response) {
-            setSnackData({
-              show: true,
-              message:
-                response?.message ||
-                API_SUCCESS_MESSAGE.UPLOADED_SUCCESSFULLY,
-              type: "success",
-            });
-            setLoading(false);
-            setFormData({
-              ...formData,
-              mapping_standards: response.data.details[0], // Set file name in the select field
-              regulatory: files?.[0]?.name,
-            });
+            if (response) {
+              setSnackData({
+                show: true,
+                message:
+                  response?.message ||
+                  API_SUCCESS_MESSAGE.UPLOADED_SUCCESSFULLY,
+                type: "success",
+              });
+              setLoading(false);
+              setFormData({
+                ...formData,
+                mapping_standards: response.data.details[0], // Set file name in the select field
+                regulatory: files?.[0]?.name,
+              });
+            }
+          } catch (errResponse) {
+            console.log("errResponse", errResponse);
+            return null;
           }
-        } catch (errResponse) {
-          console.log("errResponse", errResponse);
-          return null;
-        }
-      })
+        }),
     );
   };
 
@@ -263,11 +264,11 @@ const CreateProjectForm = () => {
         }
         return member
           ? {
-            user_id: member.user_id,
-            user_name: `${member.user_first_name} ${member.user_last_name}`,
-            user_email: member.user_email,
-            user_profile: member.user_profile,
-          }
+              user_id: member.user_id,
+              user_name: `${member.user_first_name} ${member.user_last_name}`,
+              user_email: member.user_email,
+              user_profile: member.user_profile,
+            }
           : null;
       })
       .filter(Boolean);
@@ -290,7 +291,9 @@ const CreateProjectForm = () => {
     e.preventDefault(); // Prevent form submission first
 
     // Filter documents with valid names
-    const validDocuments = documents.filter((doc) => doc.docuemnt_name && doc.docuemnt_name.trim() !== "");
+    const validDocuments = documents.filter(
+      (doc) => doc.docuemnt_name && doc.docuemnt_name.trim() !== "",
+    );
 
     if (validDocuments.length === 0) {
       setSnackData({
@@ -302,22 +305,30 @@ const CreateProjectForm = () => {
     }
 
     // Check for empty folders
-    const allFolders = [...new Set(documents.map(doc => doc.folder_name).filter(folder => folder && folder.trim() !== ""))];
-    const emptyFolders = allFolders.filter(folderName => {
-      const documentsInFolder = validDocuments.filter(doc => doc.folder_name === folderName);
+    const allFolders = [
+      ...new Set(
+        documents
+          .map((doc) => doc.folder_name)
+          .filter((folder) => folder && folder.trim() !== ""),
+      ),
+    ];
+    const emptyFolders = allFolders.filter((folderName) => {
+      const documentsInFolder = validDocuments.filter(
+        (doc) => doc.folder_name === folderName,
+      );
       return documentsInFolder.length === 0;
     });
 
     if (emptyFolders.length > 0) {
       setSnackData({
         show: true,
-        message: `Please add at least one document to the following folder(s): ${emptyFolders.join(', ')}`,
+        message: `Please add at least one document to the following folder(s): ${emptyFolders.join(", ")}`,
         type: "error",
       });
       return; // Stop execution if there are empty folders
     }
 
-    setSubmitLoading(true);
+    // setSubmitLoading(true);
     const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
     const updatedStatus =
       submissionStatus === "Draft" ? "Draft" : "In Progress";
@@ -385,29 +396,52 @@ const CreateProjectForm = () => {
       payload.last_run = formatDateToCustomFormat(new Date());
     }
 
-    ProjectApiService.projectCreate(payload)
+    PaymentApiService.isProjectCreationAllowed({
+      user_id: userdetails?.[0]?.user_id,
+    })
       .then((response) => {
-        setSubmitLoading(false);
-        setSnackData({
-          show: true,
-          message: response.message,
-          type: "success",
-        });
-        console.log("payload", payload);
-        const projectId = response?.data?.details?.[0].project_id;
-        navigate(`/projectView/${projectId}`, {
-          state: { projectId: projectId, projectName: formData.projectName },
-        });
+        if (response.data?.details?.restricted) {
+          setSnackData({
+            show: true,
+            message: "You have reached the maximum number of projects allowed.",
+            type: "error",
+          });
+
+          setTimeout(() => {
+            navigate("/payment?source=restriction");
+          }, 2000);
+        } else {
+          ProjectApiService.projectCreate(payload)
+            .then((response) => {
+              setSubmitLoading(false);
+              setSnackData({
+                show: true,
+                message: response.message,
+                type: "success",
+              });
+              console.log("payload", payload);
+              const projectId = response?.data?.details?.[0].project_id;
+              navigate(`/projectView/${projectId}`, {
+                state: {
+                  projectId: projectId,
+                  projectName: formData.projectName,
+                },
+              });
+            })
+            .catch((errResponse) => {
+              setSubmitLoading(false);
+              setSnackData({
+                show: true,
+                message:
+                  errResponse?.error?.message ||
+                  API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+                type: "error",
+              });
+            });
+        }
       })
       .catch((errResponse) => {
-        setSubmitLoading(false);
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
+        console.log("errResponse", errResponse);
       });
   };
 
@@ -435,7 +469,7 @@ const CreateProjectForm = () => {
           ?.replace(/\n/g, "")
           ?.replace(/\\"/g, "")
           ?.replace(/\"/g, "")
-          ?.replace(/'/g, "")
+          ?.replace(/'/g, ""),
       );
     });
 
@@ -449,7 +483,7 @@ const CreateProjectForm = () => {
     setSelectedIndustry(industryId);
 
     const selectedIndustry = industryData.find(
-      (industry) => industry.industry_id === industryId
+      (industry) => industry.industry_id === industryId,
     );
 
     setFormData({
@@ -548,7 +582,7 @@ const CreateProjectForm = () => {
                       <Box sx={{ display: "flex", flexWrap: "wrap" }}>
                         {selected?.map((value) => {
                           const member = userData.find(
-                            (member) => member.user_id === value
+                            (member) => member.user_id === value,
                           );
                           return (
                             <Chip
@@ -581,7 +615,7 @@ const CreateProjectForm = () => {
                 <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
                   {formData.teamMembers?.map((selectedId) => {
                     const member = userData.find(
-                      (user) => user.user_id === selectedId
+                      (user) => user.user_id === selectedId,
                     );
                     return member ? (
                       <UserProfileCard
