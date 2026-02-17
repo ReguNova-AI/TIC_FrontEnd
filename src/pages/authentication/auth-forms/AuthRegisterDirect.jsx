@@ -68,7 +68,7 @@ export default function AuthRegisterDirect() {
             if (response?.success) {
                 setSnackData({
                     show: true,
-                    message:  "Account created successfully! Check your email.",
+                    message: "Account created successfully! Check your email.",
                     type: "success",
                 });
 
@@ -186,7 +186,7 @@ export default function AuthRegisterDirect() {
                             <Grid item xs={12}>
                                 <Stack spacing={1}>
                                     <InputLabel htmlFor="company-signup">
-                                        Organization Name
+                                        Organization Name*
                                     </InputLabel>
                                     <OutlinedInput
                                         id="company-signup"
@@ -224,23 +224,6 @@ export default function AuthRegisterDirect() {
                                     </FormHelperText>
                                 )}
                             </Grid>
-
-                            {/* <Grid item xs={12}>
-                                <Stack spacing={1}>
-                                    <InputLabel htmlFor="address-signup">
-                                        Organization Address
-                                    </InputLabel>
-                                    <OutlinedInput
-                                        id="address-signup"
-                                        value={values.address}
-                                        name="address"
-                                        onBlur={handleBlur}
-                                        onChange={handleChange}
-                                        placeholder="123 Main St."
-                                        fullWidth
-                                    />
-                                </Stack>
-                            </Grid> */}
 
                             {errors.submit && (
                                 <Grid item xs={12}>
