@@ -18,7 +18,6 @@ const AuthOTP = Loadable(lazy(() => import("pages/authentication/OTP")));
 const AuthPasswordReset = Loadable(
   lazy(() => import("pages/authentication/PasswordReset")),
 );
-const Payment = Loadable(lazy(() => import("pages/Payment")));
 
 // ==============================|| AUTH ROUTING ||============================== //
 
@@ -53,10 +52,6 @@ const LoginRoutes = {
           <AuthPasswordReset />
         </ProtectedRoute>
       ),
-    },
-    {
-      path: "/payment",
-      element: <Payment />,
     },
     {
       path: "*",
