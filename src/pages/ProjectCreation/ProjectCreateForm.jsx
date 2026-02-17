@@ -408,7 +408,7 @@ const CreateProjectForm = () => {
           });
 
           setTimeout(() => {
-            navigate("/payment");
+            navigate("/payment?source=restriction");
           }, 2000);
         } else {
           ProjectApiService.projectCreate(payload)

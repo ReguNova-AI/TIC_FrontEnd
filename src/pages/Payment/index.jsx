@@ -18,6 +18,7 @@ import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import { CheckOutlined } from "@ant-design/icons";
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 // project import
 import MainCard from "components/MainCard";
@@ -38,18 +39,6 @@ const pricingData = [
     buttonLink: "https://buy.stripe.com/bJe4gydEJg1c63v5Nqc7u08",
   },
   {
-    id: "standard",
-    title: "Standard Project",
-    price: "1,299",
-    period: "",
-    description: "Perfect for growing teams needing more flexibility.",
-    features: ["Up to 15 Contracts/Documents"],
-    isPopular: false,
-    buttonText: "Choose Standard",
-    buttonVariant: "outlined",
-    buttonLink: "https://buy.stripe.com/5kQ28qgQVbKWeA15Nqc7u09",
-  },
-  {
     id: "additionalcontract",
     title: "Additional Contract",
     price: "99",
@@ -60,6 +49,18 @@ const pricingData = [
     buttonText: "Get Started",
     buttonVariant: "contained",
     buttonLink: "https://buy.stripe.com/14A3cufMRaGSbnPa3Gc7u04",
+  },
+  {
+    id: "standard",
+    title: "Standard Project",
+    price: "1,299",
+    period: "",
+    description: "Perfect for growing teams needing more flexibility.",
+    features: ["Up to 15 Contracts/Documents"],
+    isPopular: false,
+    buttonText: "Choose Standard",
+    buttonVariant: "outlined",
+    buttonLink: "https://buy.stripe.com/5kQ28qgQVbKWeA15Nqc7u09",
   },
   {
     id: "advanced",
@@ -103,6 +104,8 @@ function Payment() {
   const theme = useTheme();
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [searchParams] = useSearchParams();
+  const isFromRestriction = searchParams.get("source") === "restriction";
 
   const [snackData, setSnackData] = useState({
     show: false,
@@ -143,7 +146,9 @@ function Payment() {
           alignItems="stretch"
         >
           {pricingData
-            .filter((p) => !["starter", "complex", "enterprise"].includes(p.id))
+            .filter((plan) =>
+              isFromRestriction ? true : plan.id === "additionalcontract",
+            )
             .map((plan) => (
               <Grid item xs={12} sm={6} md={4} key={plan.id}>
                 <MainCard
@@ -230,7 +235,13 @@ function Payment() {
                         fontWeight: 600,
                         mb: 4,
                       }}
-                      onClick={() => handleOpenModal(plan)}
+                      onClick={() => {
+                        if (isFromRestriction && plan.buttonLink) {
+                          window.location.href = plan.buttonLink;
+                        } else {
+                          handleOpenModal(plan);
+                        }
+                      }}
                     >
                       {plan.buttonText}
                     </Button>
