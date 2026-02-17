@@ -56,7 +56,10 @@ export default function NavItem({ item, level }) {
     organization: organization,
     configuration: setting, // Default icon
   };
-
+  const { pathname } = useLocation();
+  const isSelected =
+    !!matchPath({ path: item.url, end: false }, pathname) ||
+    openItem === item.id;
   const Icon = item.icon;
   // const itemIcon = item.icon ? <Icon style={{ fontSize: drawerOpen ? '1rem' : '1.25rem' }} /> : false;
   const itemIcon = item.id ? (
@@ -64,23 +67,17 @@ export default function NavItem({ item, level }) {
       src={icons[item.id] || dashboardIcon} // fallback icon
       width={drawerOpen ? "22px" : "27px"}
       alt={`${item.title} icon`} // Add alt for accessibility
+      className={`nav-icon ${isSelected ? "nav-icon--selected" : ""}`}
     />
   ) : (
     false
   );
-  const { pathname } = useLocation();
-  const isSelected =
-    !!matchPath({ path: item.url, end: false }, pathname) ||
-    openItem === item.id;
 
   // active menu item on page load
   useEffect(() => {
     if (pathname === item.url) handlerActiveItem(item.id);
     // eslint-disable-next-line
   }, [pathname]);
-
-  const textColor = "text.primary";
-  const iconSelectedColor = "#2ba9bc";
 
   return (
     <ListItemButton
@@ -91,8 +88,8 @@ export default function NavItem({ item, level }) {
       sx={{
         zIndex: 1201,
         pl: drawerOpen ? `${level * 28}px` : 1.5,
-        py: !drawerOpen && level === 1 ? 1.25 : 0.5,
-        mb:drawerOpen ? 1 : 0,
+        py: !drawerOpen && level === 1 ? 1.25 : 0.75,
+        // mb:drawerOpen ? 1 : 0,
         justifyContent : drawerOpen ? "left" : "center",
         borderBottom: `1px solid ${theme.palette.secondary.light}`,
         textTransform: "uppercase",

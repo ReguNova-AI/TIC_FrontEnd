@@ -71,7 +71,7 @@ const NestedListing = ({ data,filterStatusValue }) => {
         <img src={projectIcon} width="30px" style={{verticalAlign:"middle",marginRight:"10px"}}/>
         <a
           onClick={() => handleNavigateToProject(record.project_id)}
-          style={{ color: "#2ba9bc", cursor: "pointer" }}
+          style={{ color: "#5B0429", cursor: "pointer" }}
         >
           {record.project_name}
         </a>

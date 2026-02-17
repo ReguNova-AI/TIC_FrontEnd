@@ -48,7 +48,7 @@ export default function DashboardLayout() {
           padding:"6px"
         }}
       >
-         <img src={menuIcon} width="20px" style={{transform: !drawerOpen ? "none" :"scaleX(-1)"}}/>
+         <img src={menuIcon} width="20px" style={{transform: !drawerOpen ? "none" :"scaleX(-1)"}} className="nav-icon--selected"/>
       </Button>
       <Box
         component="main"

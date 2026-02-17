@@ -6,12 +6,23 @@
 /* Hover state */
 .ant-table-row-expand-icon:hover {
   /* border-color: #370e27 !important; */
-  border-color: #5B0429 !important;
+  border-color: #5b0429 !important;
 }
 
 .ant-table-row-expand-icon:hover::before,
 .ant-table-row-expand-icon:hover::after {
   /* background-color: #370e27 !important; */
-  background-color: #5B0429 !important;
+  background-color: #5b0429 !important;
 }
 
+.nav-icon {
+  filter: brightness(0) saturate(100%) invert(35%) sepia(11%) saturate(520%)
+    hue-rotate(197deg) brightness(111%) contrast(93%);
+  transition: filter 0.2s ease;
+}
+
+.nav-icon--selected,
+.MuiListItemButton-root:hover .nav-icon:not(.nav-icon--selected) {
+  filter: brightness(0) saturate(100%) invert(10%) sepia(35%) saturate(5643%)
+    hue-rotate(316deg) brightness(92%) contrast(107%);
+}
