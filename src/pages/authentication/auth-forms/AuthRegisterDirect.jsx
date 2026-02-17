@@ -40,7 +40,7 @@ export default function AuthRegisterDirect() {
                 user_phone_no: "",             // not collected here
 
                 user_address: {
-                    street: values.address || "",
+                    street: "",
                     city: "",
                     state: "",
                     zip: ""
@@ -64,12 +64,11 @@ export default function AuthRegisterDirect() {
 
             const response = await UserApiService.userSelfRegister(payload);
 
-            if (response?.statusCode === 200) {
+            // Check backend "success" flag
+            if (response?.success) {
                 setSnackData({
                     show: true,
-                    message:
-                        response?.message ||
-                        "Account created successfully! Check your email.",
+                    message:  "Account created successfully! Check your email.",
                     type: "success",
                 });
 
@@ -117,6 +116,9 @@ export default function AuthRegisterDirect() {
                         .email("Must be a valid email")
                         .max(255)
                         .required("Email is required"),
+                    company: Yup.string()
+                        .max(255)
+                        .required("Organization Name is required"),
                 })}
                 onSubmit={handleSubmitForm}
             >
@@ -194,6 +196,7 @@ export default function AuthRegisterDirect() {
                                         onChange={handleChange}
                                         placeholder="Demo Inc."
                                         fullWidth
+                                        error={Boolean(touched.company && errors.company)}
                                     />
                                 </Stack>
                             </Grid>
@@ -222,7 +225,7 @@ export default function AuthRegisterDirect() {
                                 )}
                             </Grid>
 
-                            <Grid item xs={12}>
+                            {/* <Grid item xs={12}>
                                 <Stack spacing={1}>
                                     <InputLabel htmlFor="address-signup">
                                         Organization Address
@@ -237,7 +240,7 @@ export default function AuthRegisterDirect() {
                                         fullWidth
                                     />
                                 </Stack>
-                            </Grid>
+                            </Grid> */}
 
                             {errors.submit && (
                                 <Grid item xs={12}>
