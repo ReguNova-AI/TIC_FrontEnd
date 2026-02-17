@@ -556,10 +556,10 @@ const Listing = () => {
                 type="primary"
                 onClick={() => navigate("/createProject")}
                 style={{
-                  background: "#2ba9bc",
                   display: "flex",
                   alignItems: "center",
                   borderRadius: "20px",
+                  boxShadow:"none"
                 }}
               >
                 {/* <FileFilled style={{ marginRight: 4 }} /> */}

@@ -15,6 +15,7 @@ import {SearchOutlined} from "@ant-design/icons";
 import projectIcon from "../../assets/images/icons/projectIcon3.svg"
 import userListingIcon from "../../assets/images/icons/userListingicon2.svg";
 import MultiSelectWithChip from 'components/form/MultiSelectWithChip';
+import SearchInput from 'components/form/SearchInput';
 
 const NestedListing = ({ data,filterStatusValue }) => {
   const navigate = useNavigate();
@@ -247,23 +248,12 @@ const NestedListing = ({ data,filterStatusValue }) => {
     <>
       {/* Search input */}
       <Space style={{float:"right", marginTop:"-20px", marginBottom:"20px"}}>
-        <FormControl >
-          <InputLabel htmlFor="outlined-adornment-search">
-            Search by project name or user name
-          </InputLabel>
-          <OutlinedInput
-            id="outlined-adornment-search"
-            startAdornment={
-              <InputAdornment position="start">
-                <SearchOutlined />
-              </InputAdornment>
-            }
-            label={FORM_LABEL.SEARCH}
-            onChange={handleSearchChange}
-            style={{width:"300px"}}
-          />
-        </FormControl>
-       
+        <SearchInput
+          value={searchText}
+          onChange={handleSearchChange}
+          placeholder="Search by project name or user name"
+          width={300}
+        />
               <Popover
                 content={filterPopoverContent}
                 title={BUTTON_LABEL.FILTER}
@@ -273,7 +263,9 @@ const NestedListing = ({ data,filterStatusValue }) => {
               >
                 <Button
                   type="primary"
-                  style={{ background: "#003a8c", color: "#ffffff" }}
+                  style={{
+                    boxShadow:"none"
+                  }}
                 >
                   {BUTTON_LABEL.FILTER}
                 </Button>

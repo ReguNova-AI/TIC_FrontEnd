@@ -237,7 +237,6 @@ const CreateCertificate = ({onHandleClose}) => {
                 type="submit"
                 variant="contained"
                 style={{
-                  background: "#003a8c",
                   float: "right",
                   textTransform: "none",
                 }}

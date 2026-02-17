@@ -2,6 +2,7 @@ import * as React from 'react';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
 import { Link as RouterLink, redirect,useNavigate } from 'react-router-dom';
+import { brand } from 'themes/theme/brand';
 
 
 export default function BreadcrumbsView(props) {
@@ -36,7 +37,7 @@ export default function BreadcrumbsView(props) {
           color="inherit"
           aria-current="page"
         >
-         <span style={{color:"black",fontWeight:600}}>{props.currentPage}</span>
+         <span style={{color:brand.primary,fontWeight:600}}>{props.currentPage}</span>
         </Link>
       
       </Breadcrumbs>

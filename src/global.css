@@ -1,0 +1,17 @@
+/* Default state (optional) */
+.ant-table-row-expand-icon {
+  border-color: #d9d9d9;
+}
+
+/* Hover state */
+.ant-table-row-expand-icon:hover {
+  /* border-color: #370e27 !important; */
+  border-color: #5B0429 !important;
+}
+
+.ant-table-row-expand-icon:hover::before,
+.ant-table-row-expand-icon:hover::after {
+  /* background-color: #370e27 !important; */
+  background-color: #5B0429 !important;
+}
+

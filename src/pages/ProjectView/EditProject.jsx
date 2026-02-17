@@ -255,7 +255,6 @@ const EditProject = ({ data, onHandleClose, editDetails, type }) => {
               variant="contained"
               onClick={handleSubmit}
               style={{
-                background: "#003a8c",
                 float: "right",
                 textTransform: "none",
               }}

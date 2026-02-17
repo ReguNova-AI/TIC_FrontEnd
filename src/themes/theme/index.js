@@ -1,5 +1,8 @@
 // ==============================|| PRESET THEME - THEME SELECTOR ||============================== //
 
+import { darken, lighten } from "@mui/system";
+import { brand } from "./brand";
+
 export default function Theme(colors) {
   const { blue, red, gold, cyan, green, grey } = colors;
   const greyColors = {
@@ -22,19 +25,19 @@ export default function Theme(colors) {
     A800: grey[16]
   };
   const contrastText = '#fff';
-
+  const primaryColor = brand.primary;
   return {
-    primary: {
-      lighter: blue[0],
-      100: blue[1],
-      200: blue[2],
-      light: blue[3],
-      400: blue[4],
-      main: blue[5],
-      dark: blue[6],
-      700: blue[7],
-      darker: blue[8],
-      900: blue[9],
+   primary: {
+      lighter: lighten(primaryColor,0.9),
+      100: lighten(primaryColor,0.8),
+      200: lighten(primaryColor,0.7),
+      light: lighten(primaryColor,0.6),
+      400: lighten(primaryColor,0.5),
+      main: primaryColor, // YOUR BRAND COLOR
+      dark: darken(primaryColor,0.4),
+      700: darken(primaryColor,0.5),
+      darker: darken(primaryColor,0.6),
+      900: darken(primaryColor,0.7),
       contrastText
     },
     secondary: {

@@ -29,6 +29,7 @@ import CreateCertificate from "./CreateCertificate";
 import { FileUploadApiService } from "services/api/FileUploadAPIService";
 import certificateIcon from "../../assets/images/icons/certificateIcon.svg";
 import addCertificateIcon from "../../assets/images/icons/addCertificate.svg";
+import SearchInput from "components/form/SearchInput";
 
 
 const Listing = () => {
@@ -462,10 +463,10 @@ FileUploadApiService.fileget(filepayload).then((response) => {
               type="primary"
               onClick={() => handleModalOpen()}
               style={{
-                background: "#2ba9bc",
                 display: "flex",
                 alignItems: "center",
                 borderRadius: "20px",
+                boxShadow:"none"
               }}
             >
               {/* <FileFilled style={{ marginRight: 4 }} /> */}
@@ -475,21 +476,12 @@ FileUploadApiService.fileget(filepayload).then((response) => {
 
             {/* Search Input and Popover Filter */}
             <Space>
-              <FormControl fullWidth>
-                <InputLabel htmlFor="outlined-adornment-search">
-                  {FORM_LABEL.SEARCH}
-                </InputLabel>
-                <OutlinedInput
-                  id="outlined-adornment-search"
-                  startAdornment={
-                    <InputAdornment position="start">
-                      <SearchOutlined />
-                    </InputAdornment>
-                  }
-                  label={FORM_LABEL.SEARCH}
-                  onChange={(e) => handleSearch(e.target.value)}
-                />
-              </FormControl>
+              <SearchInput
+                value={searchText}
+                onChange={(e) => handleSearch(e.target.value)}
+                placeholder="Search"
+                width={300}
+              />
               {/* <Button>
                 <DownloadOutlined />
               </Button> */}

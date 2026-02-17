@@ -91,42 +91,17 @@ export default function NavItem({ item, level }) {
       sx={{
         zIndex: 1201,
         pl: drawerOpen ? `${level * 28}px` : 1.5,
-        py: !drawerOpen && level === 1 ? 1.25 : 1,
+        py: !drawerOpen && level === 1 ? 1.25 : 0.5,
         mb:drawerOpen ? 1 : 0,
         justifyContent : drawerOpen ? "left" : "center",
-        ...(drawerOpen && {
-          "&:hover": {
-            bgcolor: "primary.lighter",
-          },
-          "&.Mui-selected": {
-            bgcolor: "primary.lighter",
-            borderRight: `2px solid ${iconSelectedColor}`,
-            
-            color: iconSelectedColor,
-            "&:hover": {
-              color: iconSelectedColor,
-              bgcolor: "primary.lighter",
-            },
-          },
-        }),
-        ...(!drawerOpen && {
-          "&:hover": {
-            bgcolor: "transparent",
-          },
-          "&.Mui-selected": {
-            "&:hover": {
-              bgcolor: "transparent",
-            },
-            bgcolor: "transparent",
-          },
-        }),
+        borderBottom: `1px solid ${theme.palette.secondary.light}`,
+        textTransform: "uppercase",
       }}
     >
       {itemIcon && (
         <ListItemIcon
           sx={{
             minWidth: 28,
-            color: isSelected ? iconSelectedColor : textColor,
             justifyContent : drawerOpen ? "left" : "center",
             ...(!drawerOpen && {
               borderRadius: 1.5,
@@ -134,17 +109,7 @@ export default function NavItem({ item, level }) {
               height: 36,
               alignItems: "center",
               justifyContent: "center",
-              "&:hover": {
-                bgcolor: "secondary.lighter",
-              },
             }),
-            ...(!drawerOpen &&
-              isSelected && {
-                bgcolor: "primary.lighter",
-                "&:hover": {
-                  bgcolor: "primary.lighter",
-                },
-              }),
           }}
         >
           {!drawerOpen ? <Tooltip title={item.title}> {itemIcon}</Tooltip> :itemIcon}
@@ -156,7 +121,7 @@ export default function NavItem({ item, level }) {
           primary={
             <Typography
               variant="h6"
-              sx={{ ml:1, color: isSelected ? iconSelectedColor : textColor , fontSize:"0.875rem",fontWeight:isSelected ?500 : 400}}
+              sx={{ ml:1, fontSize:"0.775rem",fontWeight:isSelected ?700 : 400}}
               
             >
               {item.title} 

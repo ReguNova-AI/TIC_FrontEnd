@@ -58,6 +58,7 @@ import {
 } from "shared/constants";
 import { formatDate, getStatusChipProps } from "shared/utility";
 import UserCreation from "./UserCreation";
+import SearchInput from "components/form/SearchInput";
 
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -594,10 +595,10 @@ const UserListing = () => {
               type="primary"
               onClick={()=>handleModalOpen('new',null)}
               style={{
-                background: "#2ba9bc",
                 display: "flex",
                 alignItems: "center",
                 borderRadius: "20px",
+                boxShadow:"none"
               }}
             >
               {/* <FileFilled style={{ marginRight: 4 }} /> */}
@@ -608,21 +609,12 @@ const UserListing = () => {
             {/* Search Input and Popover Filter */}
             <Space>
               {/* <ToggleButtons onViewModeChange={handleViewModeChange} /> */}
-              <FormControl fullWidth>
-                <InputLabel htmlFor="outlined-adornment-search">
-                  {FORM_LABEL.SEARCH}
-                </InputLabel>
-                <OutlinedInput
-                  id="outlined-adornment-search"
-                  startAdornment={
-                    <InputAdornment position="start">
-                      <SearchOutlined />
-                    </InputAdornment>
-                  }
-                  label={FORM_LABEL.SEARCH}
-                  onChange={(e) => handleSearch(e.target.value)}
-                />
-              </FormControl>
+              <SearchInput
+                value={searchText}
+                onChange={(e) => handleSearch(e.target.value)}
+                placeholder="Search"
+                width={300}
+              />
 
               {/* <Popover
                 content={filterPopoverContent}

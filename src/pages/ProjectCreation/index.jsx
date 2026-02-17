@@ -541,7 +541,6 @@ const MyForm = () => {
                   setSubmissionStatus("Draft");
                 }}
                 style={{
-                  background: "#003a8c",
                   float: "right",
                   textTransform: "none",
                 }}
