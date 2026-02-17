@@ -1,6 +1,4 @@
 import React from "react";
-
-// material-ui
 import { useTheme } from "@mui/material/styles";
 import {
   Box,
@@ -16,12 +14,10 @@ import {
   Container,
   Divider,
 } from "@mui/material";
+import { CheckOutlined } from "@ant-design/icons";
 
 // project import
 import MainCard from "components/MainCard";
-
-// assets
-import { CheckOutlined } from "@ant-design/icons";
 
 // pricing data
 const pricingData = [
@@ -35,7 +31,7 @@ const pricingData = [
     isPopular: false,
     buttonText: "Get Started",
     buttonVariant: "outlined",
-    buttonLink: "/",
+    buttonLink: "https://buy.stripe.com/bJe4gydEJg1c63v5Nqc7u08",
   },
   {
     id: "standard",
@@ -44,10 +40,22 @@ const pricingData = [
     period: "",
     description: "Perfect for growing teams needing more flexibility.",
     features: ["Up to 15 Contracts/Documents"],
-    isPopular: true,
+    isPopular: false,
     buttonText: "Choose Standard",
+    buttonVariant: "outlined",
+    buttonLink: "https://buy.stripe.com/5kQ28qgQVbKWeA15Nqc7u09",
+  },
+  {
+    id: "additionalcontract",
+    title: "Additional Contract",
+    price: "99",
+    period: "",
+    description: "Ideal for exploring additional contract conformity.",
+    features: ["1 Contract/Documents"],
+    isPopular: true,
+    buttonText: "Get Started",
     buttonVariant: "contained",
-    buttonLink: "/",
+    buttonLink: "https://buy.stripe.com/14A3cufMRaGSbnPa3Gc7u04",
   },
   {
     id: "advanced",
@@ -59,7 +67,7 @@ const pricingData = [
     isPopular: false,
     buttonText: "Choose Advanced",
     buttonVariant: "outlined",
-    buttonLink: "/",
+    buttonLink: "https://buy.stripe.com/aFadR81W1cP0fE52Bec7u07",
   },
   {
     id: "complex",
@@ -71,7 +79,7 @@ const pricingData = [
     isPopular: false,
     buttonText: "Choose Complex",
     buttonVariant: "outlined",
-    buttonLink: "/",
+    buttonLink: "https://buy.stripe.com/aFaaEW6ch7uGgI94Jmc7u06",
   },
   {
     id: "enterprise",
@@ -83,7 +91,7 @@ const pricingData = [
     isPopular: false,
     buttonText: "Choose Enterprise",
     buttonVariant: "outlined",
-    buttonLink: "/",
+    buttonLink: "https://buy.stripe.com/8x25kC7gl8yK77zejWc7u05",
   },
 ];
 
@@ -137,8 +145,8 @@ function Payment() {
                     size="small"
                     sx={{
                       position: "absolute",
-                      top: 16,
-                      right: 16,
+                      top: 6,
+                      right: 6,
                       fontWeight: 600,
                       borderRadius: "4px",
                     }}
