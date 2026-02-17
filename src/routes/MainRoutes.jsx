@@ -15,18 +15,19 @@ import CreateProjectForm from "pages/ProjectCreation/ProjectCreateForm";
 
 const Color = Loadable(lazy(() => import("pages/component-overview/color")));
 const Typography = Loadable(
-  lazy(() => import("pages/component-overview/typography"))
+  lazy(() => import("pages/component-overview/typography")),
 );
 const Shadow = Loadable(lazy(() => import("pages/component-overview/shadows")));
 const DashboardDefault = Loadable(lazy(() => import("pages/dashboard/index")));
 const ProjectListing = Loadable(
-  lazy(() => import("pages/ProjectListing/Listing"))
+  lazy(() => import("pages/ProjectListing/Listing")),
 );
+const Payment = Loadable(lazy(() => import("pages/Payment")));
 const CertificateListing = Loadable(
-  lazy(() => import("pages/CertificateManager/Listing"))
+  lazy(() => import("pages/CertificateManager/Listing")),
 );
 const OrganizationListing = Loadable(
-  lazy(() => import("pages/Organization/Listing"))
+  lazy(() => import("pages/Organization/Listing")),
 );
 
 const AdminConfig = Loadable(lazy(() => import("pages/AdminConfig/index")));
@@ -35,7 +36,7 @@ const ErrorPage = Loadable(lazy(() => import("pages/extra-pages/404")));
 
 // render - sample page
 const SamplePage = Loadable(
-  lazy(() => import("pages/extra-pages/sample-page"))
+  lazy(() => import("pages/extra-pages/sample-page")),
 );
 
 // ==============================|| MAIN ROUTING ||============================== //
@@ -187,6 +188,14 @@ const MainRoutes = {
       element: (
         <ProtectedRoute>
           <ErrorPage />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "payment",
+      element: (
+        <ProtectedRoute>
+          <Payment />
         </ProtectedRoute>
       ),
     },

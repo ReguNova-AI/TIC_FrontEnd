@@ -14,6 +14,7 @@ export const LOGIN_PAGE = {
     "Please enter the OTP (One Time Password) sent to your register email id to complete your verification",
   NEW_PASSWORD: "New Password",
   CONFIRM_PASSWORD: "Confirm Password",
+  SIGNUP_BUTTON: "Create an Account"
 };
 
 export const API_SUCCESS_MESSAGE = {

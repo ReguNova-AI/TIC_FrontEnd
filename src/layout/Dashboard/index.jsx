@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 
 // material-ui
 import useMediaQuery from "@mui/material/useMediaQuery";
@@ -24,10 +24,34 @@ export default function DashboardLayout() {
   const { menuMaster } = useGetMenuMaster();
   const downXL = useMediaQuery((theme) => theme.breakpoints.down("lg"));
   const drawerOpen = menuMaster?.isDashboardDrawerOpened;
+  const navigate = useNavigate();
+  const location = useLocation();
+
   useEffect(() => {
     handlerDrawerOpen(!downXL);
+
+    // Payment redirection logic
+    const userDetailsRaw = sessionStorage.getItem("userDetails");
+    if (userDetailsRaw) {
+      try {
+        const userDetails = JSON.parse(userDetailsRaw);
+        // Assuming userDetails is an array based on AuthLogin.jsx usage
+        const user = Array.isArray(userDetails) ? userDetails[0] : userDetails;
+
+        if (
+          user &&
+          (user.is_allowed === false || !user.is_allowed) &&
+          user.role_name?.toLowerCase() === "editor" &&
+          location.pathname !== "/payment"
+        ) {
+          navigate("/payment");
+        }
+      } catch (e) {
+        console.error("Error parsing userDetails from sessionStorage", e);
+      }
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [downXL]);
+  }, [downXL, location.pathname, navigate]);
 
   if (menuMasterLoading) return <Loader />;
   return (
@@ -47,6 +71,7 @@ export default function DashboardLayout() {
       >
         <img
           src={menuIcon}
+          alt="menu"
           width="20px"
           style={{ transform: !drawerOpen ? "none" : "scaleX(-1)" }}
         />
