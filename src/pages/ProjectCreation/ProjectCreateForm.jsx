@@ -176,7 +176,6 @@ const CreateProjectForm = () => {
       filesArray &&
         filesArray?.map(async (file) => {
           let uploadedLink = null;
-
           // Create a new FileReader to read the file as Base64
           const reader = new FileReader();
 

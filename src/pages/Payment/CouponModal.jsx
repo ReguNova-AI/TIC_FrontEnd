@@ -14,7 +14,6 @@ import { CloseOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
 import { PaymentApiService } from "services/api/Payment";
-import { UserApiService } from "services/api/UserAPIService";
 
 const style = {
   position: "absolute",
@@ -28,7 +27,13 @@ const style = {
   borderRadius: 2,
 };
 
-const CouponModal = ({ open, handleClose, plan, setSnackData }) => {
+const CouponModal = ({
+  open,
+  handleClose,
+  plan,
+  setSnackData,
+  disableClose = false,
+}) => {
   const navigate = useNavigate();
 
   const [coupon, setCoupon] = useState("");
@@ -38,6 +43,11 @@ const CouponModal = ({ open, handleClose, plan, setSnackData }) => {
   const handleSubmit = async () => {
     if (!coupon.trim()) {
       setError("Please enter a valid coupon code.");
+      return;
+    }
+
+    if (coupon.trim()?.toLowerCase() !== "intersolar2026") {
+      setError("Invalid coupon code.");
       return;
     }
 
@@ -55,21 +65,23 @@ const CouponModal = ({ open, handleClose, plan, setSnackData }) => {
 
         PaymentApiService.markPaymentDone(payload)
           .then(() => {
-            UserApiService.userDetails(userDetails[0].user_id).then((res) => {
-              const newUserDetails = res.data.details[0];
+            const existingUserDetailsData = JSON.parse(
+              sessionStorage.getItem("userDetails"),
+            );
 
-              const existingUserDetails = JSON.parse(
-                sessionStorage.getItem("userDetails"),
-              );
-              existingUserDetails.find(
-                (user) => user.user_id === payload.user_id,
-              ).is_allowed = newUserDetails?.is_allowed;
+            const currentUser = existingUserDetailsData.find(
+              (user) => user.user_id === payload.user_id,
+            );
 
-              sessionStorage.setItem(
-                "userDetails",
-                JSON.stringify(existingUserDetails),
-              );
-            });
+            if (currentUser) {
+              currentUser.is_allowed = true;
+            }
+
+            sessionStorage.setItem(
+              "userDetails",
+              JSON.stringify(existingUserDetailsData),
+            );
+
             // Set snackbar data
             setSnackData({
               show: true,
@@ -77,9 +89,6 @@ const CouponModal = ({ open, handleClose, plan, setSnackData }) => {
               type: "success",
             });
 
-            // Give a very small delay for state to propagate if needed, then navigate
-            // Note: If you want the snackbar to persist on the dashboard,
-            // a global notification system would be better.
             setTimeout(() => {
               handleClose();
               navigate("/dashboard/default");
@@ -106,9 +115,10 @@ const CouponModal = ({ open, handleClose, plan, setSnackData }) => {
   return (
     <Modal
       open={open}
-      onClose={handleClose}
+      onClose={disableClose ? null : handleClose}
       aria-labelledby="coupon-modal-title"
       aria-describedby="coupon-modal-description"
+      disableEscapeKeyDown={disableClose}
     >
       <Box sx={style}>
         <Stack
@@ -120,9 +130,11 @@ const CouponModal = ({ open, handleClose, plan, setSnackData }) => {
           <Typography id="coupon-modal-title" variant="h4" component="h2">
             Complete Payment
           </Typography>
-          <IconButton onClick={handleClose} size="small">
-            <CloseOutlined />
-          </IconButton>
+          {!disableClose && (
+            <IconButton onClick={handleClose} size="small">
+              <CloseOutlined />
+            </IconButton>
+          )}
         </Stack>
 
         <Divider sx={{ mb: 2 }} />
@@ -162,18 +174,21 @@ const CouponModal = ({ open, handleClose, plan, setSnackData }) => {
             size="large"
             onClick={handleSubmit}
             disabled={loading}
+            loading={loading}
           >
             {loading ? "Processing..." : "Submit & Get Started"}
           </Button>
-          <Button
-            fullWidth
-            variant="text"
-            color="secondary"
-            onClick={handleClose}
-            disabled={loading}
-          >
-            Cancel
-          </Button>
+          {!disableClose && (
+            <Button
+              fullWidth
+              variant="text"
+              color="secondary"
+              onClick={handleClose}
+              disabled={loading}
+            >
+              Cancel
+            </Button>
+          )}
         </Stack>
       </Box>
     </Modal>

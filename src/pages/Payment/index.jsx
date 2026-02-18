@@ -28,7 +28,7 @@ import CouponModal from "./CouponModal";
 const pricingData = [
   {
     id: "starter",
-    title: "Starter Project",
+    title: "Extra Small Project Pack",
     price: "499",
     period: "",
     description: "Ideal for small teams starting with contract conformity.",
@@ -52,7 +52,7 @@ const pricingData = [
   },
   {
     id: "standard",
-    title: "Standard Project",
+    title: "Small Project Pack",
     price: "1,299",
     period: "",
     description: "Perfect for growing teams needing more flexibility.",
@@ -64,7 +64,7 @@ const pricingData = [
   },
   {
     id: "advanced",
-    title: "Advanced Project",
+    title: "Medium Project Pack",
     price: "1,999",
     period: "",
     description: "Comprehensive solution for large-scale operations.",
@@ -76,7 +76,7 @@ const pricingData = [
   },
   {
     id: "complex",
-    title: "Complex Project",
+    title: "Large Project Pack",
     price: "3,499",
     period: "",
     description: "Enterprise-grade features for high-volume needs.",
@@ -88,7 +88,7 @@ const pricingData = [
   },
   {
     id: "enterprise",
-    title: "Enterprise Project",
+    title: "Extra Large Project Pack",
     price: "4,999",
     period: "",
     description: "Maximum scale for enterprise grid operations.",
