@@ -135,7 +135,7 @@ export default function AuthLogin() {
           values,
         }) => (
           <form noValidate onSubmit={handleSubmit}>
-            <Grid container spacing={3}>
+            <Grid container spacing={2}>
               <Grid item xs={12}>
                 <Stack spacing={1}>
                   <InputLabel htmlFor="email-login">
@@ -232,12 +232,13 @@ export default function AuthLogin() {
                 </Grid>
               )}
 
-              <Grid item xs={12}>
+              <Grid item xs={12} sx={{ display: "flex", justifyContent: "center"}}>
                 <AnimateButton>
                   <Button
                     disableElevation
                     disabled={isSubmitting} // Button is disabled if form is submitting
-                    fullWidth
+                    // fullWidth
+                    sx={{width:"250px"}}
                     size="large"
                     type="submit"
                     variant="contained"
@@ -248,17 +249,18 @@ export default function AuthLogin() {
                 </AnimateButton>
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid item xs={12} >
                 <Divider>
                   <Typography variant="caption">OR</Typography>
                 </Divider>
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid item xs={12} sx={{ display: "flex", justifyContent: "center"}}>
                 <Button
                   disableElevation
                   onClick={(e) => handleRedirection("/register")}
-                  fullWidth
+                  // fullWidth
+                  sx={{width:"250px"}}
                   size="large"
                   type="button" // Change to "button" to avoid form submission
                   variant="outlined"

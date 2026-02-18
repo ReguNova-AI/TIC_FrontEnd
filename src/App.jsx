@@ -18,7 +18,8 @@ export default function App(initialState = {}) {
       <ConfigProvider
         theme={{
           token: {
-            colorPrimary: brand.primary
+            colorPrimary: brand.primary,
+            fontFamily: `'Open Sans', sans-serif`,
           }
         }}
       >

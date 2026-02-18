@@ -9,7 +9,8 @@ import Chip from '@mui/material/Chip';
 // project import
 import Logo from './LogoMain';
 import config from 'config';
-import logo from '../../assets/images/logo1.jpeg';
+// import logo from '../../assets/images/logo1.png';
+import logo from '../../assets/images/DDLogo.png';
 
 // ==============================|| MAIN LOGO ||============================== //
 
@@ -18,7 +19,7 @@ const LogoSection = ({ sx, to }) => {
     <ButtonBase disableRipple component={Link} to={!to ? config.defaultPath : to} sx={sx}>
       <Stack direction="row" spacing={1} alignItems="center">
         {/* <Logo /> */}
-        <img src={logo } width='60px'/>
+        <img src={logo } width='125px'/>
       </Stack>
     </ButtonBase>
   );

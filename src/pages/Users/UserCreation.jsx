@@ -154,7 +154,10 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
   }
 
   const handleSubmit = () => {
+    console.log("OK");
     if (!validateStep("final")) {
+      console.log("Error");
+      
       return; // Stop if validation fails
     }
 

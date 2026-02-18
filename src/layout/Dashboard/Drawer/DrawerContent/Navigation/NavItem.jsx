@@ -118,7 +118,7 @@ export default function NavItem({ item, level }) {
           primary={
             <Typography
               variant="h6"
-              sx={{ ml:1, fontSize:"0.775rem",fontWeight:isSelected ?700 : 400}}
+              sx={{ ml:1, fontSize:"0.775rem",fontWeight:isSelected ?700 : 500}}
               
             >
               {item.title} 

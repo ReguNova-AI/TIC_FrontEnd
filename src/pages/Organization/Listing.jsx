@@ -51,6 +51,7 @@ import PropTypes from "prop-types";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
+import SearchInput from "components/form/SearchInput";
 
 
 function CustomTabPanel(props) {
@@ -306,7 +307,7 @@ const OrganizationListing = () => {
           sectorFilter.length === 0 || sectorFilter.includes(item.sector);
         const matchesSearchText =
           item.org_name.toLowerCase().includes(debouncedSearchText) ||
-          item.org_email.toString().includes(debouncedSearchText);
+          item.org_email?.toString().includes(debouncedSearchText);
 
         return (
           matchesStatus && matchesSector && matchesIndustry && matchesSearchText
@@ -433,6 +434,7 @@ const OrganizationListing = () => {
           <Button
             onClick={() => setSortOrder("ascend")}
             type={sortOrder === "ascend" ? "primary" : "default"}
+            style={{ boxShadow:"none"}}
           >
             Ascending
           </Button>
@@ -508,7 +510,7 @@ const OrganizationListing = () => {
           <span style={{ marginLeft: 10 }}>
             <a
               onClick={() => handleNavigateToOrganization(record.index)}
-              style={{ color: "#2ba9bc", cursor: "pointer" }}
+              style={{ color: "#5B0429", cursor: "pointer" }}
             >
               {text}
             </a>
@@ -643,10 +645,10 @@ const OrganizationListing = () => {
               type="primary"
               onClick={()=>handleModalOpen("new",null)}
               style={{
-                background: "#2ba9bc",
                 display: "flex",
                 alignItems: "center",
                 borderRadius: "20px",
+                boxShadow:"none"
               }}
             >
               {/* <FileFilled style={{ marginRight: 4 }} /> */}
@@ -655,21 +657,12 @@ const OrganizationListing = () => {
             </Button>
 
             <Space>
-              <FormControl fullWidth>
-                <InputLabel htmlFor="outlined-adornment-search">
-                  {FORM_LABEL.SEARCH}
-                </InputLabel>
-                <OutlinedInput
-                  id="outlined-adornment-search"
-                  startAdornment={
-                    <InputAdornment position="start">
-                      <SearchOutlined />
-                    </InputAdornment>
-                  }
-                  label={FORM_LABEL.SEARCH}
-                  onChange={(e) => handleSearch(e.target.value)}
-                />
-              </FormControl>
+              <SearchInput
+                value={searchText}
+                onChange={(e) => handleSearch(e.target.value)}
+                placeholder="Search"
+                width={300}
+              />
 
               <Popover
                 content={filterPopoverContent}
@@ -680,7 +673,7 @@ const OrganizationListing = () => {
               >
                 <Button
                   type="primary"
-                  style={{ background: "#003a8c", color: "#ffffff" }}
+                  style={{ color: "#ffffff", boxShadow:"none" }}
                 >
                   {BUTTON_LABEL.FILTER}
                 </Button>

@@ -17,6 +17,7 @@ import {
 } from "shared/constants";
 import trashIcon from "../../assets/images/icons/trash4.svg";
 import RoleCreation from "./RoleCreation";
+import SearchInput from "components/form/SearchInput";
 
 
 const RoleListing = () => {
@@ -237,21 +238,12 @@ const RoleListing = () => {
           >
             {/* Search Input */}
             <Space>
-              <FormControl fullWidth>
-                <InputLabel htmlFor="outlined-adornment-search">
-                  {FORM_LABEL.SEARCH}
-                </InputLabel>
-                <OutlinedInput
-                  id="outlined-adornment-search"
-                  startAdornment={
-                    <InputAdornment position="start">
-                      <SearchOutlined />
-                    </InputAdornment>
-                  }
-                  label={FORM_LABEL.SEARCH}
-                  onChange={(e) => handleSearch(e.target.value)}
-                />
-              </FormControl>
+              <SearchInput
+                value={searchText}
+                onChange={(e) => handleSearch(e.target.value)}
+                placeholder="Search"
+                width={300}
+              />
             </Space>
           </Space>
 

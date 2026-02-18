@@ -464,7 +464,7 @@ const UserListing = () => {
             <a
               onClick={() => handleNavigateToUsers(record.index)}
               style={{
-                color: "#2ba9bc",
+                color: "#5B0429",
                 cursor: "pointer",
                 marginLeft: "10px",
               }}
