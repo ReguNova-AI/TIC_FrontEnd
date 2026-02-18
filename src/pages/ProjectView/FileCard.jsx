@@ -25,7 +25,7 @@ import { Document, Packer, Paragraph, TextRun, AlignmentType,Header,ImageRun } f
 import { Table as DocxTable, TableRow as DocxTableRow, TableCell as DocxTableCell } from "docx";
 import { OrganisationApiService } from 'services/api/OrganizationAPIService';
 // import logo from "../../assets/images/logo1.png";
-import logo from "../../assets/images/DDLogo.png";
+import logo from "../../assets/images/DDlogo.png";
 
 // Function to parse the API response into a structured format (skipping the title)
 const parseApiResponse = (response) => {

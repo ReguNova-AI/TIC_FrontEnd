@@ -10,7 +10,7 @@ import Chip from '@mui/material/Chip';
 import Logo from './LogoMain';
 import config from 'config';
 // import logo from '../../assets/images/logo1.png';
-import logo from '../../assets/images/DDLogo.png';
+import logo from '../../assets/images/DDlogo.png';
 
 // ==============================|| MAIN LOGO ||============================== //
 

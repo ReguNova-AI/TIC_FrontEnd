@@ -11,7 +11,7 @@ import IconButton from '@mui/material/IconButton';
 import AppBarStyled from './AppBarStyled';
 import HeaderContent from './HeaderContent';
 // import logo from "../../../assets/images/logo.png";
-import logo from "../../../assets/images/DDLogo.png";
+import logo from "../../../assets/images/DDlogo.png";
 
 
 import { handlerDrawerOpen, useGetMenuMaster } from 'api/menu';
