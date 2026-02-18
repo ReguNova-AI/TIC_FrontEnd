@@ -42,6 +42,7 @@ import PropTypes from "prop-types";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
+import SearchInput from "components/form/SearchInput";
 
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -577,18 +578,11 @@ const Listing = () => {
                     <ToggleButtons onViewModeChange={handleViewModeChange} />
 
                     <FormControl fullWidth>
-                      <InputLabel htmlFor="outlined-adornment-search">
-                        {FORM_LABEL.SEARCH}
-                      </InputLabel>
-                      <OutlinedInput
-                        id="outlined-adornment-search"
-                        startAdornment={
-                          <InputAdornment position="start">
-                            <SearchOutlined />
-                          </InputAdornment>
-                        }
-                        label={FORM_LABEL.SEARCH}
+                      <SearchInput
+                        value={searchText}
                         onChange={(e) => handleSearch(e.target.value)}
+                        placeholder="Search"
+                        width={300}
                       />
                     </FormControl>
 
@@ -601,7 +595,7 @@ const Listing = () => {
                     >
                       <Button
                         type="primary"
-                        style={{ background: "#003a8c", color: "#ffffff" }}
+                        style={{  color: "#ffffff", boxShadow:"none" }}
                       >
                         {BUTTON_LABEL.FILTER}
                       </Button>

@@ -268,22 +268,12 @@ const expandedRowRenderForOrg = (record) => {
     <>
       {/* Search input */}
       <Space style={{ float: "right", marginBottom: "20px" }}>
-        <FormControl>
-          <InputLabel htmlFor="outlined-adornment-search">
-            Search by organization, industry, or project name
-          </InputLabel>
-          <OutlinedInput
-            id="outlined-adornment-search"
-            startAdornment={
-              <InputAdornment position="start">
-                <SearchOutlined />
-              </InputAdornment>
-            }
-            label={FORM_LABEL.SEARCH}
-            onChange={handleSearchChange}
-            style={{ width: "400px" }}
-          />
-        </FormControl>
+        <SearchInput
+          value={searchText}
+          onChange={(e) => handleSearch(e.target.value)}
+          placeholder="Search by organization, industry, or project name"
+          width={400}
+        />
 
         <Popover
                 content={filterPopoverContent}
@@ -294,7 +284,7 @@ const expandedRowRenderForOrg = (record) => {
               >
                 <Button
                   type="primary"
-                  style={{ background: "#003a8c", color: "#ffffff" }}
+                  style={{ color: "#ffffff", boxShadow:"none" }}
                 >
                   {BUTTON_LABEL.FILTER}
                 </Button>

@@ -198,12 +198,13 @@ export default function AuthPasswordReset() {
                 </Grid>
               )}
 
-              <Grid item xs={12}>
+              <Grid item xs={12} sx={{display:"flex", justifyContent:"center"}}>
                 <AnimateButton>
                   <Button
                     disableElevation
                     disabled={isSubmitting}
-                    fullWidth
+                    // fullWidth
+                    sx={{width:"250px"}}
                     size="large"
                     type="submit"
                     variant="contained"
