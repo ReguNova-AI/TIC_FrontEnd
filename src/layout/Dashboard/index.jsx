@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 
 // material-ui
 import useMediaQuery from "@mui/material/useMediaQuery";
@@ -16,6 +16,23 @@ import Breadcrumbs from "components/@extended/Breadcrumbs";
 import { handlerDrawerOpen, useGetMenuMaster } from "api/menu";
 import { Button } from "antd";
 import menuIcon from "../../assets/images/icons/menuIcon.svg";
+import { useState } from "react";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
+import CouponModal from "pages/Payment/CouponModal";
+
+const DEFAULT_PLAN = {
+  id: "additionalcontract",
+  title: "Additional Contract",
+  price: "99",
+  period: "",
+  description: "Ideal for exploring additional contract conformity.",
+  features: ["1 Contract/Documents"],
+  isPopular: true,
+  buttonText: "Get Started",
+  buttonVariant: "contained",
+  buttonLink: "https://buy.stripe.com/14A3cufMRaGSbnPa3Gc7u04",
+};
 
 // ==============================|| MAIN LAYOUT ||============================== //
 
@@ -25,7 +42,13 @@ export default function DashboardLayout() {
   const downXL = useMediaQuery((theme) => theme.breakpoints.down("lg"));
   const drawerOpen = menuMaster?.isDashboardDrawerOpened;
   const navigate = useNavigate();
-  const location = useLocation();
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [snackData, setSnackData] = useState({
+    show: false,
+    message: "",
+    type: "success",
+  });
 
   useEffect(() => {
     handlerDrawerOpen(!downXL);
@@ -41,17 +64,16 @@ export default function DashboardLayout() {
         if (
           user &&
           (user.is_allowed === false || !user.is_allowed) &&
-          user.role_name?.toLowerCase() === "editor" &&
-          location.pathname !== "/payment"
+          user.role_name?.toLowerCase() === "editor"
         ) {
-          navigate("/payment");
+          setModalOpen(true);
         }
       } catch (e) {
         console.error("Error parsing userDetails from sessionStorage", e);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [downXL, location.pathname, navigate]);
+  }, [downXL, navigate]);
 
   if (menuMasterLoading) return <Loader />;
   return (
@@ -84,6 +106,30 @@ export default function DashboardLayout() {
         <Breadcrumbs navigation={navigation} title />
         <Outlet />
       </Box>
+
+      <CouponModal
+        open={modalOpen}
+        setSnackData={setSnackData}
+        handleClose={() => setModalOpen(false)}
+        plan={DEFAULT_PLAN}
+        disableClose={true}
+      />
+
+      <Snackbar
+        style={{ top: "80px" }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        open={snackData.show}
+        autoHideDuration={6000}
+        onClose={() => setSnackData({ ...snackData, show: false })}
+      >
+        <Alert
+          onClose={() => setSnackData({ ...snackData, show: false })}
+          severity={snackData.type}
+          sx={{ width: "100%" }}
+        >
+          {snackData.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
