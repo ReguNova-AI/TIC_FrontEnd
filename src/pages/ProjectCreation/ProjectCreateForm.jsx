@@ -174,47 +174,47 @@ const CreateProjectForm = () => {
     setLoading(true);
     const processedFiles = await Promise.all(
       filesArray &&
-        filesArray?.map(async (file) => {
-          let uploadedLink = null;
-          // Create a new FileReader to read the file as Base64
-          const reader = new FileReader();
+      filesArray?.map(async (file) => {
+        let uploadedLink = null;
+        // Create a new FileReader to read the file as Base64
+        const reader = new FileReader();
 
-          const fileDataUrl = await new Promise((resolve, reject) => {
-            reader.onloadend = () => resolve(reader.result);
-            reader.onerror = reject; // Handle any errors while reading the file
-            reader.readAsDataURL(file); // Start reading the file
-          });
+        const fileDataUrl = await new Promise((resolve, reject) => {
+          reader.onloadend = () => resolve(reader.result);
+          reader.onerror = reject; // Handle any errors while reading the file
+          reader.readAsDataURL(file); // Start reading the file
+        });
 
-          // Now that the file is read, upload the Base64 data to the API
-          try {
-            const fileType = file.name.split(".").pop();
-            const filepayload = {
-              documents: [fileDataUrl],
-              type: fileType,
-            };
+        // Now that the file is read, upload the Base64 data to the API
+        try {
+          const fileType = file.name.split(".").pop();
+          const filepayload = {
+            documents: [fileDataUrl],
+            type: fileType,
+          };
 
-            const response = await FileUploadApiService.fileUpload(filepayload);
+          const response = await FileUploadApiService.fileUpload(filepayload);
 
-            if (response) {
-              setSnackData({
-                show: true,
-                message:
-                  response?.message ||
-                  API_SUCCESS_MESSAGE.UPLOADED_SUCCESSFULLY,
-                type: "success",
-              });
-              setLoading(false);
-              setFormData({
-                ...formData,
-                mapping_standards: response.data.details[0], // Set file name in the select field
-                regulatory: files?.[0]?.name,
-              });
-            }
-          } catch (errResponse) {
-            console.log("errResponse", errResponse);
-            return null;
+          if (response) {
+            setSnackData({
+              show: true,
+              message:
+                response?.message ||
+                API_SUCCESS_MESSAGE.UPLOADED_SUCCESSFULLY,
+              type: "success",
+            });
+            setLoading(false);
+            setFormData({
+              ...formData,
+              mapping_standards: response.data.details[0], // Set file name in the select field
+              regulatory: files?.[0]?.name,
+            });
           }
-        }),
+        } catch (errResponse) {
+          console.log("errResponse", errResponse);
+          return null;
+        }
+      }),
     );
   };
 
@@ -263,11 +263,11 @@ const CreateProjectForm = () => {
         }
         return member
           ? {
-              user_id: member.user_id,
-              user_name: `${member.user_first_name} ${member.user_last_name}`,
-              user_email: member.user_email,
-              user_profile: member.user_profile,
-            }
+            user_id: member.user_id,
+            user_name: `${member.user_first_name} ${member.user_last_name}`,
+            user_email: member.user_email,
+            user_profile: member.user_profile,
+          }
           : null;
       })
       .filter(Boolean);
@@ -327,7 +327,7 @@ const CreateProjectForm = () => {
       return; // Stop execution if there are empty folders
     }
 
-    // setSubmitLoading(true);
+    setSubmitLoading(true);
     const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
     const updatedStatus =
       submissionStatus === "Draft" ? "Draft" : "In Progress";
