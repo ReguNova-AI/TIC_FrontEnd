@@ -148,7 +148,9 @@ const ProfileDetails = () => {
                       {profileData?.org_name}
                     </Descriptions.Item>
                     <Descriptions.Item label="Industry">
-                      {profileData?.industry_name}
+                      {profileData?.industry_names?.map((name,index)=>{
+                        return index === 0 ? name : ", "+name
+                      })}
                     </Descriptions.Item>
                     {/* <Descriptions.Item label="Sector">
                       {profileData?.sector_name}

@@ -1,41 +1,83 @@
 // https://github.com/vitejs/vite/discussions/3448
-import path from 'path';
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import jsconfigPaths from 'vite-jsconfig-paths';
+import path from "path";
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import jsconfigPaths from "vite-jsconfig-paths";
 
 // ----------------------------------------------------------------------
 
 export default defineConfig({
   plugins: [react(), jsconfigPaths()],
   // https://github.com/jpuri/react-draft-wysiwyg/issues/1317
-  base: '/', // accessing env variable is not possible here. So hard coding this.
+  base: "/", // accessing env variable is not possible here. So hard coding this.
   define: {
-    global: 'window'
+    global: "window",
   },
   resolve: {
     alias: [
       {
         find: /^~(.+)/,
-        replacement: path.join(process.cwd(), 'node_modules/$1')
+        replacement: path.join(process.cwd(), "node_modules/$1"),
       },
       {
         find: /^src(.+)/,
-        replacement: path.join(process.cwd(), 'src/$1')
-      }
-    ]
+        replacement: path.join(process.cwd(), "src/$1"),
+      },
+    ],
+  },
+  // Optimize for production and memory usage
+  esbuild: {
+    // Reduce memory usage
+    target: "es2015",
+    logLevel: "error",
+  },
+  optimizeDeps: {
+    // Reduce memory usage during dependency optimization
+    force: false,
+    include: ["react", "react-dom"],
   },
   server: {
     // this ensures that the browser opens upon server start
-    open: true,
-    host:'0.0.0.0',
+    open: false, // Don't auto-open browser on server
+    host: "0.0.0.0",
     // this sets a default port to 3000
-    port: 3000
+    port: 3000,
+    // Allow requests from your domain
+    allowedHosts: [
+      "diligence2ai.com",
+      "www.diligence2ai.com",
+      "localhost",
+      "127.0.0.1",
+      ".diligence2ai.com", // This allows all subdomains
+    ],
   },
   preview: {
     // this ensures that the browser opens upon preview start
-    open: true,
+    open: false, // Don't auto-open browser
     // this sets a default port to 3000
-    port: 3000
-  }
+    port: 3000,
+    host: "0.0.0.0",
+    // Allow requests from your domain in preview mode too
+    allowedHosts: [
+      "diligence2ai.com",
+      "www.diligence2ai.com",
+      "localhost",
+      "127.0.0.1",
+      ".diligence2ai.com", // This allows all subdomains
+    ],
+  },
+  build: {
+    // Optimize build for smaller memory usage
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Split large libraries into separate chunks
+          "react-vendor": ["react", "react-dom"],
+          "ui-vendor": ["@mui/material", "@emotion/react", "@emotion/styled"],
+          "antd-vendor": ["antd"],
+        },
+      },
+    },
+  },
 });

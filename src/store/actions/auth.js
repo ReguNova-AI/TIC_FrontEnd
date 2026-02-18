@@ -1,8 +1,8 @@
-import * as actionTypes from './actionTypes';
-import {AuthApiService} from '../../services/api/AuthApiService';
-import SessionService from '../../services/SessionService';
-import { STORAGE_KEYS } from '../../shared/constants';
-import { fetchUserInfo } from './userInfo';
+import * as actionTypes from "./actionTypes";
+import { AuthApiService } from "../../services/api/AuthApiService";
+import SessionService from "../../services/SessionService";
+import { STORAGE_KEYS } from "../../shared/constants";
+import { fetchUserInfo } from "./userInfo";
 
 export const authStart = () => {
   return {
@@ -10,14 +10,14 @@ export const authStart = () => {
   };
 };
 
-export const authSuccess = authInfo => {
+export const authSuccess = (authInfo) => {
   return {
     type: actionTypes.AUTH_SUCCESS,
     authInfo: authInfo,
   };
 };
 
-export const authFail = error => {
+export const authFail = (error) => {
   return {
     type: actionTypes.AUTH_FAIL,
     error: error,
@@ -31,7 +31,7 @@ const logoutSuccess = () => {
 };
 
 export const logout = () => {
-  return dispatch => {
+  return (dispatch) => {
     AuthApiService.logout().then(() => {
       dispatch(logoutSuccess());
     });
@@ -44,8 +44,8 @@ export const authRole = () => {
   };
 };
 
-export const checkAuthTimeout = expirationTime => {
-  return dispatch => {
+export const checkAuthTimeout = (expirationTime) => {
+  return (dispatch) => {
     setTimeout(() => {
       dispatch(logout());
     }, expirationTime * 1000);
@@ -57,20 +57,20 @@ export const auth = (
   password,
   tenantId,
   successCallback,
-  failureCallback
+  failureCallback,
 ) => {
-  return dispatch => {
+  return (dispatch) => {
     dispatch(authStart());
 
     AuthApiService.login({ username, password, tenantId })
-      .then(response => {
+      .then((response) => {
         dispatch(authSuccess(response.authInfo));
 
         if (successCallback) {
           successCallback(response.authInfo.reset_password);
         }
       })
-      .catch(err => {
+      .catch((err) => {
         if (failureCallback) {
           failureCallback(err);
         }
@@ -79,36 +79,39 @@ export const auth = (
   };
 };
 
-export const setAuthentication = authResponse => dispatch => {
-
+export const setAuthentication = (authResponse) => (dispatch) => {
   const { refreshToken, token } = authResponse.data;
- 
+
   SessionService.setItem(
     STORAGE_KEYS.AUTH_INFO,
-    JSON.stringify({ refreshToken, token })
+    JSON.stringify({ refreshToken, token }),
   );
   SessionService.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
   SessionService.setItem(STORAGE_KEYS.USER_INFO, authResponse.data.userDetails);
-  sessionStorage.setItem("token",token);
-  sessionStorage.setItem("userDetails",JSON.stringify(authResponse.data.userDetails));
+  sessionStorage.setItem("token", token);
+
+  sessionStorage.setItem(
+    "userDetails",
+    JSON.stringify(authResponse.data.userDetails),
+  );
 
   dispatch(authSuccess(authResponse.data));
 
   // dispatch(fetchUserInfo(authResponse.data));
 };
 
-export const updateAuthentication = (authResponse) => dispatch =>{
+export const updateAuthentication = (authResponse) => (dispatch) => {
   const { refreshToken, token } = authResponse;
   SessionService.setItem(
     STORAGE_KEYS.AUTH_INFO,
-    JSON.stringify({ refreshToken, token })
+    JSON.stringify({ refreshToken, token }),
   );
   SessionService.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
 
   dispatch(authSuccess(authResponse));
-}
+};
 
-export const setAuthRedirectPath = path => {
+export const setAuthRedirectPath = (path) => {
   return {
     type: actionTypes.SET_AUTH_REDIRECT_PATH,
     path: path,
@@ -122,7 +125,7 @@ const invalidateSessionSuccess = () => {
 };
 
 export const invalidateSession = () => {
-  return dispatch => {
+  return (dispatch) => {
     let authInfo = SessionService.getItem(STORAGE_KEYS.AUTH_INFO);
 
     if (authInfo !== null && authInfo !== undefined) {

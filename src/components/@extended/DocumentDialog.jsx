@@ -1,0 +1,373 @@
+import { CloseCircleTwoTone } from "@ant-design/icons";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Typography,
+  Tabs,
+  Tab,
+  TextField,
+  Box,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Switch,
+  FormControlLabel,
+  Pagination,
+  IconButton,
+  Checkbox,
+} from "@mui/material";
+import React from "react";
+import { PROJECT_DETAIL_PAGE } from "shared/constants";
+
+const DocumentDialog = ({
+  open,
+  onClose,
+  fileName,
+  editMode,
+  setEditMode,
+  complianceData,
+  sections,
+  setSections,
+  handleTabTitleChange,
+  handleAnswerChange,
+  handleExplanationChange,
+  renderAnswerIcon,
+  // handleAddTab,
+  handleAddPoint,
+  handlePointChange,
+  handleSaveAll,
+  isReadOnly = false,
+}) => {
+  const [localActiveTab, setLocalActiveTab] = React.useState(0);
+  const [localTabFlag, setLocalTabFlag] = React.useState(false);
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const [selectedPoints, setSelectedPoints] = React.useState({});
+  const rowsPerPage = 10;
+
+  const handleAddTab = () => {
+    const updated = [...sections, { title: "title", points: [""] }];
+    setSections(updated);
+    setLocalActiveTab(updated.length - 1);
+  };
+
+  const handleLocalTabChange = (event, newValue) => {
+    setLocalActiveTab(newValue);
+  };
+
+  const paginatedData = complianceData?.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
+  );
+
+  const handleDeleteTab = (indexToDelete) => {
+    const newSections = [...sections];
+    newSections.splice(indexToDelete, 1);
+    setSections(newSections);
+
+    // Adjust active tab if needed
+    if (localActiveTab === indexToDelete) {
+      setLocalActiveTab(Math.max(indexToDelete - 1, 0));
+    } else if (localActiveTab > indexToDelete) {
+      setLocalActiveTab(localActiveTab - 1);
+    }
+  };
+
+  const handleSelectPoint = (tabIndex, pointIndex) => {
+    setSelectedPoints((prev) => {
+      const current = prev[tabIndex] || [];
+      const updated = current.includes(pointIndex)
+        ? current.filter((i) => i !== pointIndex)
+        : [...current, pointIndex];
+
+      return {
+        ...prev,
+        [tabIndex]: updated,
+      };
+    });
+  };
+
+  const handleDeleteSelectedPoints = () => {
+    const updatedSections = [...sections];
+    const selectedIndexes = selectedPoints[localActiveTab] || [];
+
+    // Filter out selected points
+    updatedSections[localActiveTab].points = updatedSections[
+      localActiveTab
+    ].points.filter((_, index) => !selectedIndexes.includes(index));
+
+    // Update the state
+    setSections(updatedSections);
+
+    // Clear selected points for the current tab
+    setSelectedPoints((prev) => ({
+      ...prev,
+      [localActiveTab]: [],
+    }));
+  };
+
+  return (
+    <Dialog
+      open={open}
+      onClose={(event, reason) => {
+        if (reason !== "backdropClick") {
+          onClose();
+        }
+      }}
+      fullWidth
+      maxWidth="lg"
+      style={{ zIndex: "999999" }}
+    >
+      <DialogTitle>
+        File Details
+        {!isReadOnly && (
+          <FormControlLabel
+            style={{ float: "right" }}
+            control={
+              <Switch
+                checked={editMode}
+                onChange={() => setEditMode(!editMode)}
+              />
+            }
+            label="Edit mode"
+          />
+        )}
+      </DialogTitle>
+
+      <DialogContent>
+        {fileName === PROJECT_DETAIL_PAGE.ASSESSMENT_REPORT ? (
+          <Box sx={{ width: "100%", marginTop: 2 }}>
+            <Table sx={{ minWidth: 650 }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell>
+                    <strong>Requirements</strong>
+                  </TableCell>
+                  <TableCell align="center">
+                    <strong>Fulfilled or Not</strong>
+                  </TableCell>
+                  <TableCell>
+                    <strong>Explanation</strong>
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {paginatedData?.map((item, index) => (
+                  <TableRow key={index}>
+                    <TableCell sx={{ width: "45%" }}>
+                      <Typography>{item.question}</Typography>
+                    </TableCell>
+                    <TableCell align="center" sx={{ width: "10%" }}>
+                      {editMode ? (
+                        <Switch
+                          checked={item.answer === "YES"}
+                          onChange={(e) =>
+                            handleAnswerChange(
+                              (currentPage - 1) * rowsPerPage + index,
+                              e.target.checked
+                            )
+                          }
+                          color="success"
+                          size="small"
+                        />
+                      ) : (
+                        <Box fontSize="18px">
+                          {renderAnswerIcon(item.answer)}
+                        </Box>
+                      )}
+                    </TableCell>
+                    <TableCell sx={{ width: "45%" }}>
+                      {editMode ? (
+                        <TextField
+                          variant="standard"
+                          multiline
+                          fullWidth
+                          minRows={2}
+                          value={item.explanation}
+                          onChange={(e) =>
+                            handleExplanationChange(
+                              (currentPage - 1) * rowsPerPage + index,
+                              e.target.value
+                            )
+                          }
+                        />
+                      ) : (
+                        <Typography variant="body2">
+                          {item.explanation}
+                        </Typography>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+              <Box marginTop={3}>
+                <Pagination
+                  count={Math.ceil((complianceData?.length || 0) / rowsPerPage)}
+                  page={currentPage}
+                  onChange={(e, page) => setCurrentPage(page)}
+                  color="primary"
+                />
+              </Box>
+            </Table>
+          </Box>
+        ) : (
+          <>
+            <Tabs
+              value={localActiveTab}
+              onChange={handleLocalTabChange}
+              aria-label="file-tabs"
+              scrollButtons="auto"
+              variant="scrollable"
+            >
+              {sections.map((section, index) => {
+                if (section.title.includes("Title:") && !localTabFlag) {
+                  setLocalActiveTab(1);
+                  setLocalTabFlag(true);
+                }
+                return (
+                  section &&
+                  section.title && (
+                    <Tab
+                      key={index}
+                      style={{
+                        display: section.title.includes("Title:")
+                          ? "none"
+                          : "block",
+                      }}
+                      label={
+                        editMode ? (
+                          <Box display="flex" alignItems="center">
+                            <TextField
+                              value={section.title}
+                              placeholder="Enter item title"
+                              fullWidth
+                              onChange={(e) =>
+                                handleTabTitleChange(index, e.target.value)
+                              }
+                              variant="standard"
+                            />
+                            <IconButton
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation(); // Prevent switching tabs
+                                handleDeleteTab(index);
+                              }}
+                            >
+                              <CloseCircleTwoTone fontSize="small" />
+                            </IconButton>
+                          </Box>
+                        ) : (
+                          section.title
+                        )
+                      }
+                    />
+                  )
+                );
+              })}
+              {editMode && (
+                <Button
+                  onClick={handleAddTab}
+                  size="small"
+                  style={{ marginLeft: "10px" }}
+                >
+                  + Add Item
+                </Button>
+              )}
+            </Tabs>
+
+            <Box sx={{ padding: 2 }}>
+              {sections.length > 0 && (
+                <Box>
+                  <ul>
+                    {sections[localActiveTab]?.points.map((point, index) => (
+                      <li key={index}>
+                        {editMode ? (
+                          <Box display="flex" alignItems="center" gap={1}>
+                            <TextField
+                              value={point}
+                              placeholder="Enter Item"
+                              variant="standard"
+                              multiline
+                              fullWidth
+                              onChange={(e) =>
+                                handlePointChange(
+                                  localActiveTab,
+                                  index,
+                                  e.target.value
+                                )
+                              }
+                            />
+                            <Checkbox
+                              checked={
+                                selectedPoints[localActiveTab]?.includes(
+                                  index
+                                ) || false
+                              }
+                              onChange={() =>
+                                handleSelectPoint(localActiveTab, index)
+                              }
+                              size="small"
+                            />
+                          </Box>
+                        ) : (
+                          <Typography>{point}</Typography>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                  {editMode && (
+                    <Box
+                      display="flex"
+                      flexDirection="row"
+                      justifyContent="space-between"
+                      alignItems="center"
+                      marginBottom={2}
+                    >
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => handleAddPoint(localActiveTab)}
+                      >
+                        + Add Item
+                      </Button>
+                      {selectedPoints[localActiveTab]?.length > 0 && (
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          size="small"
+                          onClick={handleDeleteSelectedPoints}
+                          style={{ marginBottom: "10px" }}
+                        >
+                          🗑️ Delete Selected
+                        </Button>
+                      )}
+                    </Box>
+                  )}
+                </Box>
+              )}
+            </Box>
+          </>
+        )}
+      </DialogContent>
+
+      <DialogActions>
+        {!isReadOnly && (
+          <Button onClick={() => handleSaveAll(fileName)} color="primary">
+            {fileName === PROJECT_DETAIL_PAGE.CHECKLIST_REPORT
+              ? "Save All"
+              : "Save"}
+          </Button>
+        )}
+        <Button onClick={() => onClose(fileName)} color="primary">
+          Close
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+export default DocumentDialog;

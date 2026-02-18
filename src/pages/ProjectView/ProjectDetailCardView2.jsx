@@ -5,6 +5,7 @@ import Typography from "@mui/material/Typography";
 import { Chip, Grid, Box, Divider, Button, Tooltip } from "@mui/material";
 import Avatar from "@mui/material/Avatar";
 import AvatarGroup from "@mui/material/AvatarGroup";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import avatar1 from "../../assets/images/users/avatar-1.png";
 import avatar2 from "../../assets/images/users/avatar-2.png";
 import avatar3 from "../../assets/images/users/avatar-3.png";
@@ -18,24 +19,37 @@ const AvatarSection = ({ userData }) => (
     {userData?.map((user) => {
       return (
         <Tooltip key={user?.user_id} title={user?.user_name} arrow>
-          {user?.user_profile  && user?.user_profile !== "null" ?
-            <img src={user?.user_profile} alt={user?.user_name} style={{borderRadius: '50%',width:"40px",height:"40px",border:"1px solid grey" }} />
-          :
-          <Avatar
-          alt={user?.user_name}
-          src={avatar1}
-          sx={{ width: 40, height: 40 }}
-        />
-          }
-
-         
+          {user?.user_profile && user?.user_profile !== "null" ? (
+            <img
+              src={user?.user_profile}
+              alt={user?.user_name}
+              style={{
+                borderRadius: "50%",
+                width: "40px",
+                height: "40px",
+                border: "1px solid grey",
+              }}
+            />
+          ) : (
+            <Avatar
+              alt={user?.user_name}
+              src={avatar1}
+              sx={{ width: 40, height: 40 }}
+            />
+          )}
         </Tooltip>
       );
     })}
   </AvatarGroup>
 );
 
-const ProjectDetailsCardView = ({ data,handleClick }) => {
+const ProjectDetailsCardView = ({
+  data,
+  handleClick,
+  isExternalProject = false,
+  handleRunAIAssessment,
+  aiButtonLoading,
+}) => {
   const statusChip = (status) => {
     const { title, color, borderColor } = getStatusChipProps(status);
     return (
@@ -95,14 +109,14 @@ const ProjectDetailsCardView = ({ data,handleClick }) => {
                   </Typography>
                 </Grid>
 
-                <Grid item xs={12}>
+                {/* <Grid item xs={12}>
                   <Typography variant="body2" color="text.primary">
                     <b>Regulatory Standards:</b>
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     {data.regulatory_standard}
                   </Typography>
-                </Grid>
+                </Grid> */}
 
                 {/* <Grid item xs={12}>
                   <Typography variant="body2" color="text.primary">
@@ -125,7 +139,8 @@ const ProjectDetailsCardView = ({ data,handleClick }) => {
               <Button
                 variant="contained"
                 style={{ float: "right", margin: "10px  0px" }}
-                onClick={(e)=>handleClick("Edit")}
+                onClick={(e) => handleClick("Edit")}
+                disabled={isExternalProject}
               >
                 Edit
               </Button>
@@ -133,36 +148,38 @@ const ProjectDetailsCardView = ({ data,handleClick }) => {
           </CardContent>
         </Card>
 
-        <Card
-          sx={{ borderRadius: "10px", marginTop: "10px" }}
-          style={{
-            boxShadow: "0px 7px 15px #d7d5d5",
-            border: "1px solid #ececec",
-          }}
-        >
-          <CardContent>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <Typography variant="h5">Members Invited</Typography>
-            </Box>
-
-            <Box sx={{ marginTop: "10px" }}>
-              <AvatarSection userData={data?.invite_members} />
-              <Button
-                variant="contained"
-                onClick={(e)=>handleClick("Invite")}
-                style={{ float: "right", margin: "10px  0px" }}
+        {/* {!isExternalProject && (
+          <Card
+            sx={{ borderRadius: "10px", marginTop: "10px" }}
+            style={{
+              boxShadow: "0px 7px 15px #d7d5d5",
+              border: "1px solid #ececec",
+            }}
+          >
+            <CardContent>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
               >
-                Invite
-              </Button>
-            </Box>
-          </CardContent>
-        </Card>
+                <Typography variant="h5">Members Invited</Typography>
+              </Box>
+
+              <Box sx={{ marginTop: "10px" }}>
+                <AvatarSection userData={data?.invite_members} />
+                <Button
+                  variant="contained"
+                  onClick={(e) => handleClick("Invite")}
+                  style={{ float: "right", margin: "10px  0px" }}
+                >
+                  Invite
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
+        )} */}
       </Grid>
     </Grid>
   );

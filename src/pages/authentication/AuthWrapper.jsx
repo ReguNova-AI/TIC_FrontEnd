@@ -10,32 +10,16 @@ import AuthCard from "./AuthCard";
 
 // assets
 import AuthBackground from "assets/images/auth/AuthBackground";
+import { height } from "@mui/system";
 
 // ==============================|| AUTHENTICATION - WRAPPER ||============================== //
 
 export default function AuthWrapper({ children }) {
   return (
     <Box sx={{ minHeight: "100vh" }}>
-      {/* <AuthBackground /> */}
-      <Grid
-        container
-        direction="column"
-        justifyContent="flex-end"
-        alignItems="center"
-        sx={{ minHeight: "100vh" }}
-      >
-        <Grid
-          item
-          xs={12}
-          sx={{
-            mt: 3,
-            display: "flex",
-            justifyContent: "center",
-          }}
-        >
-          <Logo />
-        </Grid>
-
+      <AuthBackground />
+      <Logo sx={{ ml: 5, height: 100 }} />
+      <Grid container direction="column" sx={{ minHeight: "100vh" }}>
         <Grid item xs={12}>
           <Grid
             item

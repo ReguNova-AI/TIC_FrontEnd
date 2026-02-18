@@ -32,7 +32,9 @@ const put = async (url, params, data, useBaseApiPath, otherConfig) => {
 };
 
 const remove = async (url, params, data, useBaseApiPath, noToken) => {
-  return _makeRequest('DELETE', url, params, data, useBaseApiPath, {}, {}, noToken);
+  // For DELETE requests, don't send data if it's null to avoid JSON parsing issues
+  const requestData = data === null ? undefined : data;
+  return _makeRequest('DELETE', url, params, requestData, useBaseApiPath, {}, {}, noToken);
 };
 
 const _makeRequest = async (

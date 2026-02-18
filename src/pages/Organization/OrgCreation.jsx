@@ -37,7 +37,7 @@ import { OrganisationApiService } from "services/api/OrganizationAPIService";
 // Steps for the stepper
 const steps = [STEPPER_LABEL.ORG_DETAILS, STEPPER_LABEL.ORG_CONTACT];
 
-export default function OrgCreation({ onHandleClose,type,selecteddata }) {
+export default function OrgCreation({ onHandleClose, type, selecteddata }) {
   const [activeStep, setActiveStep] = useState(0);
   const [skipped, setSkipped] = useState(new Set());
   const [industryData, setIndustryData] = useState([]);
@@ -45,7 +45,7 @@ export default function OrgCreation({ onHandleClose,type,selecteddata }) {
   const [filteredIndustries, setFilteredIndustries] = useState([]);
   const [selectedIndustry, setSelectedIndustry] = useState([]);
   const [uploadedFileData, setUpoadedFileData] = useState("");
-  const [error, setError]=useState("");
+  const [error, setError] = useState("");
 
   const [snackData, setSnackData] = useState({
     show: false,
@@ -66,7 +66,7 @@ export default function OrgCreation({ onHandleClose,type,selecteddata }) {
     sector_id: 1,
     sector_name: "Nil",
     industries: "",
-    industry_names:"",
+    industry_names: "",
     org_name: "",
     org_email: "test@test.test",
     org_logo: "",
@@ -95,7 +95,7 @@ export default function OrgCreation({ onHandleClose,type,selecteddata }) {
 
   const isStepSkipped = (step) => skipped.has(step);
 
- 
+
   const handleNext = () => {
     if (activeStep === 0 && !validateStep(0)) {
       return; // Stop if validation fails
@@ -115,12 +115,12 @@ export default function OrgCreation({ onHandleClose,type,selecteddata }) {
   const handleBack = () => {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
-  useEffect(()=>{
+  useEffect(() => {
     setFormData({
       ...formData,
       org_logo: uploadedFileData, // URL for avatar upload
     });
-  },[uploadedFileData])
+  }, [uploadedFileData])
 
 
   const handleSubmit = () => {
@@ -129,7 +129,7 @@ export default function OrgCreation({ onHandleClose,type,selecteddata }) {
       return; // Stop if validation fails
     }
 
-    if((errorValue.emailError !== "" && errorValue.emailError !== null) || (errorValue.phoneError !== "" && errorValue.phoneError !== null)){
+    if ((errorValue.emailError !== "" && errorValue.emailError !== null) || (errorValue.phoneError !== "" && errorValue.phoneError !== null)) {
       return;
     }
 
@@ -159,154 +159,154 @@ export default function OrgCreation({ onHandleClose,type,selecteddata }) {
     //   });
 
     let payload = formData;
-    if(type === "new")
-    {
+    if (type === "new") {
       OrganisationApiService.organisationCreate(payload)
-      .then((response) => {
-        setSnackData({
-          show: true,
-          message: response?.message || API_SUCCESS_MESSAGE.USER_CREATED,
-          type: "success",
-        });
-        setFormData({
-          ...formData,
-          sector_id: 1,
-          sector_name: "Nil",
-          industries: "",
-          industry_names:"",
-          org_name: "",
-          org_email: "test@test.test",
-          org_logo: "",
-          org_url: "",
-          org_address: {
-            street: "",
-            city: "",
-            country: "",
-            zip: "",
-          },
-          contact_json: {
-            primary_contact: {
-              first_name: "",
-              last_name: "",
-              email: "",
-              phone: "",
+        .then((response) => {
+          setSnackData({
+            show: true,
+            message: response?.message || API_SUCCESS_MESSAGE.USER_CREATED,
+            type: "success",
+          });
+          setFormData({
+            ...formData,
+            sector_id: 1,
+            sector_name: "Nil",
+            industries: "",
+            industry_names: "",
+            org_name: "",
+            org_email: "test@test.test",
+            org_logo: "",
+            org_url: "",
+            org_address: {
+              street: "",
+              city: "",
+              country: "",
+              zip: "",
             },
-            secondary_contact: {
-              first_name: "",
-              last_name: "",
-              email: "",
-              phone: "",
+            contact_json: {
+              primary_contact: {
+                first_name: "",
+                last_name: "",
+                email: "",
+                phone: "",
+              },
+              secondary_contact: {
+                first_name: "",
+                last_name: "",
+                email: "",
+                phone: "",
+              },
             },
-          },
+          });
+          setSelectedIndustry([]);
+          setActiveStep(0);
+          onHandleClose(true);
+        })
+        .catch((errResponse) => {
+          setSnackData({
+            show: true,
+            message:
+              errResponse?.error?.message || errResponse.response.data.message === "Primary contact email is already in use" ? "Email Id is already in use, please try adding different email id" : API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+            type: "error",
+          });
         });
-        setSelectedIndustry([]);
-        setActiveStep(0);
-        onHandleClose(true);
-      })
-      .catch((errResponse) => {
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message || errResponse.response.data.message === "Primary contact email is already in use" ? "Email Id is already in use, please try adding different email id" : API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
-      });
 
     }
-    else
-    {
-      payload ={...formData,org_id:selecteddata?.index}
+    else {
+      payload = { ...formData, org_id: selecteddata?.index }
       OrganisationApiService.organisationUpdate(payload)
-      .then((response) => {
-        setSnackData({
-          show: true,
-          message: response?.message || API_SUCCESS_MESSAGE.USER_CREATED,
-          type: "success",
-        });
-        setFormData({
-          ...formData,
-          sector_id: 1,
-          sector_name: "Nil",
-          industries: "",
-          industry_names:"",
-          org_name: "",
-          org_email: "test@test.test",
-          org_logo: "",
-          org_url: "",
-          org_address: {
-            street: "",
-            city: "",
-            country: "",
-            zip: "",
-          },
-          contact_json: {
-            primary_contact: {
-              first_name: "",
-              last_name: "",
-              email: "",
-              phone: "",
+        .then((response) => {
+          setSnackData({
+            show: true,
+            message: response?.message || API_SUCCESS_MESSAGE.USER_CREATED,
+            type: "success",
+          });
+          setFormData({
+            ...formData,
+            sector_id: 1,
+            sector_name: "Nil",
+            industries: "",
+            industry_names: "",
+            org_name: "",
+            org_email: "test@test.test",
+            org_logo: "",
+            org_url: "",
+            org_address: {
+              street: "",
+              city: "",
+              country: "",
+              zip: "",
             },
-            secondary_contact: {
-              first_name: "",
-              last_name: "",
-              email: "",
-              phone: "",
+            contact_json: {
+              primary_contact: {
+                first_name: "",
+                last_name: "",
+                email: "",
+                phone: "",
+              },
+              secondary_contact: {
+                first_name: "",
+                last_name: "",
+                email: "",
+                phone: "",
+              },
             },
-          },
+          });
+          setSelectedIndustry([]);
+          setActiveStep(0);
+          onHandleClose(true);
+        })
+        .catch((errResponse) => {
+          setSnackData({
+            show: true,
+            message:
+              errResponse?.error?.message || errResponse.response.data.message === "Primary contact email is already in use" ? "Email Id is already in use, please try adding different email id" : API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+            type: "error",
+          });
         });
-        setSelectedIndustry([]);
-        setActiveStep(0);
-        onHandleClose(true);
-      })
-      .catch((errResponse) => {
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message || errResponse.response.data.message === "Primary contact email is already in use" ? "Email Id is already in use, please try adding different email id" : API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
-      });
     }
-    
+
   };
 
-  useEffect(()=>{
+  useEffect(() => {
 
     setFormData({
       ...formData,
       sector_id: 1,
-          sector_name: selecteddata?.sector || "Nil",
-          industries: selecteddata?.industryId || "",
-          industry_names:selecteddata?.industry || "",
-          org_name: selecteddata?.org_name || "",
-          org_email: selecteddata?.org_email || "test@test.test",
-          org_logo: selecteddata?.org_logo || "",
-          org_url: selecteddata?.org_url || "",
-          org_address: {
-            street: selecteddata?.address?.street || "",
-            city: selecteddata?.address?.city || "",
-            country: selecteddata?.address?.country || "",
-            zip: selecteddata?.address?.zip || "",
-          },
-          contact_json: {
-            primary_contact: {
-              first_name: selecteddata?.contact_json?.primary_contact?.first_name || "",
-              last_name: selecteddata?.contact_json?.primary_contact?.last_name || "",
-              email: selecteddata?.contact_json?.primary_contact?.email || "",
-              phone: selecteddata?.contact_json?.primary_contact?.phone || "",
-            },
-            secondary_contact: {
-              first_name: selecteddata?.contact_json?.secondary_contact?.first_name || "",
-              last_name: selecteddata?.contact_json?.secondary_contact?.last_name || "",
-              email: selecteddata?.contact_json?.secondary_contact?.email || "",
-              phone: selecteddata?.contact_json?.secondary_contact?.phone || "",
-            },
-          },
+      sector_name: selecteddata?.sector || "Nil",
+      industries: selecteddata?.industryId || "",
+      industry_names: selecteddata?.industry || "",
+      org_name: selecteddata?.org_name || "",
+      org_email: selecteddata?.org_email || "test@test.test",
+      org_logo: selecteddata?.org_logo || "",
+      org_url: selecteddata?.org_url || "",
+      org_address: {
+        street: selecteddata?.address?.street || "",
+        city: selecteddata?.address?.city || "",
+        country: selecteddata?.address?.country || "",
+        zip: selecteddata?.address?.zip || "",
+      },
+      contact_json: {
+        primary_contact: {
+          first_name: selecteddata?.contact_json?.primary_contact?.first_name || "",
+          last_name: selecteddata?.contact_json?.primary_contact?.last_name || "",
+          email: selecteddata?.contact_json?.primary_contact?.email || "",
+          phone: selecteddata?.contact_json?.primary_contact?.phone || "",
+        },
+        secondary_contact: {
+          first_name: selecteddata?.contact_json?.secondary_contact?.first_name || "",
+          last_name: selecteddata?.contact_json?.secondary_contact?.last_name || "",
+          email: selecteddata?.contact_json?.secondary_contact?.email || "",
+          phone: selecteddata?.contact_json?.secondary_contact?.phone || "",
+        },
+      },
     });
 
-    setSelectedIndustry([Number(selecteddata?.industryId)]);
+    if (selecteddata?.industryId) {
+      setSelectedIndustry([Number(selecteddata?.industryId)]);
 
-  },[selecteddata]);
+    }
+  }, [selecteddata]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -336,8 +336,7 @@ export default function OrgCreation({ onHandleClose,type,selecteddata }) {
       }
       // console.log("formattedField",formattedField,value)
 
-      if(formattedField === "email")
-      {
+      if (formattedField === "email") {
         if (!emailRegex.test(value)) {
           setErrorValue({
             ...errorValue,
@@ -348,30 +347,29 @@ export default function OrgCreation({ onHandleClose,type,selecteddata }) {
             ...errorValue,
             emailError: "",
           });
-  
+
           checkEmailAvailablity(value);
         }
 
         setFormData({
           ...formData,
-          org_email:value,
+          org_email: value,
         });
       }
 
-      if(formattedField === "phone")
-      {
-      if (!phoneRegex.test(value)) {
-        setErrorValue({
-          ...errorValue,
-          phoneError: "Phone number should be 10 digits.",
-        });
-      } else {
-        setErrorValue({
-          ...errorValue,
-          phoneError: "",
-        });
+      if (formattedField === "phone") {
+        if (!phoneRegex.test(value)) {
+          setErrorValue({
+            ...errorValue,
+            phoneError: "Phone number should be 10 digits.",
+          });
+        } else {
+          setErrorValue({
+            ...errorValue,
+            phoneError: "",
+          });
+        }
       }
-    }
 
       setFormData({
         ...formData,
@@ -409,12 +407,12 @@ export default function OrgCreation({ onHandleClose,type,selecteddata }) {
   const fetchIndustryDetails = () => {
     UserApiService.industryDetails()
       .then((response) => {
-        setSnackData({
+        /* setSnackData({
           show: true,
           message:
             response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
           type: "success",
-        });
+        }); */
         setIndustryData(response?.data?.details || []); // Use an empty array as fallback
         setFilteredIndustries(response?.data?.details || []); //added this logic to skip sector selection in future remove this logic if sector selection is required
       })
@@ -432,12 +430,12 @@ export default function OrgCreation({ onHandleClose,type,selecteddata }) {
   const fetchSectorDetails = () => {
     UserApiService.sectorDetails()
       .then((response) => {
-        setSnackData({
+        /* setSnackData({
           show: true,
           message:
             response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
           type: "success",
-        });
+        }); */
         const sectors = response?.data?.details || []; // Use an empty array as fallback
         setSectorData(sectors);
       })
@@ -482,41 +480,39 @@ export default function OrgCreation({ onHandleClose,type,selecteddata }) {
       industry_names: filteredIndustries
         .filter((industry) => value.includes(industry.industry_id))
         .map((industry) => industry.industry_name),
-        // .join(", "), // Optionally, store a comma-separated list of selected industry names
+      // .join(", "), // Optionally, store a comma-separated list of selected industry names
     });
   };
 
-  const checkEmailAvailablity = (value)=>{
+  const checkEmailAvailablity = (value) => {
     UserApiService.userEmailCheck(value)
-    .then((response) => {
-      
-      if(response?.data?.message === "User exist")
-      {
-        setErrorValue({
-          ...errorValue,
-          emailError: "Email Id already exists. Please add another email id",
+      .then((response) => {
+
+        if (response?.data?.message === "User exist") {
+          setErrorValue({
+            ...errorValue,
+            emailError: "Email Id already exists. Please add another email id",
+          });
+          return false;
+        }
+        else {
+          setErrorValue({
+            ...errorValue,
+            emailError: "",
+          });
+          return true;
+        }
+
+      })
+      .catch((errResponse) => {
+        setSnackData({
+          show: true,
+          message:
+            errResponse?.error?.message ||
+            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          type: "error",
         });
-        return false;
-      }
-      else
-      {
-        setErrorValue({
-          ...errorValue,
-          emailError: "",
-        });
-        return true;
-      }
-     
-    })
-    .catch((errResponse) => {
-      setSnackData({
-        show: true,
-        message:
-          errResponse?.error?.message ||
-          API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-        type: "error",
       });
-    });
 
     setErrorValue({
       ...errorValue,
@@ -527,38 +523,37 @@ export default function OrgCreation({ onHandleClose,type,selecteddata }) {
 
   const validateStep = (step) => {
     // Validate required fields for Step 1
-    let requiredFields = []; 
-    if(step === 0)
-    {requiredFields = [
-      "org_name",
-      // "org_email",
-      // "sector_name",
-      "industries",
-    ];
-    for (const field of requiredFields) {
-      if (!formData[field] || formData[field].length === 0) {
-        setError("Please fill all the required fields")
-        console.log("field",field)
-        return false;
+    let requiredFields = [];
+    if (step === 0) {
+      requiredFields = [
+        "org_name",
+        // "org_email",
+        // "sector_name",
+        "industries",
+      ];
+      for (const field of requiredFields) {
+        if (!formData[field] || formData[field].length === 0) {
+          setError("Please fill all the required fields")
+          console.log("field", field)
+          return false;
+        }
       }
     }
-  }
-  else
-  {
-    requiredFields = [
-      "first_name",
-      "last_name",
-      "email",
-      "phone"
-    ];
+    else {
+      requiredFields = [
+        "first_name",
+        "last_name",
+        "email",
+        "phone"
+      ];
 
-    for (const field of requiredFields) {
-      if (!formData?.contact_json.primary_contact[field] || formData?.contact_json.primary_contact[field].length === 0) {
-        setError("Please fill all the required fields")
-        return false;
+      for (const field of requiredFields) {
+        if (!formData?.contact_json.primary_contact[field] || formData?.contact_json.primary_contact[field].length === 0) {
+          setError("Please fill all the required fields")
+          return false;
+        }
       }
     }
-  }
 
     return true;
   };
@@ -588,7 +583,7 @@ export default function OrgCreation({ onHandleClose,type,selecteddata }) {
           {activeStep === 0 ? (
             <Grid container spacing={2}>
               <Grid item xs={12} sm={12} style={{ padding: "18px" }}>
-                <AvatarUpload onUpload={setUpoadedFileData} uploadedImage={formData.org_logo}/>
+                <AvatarUpload onUpload={setUpoadedFileData} uploadedImage={formData.org_logo} />
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField
@@ -659,15 +654,34 @@ export default function OrgCreation({ onHandleClose,type,selecteddata }) {
                     onChange={handleIndustryChange}
                     multiple
                     required
+                    // renderValue={(selected) => {
+                    //   console.log("selected",selected)
+                    //   const selectedIndustries = filteredIndustries.filter(
+                    //     (industry) => selected.includes(industry.industry_id)
+                    //   );
+                    //   return selectedIndustries
+                    //     .map((industry) => industry.industry_name)
+                    //     .join(", ");
+                    // }}
+
                     renderValue={(selected) => {
-                      const selectedIndustries = filteredIndustries.filter(
-                        (industry) => selected.includes(industry.industry_id)
-                      );
-                      return selectedIndustries
-                        .map((industry) => industry.industry_name)
-                        .join(", ");
+                      // Ensure selecteddata and industry_names exist
+                      if (!selecteddata?.industry_names) {
+                        const selectedIndustries = filteredIndustries.filter(
+                          (industry) => selected.includes(industry.industry_id)
+                        );
+                        if (selectedIndustries) {
+                          return selectedIndustries
+                            .map((industry) => industry.industry_name)
+                            .join(", ");
+                        }
+                        return "";
+
+                      }
+
+                      return selecteddata?.industry_names.join(", ");
                     }}
-                    disabled={filteredIndustries.length === 0 || type !== "new"}
+                  // disabled={filteredIndustries.length === 0 || type !== "new"}
                   >
                     {filteredIndustries.map((industry) => (
                       <MenuItem
@@ -737,7 +751,7 @@ export default function OrgCreation({ onHandleClose,type,selecteddata }) {
                   }}
                 />
               </Grid>
-             
+
             </Grid>
           ) : activeStep === 1 ? (
             <>
@@ -792,10 +806,10 @@ export default function OrgCreation({ onHandleClose,type,selecteddata }) {
                         error={!!errorValue.emailError}
                         helperText={errorValue.emailError}
                         onChange={handleInputChange}
-                        disabled={type !== "new" ?true : false}
+                        disabled={type !== "new" ? true : false}
                         required
                         inputProps={{
-                          maxLength: 30, // Restrict input to 40 characters
+                          maxLength: 350, // Restrict input to 40 characters
                         }}
                       />
                     </Grid>
@@ -871,7 +885,7 @@ export default function OrgCreation({ onHandleClose,type,selecteddata }) {
                         value={formData.contact_json.secondary_contact.email}
                         onChange={handleInputChange}
                         inputProps={{
-                          maxLength: 30, // Restrict input to 40 characters
+                          maxLength: 350, // Restrict input to 40 characters
                         }}
                       />
                     </Grid>
@@ -896,49 +910,49 @@ export default function OrgCreation({ onHandleClose,type,selecteddata }) {
 
           {activeStep <= 2 && (
             <>
-            <span style={{color:"red"}}>{error}</span>
-            <Box sx={{ display: "flex", flexDirection: "row", pt: 2, mt: 5 }}>
-              {activeStep !== 0 && (
+              <span style={{ color: "red" }}>{error}</span>
+              <Box sx={{ display: "flex", flexDirection: "row", pt: 2, mt: 5 }}>
+                {activeStep !== 0 && (
+                  <Button
+                    disabled={activeStep === 0}
+                    onClick={handleBack}
+                    sx={{ mr: 1 }}
+                    variant="outlined"
+                  >
+                    {BUTTON_LABEL.BACK}
+                  </Button>
+                )}
+                <Box sx={{ flex: "1 1 auto" }} />
+
                 <Button
-                  disabled={activeStep === 0}
-                  onClick={handleBack}
-                  sx={{ mr: 1 }}
-                  variant="outlined"
+                  onClick={
+                    activeStep === steps.length - 1 ? handleSubmit : handleNext
+                  }
+                  variant="contained"
                 >
-                  {BUTTON_LABEL.BACK}
+                  {activeStep === steps.length - 1
+                    ? BUTTON_LABEL.FINISH
+                    : BUTTON_LABEL.NEXT}
                 </Button>
-              )}
-              <Box sx={{ flex: "1 1 auto" }} />
-              
-              <Button
-                onClick={
-                  activeStep === steps.length - 1 ? handleSubmit : handleNext
-                }
-                variant="contained"
-              >
-                {activeStep === steps.length - 1
-                  ? BUTTON_LABEL.FINISH
-                  : BUTTON_LABEL.NEXT}
-              </Button>
-            </Box>
+              </Box>
             </>
           )}
         </Grid>
       </Grid>
       <Snackbar
-        style={{top:"80px"}}
-          anchorOrigin={{ vertical: "top", horizontal: "right" }}
-          open={snackData.show}
-          autoHideDuration={3000}
+        style={{ top: "80px" }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        open={snackData.show}
+        autoHideDuration={3000}
+        onClose={() => setSnackData({ show: false })}
+      >
+        <Alert
           onClose={() => setSnackData({ show: false })}
+          severity={snackData.type}
         >
-          <Alert
-            onClose={() => setSnackData({ show: false })}
-            severity={snackData.type}
-          >
-            {snackData.message}
-          </Alert>
-        </Snackbar>
+          {snackData.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
