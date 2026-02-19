@@ -55,6 +55,7 @@ import {
 } from "components/hooks/useExternalUsers";
 import { UserApiService } from "services/api/UserAPIService";
 import { useExternalUserProjects } from "components/hooks/useExternalUserProject";
+import SearchInput from "components/form/SearchInput";
 
 const ExternalUsers = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -393,7 +394,7 @@ const ExternalUsers = () => {
             <a
               alt="User"
               style={{
-                color: "#2ba9bc",
+                color: "#5B0429",
                 cursor: "pointer",
                 marginLeft: "10px",
               }}
@@ -576,21 +577,12 @@ const ExternalUsers = () => {
                     <Tab label="Inactive Users" {...tabHeaders(1)} />
                   </Tabs>
                   <Space>
-                    <FormControl fullWidth>
-                      <InputLabel htmlFor="outlined-adornment-search">
-                        {FORM_LABEL.SEARCH}
-                      </InputLabel>
-                      <OutlinedInput
-                        id="outlined-adornment-search"
-                        startAdornment={
-                          <InputAdornment position="start">
-                            <SearchOutlined />
-                          </InputAdornment>
-                        }
-                        label={FORM_LABEL.SEARCH}
-                        onChange={(e) => handleUserSearch(e.target.value)}
-                      />
-                    </FormControl>
+                    <SearchInput
+                      value={searchText}
+                      onChange={(e) => handleUserSearch(e.target.value)}
+                      placeholder="Search"
+                      width={300}
+                    />
                   </Space>
                 </Space>
               </Box>

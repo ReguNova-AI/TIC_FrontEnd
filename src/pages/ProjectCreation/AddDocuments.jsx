@@ -234,7 +234,7 @@ const DocumentSection = ({ documents, setDocuments }) => {
           textAlign: "center",
           padding: "20px",
           borderRadius: "8px",
-          border: "1px dashed #aba8a8",
+          border: "1px dashed #5B0429",
         }}>
           <UnifiedDocumentControl
             onAddFolder={handleUnifiedAddFolder}

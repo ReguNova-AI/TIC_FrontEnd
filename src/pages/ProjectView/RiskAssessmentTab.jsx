@@ -403,10 +403,10 @@ const RiskAssessmentTab = ({ projectData }) => {
                 size="small"
                 sx={{
                   textTransform: 'none',
-                  borderColor: '#1976d2',
-                  color: '#1976d2',
+                  // borderColor: '#1976d2',
+                  // color: '#1976d2',
                   '&:hover': {
-                    borderColor: '#1565c0',
+                    // borderColor: '#1565c0',
                     backgroundColor: '#e3f2fd',
                   }
                 }}
@@ -449,10 +449,10 @@ const RiskAssessmentTab = ({ projectData }) => {
               size="small"
               sx={{
                 textTransform: 'none',
-                borderColor: '#1976d2',
-                color: '#1976d2',
+                // borderColor: '#1976d2',
+                // color: '#1976d2',
                 '&:hover': {
-                  borderColor: '#1565c0',
+                  // borderColor: '#1565c0',
                   backgroundColor: '#e3f2fd',
                 }
               }}

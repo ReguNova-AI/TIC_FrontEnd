@@ -56,7 +56,7 @@ const RiskSummaryStatusIndicator = ({
 
   const renderProgress = () => (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 200 }}>
-      <AssessmentIcon color="info" sx={{ fontSize: 16 }} />
+      <AssessmentIcon color="primary" sx={{ fontSize: 16 }} />
       <LinearProgress
         variant="indeterminate"
         color="info"

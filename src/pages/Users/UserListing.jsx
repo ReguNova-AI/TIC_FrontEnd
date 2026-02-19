@@ -22,6 +22,7 @@ import {
   CheckCircleOutlined,
   EditOutlined,
   FolderAddOutlined,
+  DownloadOutlined,
 } from "@ant-design/icons";
 import { useLocation } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";

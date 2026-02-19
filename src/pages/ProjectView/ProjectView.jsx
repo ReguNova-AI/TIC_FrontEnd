@@ -43,6 +43,7 @@ import { useModalManager, useSnackbarManager } from "./useUIManager";
 import { useAIAssessmentOperations } from "../../components/hooks/useAIAssessmentOperations";
 import AIAssessmentStatusIndicator from "../../components/AIAssessmentStatusIndicator";
 import { getStatusChipProps } from "shared/utility";
+import { brand } from "themes/theme/brand";
 
 // Helper function to create a history object based on changes
 export { createHistoryObject };
@@ -339,7 +340,7 @@ const ProjectView = () => {
             color="inherit"
             aria-current="page"
           >
-            <span style={{ color: "black", fontWeight: 600 }}>
+            <span style={{ color:brand.primary, fontWeight: 600 }}>
               {projectData?.project_name}
             </span>
           </Link>

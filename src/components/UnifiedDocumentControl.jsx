@@ -89,7 +89,6 @@ const UnifiedDocumentControl = ({
         <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
             <Button
                 variant="outlined"
-                color="success"
                 startIcon={<CreateNewFolderIcon />}
                 onClick={() => setMode('folder')}
                 sx={{ textTransform: 'none', borderRadius: 2 }}
@@ -120,9 +119,9 @@ const UnifiedDocumentControl = ({
     );
 
     const renderFolderForm = () => (
-        <Card variant="outlined" sx={{ p: 2, mb: 2, backgroundColor: '#f6ffed', borderColor: '#b7eb8f', borderRadius: 2 }}>
+        <Card variant="outlined" sx={{ p: 2, mb: 2, backgroundColor: '#f6ffed', borderColor: '#5B0429', borderRadius: 2 }}>
             <Stack direction="row" spacing={2} alignItems="center">
-                <CreateNewFolderIcon color="success" />
+                <CreateNewFolderIcon sx={{color:"primary.main"}}/>
                 <TextField
                     size="small"
                     placeholder="Enter folder name..."
@@ -132,7 +131,6 @@ const UnifiedDocumentControl = ({
                 />
                 <Button
                     variant="contained"
-                    color="success"
                     startIcon={<SaveIcon />}
                     onClick={handleSubmitFolder}
                     sx={{ textTransform: 'none' }}
@@ -140,8 +138,7 @@ const UnifiedDocumentControl = ({
                     Create
                 </Button>
                 <Button
-                    variant="text"
-                    color="inherit"
+                    variant="outlined"
                     startIcon={<CloseIcon />}
                     onClick={handleReset}
                     sx={{ textTransform: 'none' }}
@@ -153,10 +150,10 @@ const UnifiedDocumentControl = ({
     );
 
     const renderFileForm = () => (
-        <Card variant="outlined" sx={{ p: 2, mb: 2, backgroundColor: '#f0f9ff', borderColor: '#91d5ff', borderRadius: 2 }}>
+        <Card variant="outlined" sx={{ p: 2, mb: 2, backgroundColor: '#f0f9ff', borderColor: '#5B0429', borderRadius: 2 }}>
             <Stack spacing={2}>
                 {addingToFolder && (
-                    <Box sx={{ p: 1, px: 2, bgcolor: '#e6f7ff', border: '1px solid #bae7ff', borderRadius: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ p: 1, px: 2, bgcolor: '#e6f7ff', border: '1px solid #5B0429', borderRadius: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
                         <FolderIcon color="primary" fontSize="small" />
                         <Typography variant="body2" color="primary">
                             Adding to folder: <strong>{addingToFolder}</strong>
@@ -237,8 +234,7 @@ const UnifiedDocumentControl = ({
 
                 <Stack direction="row" spacing={1} justifyContent="flex-end">
                     <Button
-                        variant="text"
-                        color="inherit"
+                        variant="outlined"
                         startIcon={<CloseIcon />}
                         onClick={handleReset}
                         sx={{ textTransform: 'none' }}

@@ -85,7 +85,7 @@ const UnifiedFileTree = ({
                                         style={{ marginRight: "8px" }}
                                         alt="folder"
                                     />
-                                    <span style={{ fontWeight: 500, color: "#1890ff" }}>{folder}</span>
+                                    <span style={{ fontWeight: 500, color: "#5B0429" }}>{folder}</span>
                                 </div>
                                 {!readOnly && (
                                     <div style={{ display: 'flex', alignItems: 'center' }}>

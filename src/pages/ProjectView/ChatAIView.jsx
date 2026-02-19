@@ -158,7 +158,8 @@ const ChatAIView = ({ data, projectId }) => {
                   fontWeight: "bold",
                   marginBottom: 1,
                   padding: 2,
-                  backgroundColor: "#e3f2fd",
+                  backgroundColor: "primary.main",
+                  color:"primary.contrastText",
                   borderRadius: 2,
                 }}
               >
@@ -203,7 +204,7 @@ const ChatAIView = ({ data, projectId }) => {
           minHeight: 0, // This is crucial for flex children to shrink
         }}
       >
-        <Typography variant="h6" sx={{ marginBottom: 2, flexShrink: 0 }}>
+        <Typography variant="h6" sx={{ marginBottom: 2, flexShrink: 0, color:"primary.main" }}>
           Previously Asked Questions
         </Typography>
 
@@ -221,7 +222,7 @@ const ChatAIView = ({ data, projectId }) => {
               border: "1px solid #e0e0e0",
               borderRadius: 2,
               padding: 2,
-              backgroundColor: "#fafafa",
+              backgroundColor: "secondary.100",
               minHeight: 0, // Important for scrolling
               // Ensure smooth scrolling
               scrollBehavior: "smooth",
@@ -254,7 +255,7 @@ const ChatAIView = ({ data, projectId }) => {
                     border: "1px solid #e0e0e0",
                   }}
                 >
-                  <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+                  <Typography variant="body2" sx={{ fontWeight: "bold", color:"primary.main" }}>
                     Q: {entry.question}
                   </Typography>
                   <Typography variant="body1">A: {entry.answer}</Typography>
