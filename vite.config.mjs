@@ -91,11 +91,14 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Split large libraries into separate chunks
-          "react-vendor": ["react", "react-dom"],
-          "ui-vendor": ["@mui/material", "@emotion/react", "@emotion/styled"],
-          "antd-vendor": ["antd"],
+        manualChunks(id) {
+        // Force all emotion into one chunk
+          if (id.includes('@emotion/styled')) return 'ui-vendor';
+          if (id.includes('@emotion/react')) return 'ui-vendor';
+          if (id.includes('@emotion/cache')) return 'ui-vendor';
+          if (id.includes('@mui/material')) return 'ui-vendor';
+          if (id.includes('react-dom') || id.includes('react/')) return 'react-vendor';
+          if (id.includes('antd')) return 'antd-vendor';
         },
       },
     },
