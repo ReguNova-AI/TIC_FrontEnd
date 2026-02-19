@@ -14,6 +14,13 @@ export default defineConfig({
     global: "window",
   },
   resolve: {
+    dedupe: [
+      "react",
+      "react-dom",
+      "@emotion/react",
+      "@emotion/styled",
+      "@emotion/cache",
+    ],
     alias: [
       {
         find: /^~(.+)/,
@@ -22,6 +29,14 @@ export default defineConfig({
       {
         find: /^src(.+)/,
         replacement: path.join(process.cwd(), "src/$1"),
+      },
+      {
+        find: "@emotion/styled",
+        replacement: path.resolve("./node_modules/@emotion/styled"),
+      },
+      {
+        find: "@emotion/react",
+        replacement: path.resolve("./node_modules/@emotion/react"),
       },
     ],
   },
@@ -32,9 +47,14 @@ export default defineConfig({
     logLevel: "error",
   },
   optimizeDeps: {
-    // Reduce memory usage during dependency optimization
     force: false,
-    include: ["react", "react-dom"],
+    include: [
+      "react",
+      "react-dom",
+      "@emotion/react",
+      "@emotion/styled",
+      "@emotion/cache",
+    ],
   },
   server: {
     // this ensures that the browser opens upon server start

@@ -291,7 +291,7 @@ const NestedListing = ({ data, filterStatusValue }) => {
           placeholder="Search by project name or user name"
           width={300}
         />
-              <Popover
+              {/* <Popover
                 content={filterPopoverContent}
                 title={BUTTON_LABEL.FILTER}
                 visible={popoverVisible}
@@ -306,7 +306,7 @@ const NestedListing = ({ data, filterStatusValue }) => {
                 >
                   {BUTTON_LABEL.FILTER}
                 </Button>
-                </Popover>
+                </Popover> */}
       </Space>
 
       {/* Table rendering */}

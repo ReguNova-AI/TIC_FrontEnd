@@ -10,6 +10,7 @@ import ScrollTop from "components/ScrollTop";
 import { AIAssessmentProvider } from "./contexts/AIAssessmentContext";
 import { DataQueryProvider } from "./contexts/DataQueryContext";
 import { ConfigProvider } from "antd";
+import { brand } from 'themes/theme/brand';
 
 // ==============================|| APP - THEME, ROUTER, LOCAL ||============================== //
 
