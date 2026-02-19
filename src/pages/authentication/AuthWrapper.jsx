@@ -17,9 +17,19 @@ import { height } from "@mui/system";
 export default function AuthWrapper({ children }) {
   return (
     <Box sx={{ minHeight: "100vh" }}>
-      <AuthBackground />
-      <Logo sx={{ ml: 5, height: 100 }} />
-      <Grid container direction="column" sx={{ minHeight: "100vh" }}>
+      {/* <AuthBackground /> */}
+      <Grid container direction="column" sx={{ minHeight: "100vh" }} alignItems="center" justifyContent="flex-end">
+        <Grid
+          item
+          xs={12}
+          sx={{
+            mt: 3,
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          <Logo />
+        </Grid>
         <Grid item xs={12}>
           <Grid
             item

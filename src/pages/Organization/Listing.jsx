@@ -16,7 +16,7 @@ import FormControl from "@mui/material/FormControl";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import InputLabel from "@mui/material/InputLabel";
 import InputAdornment from "@mui/material/InputAdornment";
-import MultiSelectWithChip from "components/form/MultiSelectWithChip";
+import MultiSelectWithChip from "components/form/MultiSelectWithChip"; // Assuming this is a custom component
 import {
   SearchOutlined,
   CloseCircleOutlined,
@@ -46,9 +46,8 @@ import PropTypes from "prop-types";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
-import { useOrganizations } from "components/hooks/useOrganizations"; // ✅ cached hookimport SearchInput from "components/form/SearchInput";
-
-
+import { useOrganizations } from "components/hooks/useOrganizations"; // ✅ cached hook
+import SearchInput from "components/form/SearchInput";
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
   return (
@@ -237,58 +236,6 @@ const OrganizationListing = () => {
     refetch();
   };
 
-  const cancel = (e) => {
-    console.log(e);
-    // message.error('Click on No');
-  };
-
-
-  const filterPopoverContent = (
-    <div style={{ padding: "10px", minWidth: "200px" }}>
-      {/* <div>
-        <label><b>Sector</b></label>
-        <MultiSelectWithChip
-          value={sectorFilter}
-          onChange={setSectorFilter}
-          options={sectorData}
-          placeholder="Select Sector"
-        />
-      </div> */}
-      <div style={{ marginTop: "10px" }}>
-        <label>
-          <b>Industry</b>
-        </label>
-        <MultiSelectWithChip
-          value={industryFilter}
-          onChange={setIndustryFilter}
-          options={industryData}
-          placeholder="Select Industry"
-        />
-      </div>
-      <div style={{ marginTop: "10px" }}>
-        <label>
-          <b>Sort Organization Name by:</b>
-        </label>
-        <br />
-        <br />
-        <Space direction="horizontal">
-          <Button
-            onClick={() => setSortOrder("ascend")}
-            type={sortOrder === "ascend" ? "primary" : "default"}
-          >
-            Ascending
-          </Button>
-          <Button
-            onClick={() => setSortOrder("descend")}
-            type={sortOrder === "descend" ? "primary" : "default"}
-          >
-            Descending
-          </Button>
-        </Space>
-      </div>
-    </div>
-  );
-
   const handleDelete = (orgId, type) => {
     let active = type === "Active" ? 0 : 1;
     OrganisationApiService.orgAccess(orgId, active)
@@ -443,7 +390,6 @@ const OrganizationListing = () => {
                 display: "flex",
                 alignItems: "center",
                 borderRadius: "20px",
-                boxShadow:"none"
               }}
             >
               <img src={addorgIcon} width="18px" />
@@ -481,12 +427,14 @@ const OrganizationListing = () => {
                         <Button
                           onClick={() => setSortOrder("ascend")}
                           type={sortOrder === "ascend" ? "primary" : "default"}
+                          style={{ boxShadow:"none"}}
                         >
                           Ascending
                         </Button>
                         <Button
                           onClick={() => setSortOrder("descend")}
                           type={sortOrder === "descend" ? "primary" : "default"}
+                          style={{ boxShadow:"none"}}
                         >
                           Descending
                         </Button>
@@ -501,7 +449,7 @@ const OrganizationListing = () => {
               >
                 <Button
                   type="primary"
-                  style={{ color: "#ffffff", boxShadow:"none" }}
+                  style={{ boxShadow:"none"}}
                 >
                   {BUTTON_LABEL.FILTER}
                 </Button>
