@@ -163,7 +163,7 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
       });
 
       const ext = file.name.split(".").pop();
-      const payload = { documents: [fileDataUrl], type: ext };
+      const payload = { documents: [fileDataUrl], type: ext, project_id : data.project_id };
 
       const response = await FileUploadApiService.fileUpload(payload, {
         onUploadProgress: (evt) => {

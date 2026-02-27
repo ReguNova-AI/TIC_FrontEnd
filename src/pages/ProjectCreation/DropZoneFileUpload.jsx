@@ -21,6 +21,7 @@ import { FileUploadApiService } from "services/api/FileUploadAPIService";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import { Tooltip } from "@mui/material";
+import { useParams } from "react-router";
 
 const { Option } = Select;
 
@@ -35,6 +36,8 @@ const DropZoneFileUpload = (props) => {
     message: "",
     type: "error",
   });
+  
+  const { id : project_id } = useParams();
 
   const MAX_FILES_COUNT = props.maxFile || 0;
 
@@ -109,6 +112,7 @@ const DropZoneFileUpload = (props) => {
     const match = fileDetails.path.match(regex);
     const filepayload = {
       imageKey: match[1],
+      filePath: fileDetails.path,
     };
 
     FileUploadApiService.fileDelete(filepayload)
@@ -213,6 +217,7 @@ const DropZoneFileUpload = (props) => {
           const filepayload = {
             documents: [fileDataUrl],
             type: fileType,
+            project_id
           };
 
           const response = await FileUploadApiService.fileUpload(filepayload, {
