@@ -1,24 +1,37 @@
-import { lazy } from "react";
+import { lazy, Suspense } from "react";
 
 // project import
 import Loadable from "components/Loadable";
-import Dashboard from "layout/Dashboard";
-import ProjectForm from "pages/ProjectCreation";
-import ProjectView from "pages/ProjectView/ProjectView";
-import UserListing from "pages/Users/UserListing";
 import ProtectedRoute from "./ProtectedRoute";
-import ProfileDetails from "layout/Dashboard/Header/HeaderContent/Profile/ProfileDetails";
-import ExternalUsers from "pages/Users/ExternalUserListing";
-import ExternalProjectListing from "pages/ExternalProjects/ExternalProjectListing";
-import ExternalProjectView from "pages/ExternalProjects/ExternalProjectView";
-import CreateProjectForm from "pages/ProjectCreation/ProjectCreateForm";
 
-const Color = Loadable(lazy(() => import("pages/component-overview/color")));
-const Typography = Loadable(
-  lazy(() => import("pages/component-overview/typography")),
-);
-const Shadow = Loadable(lazy(() => import("pages/component-overview/shadows")));
+// Lazy loaded so antd (inside AppProviders) is NOT bundled with the login page
+const AppProviders = lazy(() => import("components/AppProviders"));
+
+// All components are now lazy loaded - nothing loads until the route is visited
+const Dashboard = Loadable(lazy(() => import("layout/Dashboard")));
 const DashboardDefault = Loadable(lazy(() => import("pages/dashboard/index")));
+const ProjectView = Loadable(
+  lazy(() => import("pages/ProjectView/ProjectView")),
+);
+const UserListing = Loadable(lazy(() => import("pages/Users/UserListing")));
+const ExternalUsers = Loadable(
+  lazy(() => import("pages/Users/ExternalUserListing")),
+);
+const ExternalProjectListing = Loadable(
+  lazy(() => import("pages/ExternalProjects/ExternalProjectListing")),
+);
+const ExternalProjectView = Loadable(
+  lazy(() => import("pages/ExternalProjects/ExternalProjectView")),
+);
+const CreateProjectForm = Loadable(
+  lazy(() => import("pages/ProjectCreation/ProjectCreateForm")),
+);
+const ProfileDetails = Loadable(
+  lazy(
+    () =>
+      import("layout/Dashboard/Header/HeaderContent/Profile/ProfileDetails"),
+  ),
+);
 const ProjectListing = Loadable(
   lazy(() => import("pages/ProjectListing/Listing")),
 );
@@ -29,15 +42,16 @@ const CertificateListing = Loadable(
 const OrganizationListing = Loadable(
   lazy(() => import("pages/Organization/Listing")),
 );
-
 const AdminConfig = Loadable(lazy(() => import("pages/AdminConfig/index")));
-
 const ErrorPage = Loadable(lazy(() => import("pages/extra-pages/404")));
-
-// render - sample page
 const SamplePage = Loadable(
   lazy(() => import("pages/extra-pages/sample-page")),
 );
+const Color = Loadable(lazy(() => import("pages/component-overview/color")));
+const Typography = Loadable(
+  lazy(() => import("pages/component-overview/typography")),
+);
+const Shadow = Loadable(lazy(() => import("pages/component-overview/shadows")));
 
 // ==============================|| MAIN ROUTING ||============================== //
 
@@ -45,7 +59,11 @@ const MainRoutes = {
   path: "/",
   element: (
     <ProtectedRoute>
-      <Dashboard />
+      <Suspense fallback={null}>
+        <AppProviders>
+          <Dashboard />
+        </AppProviders>
+      </Suspense>
     </ProtectedRoute>
   ),
   children: [
@@ -102,7 +120,6 @@ const MainRoutes = {
       path: "createProject",
       element: (
         <ProtectedRoute>
-          {/* <ProjectForm /> */}
           <CreateProjectForm />
         </ProtectedRoute>
       ),
