@@ -4,10 +4,10 @@ import { lazy } from "react";
 import Loadable from "components/Loadable";
 import MinimalLayout from "layout/MinimalLayout";
 import ProtectedRoute from "./ProtectedRoute";
-import ErrorPage from "./ErrorPage";
 
 // render - login
 const AuthLogin = Loadable(lazy(() => import("pages/authentication/login")));
+const ErrorPage = Loadable(lazy(() => import("./ErrorPage")));
 const AuthRegister = Loadable(
   lazy(() => import("pages/authentication/register")),
 );
