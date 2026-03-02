@@ -36,16 +36,19 @@ const _userListing = (page, limit) => {
   }
 };
 
-const _orgDetails = () => {
-  return BaseApiService.get(`/api/v1/organizations`, null, null);
+const _orgDetails = (page = 1, limit = 10) => {
+  const params = { page, limit };
+  return BaseApiService.get(`/api/v1/organizations`, params, null);
 };
 
-const _sectorDetails = () => {
-  return BaseApiService.get(`/api/v1/sectors`, null, null);
+const _sectorDetails = (page = 1, limit = 10) => {
+  const params = { page, limit };
+  return BaseApiService.get(`/api/v1/sectors`, params, null);
 };
 
-const _industryDetails = () => {
-  return BaseApiService.get(`/api/v1/industries`, null, null);
+const _industryDetails = (page = 1, limit = 10) => {
+  const params = { page, limit };
+  return BaseApiService.get(`/api/v1/industries`, params, null);
 };
 
 const _userEmailCheck = (email) => {
@@ -56,8 +59,9 @@ const _userDetails = (userId) => {
   return BaseApiService.get(`/api/v1/users/${userId}`, null, null);
 };
 
-const _roleDetails = () => {
-  return BaseApiService.get(`/api/v1/roles`, null, null);
+const _roleDetails = (page = 1, limit = 10) => {
+  const params = { page, limit };
+  return BaseApiService.get(`/api/v1/roles`, params, null);
 };
 
 const _userAccess = (id, active) => {

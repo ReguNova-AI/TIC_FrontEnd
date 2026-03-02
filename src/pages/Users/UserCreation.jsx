@@ -409,60 +409,91 @@ export default function UserCreation({ onHandleClose, type, selecteddata }) {
     fetchRole();
   }, []);
 
-  const fetchOrgDetails = () => {
-    UserApiService.orgDetails()
-      .then((response) => {
-        setSnackData({
-          show: true,
-          message:
-            response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-          type: "success",
-        });
+  const fetchOrgDetails = async () => {
+    const userRole = userdetails?.[0]?.role_name;
+    const userOrgId = userdetails?.[0]?.org_id;
+    const limit = 10;
+    let page = 1;
+    let allOrgs = [];
 
-        let filteredOrg = response?.data?.details || [];
+    try {
+      if (userRole === "Super Admin") {
+        // Fetch all pages until we have everything
+        let totalOrgs = null;
 
-        // Get the logged-in user's role from `userdetails`
-        const userRole = userdetails?.[0]?.role_name;
-        const userOrg = userdetails?.[0]?.org_id;
+        while (true) {
+          const response = await UserApiService.orgDetails(page, limit);
+          const details = response?.data?.details || [];
+          const total = response?.data?.totalActiveOrgs?.[0]?.count || 0;
 
-        // Filter org based on the logged-in user's role
-        if (userRole !== "Super Admin") {
-          filteredOrg = filteredOrg.filter((org) => org.org_id === userOrg);
+          if (totalOrgs === null) totalOrgs = total;
+
+          allOrgs = [...allOrgs, ...details];
+
+          if (allOrgs.length >= totalOrgs || details.length === 0) break;
+
+          page++;
         }
 
-        setOrgData(filteredOrg); // Use an empty array as fallback
-      })
-      .catch((errResponse) => {
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
+      } else {
+        // Org Super Admin or others — fetch until we find their org_id
+        while (true) {
+          const response = await UserApiService.orgDetails(page, limit);
+          const details = response?.data?.details || [];
+          const total = response?.data?.totalActiveOrgs?.[0]?.count || 0;
+
+          allOrgs = [...allOrgs, ...details];
+
+          const foundOrg = details.find((org) => org.org_id === userOrgId);
+
+          if (foundOrg || details.length === 0 || allOrgs.length >= total) break;
+
+          page++;
+        }
+
+        // Filter to only their own org
+        allOrgs = allOrgs.filter((org) => org.org_id === userOrgId);
+      }
+
+      setOrgData(allOrgs);
+
+    } catch (errResponse) {
+      setSnackData({
+        show: true,
+        message:
+          errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+        type: "error",
       });
+    }
   };
 
-  const fetchIndustryDetails = () => {
-    UserApiService.industryDetails()
-      .then((response) => {
-        /* setSnackData({
-          show: true,
-          message:
-            response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-          type: "success",
-        }); */
-        setIndustryData(response?.data?.details || []); // Use an empty array as fallback
-      })
-      .catch((errResponse) => {
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
+  const fetchIndustryDetails = async () => {
+    let allIndustries = [];
+    let page = 1;
+    const limit = 10;
+
+    try {
+      while (true) {
+        const response = await UserApiService.industryDetails(page, limit);
+        const details = response?.data?.details || [];
+        const total = response?.data?.total_count || 0;
+
+        allIndustries = [...allIndustries, ...details];
+
+        if (allIndustries.length >= total || details.length === 0) break;
+
+        page++;
+      }
+
+      setIndustryData(allIndustries);
+    } catch (errResponse) {
+      setSnackData({
+        show: true,
+        message:
+          errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+        type: "error",
       });
+    }
   };
 
   const fetchSectorDetails = () => {
@@ -491,55 +522,56 @@ export default function UserCreation({ onHandleClose, type, selecteddata }) {
       });
   };
 
-  const fetchRole = () => {
-    UserApiService.roleDetails()
-      .then((response) => {
-        /* setSnackData({
-          show: true,
-          message:
-            response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-          type: "success",
-        }); */
-        let filteredRoles = response?.data?.details || [];
+  const fetchRole = async () => {
+    let allRoles = [];
+    let page = 1;
+    const limit = 10;
+    const userRole = userdetails?.[0]?.role_name;
 
-        // Get the logged-in user's role from `userdetails`
-        const userRole = userdetails?.[0]?.role_name;
+    try {
+      while (true) {
+        const response = await UserApiService.roleDetails(page, limit);
+        const details = response?.data?.details || [];
+        const total = response?.data?.total_count || 0;
 
-        // Filter roles based on the logged-in user's role
-        if (userRole === "Super Admin") {
-          filteredRoles = filteredRoles.filter(
-            (role) => role.role_name !== "Super Admin"
-          );
-        }
+        allRoles = [...allRoles, ...details];
 
-        if (userRole === "Org Super Admin") {
-          filteredRoles = filteredRoles.filter(
-            (role) =>
-              role.role_name !== "Super Admin" &&
-              role.role_name !== "Org Super Admin"
-          );
-        }
+        if (allRoles.length >= total || details.length === 0) break;
 
-        if (userRole !== "Super Admin" && userRole !== "Org Super Admin") {
-          filteredRoles = filteredRoles.filter(
-            (role) =>
-              role.role_name !== "Super Admin" &&
-              role.role_name !== "Org Super Admin" &&
-              role.role_name !== "Admin"
-          );
-        }
-        // Set the filtered roles data
-        setRoleData(filteredRoles);
-      })
-      .catch((errResponse) => {
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
+        page++;
+      }
+
+      // Permission filtering — unchanged from your original logic
+      if (userRole === "Super Admin") {
+        allRoles = allRoles.filter((role) => role.role_name !== "Super Admin");
+      }
+
+      if (userRole === "Org Super Admin") {
+        allRoles = allRoles.filter(
+          (role) =>
+            role.role_name !== "Super Admin" &&
+            role.role_name !== "Org Super Admin"
+        );
+      }
+
+      if (userRole !== "Super Admin" && userRole !== "Org Super Admin") {
+        allRoles = allRoles.filter(
+          (role) =>
+            role.role_name !== "Super Admin" &&
+            role.role_name !== "Org Super Admin" &&
+            role.role_name !== "Admin"
+        );
+      }
+
+      setRoleData(allRoles);
+    } catch (errResponse) {
+      setSnackData({
+        show: true,
+        message:
+          errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+        type: "error",
       });
+    }
   };
 
   const checkEmailAvailablity = (value) => {
@@ -584,13 +616,19 @@ export default function UserCreation({ onHandleClose, type, selecteddata }) {
     // Find the selected organization
     const selectedOrganization = orgData.find((org) => org.org_id === orgId);
 
-    let industryIds = null;
-    if (selectedOrganization?.industries?.includes(",")) {
-      industryIds = selectedOrganization?.industries
-        .split(",") // Split by comma
-        .map((industry) => Number(industry.trim())); // Convert each string to a number
-    } else {
-      industryIds = JSON.parse(selectedOrganization?.industries || "[]");
+    let industryIds = [];
+    const rawIndustries = selectedOrganization?.industries;
+    if (rawIndustries && rawIndustries.trim() !== "") {
+      if (rawIndustries.includes(",")) {
+        industryIds = rawIndustries.split(",").map((id) => Number(id.trim()));
+      } else {
+        try {
+          const parsed = JSON.parse(rawIndustries);
+          industryIds = Array.isArray(parsed) ? parsed : [Number(parsed)];
+        } catch {
+          industryIds = [Number(rawIndustries)];
+        }
+      }
     }
     // console.log("industryIds",industryIds)
 
