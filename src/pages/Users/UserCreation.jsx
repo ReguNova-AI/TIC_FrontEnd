@@ -14,6 +14,7 @@ import {
   InputLabel,
   Checkbox,
   FormControlLabel,
+  CircularProgress,
 } from "@mui/material";
 import AvatarUpload from "./AvatarUpload";
 import {
@@ -49,6 +50,7 @@ export default function UserCreation({ onHandleClose, type, selecteddata }) {
   const [filteredSectors, setFilteredSectors] = useState([]); // Holds sectors filtered by organization
   const [uploadedFileData, setUpoadedFileData] = useState("");
   const [mandatoryError, setMandatoryError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [snackData, setSnackData] = useState({
     show: false,
@@ -160,13 +162,17 @@ export default function UserCreation({ onHandleClose, type, selecteddata }) {
       industry_name: "",
       created_by: userdetails?.[0]?.user_id,
     });
+    setSelectedOrg("");
+    setSelectedIndustry([]);
   };
 
   const handleSubmit = async () => {
+    if (isSubmitting) return;
     try {
       if (!validateStep("final")) {
         return; // Stop if validation fails
       }
+      setIsSubmitting(true)
 
       // let filepayload = { documents: [uploadedFileData], type: "jpg" };
       // FileUploadApiService.fileUpload(filepayload)
@@ -193,7 +199,7 @@ export default function UserCreation({ onHandleClose, type, selecteddata }) {
       //     });
       //   });
 
-  let payload = { ...formData, send_email: sendEmail };
+      let payload = { ...formData, send_email: sendEmail };
 
       if (type === "new") {
         const response = await UserApiService.userCreate(payload);
@@ -297,6 +303,8 @@ export default function UserCreation({ onHandleClose, type, selecteddata }) {
           API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
         type: "error",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -1105,10 +1113,12 @@ export default function UserCreation({ onHandleClose, type, selecteddata }) {
                         : handleNext
                     }
                     variant="contained"
+                    disabled={isSubmitting}
                   >
-                    {activeStep === steps.length - 1
-                      ? BUTTON_LABEL.FINISH
-                      : BUTTON_LABEL.NEXT}
+                    {isSubmitting ? 
+                      (<CircularProgress size={20} color="inherit" />) 
+                      : activeStep === steps.length - 1 ? (BUTTON_LABEL.FINISH) : (BUTTON_LABEL.NEXT)
+                    }
                   </Button>
                 </Box>
               </Box>
