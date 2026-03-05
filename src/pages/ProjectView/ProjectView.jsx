@@ -237,7 +237,7 @@ const ProjectView = () => {
 
   const handleChange = (event, newValue) => {
     // Prevent navigation to disabled tabs when completion is 0 or less
-    if ((projectData?.completion_percentage || 0) <= 0 && newValue > 0) {
+    if (isAIAssessmentLoading && newValue > 0) {
       return;
     }
     setValue(newValue);
@@ -422,17 +422,17 @@ const ProjectView = () => {
                   <Tab
                     label={TAB_LABEL.SUMMARY_REPORT}
                     {...a11yProps(1)}
-                    disabled={(projectData?.completion_percentage || 0) <= 0}
+                    disabled={isAIAssessmentLoading}
                   />
                   <Tab
                     label={TAB_LABEL.CHAT_AI}
                     {...a11yProps(2)}
-                    disabled={(projectData?.completion_percentage || 0) <= 0}
+                    disabled={isAIAssessmentLoading}
                   />
                   <Tab
                     label={TAB_LABEL.RISK_ASSESSMENT}
                     {...a11yProps(3)}
-                    disabled={(projectData?.completion_percentage || 0) <= 0}
+                    disabled={isAIAssessmentLoading}
                   />
                 </Tabs>
               </Box>
