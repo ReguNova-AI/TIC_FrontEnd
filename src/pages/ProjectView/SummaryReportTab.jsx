@@ -221,7 +221,8 @@ const SummaryReportTab = ({ projectData }) => {
   const {
     data: extractedInfo,
     isLoading: isLoadingExtractedInfo,
-    error: extractedInfoError
+    error: extractedInfoError,
+    refetch: refetchExtractedInfo,
   } = useExtractedInfo(projectData?.project_id);
 
   // MOCK DATA FOR VERIFICATION
@@ -506,7 +507,8 @@ Initial sworn statement,long`;
       // Stop global loading state with error
       stopDataExtraction(projectId, projectName, 'Failed', false);
     } finally {
-      clearExtractionTimer(projectId)
+      clearExtractionTimer(projectId);
+      refetchExtractedInfo();
     }
   };
 
