@@ -19,7 +19,7 @@ const getMessage = (elapsed) => {
   }
   if (elapsed < 45) {
     const remaining = ESTIMATED_DURATION - elapsed;
-    return `Almost there — ~${remaining}s remaining`;
+    return `Approximate waiting — ~${remaining}s remaining`;
   }
   if (elapsed < 50) {
     return "Halfway there, hang tight!";
@@ -32,7 +32,7 @@ const getMessage = (elapsed) => {
   }
   if (elapsed < 75) {
     const remaining = ESTIMATED_DURATION - elapsed;
-    return `Almost there — ~${remaining}s remaining`;
+    return `Approximate waiting — ~${remaining}s remaining`;
   }
   if (elapsed < 85) {
     const remaining = ESTIMATED_DURATION - elapsed;
