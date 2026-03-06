@@ -36,7 +36,7 @@ import { useParameterManager } from "./useParameterManager";
 import { ProjectApiService } from "services/api/ProjectAPIService";
 import { useExtractedInfo } from "./useProjectQueries";
 import { useDataQuery } from "../../contexts/DataQueryContext";
-import DataExtractionLoader from "../../components/DataExtractionLoader";
+import DataExtractionLoader_Timer, { clearExtractionTimer, markExtractionStart } from "components/DataExtractionLoader_Timer";
 
 const documentTypes = ["short", "long", "int", "boolean", "array", "object"];
 
@@ -457,6 +457,7 @@ Initial sworn statement,long`;
 
     const projectId = projectData?.project_id;
     const projectName = projectData?.project_name || 'Unknown Project';
+    markExtractionStart(projectId)
 
     try {
       // Start global loading state
@@ -504,13 +505,15 @@ Initial sworn statement,long`;
 
       // Stop global loading state with error
       stopDataExtraction(projectId, projectName, 'Failed', false);
+    } finally {
+      clearExtractionTimer(projectId)
     }
   };
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Data Extraction Status Indicator - Moved to top */}
-      <DataExtractionLoader projectId={projectId} variant="progress" />
+      <DataExtractionLoader_Timer projectId={projectId} variant="progress" />
 
       {/* CSV Parameters Section */}
       <Box

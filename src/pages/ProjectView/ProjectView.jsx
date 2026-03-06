@@ -41,7 +41,7 @@ import {
 import { useProjectOperations, createHistoryObject } from "./useProjectOperations";
 import { useModalManager, useSnackbarManager } from "./useUIManager";
 import { useAIAssessmentOperations } from "../../components/hooks/useAIAssessmentOperations";
-import AIAssessmentStatusIndicator from "../../components/AIAssessmentStatusIndicator";
+import AIAssessmentStatusIndicator, { markAssessmentStart } from "../../components/AIAssessmentStatusIndicator";
 import { getStatusChipProps } from "shared/utility";
 import { brand } from "themes/theme/brand";
 
@@ -384,7 +384,7 @@ const ProjectView = () => {
 
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Box sx={{ marginRight: 3 }}>
-                      {statusChip(projectData?.status)}
+                      {!isAIAssessmentLoading&&statusChip(projectData?.AIAssesmentStatus)}
                     </Box>
                     <Box>
                       <AIAssessmentStatusIndicator 
@@ -450,7 +450,10 @@ const ProjectView = () => {
               <OverviewTab
                 projectData={projectData}
                 handleModalOpen={handleModalOpen}
-                handleRunAIAssessment={handleRunAIAssessment}
+                handleRunAIAssessment={()=>{
+                  markAssessmentStart(projectData?.project_id);
+                  handleRunAIAssessment()}
+                }
                 aiButtonLoading={isAIAssessmentLoading}
                 onFileUploadSuccess={refetchProjectData}
               />

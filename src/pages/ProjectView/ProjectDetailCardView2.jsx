@@ -91,9 +91,9 @@ const ProjectDetailsCardView = ({
               <Typography variant="h5">{data.project_name}</Typography>
 
               {/* Render Chips for each status, floated to the right */}
-              <div style={{ display: "flex", flexWrap: "wrap" }}>
+              {/* <div style={{ display: "flex", flexWrap: "wrap" }}>
                 {statusChip(data.status)}
-              </div>
+              </div> */}
             </Box>
 
             {/* Project No and Industry in a row */}

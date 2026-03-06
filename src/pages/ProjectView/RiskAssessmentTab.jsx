@@ -16,7 +16,7 @@ import { apiHost } from "../../config";
 import { useRiskSummary } from "./useProjectQueries";
 import { ProjectApiService } from "../../services/api/ProjectAPIService";
 import { useRiskSummaryOperations } from "../../components/hooks/useRiskSummaryOperations";
-import RiskSummaryStatusIndicator from "../../components/RiskSummaryStatusIndicator";
+import RiskSummaryStatusIndicator, { markRiskSummaryStart } from "../../components/RiskSummaryStatusIndicator";
 // import Logo from "../../assets/images/gridConform2.png?url"; // Vite will give you a URL
 
 const RiskAssessmentTab = ({ projectData }) => {
@@ -444,7 +444,10 @@ const RiskAssessmentTab = ({ projectData }) => {
             <Button
               variant="outlined"
               startIcon={<RefreshIcon />}
-              onClick={handleRegenerateRiskSummary}
+              onClick={()=>{
+                markRiskSummaryStart(projectData?.project_id);
+                handleRegenerateRiskSummary();
+              }}
               disabled={isRiskSummaryLoading || isLoading}
               size="small"
               sx={{
