@@ -500,6 +500,7 @@ Initial sworn statement,long`;
 
       // Stop global loading state with success
       stopDataExtraction(projectId, projectName, 'Completed', true);
+      refetchExtractedInfo();
 
     } catch (error) {
       console.error("Parameter extraction failed:", error);
@@ -508,7 +509,6 @@ Initial sworn statement,long`;
       stopDataExtraction(projectId, projectName, 'Failed', false);
     } finally {
       clearExtractionTimer(projectId);
-      refetchExtractedInfo();
     }
   };
 
