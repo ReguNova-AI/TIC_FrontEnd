@@ -25,6 +25,7 @@ import GoogleDriveFileCard from "./GoogleDriveFileCard";
 import { GoogleDrivePickerService } from "services/api/googleDrivePickerService";
 import { padding } from "polished";
 import UnifiedFileTree from "../../components/UnifiedFileTree"; // Added
+import { brand } from "themes/theme/brand";
 const getFileIcon = (filename) => {
   if (!filename) return <FileUnknownOutlined style={{ color: "#595959" }} />;
   const ext = filename.split(".").pop().toLowerCase();
@@ -79,6 +80,8 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
   // Multiple file upload states
   const [isUploadingMultiple, setIsUploadingMultiple] = useState(false);
   const [multipleUploadProgress, setMultipleUploadProgress] = useState(0);
+  const [currentFileProgress, setCurrentFileProgress] = useState(0); // NEW: per-file S3 progress
+  const [currentFileName, setCurrentFileName] = useState("");         // NEW: per-file name display
   const [uploadedFilesCount, setUploadedFilesCount] = useState(0);
   const [totalFilesCount, setTotalFilesCount] = useState(0);
 
@@ -147,12 +150,17 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
 
 
   // --- File Upload logic
-  const handleFileUpload = async (file) => {
+  // CHANGED: added optional `silent` and `onProgress` params.
+  // Existing single-file callers pass nothing — behaviour is identical for them.
+  const handleFileUpload = async (file, silent = false, onProgress = null) => {
     if (!file) return;
-    setUploadingFile(file);
-    setUploadProgress(0);
-    setUploadSuccess(false);
-    setOpenModal(true);
+
+    if (!silent) {
+      setUploadingFile(file);
+      setUploadProgress(0);
+      setUploadSuccess(false);
+      setOpenModal(true);
+    }
 
     try {
       const reader = new FileReader();
@@ -165,32 +173,42 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
       const ext = file.name.split(".").pop();
       const payload = { documents: [fileDataUrl], type: ext, project_id : data.project_id };
 
+      // CHANGED: pass onUploadProgress via otherConfig (4th arg) so axios fires progress events.
+      // BaseApiService.post signature: post(url, params, data, useBaseApiPath, otherConfig)
+      // FileUploadApiService.fileUpload calls BaseApiService.post(`/api/v1/uploadToStorage`, null, filepayload)
+      // — we need to thread the config through. See note below on FileUploadApiService change.
       const response = await FileUploadApiService.fileUpload(payload, {
         onUploadProgress: (evt) => {
           const percent = Math.round((evt.loaded * 100) / evt.total);
-          setUploadProgress(percent);
+          if (!silent) setUploadProgress(percent);
+          if (onProgress) onProgress(percent);
         },
       });
 
       // Assume API returns the uploaded file path
       const filePath = response.data.details?.[0];
-      setUploadProgress(100);
-      // Update the corresponding document in state
-      setFilePath(filePath);
-      // You might want to call a prop function to update the parent component's state
-      // For example: props.onFileUploadSuccess(docName, filePath);
 
-      setUploadSuccess(true);
-      message.success("File uploaded successfully!");
+      if (!silent) {
+        setUploadProgress(100);
+        setFilePath(filePath);
+        setUploadSuccess(true);
+        message.success("File uploaded successfully!");
+      }
+
       return filePath;
     } catch (err) {
       console.error(err);
-      message.error("File upload failed!");
-      setOpenModal(false);
+      if (!silent) {
+        message.error("File upload failed!");
+        setOpenModal(false);
+      }
+      throw err; // CHANGED: re-throw so multi-upload loop can catch and count failures
     }
   };
 
-  const handleUploadDocument = (doc_data) => {
+  // CHANGED: added optional `silent` param.
+  // When silent=true (called from multi-upload loop), skips modal close and messages.
+  const handleUploadDocument = (doc_data, silent = false) => {
     const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
     console.log("Document data to upload", doc_data);
     const payload = {
@@ -215,54 +233,38 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
     };
     console.log("Final payload", JSON.stringify(payload, null, 2));
 
-    // Use createProjectDocument for new uploads, uploadProjectDocument for updates
-    if (doc_data.version_id) {
-      // This is an update to an existing document
-      ProjectApiService.uploadProjectDocument(payload, doc_data.version_id)
-        .then((response) => {
-          message.success(response.message || "Document updated successfully!");
-          console.log("payload", payload);
+    const apiCall = doc_data.version_id
+      ? ProjectApiService.uploadProjectDocument(payload, doc_data.version_id)
+      : ProjectApiService.createProjectDocument(payload);
 
-          // Call the callback to refresh project data in parent component
-          if (onFileUploadSuccess) {
-            onFileUploadSuccess();
-          }
-        })
-        .catch((errResponse) => {
-          message.error(
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR ||
-            "Document update failed!"
-          );
-        });
-    } else {
-      // This is a new document upload
-      ProjectApiService.createProjectDocument(payload)
-        .then((response) => {
+    return apiCall
+      .then((response) => {
+        if (!silent) {
           message.success(response.message || "Document uploaded successfully!");
-          console.log("payload", payload);
-
-          // Call the callback to refresh project data in parent component
-          if (onFileUploadSuccess) {
-            onFileUploadSuccess();
-          }
-        })
-        .catch((errResponse) => {
+          if (onFileUploadSuccess) onFileUploadSuccess();
+        }
+      })
+      .catch((errResponse) => {
+        if (!silent) {
           message.error(
             errResponse?.error?.message ||
             API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR ||
             "Document upload failed!"
           );
-        });
-    }
-
-    // reset states
-    setOpenModal(false);
-    setUploadProgress(0);
-    setUploadingFile(null);
-    setUploadSuccess(false);
-    setFilePath("");
-    setNewDoc({ file: null });
+        }
+        throw errResponse;
+      })
+      .finally(() => {
+        // CHANGED: only reset modal/state for non-silent (single-file) flows
+        if (!silent) {
+          setOpenModal(false);
+          setUploadProgress(0);
+          setUploadingFile(null);
+          setUploadSuccess(false);
+          setFilePath("");
+          setNewDoc({ file: null });
+        }
+      });
   };
 
   // Handle multiple file uploads
@@ -271,6 +273,8 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
 
     setIsUploadingMultiple(true);
     setMultipleUploadProgress(0);
+    setCurrentFileProgress(0); // NEW
+    setCurrentFileName("");    // NEW
     setUploadedFilesCount(0);
     setTotalFilesCount(files.length);
     setOpenModal(true);
@@ -284,11 +288,20 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
 
+        // NEW: update which file is currently uploading and reset its progress bar
+        setCurrentFileName(file.name);
+        setCurrentFileProgress(0);
+
         try {
           console.log(`Uploading file ${i + 1}/${files.length}: ${file.name}`);
 
-          // Upload file to S3
-          const uploadedPath = await handleFileUpload(file);
+          // CHANGED: silent=true (don't touch single-file modal state),
+          // onProgress callback drives the per-file progress bar in real time
+          const uploadedPath = await handleFileUpload(
+            file,
+            true,
+            (pct) => setCurrentFileProgress(pct)
+          );
 
           if (uploadedPath) {
             // Create document record
@@ -298,8 +311,8 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
               file_path: uploadedPath,
             };
 
-            // Upload document metadata
-            await handleUploadDocument(documentData);
+            // CHANGED: silent=true so handleUploadDocument doesn't close the modal mid-batch
+            await handleUploadDocument(documentData, true);
 
             successfulUploads++;
             uploadResults.push({ file: file.name, status: 'success' });
@@ -342,15 +355,16 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
       console.error("Multiple file upload failed:", error);
       message.error(`❌ Upload process failed: ${error.message}`);
     } finally {
-      setIsUploadingMultiple(false);
-      setOpenModal(false);
-
-      // Reset progress after a delay to show completion
+      // CHANGED: delay close so user sees the 100% completion state briefly
       setTimeout(() => {
+        setIsUploadingMultiple(false);
+        setOpenModal(false);
         setMultipleUploadProgress(0);
+        setCurrentFileProgress(0);
+        setCurrentFileName("");
         setUploadedFilesCount(0);
         setTotalFilesCount(0);
-      }, 2000);
+      }, 1500);
     }
   };
 
@@ -569,12 +583,15 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
         <Modal
           open={openModal}
           footer={null}
-          onCancel={() => setOpenModal(false)}
+          onCancel={() => { if (!isUploadingMultiple) setOpenModal(false); }} // CHANGED: block accidental close during upload
+          closable={!isUploadingMultiple}     // CHANGED
+          maskClosable={!isUploadingMultiple} // CHANGED
           title={isUploadingMultiple ? "Uploading Multiple Files" : "Uploading Document"}
           centered
         >
           {isUploadingMultiple ? (
             <div>
+              {/* Overall progress — layout unchanged */}
               <div style={{ marginBottom: 16 }}>
                 <Typography.Text strong>
                   Uploading {uploadedFilesCount} of {totalFilesCount} files
@@ -585,17 +602,40 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
               </div>
               <Progress
                 percent={Math.round(multipleUploadProgress)}
-                status="active"
+                status={multipleUploadProgress === 100 ? "success" : "active"}
                 format={(percent) => `${percent}%`}
                 strokeColor={{
-                  '0%': '#108ee9',
-                  '100%': '#87d068',
+                  '0%': "#ffffff",
+                  '100%': brand.primary,
                 }}
               />
+
+              {/* NEW: per-file progress card */}
+              {currentFileName && (
+                <div style={{ marginTop: 16, padding: '10px 12px', backgroundColor: '#fafafa', border: '1px solid #f0f0f0', borderRadius: 6 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                    {getFileIcon(currentFileName)}
+                    <Typography.Text ellipsis style={{ flex: 1, fontSize: 13 }}>
+                      {currentFileName}
+                    </Typography.Text>
+                    <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                      {currentFileProgress}%
+                    </Typography.Text>
+                  </div>
+                  <Progress
+                    percent={currentFileProgress}
+                    size="small"
+                    showInfo={false}
+                    status={currentFileProgress === 100 ? "success" : "active"}
+                    strokeColor={brand.primary}
+                  />
+                </div>
+              )}
+
               <div style={{ marginTop: 8, fontSize: 12, color: '#666' }}>
                 Files will be uploaded to the root directory
               </div>
-              {uploadedFilesCount === totalFilesCount && (
+              {uploadedFilesCount === totalFilesCount && totalFilesCount > 0 && (
                 <div style={{ marginTop: 12, padding: 8, backgroundColor: '#f6ffed', border: '1px solid #b7eb8f', borderRadius: 4 }}>
                   <Typography.Text style={{ color: '#52c41a', fontSize: 12 }}>
                     ✅ Upload completed! Refreshing file structure...

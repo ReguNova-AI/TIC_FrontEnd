@@ -1,7 +1,7 @@
 import BaseApiService from "./BaseApiService";
 
-const _upload = (filepayload) => {
-  return BaseApiService.post(`/api/v1/uploadToStorage`, null, filepayload);
+const _upload = (filepayload, axiosConfig = {}) => {
+  return BaseApiService.post(`/api/v1/uploadToStorage`, null, filepayload, true, axiosConfig);
 };
 
 const _getFile = (filepayload) => {
