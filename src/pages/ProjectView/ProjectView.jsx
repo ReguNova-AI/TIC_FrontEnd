@@ -48,6 +48,59 @@ import { brand } from "themes/theme/brand";
 // Helper function to create a history object based on changes
 export { createHistoryObject };
 
+  function CustomTabPanel(props) {
+    const { children, value, index, ...other } = props;
+
+    return (
+      <div
+        role="tabpanel"
+        // hidden={value !== index}
+        id={`simple-tabpanel-${index}`}
+        aria-labelledby={`simple-tab-${index}`}
+        {...other}
+        style={{ height: '100%', overflow: 'hidden', display: value === index ? 'flex' : 'none', flexDirection: 'column' }}
+      >
+          <Box
+            sx={{
+              p: 2,
+              height: '100%',
+              overflowY: 'auto',
+              overflowX: 'hidden',
+              '&::-webkit-scrollbar': {
+                width: '6px',
+              },
+              '&::-webkit-scrollbar-track': {
+                background: '#f1f1f1',
+                borderRadius: '3px',
+              },
+              '&::-webkit-scrollbar-thumb': {
+                background: '#c1c1c1',
+                borderRadius: '3px',
+                '&:hover': {
+                  background: '#a8a8a8',
+                },
+              },
+            }}
+          >
+            {children}
+          </Box>
+      </div>
+    );
+  }
+
+  CustomTabPanel.propTypes = {
+    children: PropTypes.node,
+    index: PropTypes.number.isRequired,
+    value: PropTypes.number.isRequired,
+  };
+
+  function a11yProps(index) {
+    return {
+      id: `simple-tab-${index}`,
+      "aria-controls": `simple-tabpanel-${index}`,
+    };
+  }
+
 const ProjectView = () => {
   const [value, setValue] = React.useState(0);
   const location = useLocation();
@@ -58,6 +111,8 @@ const ProjectView = () => {
   const [chatLoading, setChatloading] = useState(false);
   const [runState, setRunState] = useState(true);
   const [standardChatState, setStandardChatState] = useState(true);
+  // Add at top of ProjectView state declarations:
+  const [isChatQuestionActive, setIsChatQuestionActive] = useState(false);
 
   // React Query hooks
   const {
@@ -237,69 +292,11 @@ const ProjectView = () => {
 
   const handleChange = (event, newValue) => {
     // Prevent navigation to disabled tabs when completion is 0 or less
-    if (isAIAssessmentLoading && newValue > 0) {
+    if ((isAIAssessmentLoading || (projectData?.completion_percentage || 0) <= 0 || projectData?.AIAssesmentStatus == null) && newValue > 0) {
       return;
     }
     setValue(newValue);
   };
-
-  function CustomTabPanel(props) {
-    const { children, value, index, ...other } = props;
-
-    return (
-      <div
-        role="tabpanel"
-        hidden={value !== index}
-        id={`simple-tabpanel-${index}`}
-        aria-labelledby={`simple-tab-${index}`}
-        {...other}
-        style={{
-          height: '100%',
-          overflow: 'hidden', // Prevent double scrollbars
-        }}
-      >
-        {value === index && (
-          <Box
-            sx={{
-              p: 2,
-              height: '100%',
-              overflowY: 'auto',
-              overflowX: 'hidden',
-              '&::-webkit-scrollbar': {
-                width: '6px',
-              },
-              '&::-webkit-scrollbar-track': {
-                background: '#f1f1f1',
-                borderRadius: '3px',
-              },
-              '&::-webkit-scrollbar-thumb': {
-                background: '#c1c1c1',
-                borderRadius: '3px',
-                '&:hover': {
-                  background: '#a8a8a8',
-                },
-              },
-            }}
-          >
-            {children}
-          </Box>
-        )}
-      </div>
-    );
-  }
-
-  CustomTabPanel.propTypes = {
-    children: PropTypes.node,
-    index: PropTypes.number.isRequired,
-    value: PropTypes.number.isRequired,
-  };
-
-  function a11yProps(index) {
-    return {
-      id: `simple-tab-${index}`,
-      "aria-controls": `simple-tabpanel-${index}`,
-    };
-  }
 
   // Show error if project fails to load
   if (projectError || standardError) {
@@ -371,21 +368,21 @@ const ProjectView = () => {
                     {projectData?.project_name}
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', }}>
-                    <Typography variant="body2" color="text.secondary">
+                    {/* <Typography variant="body2" color="text.secondary">
                       Progress :
                     </Typography>
                     <Typography variant="body2" fontWeight="bold" style={{ marginLeft: '8px', marginRight: '8px' }}>
                       {Math.round(projectData?.completion_percentage || 0)}%
-                    </Typography>
+                    </Typography> */}
                     {((projectData?.completion_percentage || 0) === 0) && <Typography variant="body2" color="text.secondary" >
                       ( Upload project files to enable AI features)
                     </Typography>}
                   </Box>
 
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Box sx={{ marginRight: 3 }}>
+                    {/* <Box sx={{ marginRight: 3 }}>
                       {!isAIAssessmentLoading&&statusChip(projectData?.AIAssesmentStatus)}
-                    </Box>
+                    </Box> */}
                     <Box>
                       <AIAssessmentStatusIndicator 
                         projectId={projectData?.project_id} 
@@ -422,17 +419,17 @@ const ProjectView = () => {
                   <Tab
                     label={TAB_LABEL.SUMMARY_REPORT}
                     {...a11yProps(1)}
-                    disabled={isAIAssessmentLoading}
+                    disabled={isAIAssessmentLoading || (projectData?.completion_percentage || 0) <= 0 || projectData?.AIAssesmentStatus == null}
                   />
                   <Tab
                     label={TAB_LABEL.CHAT_AI}
                     {...a11yProps(2)}
-                    disabled={isAIAssessmentLoading}
+                    disabled={isAIAssessmentLoading || (projectData?.completion_percentage || 0) <= 0 || projectData?.AIAssesmentStatus == null}
                   />
                   <Tab
                     label={TAB_LABEL.RISK_ASSESSMENT}
                     {...a11yProps(3)}
-                    disabled={isAIAssessmentLoading}
+                    disabled={isAIAssessmentLoading || (projectData?.completion_percentage || 0) <= 0 || projectData?.AIAssesmentStatus == null}
                   />
                 </Tabs>
               </Box>
@@ -470,8 +467,9 @@ const ProjectView = () => {
             <CustomTabPanel value={value} index={2}>
               <ChatAITab
                 chatLoading={chatLoading}
-
                 projectData={projectData}
+                isQuestionActive={isChatQuestionActive}
+                setIsQuestionActive={setIsChatQuestionActive}
 
               />
             </CustomTabPanel>

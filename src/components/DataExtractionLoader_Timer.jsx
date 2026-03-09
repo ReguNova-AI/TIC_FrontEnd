@@ -75,18 +75,11 @@ const DataExtractionLoader_Timer = ({
   const [elapsed, setElapsed] = useState(0);
   const intervalRef = useRef(null);
 
-  // Don't render if no projectId provided
-  if (!projectId) {
-    return null;
-  }
-
   // Check if this specific project is extracting
-  const isThisProjectExtracting = isProjectExtracting(projectId);
+   const isThisProjectExtracting = projectId ? isProjectExtracting(projectId) : false;
 
   useEffect(() => {
-    if (!projectId) return;
-
-    if (!isThisProjectExtracting) {
+    if (!projectId || !isThisProjectExtracting) {
       if (intervalRef.current) clearInterval(intervalRef.current);
       return;
     }
@@ -105,9 +98,7 @@ const DataExtractionLoader_Timer = ({
   }, [projectId, isThisProjectExtracting]);
 
   // Don't render if this project is not extracting
-  if (!isThisProjectExtracting) {
-    return null;
-  }
+  if (!projectId || !isThisProjectExtracting) return null;
   const message = getMessage(elapsed);
 
   const renderChip = () => (

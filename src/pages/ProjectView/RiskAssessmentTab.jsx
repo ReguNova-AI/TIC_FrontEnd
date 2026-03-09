@@ -357,7 +357,8 @@ const RiskAssessmentTab = ({ projectData }) => {
     });
 
     const blob = await Packer.toBlob(doc);
-    saveAs(blob, `risk-assessment.docx`);
+    const project_name = projectData?.project_name
+    saveAs(blob, `${project_name}_risk-assessment.docx`);
   };
 
 

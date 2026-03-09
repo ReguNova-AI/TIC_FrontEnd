@@ -14,12 +14,11 @@ import { useChatHistory, useChatMutation } from "./useProjectQueries";
 import { useQueryClient } from "@tanstack/react-query";
 import { PROJECT_QUERY_KEYS } from "./useProjectQueries";
 
-const ChatAIView = ({ data, projectId }) => {
+const ChatAIView = ({ data, projectId, isQuestionActive, setIsQuestionActive }) => {
 
   const [query, setQuery] = useState("");
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [response, setResponse] = useState();
-  const [isQuestionActive, setIsQuestionActive] = useState(false); // Track if we're in the middle of asking a question
   const [snackData, setSnackData] = useState({
     show: false,
     message: "",
@@ -112,6 +111,7 @@ const ChatAIView = ({ data, projectId }) => {
   }, [query, chatMutation, currentQuestion, response, queryClient, projectId]);
 
   const handleKeyDown = (e) => {
+    if(isQuestionActive) return;
     if (e.key === "Enter") {
       handleSearch();
     }
@@ -139,10 +139,10 @@ const ChatAIView = ({ data, projectId }) => {
           variant="contained"
           color="primary"
           onClick={handleSearch}
-          disabled={chatMutation.isPending}
+          disabled={isQuestionActive}
           sx={{ minWidth: "80px", height: "36px" }}
         >
-          {chatMutation.isPending ? <CircularProgress size={24} color="inherit" /> : "Ask"}
+          {isQuestionActive ? <CircularProgress size={24} color="inherit" /> : "Ask"}
         </Button>
       </Box>
 
@@ -167,7 +167,7 @@ const ChatAIView = ({ data, projectId }) => {
               </Typography>
 
               {/* Display the current response or loading state */}
-              {isQuestionActive && !response ? (
+              {isQuestionActive ? (
                 <Box sx={{ padding: 2, display: "flex", alignItems: "center", gap: 1 }}>
                   <CircularProgress size={20} />
                   <Typography variant="body2" sx={{ fontStyle: "italic", color: "text.secondary" }}>
@@ -208,7 +208,7 @@ const ChatAIView = ({ data, projectId }) => {
           Previously Asked Questions
         </Typography>
 
-        {isLoadingHistory && !isQuestionActive ? (
+        {isLoadingHistory ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 2 }}>
             <CircularProgress size={24} />
             <Typography sx={{ ml: 2 }}>Loading chat history...</Typography>
