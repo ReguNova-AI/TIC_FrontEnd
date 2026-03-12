@@ -7,7 +7,6 @@ import Typography from "@mui/material/Typography";
 
 // project import
 import AuthWrapper from "./AuthWrapper";
-import AuthRegister from "./auth-forms/AuthRegister";
 import AuthRegisterDirect from "./auth-forms/AuthRegisterDirect";
 
 // ================================|| REGISTER ||================================ //

@@ -8,10 +8,6 @@ import Box from "@mui/material/Box";
 import Logo from "components/logo";
 import AuthCard from "./AuthCard";
 
-// assets
-import AuthBackground from "assets/images/auth/AuthBackground";
-import { height } from "@mui/system";
-
 // ==============================|| AUTHENTICATION - WRAPPER ||============================== //
 
 export default function AuthWrapper({ children }) {

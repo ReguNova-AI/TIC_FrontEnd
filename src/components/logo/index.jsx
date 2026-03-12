@@ -8,7 +8,7 @@ import Stack from '@mui/material/Stack';
 // project import
 import config from 'config';
 // import logo from '../../assets/images/logo1.png';
-import logo from '../../assets/images/DDlogo.png';
+import logo from '/DDlogo.webp';
 
 // ==============================|| MAIN LOGO ||============================== //
 

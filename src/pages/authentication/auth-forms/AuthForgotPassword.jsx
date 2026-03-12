@@ -1,7 +1,6 @@
 import PropTypes from "prop-types";
 import React, { useState } from "react";
-import { Link as RouterLink, useNavigate } from "react-router-dom";
-import * as actions from "../../../store/actions";
+import { useNavigate } from "react-router-dom";
 
 // Material-UI imports
 import Button from "@mui/material/Button";

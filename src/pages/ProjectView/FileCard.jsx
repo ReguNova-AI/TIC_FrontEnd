@@ -40,7 +40,7 @@ import { OrganisationApiService } from "services/api/OrganizationAPIService";
 import DocumentDialog from "../../components/@extended/DocumentDialog";
 import { PROJECT_DETAIL_PAGE } from "shared/constants";
 import _ from "lodash";
-import logo from "../../assets/images/DDlogo.png";
+import logo from "/DDlogo.webp";
 
 // Function to parse the API response into a structured format (skipping the title)
 export const parseApiResponse = (response) => {
