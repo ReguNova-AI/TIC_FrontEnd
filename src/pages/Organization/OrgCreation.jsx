@@ -1,22 +1,22 @@
 import * as React from "react";
-import {
-  TextField,
-  Button,
-  Grid,
-  Box,
-  Typography,
-  Stepper,
-  Step,
-  StepLabel,
-  FormControl,
-  Select,
-  MenuItem,
-  InputLabel,
-  AccordionDetails,
-  AccordionSummary,
-  Accordion,
-  Checkbox,
-} from "@mui/material";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import Grid from "@mui/material/Grid";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Stepper from "@mui/material/Stepper";
+import Step from "@mui/material/Step";
+import StepLabel from "@mui/material/StepLabel";
+import FormControl from "@mui/material/FormControl";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import InputLabel from "@mui/material/InputLabel";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import Accordion from "@mui/material/Accordion";
+import Checkbox from "@mui/material/Checkbox";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 
 import AvatarUpload from "../Users/AvatarUpload";
 import {
@@ -28,10 +28,8 @@ import {
 } from "shared/constants";
 import { UserApiService } from "services/api/UserAPIService";
 import { useState, useEffect } from "react";
-import Snackbar from "@mui/material/Snackbar";
-import Alert from "@mui/material/Alert";
-import { FileUploadApiService } from "services/api/FileUploadAPIService";
-import { UpCircleOutlined } from "@ant-design/icons";
+// import { FileUploadApiService } from "services/api/FileUploadAPIService";
+import UpCircleOutlined from "@ant-design/icons/UpCircleOutlined";
 import { OrganisationApiService } from "services/api/OrganizationAPIService";
 
 // Steps for the stepper

@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Space, Table, ConfigProvider, Empty, Button, Spin, Tooltip,Popconfirm } from "antd";
-import FormControl from "@mui/material/FormControl";
-import OutlinedInput from "@mui/material/OutlinedInput";
-import InputLabel from "@mui/material/InputLabel";
-import InputAdornment from "@mui/material/InputAdornment";
-import { CloseCircleOutlined, DeleteFilled, SearchOutlined } from "@ant-design/icons";
+import CloseCircleOutlined from "@ant-design/icons/CloseCircleOutlined";
+// import DeleteFilled from "@ant-design/icons/DeleteFilled";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
@@ -13,7 +10,6 @@ import {
   LISTING_PAGE,
   API_SUCCESS_MESSAGE,
   GENERIC_DATA_LABEL,
-  FORM_LABEL,
 } from "shared/constants";
 import trashIcon from "../../assets/images/icons/trash4.svg";
 import SearchInput from "components/form/SearchInput";

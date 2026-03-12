@@ -1,4 +1,3 @@
-import * as React from "react";
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
@@ -10,20 +9,15 @@ import AvatarGroup from "@mui/material/AvatarGroup";
 import avatar1 from "../../assets/images/users/avatar-1.png";
 import avatar2 from "../../assets/images/users/avatar-2.png";
 import avatar3 from "../../assets/images/users/avatar-3.png";
-import {
-  EyeOutlined,
-  PlayCircleOutlined,
-  CalendarOutlined,
-} from "@ant-design/icons";
+import EyeOutlined from "@ant-design/icons/EyeOutlined";
+import PlayCircleOutlined from "@ant-design/icons/PlayCircleOutlined";
+import CalendarOutlined from "@ant-design/icons/CalendarOutlined";
 import {
   LISTING_PAGE,
-  API_SUCCESS_MESSAGE,
-  STATUS,
   BUTTON_LABEL,
-  GENERIC_DATA_LABEL,
 } from "shared/constants";
 import { getStatusChipProps } from "shared/utility";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // Function to generate the status chip for each status
 const getStatusChip = (status) => {

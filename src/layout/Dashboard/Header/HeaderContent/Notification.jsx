@@ -25,20 +25,15 @@ import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 
 // assets
-import BellOutlined from "@ant-design/icons/BellOutlined";
+// import BellOutlined from "@ant-design/icons/BellOutlined";
 import bellicon from "../../../../assets/images/icons/notification.svg";
 import CheckCircleOutlined from "@ant-design/icons/CheckCircleOutlined";
-import GiftOutlined from "@ant-design/icons/GiftOutlined";
-import MessageOutlined from "@ant-design/icons/MessageOutlined";
-import SettingOutlined from "@ant-design/icons/SettingOutlined";
+import ExclamationCircleOutlined from "@ant-design/icons/ExclamationCircleOutlined";
+import FileAddOutlined from "@ant-design/icons/FileAddOutlined";
+import FileDoneOutlined from "@ant-design/icons/FileDoneOutlined";
+import ShareAltOutlined from "@ant-design/icons/ShareAltOutlined";
+import UserAddOutlined from "@ant-design/icons/UserAddOutlined";
 import { NotificationApiService } from "services/api/NotificationAPIService";
-import {
-  ExclamationCircleOutlined,
-  FileAddOutlined,
-  FileDoneOutlined,
-  ShareAltOutlined,
-  UserAddOutlined,
-} from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { Empty, Modal } from "antd";
 
@@ -73,7 +68,6 @@ export default function Notification() {
   const [allNotification, setAllNotification] = useState([]);
   const [arrayId, setArrayId] = useState([]);
   const [visible, setVisible] = useState(false);
-  const [modalContent, setModalContent] = useState({});
   const [selectedCategory, setSelectedCategory] = useState("PROJECT");
   const [timeKey, setTimeKey] = useState(0); // Force re-render for time updates
   const [forceUpdate, setForceUpdate] = useState(0); // Additional force update mechanism
@@ -107,13 +101,11 @@ export default function Notification() {
 
   const handleButtonClick = (e, tab) => {
     handleClose(e);
-    setModalContent({});
     setVisible(true);
   };
 
   const handleModalClose = () => {
     setVisible(false);
-    setModalContent({});
   };
 
   const handleClose = (event) => {

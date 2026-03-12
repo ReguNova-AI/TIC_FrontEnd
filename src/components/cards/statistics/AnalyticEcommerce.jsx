@@ -11,12 +11,10 @@ import Box from "@mui/material/Box";
 import MainCard from "components/MainCard";
 
 // assets
-import {
-  RiseOutlined,
-  FallOutlined,
-  HistoryOutlined,
-  FileTextOutlined,
-} from "@ant-design/icons";
+import RiseOutlined from "@ant-design/icons/RiseOutlined";
+import FallOutlined from "@ant-design/icons/FallOutlined";
+import HistoryOutlined from "@ant-design/icons/HistoryOutlined";
+import FileTextOutlined from "@ant-design/icons/FileTextOutlined";
 import Avatar from "@mui/material/Avatar";
 
 const iconSX = {

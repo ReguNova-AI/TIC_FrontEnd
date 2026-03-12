@@ -5,7 +5,6 @@ import { Link, useLocation, matchPath } from 'react-router-dom';
 import NavItem from './NavItem';
 
 // material-ui
-import { useTheme } from '@mui/material/styles';
 import Avatar from '@mui/material/Avatar';
 import Chip from '@mui/material/Chip';
 import ListItemButton from '@mui/material/ListItemButton';
@@ -13,25 +12,22 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import Collapse from '@mui/material/Collapse';
-import { DownOutlined , UpOutlined } from '@ant-design/icons';
+import DownOutlined from '@ant-design/icons/DownOutlined';
+import UpOutlined from '@ant-design/icons/UpOutlined';
 // project import
 import { handlerActiveItem, useGetMenuMaster } from 'api/menu';
 
 import dashboardIcon from "../../../../../assets/images/icons/dashboardIcon.svg";
 import organization from "../../../../../assets/images/icons/organization.svg";
 import projects from "../../../../../assets/images/icons/projects.svg";
-import users from "../../../../../assets/images/icons/users.svg";
 import report from "../../../../../assets/images/icons/report.svg";
-import certificate from "../../../../../assets/images/icons/certificate.svg";
 import dashboard2 from "../../../../../assets/images/icons/dashboard2.svg";
-import certificate2 from "../../../../../assets/images/icons/certificate2.svg";
 import certificate3 from "../../../../../assets/images/icons/certificate3.svg";
 import users2 from "../../../../../assets/images/icons/users2.svg";
 import setting from "../../../../../assets/images/icons/setting.svg";
 import Tooltip from "@mui/material/Tooltip";
 
 function NavSubItem({ item, level }) {
-  const theme = useTheme();
 
   const { menuMaster } = useGetMenuMaster();
   const drawerOpen = menuMaster.isDashboardDrawerOpened;

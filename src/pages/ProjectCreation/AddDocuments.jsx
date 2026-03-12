@@ -1,36 +1,15 @@
-import React, { useState, useEffect, useMemo } from "react";
-import {
-  Box,
-  TextField,
-  IconButton, // Keep for legacy or UnifiedControl
-  InputLabel,
-  Select,
-  MenuItem,
-  FormControl,
-  Fab, // Keep if still using for mobile add?
-} from "@mui/material";
-import {
-  Delete as DeleteIcon,
-} from "@mui/icons-material";
-import { Progress, Popconfirm, message, Tree, Button, Tooltip, Typography } from "antd"; // Added Tree, Button, Typography
-import {
-  FilePdfOutlined,
-  FileWordOutlined,
-  FileExcelOutlined,
-  FileTextOutlined,
-  FileImageOutlined,
-  FileUnknownOutlined,
-  CloseCircleOutlined,
-  PlusCircleOutlined, // Added
-  DeleteOutlined,     // Added
-} from "@ant-design/icons";
+import { useState } from "react";
+import Box from "@mui/material/Box";
+import { message, Typography } from "antd";
+import FilePdfOutlined from "@ant-design/icons/FilePdfOutlined";
+import FileWordOutlined from "@ant-design/icons/FileWordOutlined";
+import FileExcelOutlined from "@ant-design/icons/FileExcelOutlined";
+import FileTextOutlined from "@ant-design/icons/FileTextOutlined";
+import FileImageOutlined from "@ant-design/icons/FileImageOutlined";
+import FileUnknownOutlined from "@ant-design/icons/FileUnknownOutlined";
 import { FileUploadApiService } from "services/api/FileUploadAPIService";
-import { FORM_LABEL } from "shared/constants";
-import AttachFileIcon from "@mui/icons-material/AttachFile"; // For UnifiedControl
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'; // For UnifiedControl?
 import UnifiedDocumentControl from "../../components/UnifiedDocumentControl";
 import UnifiedFileTree from "../../components/UnifiedFileTree"; // Added
-import folderIcon from "../../assets/images/icons/folderIcon1.svg"; // Import folder icon
 
 // --- Utility: format size
 const formatFileSize = (bytes) => {

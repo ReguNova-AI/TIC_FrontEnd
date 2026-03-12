@@ -1,13 +1,14 @@
+import { lazy, useEffect, useState } from "react";
 // material-ui
-import Avatar from "@mui/material/Avatar";
-import AvatarGroup from "@mui/material/AvatarGroup";
-import Button from "@mui/material/Button";
+// import Avatar from "@mui/material/Avatar";
+// import AvatarGroup from "@mui/material/AvatarGroup";
+// import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
-import List from "@mui/material/List";
-import ListItemAvatar from "@mui/material/ListItemAvatar";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemSecondaryAction from "@mui/material/ListItemSecondaryAction";
-import ListItemText from "@mui/material/ListItemText";
+// import List from "@mui/material/List";
+// import ListItemAvatar from "@mui/material/ListItemAvatar";
+// import ListItemButton from "@mui/material/ListItemButton";
+// import ListItemSecondaryAction from "@mui/material/ListItemSecondaryAction";
+// import ListItemText from "@mui/material/ListItemText";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
@@ -17,29 +18,25 @@ import MainCard from "components/MainCard";
 import AnalyticEcommerce from "components/cards/statistics/AnalyticEcommerce";
 import CountView from "components/cards/statistics/CountView";
 
-import MonthlyBarChart from "./MonthlyBarChart";
-import ReportAreaChart from "./ReportAreaChart";
-import UniqueVisitorCard from "./UniqueVisitorCard";
-import SaleReportCard from "./SaleReportCard";
+// import ReportAreaChart from "./ReportAreaChart";
+// import UniqueVisitorCard from "./UniqueVisitorCard";
+// import SaleReportCard from "./SaleReportCard";
 import ProjectTable from "./ProjectTable";
-import ChatBotView from "../../components/chatbot/ChatbotView";
+// import ChatBotView from "../../components/chatbot/ChatbotView";
 
-import SessionService from "../../services/SessionService";
 import { API_ERROR_MESSAGE } from "../../shared/constants";
-import BarChart from "./BarChart";
+const BarChart = lazy(() => import("./BarChart"));
+const PieChart = lazy(() => import("./PieChart"));
+const UserWeeklyBarChart = lazy(() => import("./UserWeeklyBarChart"));
 import orgIcon from "../../assets/images/icons/orgIcon4.svg";
 import UserIcon from "../../assets/images/icons/userIcon4.svg";
 import UserIcon2 from "../../assets/images/icons/userIcon6.svg";
 
 import { ProjectApiService } from "services/api/ProjectAPIService";
 import content from "../../components/cards/statistics/content";
-import { useEffect, useState } from "react";
-import UserWeeklyBarChart from "./UserWeeklyBarChart";
 import { DashboardApiService } from "services/api/DashboardAPIService";
-import PieChart from "./PieChart";
 import { UserApiService } from "services/api/UserAPIService";
-import * as actions from "../../store/actions";
-import { useSelector } from 'react-redux';
+// import { useSelector } from 'react-redux';
 import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
 
 
@@ -182,7 +179,10 @@ export default function DashboardDefault() {
               <Typography variant="h5" style={{ padding: "25px 0px 0px 24px" }}>
                 Industry wise project counts
               </Typography>
-              <BarChart data={chartData}/>
+              {/* echarts loads here only for Super Admin, deferred via lazy() */}
+              <Suspense fallback={<Box sx={{ height: 400 }} />}>
+                <BarChart data={chartData} />
+              </Suspense>
             </Box>
           </Grid>
           <Grid item xs={12} md={6} lg={3}>
@@ -224,7 +224,9 @@ export default function DashboardDefault() {
               <Typography variant="h5" style={{ padding: "25px 0px 0px 24px" }}>
                 Organisation wise project counts
               </Typography>
-              <PieChart data={pieChartData} />
+              <Suspense fallback={<Box sx={{ height: 550 }} />}>
+                <PieChart data={pieChartData} />
+              </Suspense>
             </Box>
           
           </Grid>
@@ -292,7 +294,10 @@ export default function DashboardDefault() {
                       {/* <Typography variant="h3">$7,650</Typography> */}
                     </Stack>
                   </Box>
+                {/* echarts loads here deferred — non-blocking */}
+                <Suspense fallback={<Box sx={{ height: 400 }} />}>
                   <UserWeeklyBarChart />
+                </Suspense>
                 </MainCard>
               </>
             )}

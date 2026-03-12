@@ -1,16 +1,14 @@
-import React, { useState } from "react";
-import {
-  Modal,
-  Box,
-  Typography,
-  TextField,
-  Button,
-  Stack,
-  Divider,
-  IconButton,
-} from "@mui/material";
+import { useState } from "react";
+import Modal from "@mui/material/Modal";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import Stack from "@mui/material/Stack";
+import Divider from "@mui/material/Divider";
+import IconButton from "@mui/material/IconButton";
 
-import { CloseOutlined } from "@ant-design/icons";
+import CloseOutlined from "@ant-design/icons/CloseOutlined";
 import { useNavigate } from "react-router-dom";
 
 import { PaymentApiService } from "services/api/Payment";

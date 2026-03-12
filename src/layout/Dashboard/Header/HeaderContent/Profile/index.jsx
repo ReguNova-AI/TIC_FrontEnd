@@ -1,6 +1,4 @@
 import { useRef, useState } from "react";
-import * as actionTypes from "../../../../../store/actions/actionTypes";
-import { useDispatch } from "react-redux";
 // material-ui
 import { useTheme } from "@mui/material/styles";
 import ButtonBase from "@mui/material/ButtonBase";
@@ -24,15 +22,15 @@ import Avatar from "components/@extended/Avatar";
 import MainCard from "components/MainCard";
 import Transitions from "components/@extended/Transitions";
 
+// import LogoutOutlined from "@ant-design/icons/LogoutOutlined";
+// import QuestionCircleOutlined from "@ant-design/icons/QuestionCircleOutlined";
+// import UserOutlined from "@ant-design/icons/UserOutlined";
 // assets
-import LogoutOutlined from "@ant-design/icons/LogoutOutlined";
-import SettingOutlined from "@ant-design/icons/SettingOutlined";
 import avatar1 from "assets/images/users/avatar-1.png";
 import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
-import { QuestionCircleOutlined, UserOutlined } from "@ant-design/icons";
 import { AuthApiService } from "services/api/AuthApiService";
 import { useNavigate } from "react-router";
 import { API_SUCCESS_MESSAGE } from "shared/constants";
@@ -40,14 +38,10 @@ import userIcon from  "../../../../../assets/images/icons/users2.svg";
 import informationIcon from  "../../../../../assets/images/icons/information.svg";
 import logoutIcon from  "../../../../../assets/images/icons/logout.svg";
 
-
-
-
 // ==============================|| HEADER CONTENT - PROFILE ||============================== //
 
 export default function Profile() {
   const theme = useTheme();
-  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const [selectedIndex, setSelectedIndex] = useState(0);

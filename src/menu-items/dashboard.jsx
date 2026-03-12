@@ -1,15 +1,13 @@
 // assets
-import {
-  DashboardOutlined,
-  FileTextOutlined,
-  LineChartOutlined,
-  SafetyCertificateOutlined,
-  ProductOutlined,
-  ProjectOutlined,
-  UserOutlined,
-  SettingOutlined,
-  PartitionOutlined,
-} from "@ant-design/icons";
+import DashboardOutlined from "@ant-design/icons/DashboardOutlined";
+import FileTextOutlined from "@ant-design/icons/FileTextOutlined";
+import LineChartOutlined from "@ant-design/icons/LineChartOutlined";
+import SafetyCertificateOutlined from "@ant-design/icons/SafetyCertificateOutlined";
+import ProductOutlined from "@ant-design/icons/ProductOutlined";
+import ProjectOutlined from "@ant-design/icons/ProjectOutlined";
+import UserOutlined from "@ant-design/icons/UserOutlined";
+import SettingOutlined from "@ant-design/icons/SettingOutlined";
+import PartitionOutlined from "@ant-design/icons/PartitionOutlined";
 
 // icons
 const icons = {

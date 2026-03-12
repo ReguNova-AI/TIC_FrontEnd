@@ -11,18 +11,11 @@ import {
   Avatar,
   Popconfirm,
 } from "antd";
-import { Chip, Tooltip } from "@mui/material";
-import FormControl from "@mui/material/FormControl";
-import OutlinedInput from "@mui/material/OutlinedInput";
-import InputLabel from "@mui/material/InputLabel";
-import InputAdornment from "@mui/material/InputAdornment";
+import Tooltip from "@mui/material/Tooltip";
 import MultiSelectWithChip from "components/form/MultiSelectWithChip"; // Assuming this is a custom component
-import {
-  SearchOutlined,
-  CloseCircleOutlined,
-  CheckCircleOutlined,
-  EditOutlined,
-} from "@ant-design/icons";
+import CloseCircleOutlined from "@ant-design/icons/CloseCircleOutlined";
+import CheckCircleOutlined from "@ant-design/icons/CheckCircleOutlined";
+import EditOutlined from "@ant-design/icons/EditOutlined";
 import { useLocation, useNavigate } from "react-router-dom";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
@@ -32,7 +25,6 @@ import {
   API_SUCCESS_MESSAGE,
   BUTTON_LABEL,
   GENERIC_DATA_LABEL,
-  FORM_LABEL,
   HEADING,
 } from "shared/constants";
 import { OrganisationApiService } from "services/api/OrganizationAPIService";

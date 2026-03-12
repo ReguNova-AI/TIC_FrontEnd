@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { lazy, useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 
 // material-ui
@@ -19,7 +19,7 @@ import menuIcon from "../../assets/images/icons/menuIcon.svg";
 import { useState } from "react";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
-import CouponModal from "pages/Payment/CouponModal";
+const CouponModal = lazy(() => import("pages/Payment/CouponModal"));
 
 const DEFAULT_PLAN = {
   id: "additionalcontract",
@@ -37,8 +37,7 @@ const DEFAULT_PLAN = {
 // ==============================|| MAIN LAYOUT ||============================== //
 
 export default function DashboardLayout() {
-  const { menuMasterLoading } = useGetMenuMaster();
-  const { menuMaster } = useGetMenuMaster();
+  const { menuMasterLoading, menuMaster } = useGetMenuMaster();
   const downXL = useMediaQuery((theme) => theme.breakpoints.down("lg"));
   const drawerOpen = menuMaster?.isDashboardDrawerOpened;
   const navigate = useNavigate();
@@ -108,13 +107,18 @@ export default function DashboardLayout() {
         <Outlet />
       </Box>
 
-      <CouponModal
-        open={modalOpen}
-        setSnackData={setSnackData}
-        handleClose={() => setModalOpen(false)}
-        plan={DEFAULT_PLAN}
-        disableClose={true}
-      />
+      {/* Conditional render means the lazy chunk only downloads when modalOpen becomes true */}
+      {modalOpen && (
+        <Suspense fallback={null}>
+          <CouponModal
+            open={modalOpen}
+            setSnackData={setSnackData}
+            handleClose={() => setModalOpen(false)}
+            plan={DEFAULT_PLAN}
+            disableClose={true}
+          />
+        </Suspense>
+      )}
 
       <Snackbar
         style={{ top: "80px" }}

@@ -1,11 +1,10 @@
 import React, { useState } from "react";
 import { Card, Modal, Row, Col, Button, Space, Typography } from "antd";
-import {
-  AppstoreAddOutlined,
-  DatabaseOutlined,
-  UsergroupAddOutlined,
-  LockOutlined,
-} from "@ant-design/icons";
+// import AppstoreAddOutlined from "@ant-design/icons/AppstoreAddOutlined";
+import DatabaseOutlined from "@ant-design/icons/DatabaseOutlined";
+import UsergroupAddOutlined from "@ant-design/icons/UsergroupAddOutlined";
+import LockOutlined from "@ant-design/icons/LockOutlined";
+import MailOutlined from "@ant-design/icons/MailOutlined";
 import SectorListing from "./SectorListing";
 import IndustriesListing from "./IndustryListing";
 import RoleListing from "./RoleListing";
@@ -17,7 +16,6 @@ import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import PermissionListing from "./PermissionListing";
 import EmailPermissionSettings from "./EmailPermissionSettings";
-import { MailOutlined } from "@ant-design/icons";
 
 const { Text } = Typography;
 
