@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Space, Table, ConfigProvider, Empty, Button, Spin, Modal } from "antd";
-import { Chip } from "@mui/material";
+import Chip  from "@mui/material/Chip";
 import FormControl from "@mui/material/FormControl";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import InputLabel from "@mui/material/InputLabel";

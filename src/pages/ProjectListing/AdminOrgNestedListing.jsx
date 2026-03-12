@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Table, Avatar, Input, Space, Popover, Button } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
-import { Chip } from "@mui/material";
+import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
 import { formatDate, getStatusChipProps } from "shared/utility";
 import { BUTTON_LABEL, LISTING_PAGE, FORM_LABEL } from "shared/constants";

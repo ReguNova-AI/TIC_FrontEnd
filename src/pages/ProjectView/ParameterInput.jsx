@@ -1,5 +1,11 @@
 import React, { useState, useCallback } from 'react';
-import { TextField, FormControl, InputLabel, Select, MenuItem, Button, Box } from '@mui/material';
+import TextField from '@mui/material/TextField';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
 
 const ParameterInput = ({ onAddParameter, documentTypes }) => {
   const [newDoc, setNewDoc] = useState({

@@ -1,8 +1,8 @@
 import * as actionTypes from "./actionTypes";
 import { AuthApiService } from "../../services/api/AuthApiService";
 import SessionService from "../../services/SessionService";
-import { STORAGE_KEYS } from "../../shared/constants";
-import { fetchUserInfo } from "./userInfo";
+import { STORAGE_KEYS } from "../../shared/constants.login";
+// import { fetchUserInfo } from "./userInfo";
 
 export const authStart = () => {
   return {

@@ -5,18 +5,16 @@ import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import { Formik } from "formik";
 import * as Yup from "yup";
-import {
-  Button,
-  Grid,
-  Stack,
-  OutlinedInput,
-  InputLabel,
-  FormHelperText,
-  Snackbar,
-  Alert,
-  AlertTitle,
-  Slide,
-} from "@mui/material";
+import Button from "@mui/material/Button";
+import Grid from "@mui/material/Grid";
+import Stack from "@mui/material/Stack";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import InputLabel from "@mui/material/InputLabel";
+import FormHelperText from "@mui/material/FormHelperText";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
+import AlertTitle from "@mui/material/AlertTitle";
+import Slide from "@mui/material/Slide";
 
 import AnimateButton from "components/@extended/AnimateButton";
 import { UserApiService } from "services/api/UserAPIService";
@@ -256,9 +254,8 @@ export default function AuthRegisterDirect() {
           ) : (
             <AlertTitle>Error</AlertTitle>
           )}
-          {/* {snackData.message || */}
-          You have taken the first step towards transforming your due diligence
-          process. Please check your email to continue.
+          {snackData.message ||
+          "You have taken the first step towards transforming your due diligence process. Please check your email to continue."}
         </Alert>
       </Snackbar>
     </>

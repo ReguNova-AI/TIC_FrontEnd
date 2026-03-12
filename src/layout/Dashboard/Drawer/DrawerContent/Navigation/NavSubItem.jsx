@@ -28,7 +28,7 @@ import certificate2 from "../../../../../assets/images/icons/certificate2.svg";
 import certificate3 from "../../../../../assets/images/icons/certificate3.svg";
 import users2 from "../../../../../assets/images/icons/users2.svg";
 import setting from "../../../../../assets/images/icons/setting.svg";
-import { Tooltip } from "@mui/material";
+import Tooltip from "@mui/material/Tooltip";
 
 function NavSubItem({ item, level }) {
   const theme = useTheme();

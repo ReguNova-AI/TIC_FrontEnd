@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import * as actions from "../../../store/actions";
@@ -28,7 +28,7 @@ import AnimateButton from "components/@extended/AnimateButton";
 import EyeOutlined from "@ant-design/icons/EyeOutlined";
 import EyeInvisibleOutlined from "@ant-design/icons/EyeInvisibleOutlined";
 import { AuthApiService } from "services/api/AuthApiService";
-import { LOGIN_PAGE, API_ERROR_MESSAGE } from "shared/constants";
+import { LOGIN_PAGE, API_ERROR_MESSAGE } from "shared/constants.login";
 
 // ============================|| JWT - LOGIN ||============================ //
 
@@ -42,11 +42,13 @@ export default function AuthLogin() {
     type: "error",
   });
 
-  sessionStorage.clear();
-  sessionStorage.removeItem("userDetails");
-  localStorage.removeItem("userDetails"); // If you're using localStorage
-  document.cookie =
-    "session_cookie=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/"; // Example for clearing cookies
+  // Clear session once on mount, not on every render
+  useEffect(() => {
+    sessionStorage.clear();
+    localStorage.removeItem("userDetails");
+    document.cookie =
+      "session_cookie=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+  }, []);
 
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);

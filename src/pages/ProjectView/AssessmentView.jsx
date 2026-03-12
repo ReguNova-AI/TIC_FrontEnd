@@ -1,5 +1,11 @@
-import React, { useEffect } from 'react';
-import { Table, TableHead, TableBody, TableRow, TableCell, Typography, Box } from '@mui/material';
+import React from 'react';
+import Table from '@mui/material/Table';
+import TableHead from '@mui/material/TableHead';
+import TableBody from '@mui/material/TableBody';
+import TableRow from '@mui/material/TableRow';
+import TableCell from '@mui/material/TableCell';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
 import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 
 // const complianceData = [];

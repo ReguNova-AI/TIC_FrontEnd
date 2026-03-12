@@ -1,5 +1,7 @@
 import React from "react";
-import { CircularProgress, Box, Typography } from "@mui/material";
+import CircularProgress from "@mui/material/CircularProgress";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 
 const ProgressRing = ({ label, totalFiles, currentFiles }) => {
   const progress = totalFiles > 0 ? (currentFiles / totalFiles) * 100 : 0;

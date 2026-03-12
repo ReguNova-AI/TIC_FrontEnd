@@ -17,7 +17,7 @@ import {
   HistoryOutlined,
   FileTextOutlined,
 } from "@ant-design/icons";
-import { Avatar } from "@mui/material";
+import Avatar from "@mui/material/Avatar";
 
 const iconSX = {
   fontSize: "0.75rem",

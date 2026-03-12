@@ -1,5 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Box, Chip, Typography, LinearProgress } from '@mui/material';
+import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
+import Typography from '@mui/material/Typography';
+import LinearProgress from '@mui/material/LinearProgress';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { useAIAssessment } from '../contexts/AIAssessmentContext';
 

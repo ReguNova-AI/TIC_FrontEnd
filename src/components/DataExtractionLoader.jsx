@@ -1,5 +1,7 @@
 import React from 'react';
-import { Box, Typography, CircularProgress, Chip } from '@mui/material';
+import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
+import Chip from '@mui/material/Chip';
 import DataUsageIcon from '@mui/icons-material/DataUsage';
 import { useDataQuery } from '../contexts/DataQueryContext';
 

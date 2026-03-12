@@ -21,7 +21,8 @@ import Box from "@mui/material/Box";
 // project import
 import MainCard from "components/MainCard";
 import Transitions from "components/@extended/Transitions";
-import { Tabs, Tab } from "@mui/material";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
 
 // assets
 import BellOutlined from "@ant-design/icons/BellOutlined";

@@ -1,6 +1,6 @@
 import BaseApiService from "./BaseApiService";
 import SessionService from "../SessionService";
-import { STORAGE_KEYS } from "../../shared/constants";
+import { STORAGE_KEYS } from "../../shared/constants.login";
 
 const _sectorCreate = (payload) => {
   return BaseApiService.post(`/api/v1/sectors/create`, null, payload);

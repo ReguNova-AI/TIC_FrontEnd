@@ -1,21 +1,17 @@
 
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import {
-    Box,
-    Button,
-    Card,
-    Grid,
-    TextField,
-    Select,
-    MenuItem,
-    FormControl,
-    InputLabel,
-    Stack,
-    Typography,
-    IconButton,
-    InputAdornment
-} from '@mui/material';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
+import Grid from '@mui/material/Grid';
+import TextField from '@mui/material/TextField';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 import {
     CreateNewFolder as CreateNewFolderIcon,
     NoteAdd as NoteAddIcon,

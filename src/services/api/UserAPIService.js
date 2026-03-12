@@ -1,4 +1,3 @@
-import _ from "lodash";
 import BaseApiService from "./BaseApiService";
 
 const _userCreate = (payload) => {
@@ -14,7 +13,7 @@ const _userListing = (page, limit) => {
     limit: limit,
   };
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
-  const user_id = userdetails?.[0]?.user_id;
+  // const user_id = userdetails?.[0]?.user_id;
   const role = userdetails?.[0]?.role_name;
   const industry_id = userdetails?.[0]?.industry_id;
   if (role === "Super Admin") {

@@ -1,5 +1,3 @@
-import { Chip } from "@mui/material";
-
 export const updateObject = (oldObject, updatedProps) => {
   return {
     ...oldObject,

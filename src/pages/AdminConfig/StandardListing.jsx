@@ -32,7 +32,8 @@ import {
 import trashIcon from "../../assets/images/icons/trash4.svg";
 
 import { Modal } from "antd";
-import { Tab, Tabs } from "@mui/material";
+import Tab from "@mui/material/Tab";
+import Tabs from "@mui/material/Tabs";
 import SearchInput from "components/form/SearchInput";
 
 const StandardListing = () => {

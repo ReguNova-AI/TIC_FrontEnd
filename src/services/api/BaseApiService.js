@@ -1,6 +1,6 @@
 import axiosInstance from './axiosInstance';
 import SessionService from '../SessionService';
-import { STORAGE_KEYS } from '../../shared/constants';
+import { STORAGE_KEYS } from '../../shared/constants.login';
 import { apiPath } from '../../config';
 
 const get = async (url, params, useBaseApiPath, otherConfig, noToken) => {

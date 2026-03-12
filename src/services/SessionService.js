@@ -1,6 +1,6 @@
 // import * as actions from '../store/actions';
 // import DispatcherService from './DispatcherService';
-import { STORAGE_KEYS } from 'shared/constants';
+import { STORAGE_KEYS } from 'shared/constants.login';
 
 var _memberData = {};
 

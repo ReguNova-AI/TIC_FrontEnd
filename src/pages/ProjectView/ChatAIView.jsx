@@ -1,11 +1,9 @@
 import React, { useCallback, useState } from "react";
-import {
-  Box,
-  TextField,
-  Button,
-  CircularProgress,
-  Typography,
-} from "@mui/material";
+import Box from "@mui/material/Box";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
+import Typography from "@mui/material/Typography";
 import { useSpring, animated } from "react-spring"; // For animations
 import { API_ERROR_MESSAGE } from "shared/constants";
 import Snackbar from "@mui/material/Snackbar";

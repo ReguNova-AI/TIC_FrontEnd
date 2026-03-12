@@ -39,8 +39,10 @@ import { OrganisationApiService } from "services/api/OrganizationAPIService";
 // import logo from "../../assets/images/GridConform2.jpg";
 import DocumentDialog from "../../components/@extended/DocumentDialog";
 import { PROJECT_DETAIL_PAGE } from "shared/constants";
-import _ from "lodash";
-import logo from "/DDlogo.webp";
+import cloneDeep from "lodash/cloneDeep";
+import _isEqual from "lodash/isEqual";
+// import logo from "/DDlogo.webp";
+const logo = "/DDlogo.webp";
 
 // Function to parse the API response into a structured format (skipping the title)
 export const parseApiResponse = (response) => {
@@ -555,8 +557,8 @@ const FileCard = ({
 
   // Function to handle opening the modal
   const handleOpenModal = () => {
-    complienceDataBeforeEdit = _.cloneDeep(complianceData);
-    sectionDataBeforeEdit = _.cloneDeep(sections);
+    complienceDataBeforeEdit = cloneDeep(complianceData);
+    sectionDataBeforeEdit = cloneDeep(sections);
     setOpenModal(true);
   };
 
@@ -565,11 +567,11 @@ const FileCard = ({
     let isEqual = true;
 
     if (fileName === PROJECT_DETAIL_PAGE.CHECKLIST_REPORT) {
-      isEqual = _.isEqual(sections, sectionDataBeforeEdit);
+      isEqual = _isEqual(sections, sectionDataBeforeEdit);
     }
 
     if (fileName === PROJECT_DETAIL_PAGE.ASSESSMENT_REPORT) {
-      isEqual = _.isEqual(complianceData, complienceDataBeforeEdit);
+      isEqual = _isEqual(complianceData, complienceDataBeforeEdit);
     }
 
     if (!isEqual) {
@@ -587,12 +589,12 @@ const FileCard = ({
     } else {
       // Revert data back to original
       if (dirtyFileName === PROJECT_DETAIL_PAGE.CHECKLIST_REPORT) {
-        setSections(_.cloneDeep(sectionDataBeforeEdit));
+        setSections(cloneDeep(sectionDataBeforeEdit));
       }
 
       if (dirtyFileName === PROJECT_DETAIL_PAGE.ASSESSMENT_REPORT) {
         // If you're using a setter, use that here
-        setComplianceData(_.cloneDeep(complienceDataBeforeEdit));
+        setComplianceData(cloneDeep(complienceDataBeforeEdit));
       }
     }
 

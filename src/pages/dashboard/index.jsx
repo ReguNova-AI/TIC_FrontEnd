@@ -25,7 +25,7 @@ import ProjectTable from "./ProjectTable";
 import ChatBotView from "../../components/chatbot/ChatbotView";
 
 import SessionService from "../../services/SessionService";
-import { API_ERROR_MESSAGE, STORAGE_KEYS } from "../../shared/constants";
+import { API_ERROR_MESSAGE } from "../../shared/constants";
 import BarChart from "./BarChart";
 import orgIcon from "../../assets/images/icons/orgIcon4.svg";
 import UserIcon from "../../assets/images/icons/userIcon4.svg";

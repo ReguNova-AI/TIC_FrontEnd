@@ -25,7 +25,7 @@ import users2 from "../../../../../assets/images/icons/users2.svg";
 import setting from "../../../../../assets/images/icons/setting.svg";
 
 import dashboard2 from "../../../../../assets/images/icons/dashboard2.svg";
-import { Tooltip } from "@mui/material";
+import Tooltip from "@mui/material/Tooltip";
 
 export default function NavItem({ item, level }) {
   const theme = useTheme();

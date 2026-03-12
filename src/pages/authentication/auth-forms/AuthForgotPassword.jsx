@@ -19,7 +19,7 @@ import { Formik } from "formik";
 // Project imports
 import AnimateButton from "components/@extended/AnimateButton";
 import { AuthApiService } from "services/api/AuthApiService";
-import { LOGIN_PAGE, API_ERROR_MESSAGE, API_SUCCESS_MESSAGE } from "shared/constants";
+import { LOGIN_PAGE, API_ERROR_MESSAGE, API_SUCCESS_MESSAGE } from "shared/constants.login";
 
 // ============================|| FORGOT PASSWORD||============================ //
 
