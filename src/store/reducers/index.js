@@ -1,5 +1,5 @@
 import { combineReducers } from 'redux';
-import * as actionTypes from '../actions/';
+import * as actionTypes from '../actions/actionTypes';
 
 import authReducer from './auth';
 import userInfoReducer from './userInfo';

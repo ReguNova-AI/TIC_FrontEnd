@@ -92,13 +92,34 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-        // Force all emotion into one chunk
-          if (id.includes('@emotion/styled')) return 'ui-vendor';
-          if (id.includes('@emotion/react')) return 'ui-vendor';
-          if (id.includes('@emotion/cache')) return 'ui-vendor';
-          if (id.includes('@mui/material')) return 'ui-vendor';
-          if (id.includes('react-dom') || id.includes('react/')) return 'react-vendor';
-          if (id.includes('antd')) return 'antd-vendor';
+          // React core
+          if (id.includes("/node_modules/react/") || id.includes("/node_modules/react-dom/") || id.includes("/node_modules/scheduler/")) return "react-vendor";
+
+          // Merge emotion+MUI+antd into ONE ui-vendor to kill the circular warnings
+          // They're all loaded together anyway — no benefit splitting them
+          if (
+            id.includes("/node_modules/@emotion/") ||
+            id.includes("/node_modules/@mui/") ||
+            id.includes("/node_modules/antd/") ||
+            id.includes("/node_modules/rc-") ||
+            id.includes("/node_modules/@ant-design/") ||
+            id.includes("/node_modules/stylis/")
+          ) return "ui-vendor";
+
+          // Charts
+          if (id.includes("/node_modules/echarts/") || id.includes("/node_modules/zrender/")) return "echarts-vendor";
+          if (id.includes("/node_modules/apexcharts/") || id.includes("/node_modules/react-apexcharts/")) return "apex-vendor";
+
+          // Document generation
+          if (id.includes("/node_modules/docx/") || id.includes("/node_modules/file-saver/") || id.includes("/node_modules/html2canvas/")) return "docgen-vendor";
+
+          // Animation
+          if (id.includes("/node_modules/@react-spring/") || id.includes("/node_modules/react-spring/")) return "spring-vendor";
+
+          if (id.includes("/node_modules/dompurify/")) return "purify-vendor";
+          if (id.includes("/node_modules/react-router/") || id.includes("/node_modules/react-router-dom/") || id.includes("/node_modules/@remix-run/")) return "router-vendor";
+          if (id.includes("/node_modules/formik/") || id.includes("/node_modules/yup/")) return "forms-vendor";
+          if (id.includes("/node_modules/axios/")) return "axios-vendor";
         },
       },
     },
