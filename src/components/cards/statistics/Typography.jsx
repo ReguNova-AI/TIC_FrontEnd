@@ -1,43 +1,49 @@
-import styled from "styled-components";
+import React from "react";
+import MuiTypography from "@mui/material/Typography";
 
-const Type = styled.p`
-  padding: 0;
-  margin: 0;
-  -moz-osx-font-smoothing: grayscale !important;
-  -webkit-font-smoothing: antialiased !important;
-  font-family: 'Open Sans', sans-serif;
-  /* also try: subpixel-antialiased, for non-retina */
-  /* display: inline; */
-  /* background-color: rgba(0, 0, 255, 0.25); */
-`;
+// Replaced: styled-components
+// All variants share the same base font styles via sx prop.
+// Type1–Type5 map directly to the original font-size/weight/line-height values.
 
-export const Type1 = styled(Type)`
-  font-size: 20px;
-  line-height: 24px;
-  font-weight: 700;
-`;
+const baseStyle = {
+  padding: 0,
+  margin: 0,
+  fontFamily: "'Open Sans', sans-serif",
+  WebkitFontSmoothing: "antialiased",
+  MozOsxFontSmoothing: "grayscale",
+};
 
-export const Type2 = styled(Type)`
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 600;
-`;
+export const Type1 = ({ children, style, className }) => (
+  <MuiTypography component="p" className={className}
+    sx={{ ...baseStyle, fontSize: "20px", lineHeight: "24px", fontWeight: 700, ...style }}>
+    {children}
+  </MuiTypography>
+);
 
-export const Type3 = styled(Type)`
-  font-size: 14px;
-  line-height: 24px;
-  font-weight: 500;
-`;
+export const Type2 = ({ children, style, className }) => (
+  <MuiTypography component="p" className={className}
+    sx={{ ...baseStyle, fontSize: "16px", lineHeight: "24px", fontWeight: 600, ...style }}>
+    {children}
+  </MuiTypography>
+);
 
-export const Type4 = styled(Type)`
-  font-size: 13px;
-  line-height: 16px;
-  font-weight: 600;
-`;
+export const Type3 = ({ children, style, className }) => (
+  <MuiTypography component="p" className={className}
+    sx={{ ...baseStyle, fontSize: "14px", lineHeight: "24px", fontWeight: 500, ...style }}>
+    {children}
+  </MuiTypography>
+);
 
-export const Type5 = styled(Type)`
-  margin-bottom: revert!important;
-  font-size: 12px;
-  line-height: 16px;
-  font-weight: 600;
-`;
+export const Type4 = ({ children, style, className }) => (
+  <MuiTypography component="p" className={className}
+    sx={{ ...baseStyle, fontSize: "13px", lineHeight: "16px", fontWeight: 600, ...style }}>
+    {children}
+  </MuiTypography>
+);
+
+export const Type5 = ({ children, style, className }) => (
+  <MuiTypography component="p" className={className}
+    sx={{ ...baseStyle, fontSize: "12px", lineHeight: "16px", fontWeight: 600, marginBottom: "revert !important", ...style }}>
+    {children}
+  </MuiTypography>
+);

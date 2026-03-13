@@ -1,14 +1,10 @@
 import React from "react";
-import styled from "styled-components";
+import Box from "@mui/material/Box";
 import Card from "./Card";
 
-const StyledCardGrid = styled.div`
-  position: relative;
-  display: grid;
-  grid-gap: 3%;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  margin: 16px 0;
-`;
+// Replaced: import styled from 'styled-components'
+// StyledCardGrid was a single styled.div with one CSS rule.
+// Equivalent MUI Box sx prop below.
 
 const CardGrid = ({
   wide = false,
@@ -22,8 +18,17 @@ const CardGrid = ({
   const gridClasses = wide ? "grid grid--wide" : "grid";
 
   return (
-    <StyledCardGrid className={gridClasses} {...props}>
-      
+    <Box
+      className={gridClasses}
+      sx={{
+        position: "relative",
+        display: "grid",
+        gap: "3%",
+        gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
+        margin: "16px 0",
+      }}
+      {...props}
+    >
       {cards.map((card, index) => (
         <Card
           key={index}
@@ -34,8 +39,7 @@ const CardGrid = ({
           data={data}
         />
       ))}
-      
-    </StyledCardGrid>
+    </Box>
   );
 };
 

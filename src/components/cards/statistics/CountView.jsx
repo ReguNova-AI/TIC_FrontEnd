@@ -4,7 +4,6 @@ import content from "./content";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 
-
 const CountView = ({data}) => {
   
   const [updatedCards, setUpdatedCards] = useState([]);// Now using state for updated cards
