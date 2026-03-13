@@ -34,6 +34,7 @@ import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
 import { useProjects } from "components/hooks/useProjects";
 import SearchInput from "components/form/SearchInput";
+import { brand } from "themes/theme/brand";
 
 // ------------------ CustomTabPanel ------------------
 function CustomTabPanel(props) {
@@ -137,6 +138,7 @@ const Listing = () => {
       : projectData?.total_invited_project_count || 0;
 
   // ------------------ Search & Filters ------------------
+  const handleSearch = (value) => setSearchText(value.toLowerCase());
   const debouncedSearchText = useDebounce(searchText, 500);
 
   const filterData = (data) => {
@@ -196,7 +198,7 @@ const Listing = () => {
           />
           <a
             onClick={() => handleNavigateToProject(record.index, "view")}
-            style={{ color: "#2ba9bc", cursor: "pointer" }}
+            style={{ color: brand.primary, cursor: "pointer" }}
           >
             {text}
           </a>
@@ -280,7 +282,7 @@ const Listing = () => {
       dataIndex: "status",
       render: (status, record) => (
         <Button
-          style={{ background: "#003a8c", color: "#ffffff" }}
+          style={{ background: brand.primary, color: "#ffffff" }}
           onClick={() => handleNavigateToProject(record.index, "run")}
         >
           {BUTTON_LABEL.RUN_PROJECT}

@@ -22,6 +22,7 @@ import {
 import { getStatusChipProps } from "shared/utility";
 import { useNavigate } from "react-router-dom";
 import { Empty } from "antd";
+import { brand } from "themes/theme/brand";
 
 // Function to generate the status chip for each status
 const getStatusChip = (status) => {
@@ -214,7 +215,7 @@ const CardView = ({ data, gridValue }) => {
                   <Button
                     size="small"
                     variant="contained"
-                    style={{ background: "#003a8c" }}
+                    style={{ background: brand.primary }}
                     onClick={() => handleNavigateToProject(item.index, "run")}
                   >
                     {BUTTON_LABEL.RUN_PROJECT}
