@@ -1,59 +1,47 @@
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
 
 // material-ui
-import { alpha, styled } from '@mui/material/styles';
-import Box from '@mui/material/Box';
+import { alpha, styled } from "@mui/material/styles";
+import Box from "@mui/material/Box";
 
-// third-party
-import SimpleBar from 'simplebar-react';
-import { BrowserView, MobileView } from 'react-device-detect';
+// ─── Native CSS scrollbar — replaces simplebar-react (42KB) + react-device-detect (66KB) ───
 
-// root style
-const RootStyle = styled(BrowserView)({
+const ScrollBox = styled(Box)(({ theme }) => ({
   flexGrow: 1,
-  height: '100%',
-  overflow: 'hidden'
-});
-
-// scroll bar wrapper
-const SimpleBarStyle = styled(SimpleBar)(({ theme }) => ({
-  maxHeight: '100%',
-  '& .simplebar-scrollbar': {
-    '&:before': {
-      background: alpha(theme.palette.grey[500], 0.48)
+  height: "100%",
+  overflow: "auto",
+  // Hide scrollbar on mobile (touch devices scroll natively without a visible bar)
+  // Show a styled scrollbar on desktop
+  "&::-webkit-scrollbar": {
+    width: 6,
+  },
+  "&::-webkit-scrollbar-track": {
+    background: "transparent",
+  },
+  "&::-webkit-scrollbar-thumb": {
+    background: alpha(theme.palette.grey[500], 0.48),
+    borderRadius: 3,
+    "&:hover": {
+      background: alpha(theme.palette.grey[500], 0.72),
     },
-    '&.simplebar-visible:before': {
-      opacity: 1
-    }
   },
-  '& .simplebar-track.simplebar-vertical': {
-    width: 10
-  },
-  '& .simplebar-track.simplebar-horizontal .simplebar-scrollbar': {
-    height: 6
-  },
-  '& .simplebar-mask': {
-    zIndex: 'inherit'
-  }
+  // Firefox
+  scrollbarWidth: "thin",
+  scrollbarColor: `${alpha(theme.palette.grey[500], 0.48)} transparent`,
 }));
 
 // ==============================|| SIMPLE SCROLL BAR ||============================== //
 
 export default function SimpleBarScroll({ children, sx, ...other }) {
   return (
-    <>
-      <RootStyle>
-        <SimpleBarStyle clickOnTrack={false} sx={sx} {...other}>
-          {children}
-        </SimpleBarStyle>
-      </RootStyle>
-      <MobileView>
-        <Box sx={{ overflowX: 'auto', ...sx }} {...other}>
-          {children}
-        </Box>
-      </MobileView>
-    </>
+    <ScrollBox sx={sx} {...other}>
+      {children}
+    </ScrollBox>
   );
 }
 
-SimpleBarScroll.propTypes = { children: PropTypes.any, sx: PropTypes.any, other: PropTypes.any };
+SimpleBarScroll.propTypes = {
+  children: PropTypes.any,
+  sx: PropTypes.any,
+  other: PropTypes.any,
+};

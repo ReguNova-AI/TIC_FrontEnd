@@ -2,7 +2,7 @@ import * as React from "react";
 import { useTheme } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import InputBase from "@mui/material/InputBase";
-import { SearchOutlined } from "@ant-design/icons";
+import SearchOutlined from "@ant-design/icons/SearchOutlined";
 
 export default function SearchInput({
   value,

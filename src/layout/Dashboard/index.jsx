@@ -1,10 +1,13 @@
-import { lazy, useEffect } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 
 // material-ui
 import useMediaQuery from "@mui/material/useMediaQuery";
 import Toolbar from "@mui/material/Toolbar";
 import Box from "@mui/material/Box";
+import IconButton from "@mui/material/IconButton";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 
 // project import
 import Drawer from "./Drawer";
@@ -12,13 +15,8 @@ import Header from "./Header";
 import navigation from "menu-items";
 import Loader from "components/Loader";
 import Breadcrumbs from "components/@extended/Breadcrumbs";
-
 import { handlerDrawerOpen, useGetMenuMaster } from "api/menu";
-import { Button } from "antd";
 import menuIcon from "../../assets/images/icons/menuIcon.svg";
-import { useState } from "react";
-import Snackbar from "@mui/material/Snackbar";
-import Alert from "@mui/material/Alert";
 const CouponModal = lazy(() => import("pages/Payment/CouponModal"));
 
 const DEFAULT_PLAN = {
@@ -75,19 +73,28 @@ export default function DashboardLayout() {
   }, [downXL, navigate]);
 
   if (menuMasterLoading) return <Loader />;
+
   return (
     <Box sx={{ display: "flex", width: "100%" }}>
       <Header />
       <Drawer />
-      <Button
+      <IconButton
         onClick={() => handlerDrawerOpen(!drawerOpen)}
-        style={{
+        size="small"
+        sx={{
           marginTop: "66px",
           position: "fixed",
           marginLeft: drawerOpen ? "240px" : !downXL ? "63px" : "2px",
-          zIndex: "999999",
+          zIndex: 999999,
           borderRadius: "50%",
           padding: "6px",
+          bgcolor: "background.paper",
+          border: "1px solid",
+          borderColor: "divider",
+          "&:hover": {
+            bgcolor: "background.paper",
+            borderColor: "primary.main",
+          },
         }}
       >
         <img
@@ -97,7 +104,7 @@ export default function DashboardLayout() {
           style={{ transform: !drawerOpen ? "none" : "scaleX(-1)" }}
           className="nav-icon--selected"
         />
-      </Button>
+      </IconButton>
       <Box
         component="main"
         sx={{ width: "calc(100% - 260px)", flexGrow: 1, p: { xs: 2, sm: 3 } }}
