@@ -303,7 +303,7 @@ const ProjectView = () => {
 
   const handleChange = (event, newValue) => {
     // Prevent navigation to disabled tabs when completion is 0 or less
-    if ((isAIAssessmentLoading || (projectData?.completion_percentage || 0) <= 0 || projectData?.AIAssesmentStatus == null) && newValue > 0) {
+    if ((isAIAssessmentLoading || projectData?.success_count <= 0) && newValue > 0) {
       return;
     }
     // Mark this tab as visited so it renders for the first time
@@ -432,17 +432,17 @@ const ProjectView = () => {
                   <Tab
                     label={TAB_LABEL.SUMMARY_REPORT}
                     {...a11yProps(1)}
-                    disabled={isAIAssessmentLoading || (projectData?.completion_percentage || 0) <= 0 || projectData?.AIAssesmentStatus == null}
+                    disabled={isAIAssessmentLoading || projectData?.success_count <= 0}
                   />
                   <Tab
                     label={TAB_LABEL.CHAT_AI}
                     {...a11yProps(2)}
-                    disabled={isAIAssessmentLoading || (projectData?.completion_percentage || 0) <= 0 || projectData?.AIAssesmentStatus == null}
+                    disabled={isAIAssessmentLoading || projectData?.success_count <= 0}
                   />
                   <Tab
                     label={TAB_LABEL.RISK_ASSESSMENT}
                     {...a11yProps(3)}
-                    disabled={isAIAssessmentLoading || (projectData?.completion_percentage || 0) <= 0 || projectData?.AIAssesmentStatus == null}
+                    disabled={isAIAssessmentLoading || projectData?.success_count <= 0}
                   />
                 </Tabs>
               </Box>
