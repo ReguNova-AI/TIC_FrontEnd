@@ -1,21 +1,18 @@
 import * as React from "react";
-import {
-  TextField,
-  Button,
-  Grid,
-  Box,
-  Typography,
-  Stepper,
-  Step,
-  StepLabel,
-  FormControl,
-  Select,
-  MenuItem,
-  InputLabel,
-  Checkbox,
-  FormControlLabel,
-  CircularProgress,
-} from "@mui/material";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import Grid from "@mui/material/Grid";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Stepper from "@mui/material/Stepper";
+import Step from "@mui/material/Step";
+import StepLabel from "@mui/material/StepLabel";
+import FormControl from "@mui/material/FormControl";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import InputLabel from "@mui/material/InputLabel";
+import Checkbox from "@mui/material/Checkbox";
+import CircularProgress from "@mui/material/CircularProgress";
 import AvatarUpload from "./AvatarUpload";
 import {
   API_ERROR_MESSAGE,

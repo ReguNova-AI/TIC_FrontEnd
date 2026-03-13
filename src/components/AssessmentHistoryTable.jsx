@@ -2,11 +2,9 @@ import React, { useState } from "react";
 import Box  from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
-import {
-  CheckCircleOutlined,
-  CloseCircleOutlined,
-  EyeOutlined,
-} from "@ant-design/icons";
+import CheckCircleOutlined from "@ant-design/icons/CheckCircleOutlined";
+import CloseCircleOutlined from "@ant-design/icons/CloseCircleOutlined";
+import EyeOutlined from "@ant-design/icons/EyeOutlined";
 import DocumentDialog from "./@extended/DocumentDialog";
 import {
   extractAnswerAndExplanation,

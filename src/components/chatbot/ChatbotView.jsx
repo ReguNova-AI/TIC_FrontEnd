@@ -4,7 +4,7 @@ import Popper from '@mui/material/Popper';
 import Fade from '@mui/material/Fade';
 import Paper from '@mui/material/Paper';
 import Fab  from '@mui/material/Fab';
-import { MessageOutlined } from '@ant-design/icons';
+import MessageOutlined from '@ant-design/icons/MessageOutlined';
 import Message from './Message'; 
 
 

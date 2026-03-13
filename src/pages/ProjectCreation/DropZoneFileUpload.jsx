@@ -18,7 +18,7 @@ import {
 import { FileUploadApiService } from "services/api/FileUploadAPIService";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
-import { Tooltip } from "@mui/material";
+import Tooltip from "@mui/material/Tooltip";
 import { useParams } from "react-router";
 
 const { Option } = Select;

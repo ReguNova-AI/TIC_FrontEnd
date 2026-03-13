@@ -1,16 +1,23 @@
-import React, { useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import Typography from "@mui/material/Typography";
-import { useSpring, animated } from "react-spring"; // For animations
+import { motion } from "framer-motion";
 import { API_ERROR_MESSAGE } from "shared/constants";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import { useChatHistory, useChatMutation } from "./useProjectQueries";
 import { useQueryClient } from "@tanstack/react-query";
 import { PROJECT_QUERY_KEYS } from "./useProjectQueries";
+
+// Animation config — mirrors the react-spring tension:100 / friction:10 spring
+const springTransition = {
+  type: "spring",
+  stiffness: 100,
+  damping: 10,
+};
 
 const ChatAIView = ({ data, projectId, isQuestionActive, setIsQuestionActive }) => {
 
@@ -37,13 +44,6 @@ const ChatAIView = ({ data, projectId, isQuestionActive, setIsQuestionActive }) 
 
   // Use chatHistoryData directly or fallback to provided data
   const history = chatHistoryData ?? [];
-
-  // Spring animation for the response text
-  const animationProps = useSpring({
-    opacity: currentQuestion ? 1 : 0,
-    transform: currentQuestion ? "translateY(0)" : "translateY(10px)",
-    config: { tension: 100, friction: 10 },
-  });
 
   const handleSearch = useCallback(async () => {
     if (!query.trim()) return;
@@ -116,15 +116,26 @@ const ChatAIView = ({ data, projectId, isQuestionActive, setIsQuestionActive }) 
   };
 
   return (
-    <Box sx={{
-      width: "100%",
-      height: "100%",
-      display: "flex",
-      flexDirection: "column",
-      textAlign: "center"
-    }}>
-      {/* Input and Search Button in same row */}
-      <Box sx={{ display: "flex", paddingTop: 2, gap: 2, marginBottom: 2, alignItems: "center", flexShrink: 0 }}>
+    <Box
+      sx={{
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        textAlign: "center",
+      }}
+    >
+      {/* Input row */}
+      <Box
+        sx={{
+          display: "flex",
+          paddingTop: 2,
+          gap: 2,
+          marginBottom: 2,
+          alignItems: "center",
+          flexShrink: 0,
+        }}
+      >
         <TextField
           label="Ask something"
           variant="outlined"
@@ -144,9 +155,17 @@ const ChatAIView = ({ data, projectId, isQuestionActive, setIsQuestionActive }) 
         </Button>
       </Box>
 
-      {/* Animation for the current question and response */}
+      {/* Current question/response — animated with framer-motion
+          Replaces: useSpring({ opacity, transform }) + <animated.div>
+          Behavior is identical: fade + slide up when currentQuestion appears */}
       <Box sx={{ flexShrink: 0 }}>
-        <animated.div style={animationProps}>
+        <motion.div
+          animate={{
+            opacity: currentQuestion ? 1 : 0,
+            y: currentQuestion ? 0 : 10,
+          }}
+          transition={springTransition}
+        >
           {currentQuestion && (
             <Box sx={{ marginTop: 2, textAlign: "left" }}>
               {/* Display the current question */}
@@ -157,7 +176,7 @@ const ChatAIView = ({ data, projectId, isQuestionActive, setIsQuestionActive }) 
                   marginBottom: 1,
                   padding: 2,
                   backgroundColor: "primary.main",
-                  color:"primary.contrastText",
+                  color: "primary.contrastText",
                   borderRadius: 2,
                 }}
               >
@@ -188,10 +207,10 @@ const ChatAIView = ({ data, projectId, isQuestionActive, setIsQuestionActive }) 
               )}
             </Box>
           )}
-        </animated.div>
+        </motion.div>
       </Box>
 
-      {/* Render the history of questions and responses */}
+      {/* Chat history */}
       <Box
         sx={{
 

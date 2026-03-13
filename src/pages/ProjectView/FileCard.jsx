@@ -1,23 +1,19 @@
 import React, { useState, useEffect } from "react";
-import {
-  Card,
-  CardContent,
-  CardActions,
-  Typography,
-  IconButton,
-  Box,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Button,
-} from "@mui/material";
-import {
-  DownloadOutlined,
-  EyeOutlined,
-  CheckCircleOutlined,
-  CloseCircleOutlined,
-} from "@ant-design/icons";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import CardActions from "@mui/material/CardActions";
+import Typography from "@mui/material/Typography";
+import IconButton from "@mui/material/IconButton";
+import Box from "@mui/material/Box";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import Button from "@mui/material/Button";
+import DownloadOutlined from "@ant-design/icons/DownloadOutlined";
+import EyeOutlined from "@ant-design/icons/EyeOutlined";
+import CheckCircleOutlined from "@ant-design/icons/CheckCircleOutlined";
+import CloseCircleOutlined from "@ant-design/icons/CloseCircleOutlined";
 import checklist from "../../assets/images/checklist3.jpg";
 import assessment from "../../assets/images/assessment2.jpg";
 import { saveAs } from "file-saver";

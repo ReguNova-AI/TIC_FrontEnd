@@ -1,23 +1,31 @@
 import React from "react";
-import { Typography, Box, CircularProgress, Alert, Button } from "@mui/material";
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
+import CircularProgress from "@mui/material/CircularProgress";
+import Alert from "@mui/material/Alert";
+import Button from "@mui/material/Button";
 import PropTypes from "prop-types";
 import ReactMarkdown from "react-markdown";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import DownloadIcon from "@mui/icons-material/Download";
-import html2pdf from "html2pdf.js";
 import mammoth from "mammoth";
-// import HtmlDocx from "html-docx-js/dist/html-docx";
-import { Document, Packer, Paragraph, TextRun, ImageRun, Footer, AlignmentType } from "docx";
+
+// ─── Dynamic imports for download-only libraries ──────────────────────────────
+// html2pdf (1.67MB) and docx (765KB) are only needed when the user clicks a
+// download button. They are NOT imported at the top level — instead they are
+// loaded on demand via dynamic import() inside each handler.
+// mammoth (932KB) stays as a static import because it runs in a useEffect on
+// tab mount to process the risk summary document preview.
+// ─────────────────────────────────────────────────────────────────────────────
+
 import { saveAs } from "file-saver";
 // import LogoUrl from "../../assets/images/gridConform2.png"; // Vite import
 
 import { PROJECT_DETAIL_PAGE } from "shared/constants";
-import { apiHost } from "../../config";
 import { useRiskSummary } from "./useProjectQueries";
 import { ProjectApiService } from "../../services/api/ProjectAPIService";
 import { useRiskSummaryOperations } from "../../components/hooks/useRiskSummaryOperations";
 import RiskSummaryStatusIndicator, { markRiskSummaryStart } from "../../components/RiskSummaryStatusIndicator";
-// import Logo from "../../assets/images/gridConform2.png?url"; // Vite will give you a URL
 
 const RiskAssessmentTab = ({ projectData }) => {
   const [isDownloading, setIsDownloading] = React.useState(false);
@@ -34,6 +42,8 @@ const RiskAssessmentTab = ({ projectData }) => {
   const [processingError, setProcessingError] = React.useState(null);
 
   // Fetch DOCX blob and extract text
+  // mammoth runs on mount when a DOCX document is available for preview.
+  // This is intentional — the preview needs to be ready when the tab opens.
   React.useEffect(() => {
     const fetchAndProcessDocx = async () => {
       if (riskSummary?.doc_path_aws) {
@@ -62,13 +72,17 @@ const RiskAssessmentTab = ({ projectData }) => {
     handleRegenerateRiskSummary,
   } = useRiskSummaryOperations(projectData);
 
-  const handleDownloadRiskReport = () => {
+  // ─── html2pdf — loaded on demand, only when user clicks Download PDF ────────
+  const handleDownloadRiskReport = async () => {
     if (!riskSummary) return;
+
+    // Dynamic import: 1.67MB only downloads on first click
+    const html2pdf = (await import("html2pdf.js")).default;
 
     const element = document.createElement('div');
     element.innerHTML = `
       <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto;">
-        <h1 style="color: #1976d2; border-bottom: 2px solid #1976d2; padding-bottom: 10px;">Risk Summary Report - ${projectData?.project_name} </h1>
+        <h1 style="color: #1976d2; border-bottom: 2px solid #1976d2; padding-bottom: 10px;">Risk Summary Report - ${projectData?.project_name}</h1>
         <div style="margin-top: 20px; line-height: 1.6;">
           ${document.querySelector('.risk-summary-content')?.innerHTML || riskSummary?.summary}
         </div>
@@ -272,10 +286,14 @@ const RiskAssessmentTab = ({ projectData }) => {
   // };
 
 
-
+  // ─── docx (Document, Packer) — loaded on demand, only when user clicks Download DOCX ──
   const handleDownloadFullDocx = async () => {
     const contentElement = document.querySelector('.risk-summary-content');
     if (!contentElement) return;
+
+    // Dynamic import: 765KB only downloads on first click
+    const { Document, Packer, Paragraph, TextRun, Footer, AlignmentType } =
+      await import("docx");
 
     const contentLines = (contentElement.innerText || "").split("\n");
     const mainContentLines = contentLines.slice(2);
@@ -374,14 +392,16 @@ const RiskAssessmentTab = ({ projectData }) => {
           backgroundColor: '#fff',
         }}
       >
-        <Box sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "10px",
-          borderBottom: "1px solid #f0f0f0",
-          paddingBottom: "15px"
-        }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "10px",
+            borderBottom: "1px solid #f0f0f0",
+            paddingBottom: "15px",
+          }}
+        >
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <Typography style={{ fontSize: "18px" }}>
               {PROJECT_DETAIL_PAGE.RISK_SUMMARY}
@@ -445,7 +465,7 @@ const RiskAssessmentTab = ({ projectData }) => {
             <Button
               variant="outlined"
               startIcon={<RefreshIcon />}
-              onClick={()=>{
+              onClick={() => {
                 markRiskSummaryStart(projectData?.project_id);
                 handleRegenerateRiskSummary();
               }}

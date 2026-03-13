@@ -14,7 +14,6 @@ import { useEffect, useState } from "react";
 import {
   API_ERROR_MESSAGE,
   API_SUCCESS_MESSAGE,
-  FORM_LABEL,
   GENERIC_DATA_LABEL,
   HEADING,
   LISTING_PAGE,
@@ -23,25 +22,16 @@ import userListingIcon from "../../assets/images/icons/userListingicon2.svg";
 import disableUser from "../../assets/images/icons/disableUser.svg";
 import enableUser from "../../assets/images/icons/enableUser.svg";
 
-import {
-  Alert,
-  Box,
-  FormControl,
-  InputAdornment,
-  InputLabel,
-  OutlinedInput,
-  Snackbar,
-  Tab,
-  Tabs,
-  Tooltip,
-} from "@mui/material";
-import {
-  CheckCircleOutlined,
-  CloseCircleOutlined,
-  EditOutlined,
-  FolderAddOutlined,
-  SearchOutlined,
-} from "@ant-design/icons";
+import Alert from "@mui/material/Alert";
+import Box from "@mui/material/Box";
+import Snackbar from "@mui/material/Snackbar";
+import Tab from "@mui/material/Tab";
+import Tabs from "@mui/material/Tabs";
+import Tooltip from "@mui/material/Tooltip";
+import CheckCircleOutlined from "@ant-design/icons/CheckCircleOutlined";
+import CloseCircleOutlined from "@ant-design/icons/CloseCircleOutlined";
+import EditOutlined from "@ant-design/icons/EditOutlined";
+import FolderAddOutlined from "@ant-design/icons/FolderAddOutlined";
 import PropTypes from "prop-types";
 import ProjectSelectionModal from "components/modal/ProjectSelectionModal";
 import { createData } from "./UserListing";

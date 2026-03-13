@@ -1,23 +1,22 @@
-import React, { useEffect, useState, useMemo } from "react";
-import {
-  Typography,
-  Box,
-  Tabs,
-  Tab,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  LinearProgress,
-  Chip,
-} from "@mui/material";
+import React, { lazy, Suspense, useEffect, useState, useMemo } from "react";
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import Button from "@mui/material/Button";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import LinearProgress from "@mui/material/LinearProgress";
+import Chip from "@mui/material/Chip";
+import CircularProgress from "@mui/material/CircularProgress";
 import PropTypes from "prop-types";
 import OverviewTab from "./OverviewTab";
-import SummaryReportTab from "./SummaryReportTab";
-import ChatAITab from "./ChatAITab";
-import RiskAssessmentTab from "./RiskAssessmentTab";
-import EditProject from "./EditProject";
+const SummaryReportTab = lazy(() => import("./SummaryReportTab"));
+const ChatAITab = lazy(() => import("./ChatAITab"));
+const RiskAssessmentTab = lazy(() => import("./RiskAssessmentTab"));
+const EditProject = lazy(() => import("./EditProject"));
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
@@ -28,7 +27,7 @@ import {
   TAB_LABEL,
   HEADING,
 } from "shared/constants";
-import DropZoneFileUpload from "pages/ProjectCreation/DropZoneFileUpload";
+const DropZoneFileUpload = lazy(() => import("pages/ProjectCreation/DropZoneFileUpload"));
 import reportIcon from "../../assets/images/icons/report1.png";
 
 // React Query hooks
@@ -47,6 +46,13 @@ import { brand } from "themes/theme/brand";
 
 // Helper function to create a history object based on changes
 export { createHistoryObject };
+
+// Minimal inline spinner used as Suspense fallback inside tab panels
+const TabFallback = () => (
+  <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", py: 6 }}>
+    <CircularProgress size={28} />
+  </Box>
+);
 
   function CustomTabPanel(props) {
     const { children, value, index, ...other } = props;
@@ -114,6 +120,11 @@ const ProjectView = () => {
   // Add at top of ProjectView state declarations:
   const [isChatQuestionActive, setIsChatQuestionActive] = useState(false);
 
+  // Track which tabs have been visited — used to decide whether to render
+  // the lazy tab at all. This prevents Suspense from mounting (and running
+  // useEffects inside) tabs the user has never opened.
+  const [visitedTabs, setVisitedTabs] = useState(new Set([0]));
+
   // React Query hooks
   const {
     data: projectQueryData,
@@ -154,7 +165,7 @@ const ProjectView = () => {
   // const isAIAssessmentLoading = aiStatus?.toLowerCase() === 'processing';
   const isAIAssessmentLoading =
     isProcessing || aiStatus?.toLowerCase() === 'processing';
-  
+  // Polling — lives here in ProjectView, unaffected by tab lazy-loading
   useEffect(() => {
     if (isAIAssessmentLoading) {
       const interval = setInterval(() => {
@@ -179,7 +190,7 @@ const ProjectView = () => {
 
   const {
     snackData,
-    setSnackData,
+    // setSnackData,
     hideSnackbar,
   } = useSnackbarManager();
 
@@ -295,6 +306,8 @@ const ProjectView = () => {
     if ((isAIAssessmentLoading || (projectData?.completion_percentage || 0) <= 0 || projectData?.AIAssesmentStatus == null) && newValue > 0) {
       return;
     }
+    // Mark this tab as visited so it renders for the first time
+    setVisitedTabs((prev) => new Set([...prev, newValue]));
     setValue(newValue);
   };
 
@@ -337,7 +350,7 @@ const ProjectView = () => {
             color="inherit"
             aria-current="page"
           >
-            <span style={{ color:brand.primary, fontWeight: 600 }}>
+            <span style={{ color: brand.primary, fontWeight: 600 }}>
               {projectData?.project_name}
             </span>
           </Link>
@@ -442,59 +455,72 @@ const ProjectView = () => {
 
           {/* Tab Content Container */}
           <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
-            {/* Overview Tab */}
+            {/* Overview — always eager, always rendered */}
             <CustomTabPanel value={value} index={0}>
               <OverviewTab
                 projectData={projectData}
                 handleModalOpen={handleModalOpen}
-                handleRunAIAssessment={()=>{
+                handleRunAIAssessment={() => {
                   markAssessmentStart(projectData?.project_id);
-                  handleRunAIAssessment()}
-                }
+                  handleRunAIAssessment();
+                }}
                 aiButtonLoading={isAIAssessmentLoading}
                 onFileUploadSuccess={refetchProjectData}
               />
             </CustomTabPanel>
 
-            {/* Summary Report Tab */}
+            {/* Summary Report — lazy: renders only after first click */}
             <CustomTabPanel value={value} index={1}>
-              <SummaryReportTab
-                projectData={projectData}
-              />
+              {visitedTabs.has(1) && (
+                <Suspense fallback={<TabFallback />}>
+                  <SummaryReportTab projectData={projectData} />
+                </Suspense>
+              )}
             </CustomTabPanel>
 
-            {/* Chat AI Tab */}
+            {/* Chat AI — lazy: mounts on first click, stays mounted.
+                Chat state (currentQuestion, response, isQuestionActive) lives
+                inside ChatAIView — display:none preserves it on tab switch. */}
             <CustomTabPanel value={value} index={2}>
-              <ChatAITab
-                chatLoading={chatLoading}
-                projectData={projectData}
-                isQuestionActive={isChatQuestionActive}
-                setIsQuestionActive={setIsChatQuestionActive}
-
-              />
+              {visitedTabs.has(2) && (
+                <Suspense fallback={<TabFallback />}>
+                  <ChatAITab
+                    chatLoading={chatLoading}
+                    projectData={projectData}
+                    isQuestionActive={isChatQuestionActive}
+                    setIsQuestionActive={setIsChatQuestionActive}
+                  />
+                </Suspense>
+              )}
             </CustomTabPanel>
 
-            {/* Risk Assessment Tab */}
+            {/* Risk Assessment — lazy: mounts on first click.
+                html2pdf + docx are further deferred to button-click via
+                dynamic import() inside RiskAssessmentTab handlers. */}
             <CustomTabPanel value={value} index={3}>
-              <RiskAssessmentTab projectData={projectData} />
+              {visitedTabs.has(3) && (
+                <Suspense fallback={<TabFallback />}>
+                  <RiskAssessmentTab projectData={projectData} />
+                </Suspense>
+              )}
             </CustomTabPanel>
           </Box>
         </Box>
 
-        {/* File Upload Modal */}
-        <Dialog
-          open={openModal}
-          onClose={handleFileModalClose}
-          style={{ zIndex: "999" }}
-        >
+        {/* File Upload Dialog — lazy */}
+        <Dialog open={openModal} onClose={handleFileModalClose} style={{ zIndex: "999" }}>
           <DialogTitle>Upload Documents</DialogTitle>
           <DialogContent>
-            <DropZoneFileUpload
-              label="You can only upload project documents"
-              typeSelect={false}
-              handleSubmitDocument={handleFileChange}
-              maxFile={0}
-            />
+            {openModal && (
+              <Suspense fallback={<TabFallback />}>
+                <DropZoneFileUpload
+                  label="You can only upload project documents"
+                  typeSelect={false}
+                  handleSubmitDocument={handleFileChange}
+                  maxFile={0}
+                />
+              </Suspense>
+            )}
           </DialogContent>
           <DialogActions>
             <Button onClick={handleFileModalClose} color="primary">
@@ -502,7 +528,7 @@ const ProjectView = () => {
             </Button>
             <Button
               variant="contained"
-              disabled={uploadedDocument?.length > 0 ? false : true}
+              disabled={!uploadedDocument?.length}
               onClick={handleFileUpload}
               color="primary"
             >
@@ -511,7 +537,7 @@ const ProjectView = () => {
           </DialogActions>
         </Dialog>
 
-        {/* Edit Project Modal */}
+        {/* Edit Project Modal — lazy */}
         <Modal
           title={
             modalType === "Edit" ? HEADING.EDIT_PROJECT : HEADING.INVITE_USERS
@@ -521,12 +547,16 @@ const ProjectView = () => {
           footer={null}
           width={800}
         >
-          <EditProject
-            data={projectData}
-            onHandleClose={handleModalClose}
-            editDetails={updateProjectDetails}
-            type={modalType}
-          />
+          {isModalVisible && (
+            <Suspense fallback={<TabFallback />}>
+              <EditProject
+                data={projectData}
+                onHandleClose={handleModalClose}
+                editDetails={updateProjectDetails}
+                type={modalType}
+              />
+            </Suspense>
+          )}
         </Modal>
 
         {/* Progress Modal */}

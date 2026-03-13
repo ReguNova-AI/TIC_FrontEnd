@@ -1,5 +1,5 @@
 import { Timeline, Card, Space } from "antd";
-import { FileOutlined } from "@ant-design/icons";
+import FileOutlined from "@ant-design/icons/FileOutlined";
 
 const HistoryDetails = ({ data }) => {
   const formatDate = (dateString) => {

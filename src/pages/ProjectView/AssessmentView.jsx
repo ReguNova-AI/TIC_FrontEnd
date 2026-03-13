@@ -6,7 +6,8 @@ import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import CheckCircleOutlined from "@ant-design/icons/CheckCircleOutlined";
+import CloseCircleOutlined from "@ant-design/icons/CloseCircleOutlined";
 
 // const complianceData = [];
 

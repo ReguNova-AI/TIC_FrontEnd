@@ -2,13 +2,14 @@ import * as React from "react";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
-import { Chip, Grid, Box, Divider, Button, Tooltip } from "@mui/material";
+import Chip from "@mui/material/Chip";
+import Grid from "@mui/material/Grid";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Tooltip from "@mui/material/Tooltip";
 import Avatar from "@mui/material/Avatar";
 import AvatarGroup from "@mui/material/AvatarGroup";
-import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import avatar1 from "../../assets/images/users/avatar-1.png";
-import avatar2 from "../../assets/images/users/avatar-2.png";
-import avatar3 from "../../assets/images/users/avatar-3.png";
 import { getStatusChipProps } from "shared/utility";
 
 // Function to generate the status chip for each status

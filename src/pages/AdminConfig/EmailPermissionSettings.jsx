@@ -12,12 +12,10 @@ import {
   Typography,
   Divider,
 } from "antd";
-import {
-  MailOutlined,
-  UserOutlined,
-  ProjectOutlined,
-  TeamOutlined,
-} from "@ant-design/icons";
+import MailOutlined from "@ant-design/icons/MailOutlined";
+import UserOutlined from "@ant-design/icons/UserOutlined";
+import ProjectOutlined from "@ant-design/icons/ProjectOutlined";
+import TeamOutlined from "@ant-design/icons/TeamOutlined";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";

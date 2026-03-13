@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { TextField, Button, Grid, Box, Typography, Checkbox, FormControlLabel } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import Grid from "@mui/material/Grid";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Checkbox from "@mui/material/Checkbox";
+import FormControlLabel from "@mui/material/FormControlLabel";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import {
@@ -8,13 +13,11 @@ import {
   API_SUCCESS_MESSAGE,
   BUTTON_LABEL,
   FORM_LABEL,
-  STATUS,
 } from "shared/constants";
 import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
 import { Spin } from "antd";
 
 const RoleCreation = ({ onHandleClose,type,selecteddata }) => {
-  const navigate = useNavigate();
   const [permissionData, setPermissionData] = useState([]);
   const [selectedPermissions, setSelectedPermissions] = useState([]);
   const [loading,setLoading]=useState(false);

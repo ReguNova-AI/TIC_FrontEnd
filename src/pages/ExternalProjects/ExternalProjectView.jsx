@@ -1,16 +1,14 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
-import {
-  Box,
-  Tab,
-  Tabs,
-  Grid,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-} from "@mui/material";
+import Box from "@mui/material/Box";
+import Tab from "@mui/material/Tab";
+import Tabs from "@mui/material/Tabs";
+import Grid from "@mui/material/Grid";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
 import { Button, Spin } from "antd";
 import BreadcrumbsView from "components/Breadcrumbs";
 

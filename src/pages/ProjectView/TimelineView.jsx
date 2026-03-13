@@ -1,5 +1,5 @@
 import React from 'react';
-import { ClockCircleOutlined } from '@ant-design/icons';
+import ClockCircleOutlined from "@ant-design/icons/ClockCircleOutlined";
 import { Timeline } from 'antd';
 
 const TimelineView = () => {

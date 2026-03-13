@@ -1,16 +1,13 @@
 import React, { useEffect, useState } from "react";
-import {
-  TextField,
-  Button,
-  MenuItem,
-  Select,
-  InputLabel,
-  FormControl,
-  Grid,
-  Box,
-  Chip,
-  Typography,
-} from "@mui/material";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import MenuItem from "@mui/material/MenuItem";
+import Select from "@mui/material/Select";
+import InputLabel from "@mui/material/InputLabel";
+import FormControl from "@mui/material/FormControl";
+import Grid from "@mui/material/Grid";
+import Box from "@mui/material/Box";
+import Chip from "@mui/material/Chip";
 
 import { BUTTON_LABEL, FORM_LABEL } from "shared/constants";
 import { UserApiService } from "services/api/UserAPIService";

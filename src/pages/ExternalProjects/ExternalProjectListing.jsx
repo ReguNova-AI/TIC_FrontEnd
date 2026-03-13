@@ -1,15 +1,13 @@
-import { SearchOutlined } from "@ant-design/icons";
-import {
-  Alert,
-  Box,
-  Chip,
-  FormControl,
-  InputAdornment,
-  InputLabel,
-  OutlinedInput,
-  Snackbar,
-  Stack,
-} from "@mui/material";
+import SearchOutlined from "@ant-design/icons/SearchOutlined";
+import Alert from "@mui/material/Alert";
+import Box from "@mui/material/Box";
+import Chip from "@mui/material/Chip";
+import FormControl from "@mui/material/FormControl";
+import InputAdornment from "@mui/material/InputAdornment";
+import InputLabel from "@mui/material/InputLabel";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import Snackbar from "@mui/material/Snackbar";
+import Stack from "@mui/material/Stack";
 import { ConfigProvider, Empty, Space, Spin, Table } from "antd";
 import { useEffect, useState } from "react";
 import {

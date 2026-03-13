@@ -1,7 +1,10 @@
 import React, { useState } from "react";
-import { TextField, Button, Grid, Box, Typography } from "@mui/material";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import Grid from "@mui/material/Grid";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import { DatePicker } from "antd";
-import { Link as RouterLink, useNavigate } from "react-router-dom";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import DropZoneFileUpload from "pages/ProjectCreation/DropZoneFileUpload";
@@ -14,7 +17,6 @@ import {
 } from "shared/constants";
 
 const CreateCertificate = ({onHandleClose}) => {
-  const navigate = useNavigate();
   const { RangePicker } = DatePicker;
   const [snackData, setSnackData] = useState({
     show: false,

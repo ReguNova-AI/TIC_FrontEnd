@@ -1,26 +1,24 @@
-import { CloseCircleTwoTone } from "@ant-design/icons";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  Typography,
-  Tabs,
-  Tab,
-  TextField,
-  Box,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  Switch,
-  FormControlLabel,
-  Pagination,
-  IconButton,
-  Checkbox,
-} from "@mui/material";
+import CloseCircleTwoTone from "@ant-design/icons/CloseCircleTwoTone";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import TextField from "@mui/material/TextField";
+import Box from "@mui/material/Box";
+import Table from "@mui/material/Table";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import TableCell from "@mui/material/TableCell";
+import TableBody from "@mui/material/TableBody";
+import Switch from "@mui/material/Switch";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Pagination from "@mui/material/Pagination";
+import IconButton from "@mui/material/IconButton";
+import Checkbox from "@mui/material/Checkbox";
 import React from "react";
 import { PROJECT_DETAIL_PAGE } from "shared/constants";
 

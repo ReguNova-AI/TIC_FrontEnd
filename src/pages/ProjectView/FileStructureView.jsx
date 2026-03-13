@@ -1,29 +1,19 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import PropTypes from "prop-types";
-import {
-  CheckOutlined,
-  PlusCircleOutlined
-} from "@ant-design/icons";
-import { message, Progress, Tree, Modal, Tooltip, Button, Input, Select, Space, Card, Typography } from "antd";
-import AttachFileIcon from "@mui/icons-material/AttachFile";
-import { API_ERROR_MESSAGE, FORM_LABEL } from "shared/constants";
-import folderIcon from "../../assets/images/icons/folderIcon1.svg";
-import {
-  FilePdfOutlined,
-  FileWordOutlined,
-  FileExcelOutlined,
-  FileTextOutlined,
-  FileImageOutlined,
-  FileUnknownOutlined,
-  DeleteOutlined,
-} from "@ant-design/icons";
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import CheckOutlined from "@ant-design/icons/CheckOutlined";
+import FilePdfOutlined from "@ant-design/icons/FilePdfOutlined";
+import FileWordOutlined from "@ant-design/icons/FileWordOutlined";
+import FileExcelOutlined from "@ant-design/icons/FileExcelOutlined";
+import FileTextOutlined from "@ant-design/icons/FileTextOutlined";
+import FileImageOutlined from "@ant-design/icons/FileImageOutlined";
+import FileUnknownOutlined from "@ant-design/icons/FileUnknownOutlined";
+import { message, Progress, Modal, Typography } from "antd";
+import { API_ERROR_MESSAGE } from "shared/constants";
 import { FileUploadApiService } from "services/api/FileUploadAPIService";
 import { ProjectApiService } from "services/api/ProjectAPIService";
 import UnifiedDocumentControl from "../../components/UnifiedDocumentControl";
-import GoogleDrivePicker from "./GoogleDrivePicker";
-import GoogleDriveFileCard from "./GoogleDriveFileCard";
+// import GoogleDrivePicker from "./GoogleDrivePicker";
+// import GoogleDriveFileCard from "./GoogleDriveFileCard";
 import { GoogleDrivePickerService } from "services/api/googleDrivePickerService";
-import { padding } from "polished";
 import UnifiedFileTree from "../../components/UnifiedFileTree"; // Added
 import { brand } from "themes/theme/brand";
 const getFileIcon = (filename) => {
@@ -51,20 +41,11 @@ const getFileIcon = (filename) => {
 };
 
 const FileStructureView = ({ data, onFileUploadSuccess }) => {
-  const [showLine, setShowLine] = useState(true);
-  const [showIcon, setShowIcon] = useState(true);
-  const [showLeafIcon, setShowLeafIcon] = useState(false);
   const [localFolders, setLocalFolders] = useState([]); // Store optimistic folders
   const [expandedKeys, setExpandedKeys] = useState([]); // Store keys to expand
   const [newDoc, setNewDoc] = useState({ file: null });
 
   // New folder and file creation states (Remove gData usage references eventually)
-
-  const [isCreatingFolder, setIsCreatingFolder] = useState(false);
-  const [isCreatingFile, setIsCreatingFile] = useState(false);
-  const [newFolderName, setNewFolderName] = useState("");
-  const [newFileName, setNewFileName] = useState("");
-  const [newFileType, setNewFileType] = useState("");
   const [addingFileToFolder, setAddingFileToFolder] = useState(null); // Track which folder is getting a new file
 
   // --- Upload modal state

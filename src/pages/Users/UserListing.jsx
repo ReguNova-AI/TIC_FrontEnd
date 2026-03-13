@@ -10,20 +10,12 @@ import {
   Avatar,
   Popconfirm,
 } from "antd";
-import { Tooltip } from "@mui/material";
-import FormControl from "@mui/material/FormControl";
-import OutlinedInput from "@mui/material/OutlinedInput";
-import InputLabel from "@mui/material/InputLabel";
-import InputAdornment from "@mui/material/InputAdornment";
-import MultiSelectWithChip from "components/form/MultiSelectWithChip";
-import {
-  SearchOutlined,
-  CloseCircleOutlined,
-  CheckCircleOutlined,
-  EditOutlined,
-  FolderAddOutlined,
-  DownloadOutlined,
-} from "@ant-design/icons";
+import Tooltip from "@mui/material/Tooltip";
+import CloseCircleOutlined from "@ant-design/icons/CloseCircleOutlined";
+import CheckCircleOutlined from "@ant-design/icons/CheckCircleOutlined";
+import EditOutlined from "@ant-design/icons/EditOutlined";
+import FolderAddOutlined from "@ant-design/icons/FolderAddOutlined";
+import DownloadOutlined from "@ant-design/icons/DownloadOutlined";
 import { useLocation } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { UserApiService } from "services/api/UserAPIService";
@@ -41,7 +33,6 @@ import {
   LISTING_PAGE,
   API_SUCCESS_MESSAGE,
   BUTTON_LABEL,
-  FORM_LABEL,
   HEADING,
   GENERIC_DATA_LABEL,
 } from "shared/constants";
