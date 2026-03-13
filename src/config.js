@@ -7,7 +7,7 @@ export const apiProxyHost = '/tic-api';
 // ==============================|| THEME CONFIG  ||============================== //
 
 const config = {
-  defaultPath: '/dashboard/default',
+  defaultPath: '/dashboard',
   fontFamily: `'Open Sans', sans-serif`,
   i18n: 'en',
   miniDrawer: false,

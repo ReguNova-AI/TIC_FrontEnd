@@ -86,7 +86,7 @@ export default function AuthLogin() {
             navigate("/passwordReset", { state: { showPage: true } });
           } else {
             dispatch(actions.setAuthentication(response));
-            navigate("/dashboard/default");
+            navigate("/dashboard");
           }
         }
       })

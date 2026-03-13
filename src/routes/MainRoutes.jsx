@@ -1,4 +1,5 @@
 import { lazy, Suspense } from "react";
+import { Navigate } from "react-router-dom";
 
 // project import
 import Loadable from "components/Loadable";
@@ -68,45 +69,22 @@ const MainRoutes = {
   ),
   children: [
     {
-      path: "/",
+      // Redirect bare "/" to the default dashboard — removes the duplicate
+      // DashboardDefault render that was on both "/" and "/dashboard/default"
+      index: true,
+      element: <Navigate to="/dashboard" replace />,
+    },
+    {
+      path: "dashboard/default",
+      element: <Navigate to="/dashboard" replace />,
+    },
+    {
+      path: "dashboard",
       element: (
         <ProtectedRoute>
           <DashboardDefault />
         </ProtectedRoute>
       ),
-    },
-    {
-      path: "color",
-      element: <Color />,
-    },
-    {
-      path: "dashboard",
-      children: [
-        {
-          path: "default",
-          element: (
-            <ProtectedRoute>
-              <DashboardDefault />
-            </ProtectedRoute>
-          ),
-        },
-      ],
-    },
-    {
-      path: "sample-page",
-      element: (
-        <ProtectedRoute>
-          <SamplePage />
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "shadow",
-      element: <Shadow />,
-    },
-    {
-      path: "typography",
-      element: <Typography />,
     },
     {
       path: "projects",
@@ -139,10 +117,6 @@ const MainRoutes = {
           <CertificateListing />
         </ProtectedRoute>
       ),
-    },
-    {
-      path: "documents",
-      element: <ErrorPage />,
     },
     {
       path: "users",
@@ -201,7 +175,15 @@ const MainRoutes = {
       ),
     },
     {
-      path: "reports",
+      path: "payment",
+      element: (
+        <ProtectedRoute>
+          <Payment />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "documents",
       element: (
         <ProtectedRoute>
           <ErrorPage />
@@ -209,10 +191,22 @@ const MainRoutes = {
       ),
     },
     {
-      path: "payment",
+      path: "reports",
       element: (
         <ProtectedRoute>
-          <Payment />
+          <ErrorPage />
+        </ProtectedRoute>
+      ),
+    },
+    // Style demo routes — low traffic, keeping lazy but no ProtectedRoute
+    { path: "color", element: <Color /> },
+    { path: "shadow", element: <Shadow /> },
+    { path: "typography", element: <Typography /> },
+    {
+      path: "sample-page",
+      element: (
+        <ProtectedRoute>
+          <SamplePage />
         </ProtectedRoute>
       ),
     },

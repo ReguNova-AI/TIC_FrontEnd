@@ -317,7 +317,7 @@ const ProjectView = () => {
             underline="hover"
             color="inherit"
             onClick={() => {
-              navigate("/dashboard/default");
+              navigate("/dashboard");
             }}
             style={{ cursor: "pointer" }}
           >

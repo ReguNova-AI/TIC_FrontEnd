@@ -89,7 +89,7 @@ const CouponModal = ({
 
             setTimeout(() => {
               handleClose();
-              navigate("/dashboard/default");
+              navigate("/dashboard");
             }, 500);
           })
           .catch((err) => {

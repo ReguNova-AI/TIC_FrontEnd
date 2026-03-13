@@ -92,7 +92,7 @@ const _projectListing = (page, limit) => {
       // console.log(pathname)
 
       // return BaseApiService.get(`/api/v1/org/projects?industry_id=${industry_id}`, null, null);
-      if (pathname === "/dashboard/default" || pathname === "/dashboard") {
+      if (pathname === "/dashboard") {
         return BaseApiService.get(
           `/api/v1/org/recent-projects?limit=10`,
           null,
