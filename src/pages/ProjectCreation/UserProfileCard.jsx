@@ -6,7 +6,7 @@ import CardContent from '@mui/material/CardContent';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Avatar from '@mui/material/Avatar';
-import { DeleteFilled } from '@ant-design/icons';
+import DeleteFilled from '@ant-design/icons/DeleteFilled';
 import '../../utils/styles.css';
 import profileImage from '../../assets/images/users/avatar-4.png'
 

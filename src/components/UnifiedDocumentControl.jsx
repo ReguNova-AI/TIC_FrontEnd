@@ -12,21 +12,19 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import {
-    CreateNewFolder as CreateNewFolderIcon,
-    NoteAdd as NoteAddIcon,
-    UploadFile as UploadFileIcon,
-    Folder as FolderIcon,
-    InsertDriveFile as InsertDriveFileIcon,
-    Close as CloseIcon,
-    Save as SaveIcon,
-    AttachFile as AttachFileIcon,
-    PictureAsPdf as PdfIcon,
-    Description as DescriptionIcon,
-    TableChart as ExcelIcon,
-    Image as ImageIcon,
-    Help as UnknownIcon
-} from '@mui/icons-material';
+import { default as CreateNewFolderIcon } from "@mui/icons-material/CreateNewFolder";
+import { default as NoteAddIcon } from "@mui/icons-material/NoteAdd";
+import { default as UploadFileIcon } from "@mui/icons-material/UploadFile";
+import { default as FolderIcon } from "@mui/icons-material/Folder";
+import { default as InsertDriveFileIcon } from "@mui/icons-material/InsertDriveFile";
+import { default as CloseIcon } from "@mui/icons-material/Close";
+import { default as SaveIcon } from "@mui/icons-material/Save";
+// import { default as AttachFile } from "@mui/icons-material/AttachFileIcon";
+import { default as PdfIcon } from "@mui/icons-material/PictureAsPdf";
+import { default as DescriptionIcon } from "@mui/icons-material/Description";
+import { default as ExcelIcon } from "@mui/icons-material/TableChart";
+import { default as ImageIcon } from "@mui/icons-material/Image";
+import { default as UnknownIcon } from "@mui/icons-material/Help";
 
 const UnifiedDocumentControl = ({
     onAddFolder,

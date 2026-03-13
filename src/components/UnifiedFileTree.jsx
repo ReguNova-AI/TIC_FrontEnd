@@ -1,17 +1,15 @@
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { Tree, Tooltip, Button, Progress, Popconfirm, Typography } from "antd";
-import {
-    FilePdfOutlined,
-    FileWordOutlined,
-    FileExcelOutlined,
-    FileTextOutlined,
-    FileImageOutlined,
-    FileUnknownOutlined,
-    DeleteOutlined,
-    PlusCircleOutlined,
-    PaperClipOutlined
-} from "@ant-design/icons";
+import { Tree, Tooltip, Button, Progress, Popconfirm } from "antd";
+import FilePdfOutlined from "@ant-design/icons/FilePdfOutlined";
+import FileWordOutlined from "@ant-design/icons/FileWordOutlined";
+import FileExcelOutlined from "@ant-design/icons/FileExcelOutlined";
+import FileTextOutlined from "@ant-design/icons/FileTextOutlined";
+import FileImageOutlined from "@ant-design/icons/FileImageOutlined";
+import FileUnknownOutlined from "@ant-design/icons/FileUnknownOutlined";
+import DeleteOutlined from "@ant-design/icons/DeleteOutlined";
+import PlusCircleOutlined from "@ant-design/icons/PlusCircleOutlined";
+import PaperClipOutlined from "@ant-design/icons/PaperClipOutlined";
 import folderIcon from "../assets/images/icons/folderIcon1.svg";
 
 // Utility function for file icons
