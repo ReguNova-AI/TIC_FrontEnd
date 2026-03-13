@@ -1,4 +1,4 @@
-import { lazy, useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 // material-ui
 // import Avatar from "@mui/material/Avatar";
 // import AvatarGroup from "@mui/material/AvatarGroup";
