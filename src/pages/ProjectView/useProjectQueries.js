@@ -246,7 +246,7 @@ export const useRiskSummary = (projectId) => {
     refetchOnWindowFocus: false,
     select: (response) => {
       console.log("Risk summary response:", response);
-      console.error("Risk summary response:", response?.data?.risk_summary?.doc_path_aws);
+      console.error("Risk summary doc path:", response?.data?.risk_summary?.doc_path_aws);
       // Handle different response formats
       if (response?.data?.risk_summary?.doc_path_aws) {
         return {
