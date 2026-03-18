@@ -26,6 +26,9 @@ import { useRiskSummary } from "./useProjectQueries";
 import { ProjectApiService } from "../../services/api/ProjectAPIService";
 import { useRiskSummaryOperations } from "../../components/hooks/useRiskSummaryOperations";
 import RiskSummaryStatusIndicator, { markRiskSummaryStart } from "../../components/RiskSummaryStatusIndicator";
+import { docColors } from "themes/theme/brand";
+import { formatDate } from "shared/utility";
+import { clientName } from "../../config";
 
 const RiskAssessmentTab = ({ projectData }) => {
   const [isDownloading, setIsDownloading] = React.useState(false);
@@ -291,96 +294,289 @@ const RiskAssessmentTab = ({ projectData }) => {
     const contentElement = document.querySelector('.risk-summary-content');
     if (!contentElement) return;
 
-    // Dynamic import: 765KB only downloads on first click
-    const { Document, Packer, Paragraph, TextRun, Footer, AlignmentType } =
-      await import("docx");
+    const {
+      Document, Packer, Paragraph, TextRun, Footer,
+      AlignmentType, LevelFormat, PageBreak, BorderStyle
+    } = await import("docx");
 
     const contentLines = (contentElement.innerText || "").split("\n");
     const mainContentLines = contentLines.slice(2);
 
-    // detect lines
-    const isSectionHeader = line => /^A\)|^B\)|^C\)/.test(line.trim());
-    const isMainPoint = line => /^[A-Z]\)|•/.test(line) && !isSectionHeader(line);
-    const isSubPoint = line => /^[-•]/.test(line);
+    // ── Colors ───────────────────────────────────────────────────────────────
+    const HEADING_COLOR      = docColors.heading; // Microsoft Word Dark Red
+    const RISK_COLOR = docColors.risk; // Microsoft Word Orange Accent 2
 
-    const mainContentParagraphs = mainContentLines
-      .filter(line => line.trim() !== "")
-      .map(line => {
-        const trimmedLine = line.trim();
-        if (isSectionHeader(trimmedLine)) {
-          return new Paragraph({ children: [new TextRun({ text: trimmedLine, bold: true })], spacing: { after: 240, line: 276 } });
-        } else if (isMainPoint(trimmedLine)) {
-          return new Paragraph({ children: [new TextRun({ text: trimmedLine.replace(/^•/, "").trim(), bold: true })], spacing: { after: 150, line: 276 } });
-        } else if (isSubPoint(trimmedLine)) {
-          return new Paragraph({ children: [new TextRun({ text: trimmedLine.replace(/^[-•]/, "").trim(), indent: { left: 400 } })], spacing: { after: 150, line: 276 } });
-        } else {
-          return new Paragraph({ children: [new TextRun({ text: trimmedLine })], spacing: { after: 150, line: 276 } });
-        }
+    // ── Section tracking ─────────────────────────────────────────────────────
+    let currentSection = 0;
+    let inBulletBlock  = false;
+
+    // ── Classifiers ──────────────────────────────────────────────────────────
+    const isSectionHeader     = (t) => /^[A-C]\)\s+\S/.test(t);
+    const isBulletHeader      = (t) => /^•\s/.test(t);
+    const isRisksSummaryAlias = (t) => /^risks?\s+summary/i.test(t);
+
+    const isNarrativeTitle = (t) =>
+      currentSection === 2 &&
+      t.length <= 60 &&
+      /^[A-Z]/.test(t) &&
+      !isSectionHeader(t) &&
+      !isBulletHeader(t) &&
+      !t.includes(":");
+
+    const parseKeyValue = (t) => {
+      const colonIdx = t.indexOf(":");
+      if (colonIdx === -1) return null;
+      return {
+        key:   t.slice(0, colonIdx + 1).trim(),
+        value: t.slice(colonIdx + 1).trim(),
+      };
+    };
+
+    // Keys in C) whose value gets Orange Accent 2
+    const COLORED_VALUE_KEYS = new Set(["risk", "severity"]);
+
+    // ── Separator paragraph (dashed line, Times New Roman 10pt) ─────────────
+    // Rendered as a bottom-border on an empty paragraph — cleaner than
+    // a string of dashes and guaranteed consistent width across page sizes.
+    const makeSeparator = () =>
+      new Paragraph({
+        children: [new TextRun({ text: "", size: 20, font: "Times New Roman" })],
+        border: {
+          bottom: {
+            style: BorderStyle.DASHED,
+            size: 6,       // border thickness
+            color: "AAAAAA",
+            space: 4,
+          },
+        },
+        spacing: { before: 120, after: 120 },
       });
 
-    // const logo = Media.addImage(doc, fs.readFileSync("../../assets/images/gridConform2.png"), 200, 200); // ERROR HERE: "fs.readFileSync is not a function
-    const footer = new Footer({
+    // ── C) block boundary detection ──────────────────────────────────────────
+    // We need to insert a separator after every "Source:" line EXCEPT the last.
+    // Strategy: collect all C) lines first, find indices of "Source:" lines,
+    // then inject separators during paragraph building.
+    const cSectionLines   = [];
+    const preSectionLines = []; // lines before C)
+    let reachedC          = false;
+
+    mainContentLines
+      .filter((l) => l.trim() !== "")
+      .forEach((l) => {
+        const t = l.trim();
+        if (!reachedC && (isRisksSummaryAlias(t) || /^C\)\s+\S/.test(t))) {
+          reachedC = true;
+        }
+        if (reachedC) cSectionLines.push(t);
+        else          preSectionLines.push(t);
+      });
+
+    // Indices of "Source:" lines inside cSectionLines (skip index 0 which is the header)
+    const sourceIndices = cSectionLines.reduce((acc, t, i) => {
+      if (i > 0 && /^source:/i.test(t)) acc.push(i);
+      return acc;
+    }, []);
+    const lastSourceIdx = sourceIndices.length > 0
+      ? sourceIndices[sourceIndices.length - 1]
+      : -1;
+
+    // ── Build pre-C paragraphs (sections A + B) ──────────────────────────────
+    const buildPreCParagraphs = (lines) =>
+      lines.map((t) => {
+
+        if (isSectionHeader(t)) {
+          if      (/^A\)/.test(t)) currentSection = 1;
+          else if (/^B\)/.test(t)) currentSection = 2;
+          inBulletBlock = false;
+          return new Paragraph({
+            children: [new TextRun({ text: t, bold: true, size: 24, font: "Aptos", color: HEADING_COLOR })],
+            spacing: { before: 320, after: 160, line: 276 },
+          });
+        }
+
+        // ── A) ──────────────────────────────────────────────────────────
+        if (currentSection === 1) {
+          if (isBulletHeader(t)) {
+            inBulletBlock = true;
+            return new Paragraph({
+              children: [new TextRun({
+                text: t.replace(/^•\s*/, ""),
+                bold: true, size: 20, font: "Aptos",
+              })],
+              spacing: { before: 160, after: 80, line: 276 },
+            });
+          }
+          if (inBulletBlock) {
+            return new Paragraph({
+              numbering: { reference: "sub-bullets", level: 0 },
+              children: [new TextRun({ text: t, size: 20, font: "Aptos" })],
+              spacing: { after: 60, line: 276 },
+            });
+          }
+          return new Paragraph({
+            children: [new TextRun({ text: t, size: 20, font: "Aptos" })],
+            spacing: { after: 120, line: 276 },
+          });
+        }
+
+        // ── B) ──────────────────────────────────────────────────────────
+        if (currentSection === 2) {
+          inBulletBlock = false;
+          if (isNarrativeTitle(t)) {
+            return new Paragraph({
+              children: [new TextRun({
+                text: t,
+                color: HEADING_COLOR,
+                underline: {},
+              })],
+              spacing: { before: 200, after: 80, line: 276 },
+            });
+          }
+          return new Paragraph({
+            children: [new TextRun({ text: t, size: 20, font: "Aptos" })],
+            spacing: { after: 120, line: 276 },
+          });
+        }
+
+        // Fallback (lines before A)
+        return new Paragraph({
+          children: [new TextRun({ text: t, size: 20, font: "Aptos" })],
+          spacing: { after: 120, line: 276 },
+        });
+      });
+
+    // ── Build C) paragraphs with separators ──────────────────────────────────
+    const buildCSectionParagraphs = (lines) => {
+      const result = [];
+
+      lines.forEach((t, i) => {
+
+        // C) section header (first line)
+        if (i === 0) {
+          result.push(new Paragraph({
+            children: [new TextRun({
+              text: isRisksSummaryAlias(t) ? "C) Risks Summary" : t,
+              bold: true, size: 24, font: "Aptos", color: HEADING_COLOR,
+            })],
+            spacing: { before: 320, after: 160, line: 276 },
+          }));
+          return;
+        }
+
+        // Key:Value lines
+        const kv = parseKeyValue(t);
+        if (kv) {
+          const keyLower    = kv.key.replace(":", "").toLowerCase();
+          const colorValue  = COLORED_VALUE_KEYS.has(keyLower);
+
+          result.push(new Paragraph({
+            children: [
+              new TextRun({ text: kv.key + (kv.value ? " " : ""), size: 20, font: "Aptos" }),
+              ...(kv.value ? [new TextRun({
+                text: kv.value,
+                size: 20, font: "Aptos",
+                color: colorValue ? RISK_COLOR : undefined,
+              })] : []),
+            ],
+            spacing: { after: 60, line: 276 },
+          }));
+
+          // Inject separator after every Source: line EXCEPT the last one
+          if (/^source:/i.test(t) && i !== lastSourceIdx) {
+            result.push(makeSeparator());
+          }
+          return;
+        }
+
+        // Non key:value lines (file names, "No risk clauses found", etc.)
+        result.push(new Paragraph({
+          children: [new TextRun({ text: t, size: 20, font: "Aptos" })],
+          spacing: { after: 120, line: 276 },
+        }));
+      });
+
+      return result;
+    };
+
+    const preCParagraphs = buildPreCParagraphs(preSectionLines);
+    const cParagraphs    = buildCSectionParagraphs(cSectionLines);
+
+    // ── Footer ───────────────────────────────────────────────────────────────
+    const sharedFooter = new Footer({
       children: [
         new Paragraph({
-          children: [
-            new TextRun({
-              text: "Generated by Diligence2AI",
-              size: 24, // 12pt
-            }),
-          ],
+          children: [new TextRun({
+            text: `Generated by ${clientName}`,
+            size: 24, font: "Times New Roman",
+          })],
           alignment: AlignmentType.CENTER,
         }),
       ],
     });
 
+    const pageProps = {
+      size: { width: 12240, height: 15840 },
+      margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 },
+    };
+
     const doc = new Document({
-      sections: [
-        {
-          properties: { page: { size: { orientation: "portrait" } } },
-          footers: {
-            default: footer,
-          },
-          children: [
-            // new Paragraph({
-            //   children: [
-            //     new Paragraph(logo),
-            //   ],
-            //   alignment: AlignmentType.CENTER,
-            //   spacing: { after: 400 },
-            // }),
-            new Paragraph({ spacing: { before: 3000 } }),
-            new Paragraph({
-              children: [
-                new TextRun({ text: "Risk Summary Report", bold: true, size: 48, color: "#0B3D91" }),
-              ],
-              spacing: { after: 400 },
-              alignment: AlignmentType.CENTER,
-            }),
-            new Paragraph({
-              children: [
-                new TextRun({ text: `${projectData?.project_name}`, size: 32 }),
-              ],
-              alignment: AlignmentType.CENTER,
-            }),
-          ],
-        },
-        {
-          properties: {},
-          footers: {
-            default: footer,
-          },
-          children: mainContentParagraphs,
-        },
-      ],
+      numbering: {
+        config: [{
+          reference: "sub-bullets",
+          levels: [{
+            level: 0,
+            format: LevelFormat.BULLET,
+            text: "\u25E6",
+            alignment: AlignmentType.LEFT,
+            style: {
+              run: { size: 28 },
+              paragraph: { indent: { left: 720, hanging: 360 } },
+            },
+          }],
+        }],
+      },
+      sections: [{
+        properties: { page: pageProps },
+        footers: { default: sharedFooter },
+        children: [
+          // ── Cover ──────────────────────────────────────────────────────
+          new Paragraph({
+            children: [new TextRun({
+              text: "Risk Summary Report",
+              bold: true, size: 48, font: "Aptos", color: HEADING_COLOR,
+            })],
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 3000, after: 400 },
+          }),
+          new Paragraph({
+            children: [new TextRun({
+              text: projectData?.project_name ?? "",
+              size: 32, font: "Aptos",
+            })],
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 200 },
+          }),
+          new Paragraph({
+            children: [new TextRun({
+              text: formatDate(),
+              size: 20, font: "Aptos",
+            })],
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 0 },
+          }),
+
+          new Paragraph({ children: [new PageBreak()] }),
+
+          ...preCParagraphs,
+          ...cParagraphs,
+        ],
+      }],
     });
 
     const blob = await Packer.toBlob(doc);
-    const project_name = projectData?.project_name
-    saveAs(blob, `${project_name}_risk-assessment.docx`);
+    saveAs(blob, `${projectData?.project_name ?? "project"}_risk-assessment.docx`);
   };
 
-
-  ``
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Risk Summary Section */}

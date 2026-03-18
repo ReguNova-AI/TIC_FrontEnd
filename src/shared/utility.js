@@ -6,14 +6,19 @@ export const updateObject = (oldObject, updatedProps) => {
 };
 
 export const formatDate = (value) => {
-  const date = new Date(value);
+  const date = value ? new Date(value) : new Date();
   // Format the date as needed
-  const formattedDate = date.toLocaleDateString("en-US", {
+  let formattedDate = date.toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",
   });
-
+  if(!value){
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = date.toLocaleString("en-US", { month: "short" }); // "Mar"
+    const year = date.getFullYear();
+    formattedDate = `${day}-${month}-${year}`;
+  }
   return formattedDate;
 };
 
