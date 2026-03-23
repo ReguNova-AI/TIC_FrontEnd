@@ -17,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
-import { formatDateToCustomFormat } from "shared/utility";
+import { extractApiError, formatDateToCustomFormat } from "shared/utility";
 import {
   API_ERROR_MESSAGE,
   API_SUCCESS_MESSAGE,
@@ -48,8 +48,6 @@ const CreateProjectForm = () => {
   });
   const [documents, setDocuments] = useState([]);
   const [submitLoding, setSubmitLoading] = useState(false);
-
-  console.log("documents", documents);
 
   const [formData, setFormData] = useState({
     projectName: "",
@@ -427,9 +425,7 @@ const CreateProjectForm = () => {
               setSubmitLoading(false);
               setSnackData({
                 show: true,
-                message:
-                  errResponse?.error?.message ||
-                  API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+                message: extractApiError(errResponse),
                 type: "error",
               });
             });
@@ -530,7 +526,7 @@ const CreateProjectForm = () => {
                 />
               </Grid> */}
 
-              <Grid item xs={12} sm={4}>
+              <Grid item xs={12} sm={8}>
                 <TextField
                   label={FORM_LABEL.PROJECT_DESC}
                   variant="outlined"

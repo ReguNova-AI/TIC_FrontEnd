@@ -3,6 +3,7 @@ import { ProjectApiService } from "services/api/ProjectAPIService";
 import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
 import { message } from "antd";
 import { API_ERROR_MESSAGE, API_SUCCESS_MESSAGE } from "shared/constants";
+import { extractApiError } from "shared/utility";
 
 // Query Keys
 export const PROJECT_QUERY_KEYS = {
@@ -68,9 +69,7 @@ export const useUpdateProject = () => {
       });
     },
     onError: (error) => {
-      message.error(
-        error?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR
-      );
+      message.error(extractApiError(error));
     },
   });
 };

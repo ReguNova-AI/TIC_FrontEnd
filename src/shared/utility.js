@@ -1,3 +1,5 @@
+import { API_ERROR_MESSAGE } from "./constants";
+
 export const updateObject = (oldObject, updatedProps) => {
   return {
     ...oldObject,
@@ -13,7 +15,7 @@ export const formatDate = (value) => {
     month: "short",
     day: "numeric",
   });
-  if(!value){
+  if (!value) {
     const day = String(date.getDate()).padStart(2, "0");
     const month = date.toLocaleString("en-US", { month: "short" }); // "Mar"
     const year = date.getFullYear();
@@ -103,4 +105,12 @@ export const getStatusChipProps = (status) => {
   }
 
   return { title, color, borderColor };
+};
+
+export const extractApiError = (errResponse) => {
+  return (
+    errResponse?.response?.data?.message ||
+    errResponse?.error?.message ||
+    API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR
+  );
 };
