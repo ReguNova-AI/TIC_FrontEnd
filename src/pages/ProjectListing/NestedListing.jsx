@@ -86,8 +86,8 @@ const NestedListing = ({ data, filterStatusValue }) => {
     },
     {
       title: LISTING_PAGE.PROJECT_No,
-      dataIndex: "project_no",
-      key: "project_no",
+      dataIndex: "project_id",
+      key: "project_id",
     },
     {
       title: LISTING_PAGE.NO_OF_RUNS,

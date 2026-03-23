@@ -106,7 +106,7 @@ const ProjectDetailsCardView = ({
                     <b>Project No:</b>
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    {data.project_no}
+                    {data.project_id}
                   </Typography>
                 </Grid>
 

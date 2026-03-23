@@ -24,7 +24,7 @@ const EditProject = ({ data, onHandleClose, editDetails, type }) => {
   });
   const [formData, setFormData] = useState({
     projectName: data.project_name || "",
-    projectNo: data.project_no || "",
+    // projectNo: data.project_no || "",
     projectDesc: data.project_description || "",
     teamMembers: selectedIds,
     invite_Users: data.invite_members,
@@ -131,7 +131,7 @@ const EditProject = ({ data, onHandleClose, editDetails, type }) => {
 
           {type === "Edit" ? (
             <>
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={12} sm={4}>
                 <TextField
                   label={FORM_LABEL.PROJECT_NAME}
                   variant="outlined"
@@ -142,7 +142,7 @@ const EditProject = ({ data, onHandleClose, editDetails, type }) => {
                   required
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              {/* <Grid item xs={12} sm={6}>
                 <TextField
                   label={FORM_LABEL.PROJECT_NO}
                   variant="outlined"
@@ -152,9 +152,9 @@ const EditProject = ({ data, onHandleClose, editDetails, type }) => {
                   onChange={handleInputChange}
                   required
                 />
-              </Grid>
+              </Grid> */}
 
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={12} sm={8}>
                 <TextField
                   label={FORM_LABEL.PROJECT_DESC}
                   variant="outlined"

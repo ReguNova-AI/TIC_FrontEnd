@@ -518,7 +518,7 @@ const CreateProjectForm = () => {
                   required
                 />
               </Grid>
-              <Grid item xs={12} sm={4}>
+              {/* <Grid item xs={12} sm={4}>
                 <TextField
                   label={FORM_LABEL.PROJECT_NO}
                   variant="outlined"
@@ -528,7 +528,7 @@ const CreateProjectForm = () => {
                   onChange={handleInputChange}
                   required
                 />
-              </Grid>
+              </Grid> */}
 
               <Grid item xs={12} sm={4}>
                 <TextField

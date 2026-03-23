@@ -199,7 +199,7 @@ export default function ProjectTable() {
                           {row.project_name}
                         </Link>
                       </TableCell>
-                      <TableCell>{row.project_no}</TableCell>
+                      <TableCell>{row.index}</TableCell>
                       <TableCell>{row.runs}</TableCell>
                       <TableCell>{row.last_run}</TableCell>
                       <TableCell>{row.start_date}</TableCell>
