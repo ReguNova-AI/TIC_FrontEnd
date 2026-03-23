@@ -85,7 +85,7 @@ export default function DashboardLayout() {
           marginTop: "66px",
           position: "fixed",
           marginLeft: drawerOpen ? "240px" : !downXL ? "63px" : "2px",
-          zIndex: 999999,
+          zIndex: 999998,
           borderRadius: "50%",
           padding: "6px",
           bgcolor: "background.paper",

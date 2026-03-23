@@ -8,6 +8,7 @@ import {
   useProjectStandardChecklist,
   useUploadStandardChat,
 } from "./useProjectQueries";
+import { useQueryClient } from "@tanstack/react-query";
 
 // Helper function to create a history object based on changes
 export const createHistoryObject = (data, previousData, heading, userName) => {
@@ -63,6 +64,7 @@ export const useProjectOperations = (projectData, userName) => {
   const projectDocumentUploadMutation = useProjectDocumentUpload();
   const projectStandardChecklistMutation = useProjectStandardChecklist();
   const uploadStandardChatMutation = useUploadStandardChat();
+  const queryClient = useQueryClient();
 
   const handleProgressModalOpen = useCallback(() => {
     setIsProgressModalVisible(true);
@@ -110,9 +112,13 @@ export const useProjectOperations = (projectData, userName) => {
         history: updatedHistory,
       };
 
-      updateProjectMutation.mutate(updatedResponseWithHistory);
+      updateProjectMutation.mutate(updatedResponseWithHistory, {
+        onSuccess: () => {
+          queryClient.invalidateQueries(['projectDetails', updatedResponse.project_id]);
+        },
+      });
     },
-    [projectData, userName, updateProjectMutation]
+    [projectData, userName, updateProjectMutation, queryClient]
   );
 
   const handleRunAIAssessment = useCallback(async () => {
