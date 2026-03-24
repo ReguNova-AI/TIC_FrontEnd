@@ -1,19 +1,36 @@
-// hooks/useProjects.js
 import { useQuery } from "@tanstack/react-query";
 import { ProjectApiService } from "services/api/ProjectAPIService";
 
 const fetchProjects = async ({ queryKey }) => {
-  const [_key, { page, limit }] = queryKey;
-  const response = await ProjectApiService.projectListing(page, limit);
+  const [_key, { page, limit, sortBy, sortOrder, searchText, statusFilter }] =
+    queryKey;
+  const response = await ProjectApiService.projectListing(
+    page,
+    limit,
+    sortBy,
+    sortOrder,
+    searchText,
+    statusFilter,
+  );
   return response?.data;
 };
 
-export const useProjects = (page, limit) => {
+export const useProjects = (
+  page,
+  limit,
+  sortBy,
+  sortOrder,
+  searchText,
+  statusFilter,
+) => {
   return useQuery({
-    queryKey: ["projects", { page, limit }], // unique cache key
+    queryKey: [
+      "projects",
+      { page, limit, sortBy, sortOrder, searchText, statusFilter },
+    ],
     queryFn: fetchProjects,
-    staleTime: 5 * 60 * 1000, // data considered fresh for 5 min
-    cacheTime: 30 * 60 * 1000, // stays in cache for 30 min
+    staleTime: 5 * 60 * 1000,
+    cacheTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 };

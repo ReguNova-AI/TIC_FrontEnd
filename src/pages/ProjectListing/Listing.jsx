@@ -35,6 +35,7 @@ import Box from "@mui/material/Box";
 import { useProjects } from "components/hooks/useProjects";
 import SearchInput from "components/form/SearchInput";
 import { brand } from "themes/theme/brand";
+import FilterAltIcon from "@mui/icons-material/FilterAlt";
 
 // ------------------ CustomTabPanel ------------------
 function CustomTabPanel(props) {
@@ -64,6 +65,81 @@ function a11yProps(index) {
   };
 }
 
+const STATUS_OPTIONS = [
+  "Draft",
+  "In Progress",
+  "Processing",
+  "Success",
+  "Failed",
+  "Completed",
+];
+
+// ------------------ StatusColumnTitle (outside Listing) ------------------
+const StatusColumnTitle = ({
+  statusFilter,
+  setStatusFilter,
+  setCurrentPage,
+  setCurrentInvitedPage,
+}) => {
+  const [open, setOpen] = useState(false);
+
+  const handleChange = (newValue) => {
+    // MultiSelectWithChip passes the full updated array directly
+    setStatusFilter(newValue);
+    setCurrentPage(1);
+    setCurrentInvitedPage(1);
+  };
+
+  return (
+    <Popover
+      content={
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "6px",
+            minWidth: "150px",
+          }}
+        >
+          <MultiSelectWithChip
+            label="Status"
+            value={statusFilter}
+            options={STATUS_OPTIONS}
+            onChange={handleChange}
+          />
+        </div>
+      }
+      title="Filter by Status"
+      trigger="click"
+      open={open}
+      onOpenChange={setOpen}
+    >
+      <div
+        style={{
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          userSelect: "none",
+        }}
+      >
+        {LISTING_PAGE.STATUS}
+        <span
+          style={{
+            marginLeft: "6px",
+            fontSize: "11px",
+            color: statusFilter.length > 0 ? brand.primary : "#bbb",
+          }}
+        >
+          <FilterAltIcon
+            fontSize="small"
+            sx={{ position: "relative", top: "2px" }}
+          />
+        </span>
+      </div>
+    </Popover>
+  );
+};
+
 // ------------------ Listing Component ------------------
 const Listing = () => {
   const navigate = useNavigate();
@@ -71,45 +147,55 @@ const Listing = () => {
   const { filterStatusValue } = location.state || {};
 
   // Local state for filtering, search, pagination
-  const [searchText, setSearchText] = useState("");
-  const [statusFilter, setStatusFilter] = useState([]);
-  const [industryFilter, setIndustryFilter] = useState([]);
-  const [popoverVisible, setPopoverVisible] = useState(false);
   const [viewMode, setViewMode] = useState("list");
   const [currentPage, setCurrentPage] = useState(1);
   const [currentInvitedPage, setCurrentInvitedPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [pageInvitedSize, setPageInvitedSize] = useState(10);
   const [value, setValue] = useState(0);
-  const [sortOrder, setSortOrder] = useState("ascend");
   const [snackData, setSnackData] = useState({
     show: false,
     message: "",
     type: "error",
   });
+
+  // ------------------ Search and Filter ------------------
+
+  const [sortBy, setSortBy] = useState("created_at");
+  const [sortOrder, setSortOrder] = useState("desc");
+  const [searchText, setSearchText] = useState("");
+  const [statusFilter, setStatusFilter] = useState([]);
+
   // ------------------ Misc ------------------
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
   const userRole = userdetails?.[0]?.role_name;
 
   // Tanstack Query
+  const debouncedSearch = useDebounce(searchText, 500);
   const {
     data: projectData,
     isLoading,
     isError,
     error,
-  } = useProjects(currentPage, pageSize);
+  } = useProjects(
+    currentPage,
+    pageSize,
+    sortBy,
+    sortOrder,
+    debouncedSearch,
+    statusFilter,
+  );
 
   // ------------------ Data Transformation ------------------
   const transformProjects = (projects = []) =>
     projects.map((project) => ({
       index: project.project_id,
-      project_no: project.project_no,
       project_name: project.project_name,
-      runs: project.no_of_runs,
+      no_of_runs: project.no_of_runs,
       industry: project.industry_name,
       mapping_no: project.mapping_standards,
       regulatory_standard: project.regulatory_standard,
-      start_date:
+      created_at:
         project.created_at && project.created_at !== "null"
           ? formatDate(project.created_at)
           : "",
@@ -121,62 +207,31 @@ const Listing = () => {
       invite_members: project.invite_members,
     }));
 
-  const createdProjects = transformProjects(projectData?.details);
-  const invitedProjects = transformProjects(projectData?.invited_projects);
+  const filteredData = transformProjects(projectData?.details);
+  const filteredInvitedData = transformProjects(projectData?.invited_projects);
+
   const TotalProjectRecords =
     userRole === "Super Admin" ||
-      userRole === "Org Super Admin" ||
-      userRole === "Admin"
+    userRole === "Org Super Admin" ||
+    userRole === "Admin"
       ? projectData?.total_count || 0
       : projectData?.total_project_count || 0;
 
   const TotalInvitedProjectRecords =
     userRole === "Super Admin" ||
-      userRole === "Org Super Admin" ||
-      userRole === "Admin"
+    userRole === "Org Super Admin" ||
+    userRole === "Admin"
       ? projectData?.total_count || 0
       : projectData?.total_invited_project_count || 0;
 
-  // ------------------ Search & Filters ------------------
-  const handleSearch = (value) => setSearchText(value.toLowerCase());
-  const debouncedSearchText = useDebounce(searchText, 500);
-
-  const filterData = (data) => {
-    let filtered = data?.filter((item) => {
-      const matchesStatus =
-        statusFilter.length === 0 ||
-        statusFilter[0] === "Total Projects" ||
-        statusFilter?.includes(item.status);
-      const matchesIndustry =
-        industryFilter.length === 0 || industryFilter?.includes(item.industry);
-      const matchesSearchText =
-        item?.project_name?.toLowerCase()?.includes(debouncedSearchText) ||
-        item?.project_no?.toString()?.includes(debouncedSearchText);
-
-      return matchesStatus && matchesIndustry && matchesSearchText;
-    });
-
-    if (sortOrder === "ascend") {
-      filtered?.sort((a, b) => a.project_name?.localeCompare(b.project_name));
-    } else if (sortOrder === "descend") {
-      filtered?.sort((a, b) => b.project_name?.localeCompare(a.project_name));
-    }
-
-    return filtered;
+  // ------------------ Search handler ------------------
+  const handleSearch = (val) => {
+    setSearchText(val);
+    setCurrentPage(1);
+    setCurrentInvitedPage(1);
   };
 
-  const filteredData = filterData(createdProjects);
-  const filteredInvitedData = filterData(invitedProjects);
-
   // ------------------ Pagination ------------------
-  const paginatedData = filteredData?.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
-  const paginatedInvitedData = filteredInvitedData?.slice(
-    (currentInvitedPage - 1) * pageInvitedSize,
-    currentInvitedPage * pageInvitedSize
-  );
 
   const handleNavigateToProject = (projectNo, type) => {
     navigate(`/projectView/${projectNo}`, {
@@ -184,11 +239,28 @@ const Listing = () => {
     });
   };
 
+  const handleTableChange = (pagination, _, sorter) => {
+    if (sorter?.columnKey) {
+      const dbColumn = sorter.columnKey;
+      setSortBy(dbColumn);
+      setSortOrder(sorter.order === "ascend" ? "asc" : "desc");
+    } else {
+      // Sorter cleared
+      setSortBy(null);
+      setSortOrder(null);
+    }
+    // Reset to page 1 on sort change
+    setCurrentPage(1);
+    setCurrentInvitedPage(1);
+  };
+
   const columns = [
     {
       title: LISTING_PAGE.PROJECT_NAME,
       dataIndex: "project_name",
       key: "project_name",
+      sorter: true,
+      sortDirections: ["ascend", "descend", "ascend"],
       render: (text, record) => (
         <>
           <img
@@ -207,24 +279,30 @@ const Listing = () => {
     },
     {
       title: LISTING_PAGE.PROJECT_No,
-      dataIndex: "project_no",
-      key: "project_no",
+      dataIndex: "index",
+      key: "project_id",
+      sorter: true,
+      sortDirections: ["ascend", "descend", "ascend"],
     },
     {
       title: LISTING_PAGE.NO_OF_RUNS,
-      dataIndex: "runs",
-      key: "runs",
+      dataIndex: "no_of_runs",
+      key: "no_of_runs",
+      sorter: true,
+      sortDirections: ["ascend", "descend", "ascend"],
     },
     ...(userRole === "Super Admin" ||
-      userRole === "Org Super Admin" ||
-      userRole === "Admin"
+    userRole === "Org Super Admin" ||
+    userRole === "Admin"
       ? [
-        {
-          title: LISTING_PAGE.INDUSTRY,
-          dataIndex: "industry",
-          key: "industry",
-        },
-      ]
+          {
+            title: LISTING_PAGE.INDUSTRY,
+            dataIndex: "industry",
+            key: "industry",
+            sorter: true,
+            sortDirections: ["ascend", "descend", "ascend"],
+          },
+        ]
       : []),
     {
       title: LISTING_PAGE.REGULATORY_SANTARDS,
@@ -233,31 +311,37 @@ const Listing = () => {
     },
     {
       title: LISTING_PAGE.START_DATE,
-      dataIndex: "start_date",
-      key: "start_date",
+      dataIndex: "created_at",
+      key: "created_at",
+      sorter: true,
+      sortDirections: ["ascend", "descend", "ascend"],
     },
     {
       title: LISTING_PAGE.LAST_RUN,
       dataIndex: "last_run",
       key: "last_run",
+      sorter: true,
+      sortDirections: ["ascend", "descend", "ascend"],
     },
     {
-      title: LISTING_PAGE.STATUS,
+      title: (
+        <StatusColumnTitle
+          statusFilter={statusFilter}
+          setStatusFilter={setStatusFilter}
+          setCurrentPage={setCurrentPage}
+          setCurrentInvitedPage={setCurrentInvitedPage}
+        />
+      ),
       key: "status",
       dataIndex: "status",
       render: (_, { status }) => {
         const statusArray = Array.isArray(status) ? status : [status];
         return (
           <>
-            {statusArray?.map((tag, index) => {
+            {statusArray?.map((tag, i) => {
               const { title, color, borderColor } = getStatusChipProps(tag);
               return (
-                <Stack
-                  direction="row"
-                  spacing={1}
-                  alignItems="center"
-                  key={index}
-                >
+                <Stack direction="row" spacing={1} alignItems="center" key={i}>
                   <Chip
                     label={title}
                     color={borderColor}
@@ -322,7 +406,7 @@ const Listing = () => {
                   display: "flex",
                   alignItems: "center",
                   borderRadius: "20px",
-                  boxShadow:"none"
+                  boxShadow: "none",
                 }}
               >
                 <img src={addProjectIcon} width="20px" />
@@ -351,72 +435,6 @@ const Listing = () => {
                       />
                     </FormControl>
 
-                    <Popover
-                      content={
-                        <div>
-                          <MultiSelectWithChip
-                            label="Status"
-                            value={statusFilter}
-                            options={[
-                              "Draft",
-                              "In Progress",
-                              "Processing",
-                              "Success",
-                              "Failed",
-                              "Completed",
-                            ]}
-                            onChange={setStatusFilter}
-                          />
-                          {(userRole === "Super Admin" ||
-                            userRole === "Org Super Admin" ||
-                            userRole === "Admin") && (
-                              <MultiSelectWithChip
-                                label="Industry"
-                                value={industryFilter}
-                                onChange={setIndustryFilter}
-                              />
-                            )}
-                          <div style={{ marginTop: "10px" }}>
-                            <label>
-                              <b>Sort Project Name by:</b>
-                            </label>
-                            <br />
-                            <br />
-                            <Space direction="horizontal">
-                              <Button
-                                onClick={() => setSortOrder("ascend")}
-                                type={
-                                  sortOrder === "ascend" ? "primary" : "default"
-                                }
-                              >
-                                Ascending
-                              </Button>
-                              <Button
-                                onClick={() => setSortOrder("descend")}
-                                type={
-                                  sortOrder === "descend"
-                                    ? "primary"
-                                    : "default"
-                                }
-                              >
-                                Descending
-                              </Button>
-                            </Space>
-                          </div>
-                        </div>
-                      }
-                      title={BUTTON_LABEL.FILTER}
-                      visible={popoverVisible}
-                      onVisibleChange={setPopoverVisible}
-                      trigger="click"
-                    >
-                      <Button
-                        type="primary"
-                        style={{  color: "#ffffff", boxShadow:"none" }}
-                      >
-                        {BUTTON_LABEL.FILTER}
-                      </Button>
-                    </Popover>
                     <Button>
                       <DownloadOutlined />
                     </Button>
@@ -455,6 +473,7 @@ const Listing = () => {
               <CustomTabPanel value={value} index={0}>
                 {viewMode === "list" ? (
                   <Table
+                    onChange={handleTableChange}
                     columns={columns}
                     dataSource={filteredData}
                     rowKey="index"
@@ -469,18 +488,19 @@ const Listing = () => {
                     }}
                   />
                 ) : (
-                  <CardView data={paginatedData} />
+                  <CardView data={filteredData} />
                 )}
               </CustomTabPanel>
               <CustomTabPanel value={value} index={1}>
                 {viewMode === "list" ? (
                   <Table
+                    onChange={handleTableChange}
                     columns={columns}
                     dataSource={filteredInvitedData}
                     rowKey="index"
                     pagination={{
                       current: currentInvitedPage,
-                      pageInvitedSize,
+                      pageSize: pageInvitedSize,
                       total: TotalInvitedProjectRecords,
                       onChange: (page, size) => {
                         setCurrentInvitedPage(page);
@@ -489,7 +509,7 @@ const Listing = () => {
                     }}
                   />
                 ) : (
-                  <CardView data={paginatedInvitedData} />
+                  <CardView data={filteredInvitedData} />
                 )}
               </CustomTabPanel>
             </>

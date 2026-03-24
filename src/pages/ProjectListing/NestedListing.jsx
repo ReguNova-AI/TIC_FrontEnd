@@ -1,55 +1,35 @@
 import React, { useEffect, useState } from "react";
-import {
-  // Button,
-  Space,
-  Table,
-  Avatar,
-  // Popover,
-} from "antd";
-import { 
-  // BUTTON_LABEL,
-  LISTING_PAGE 
-} from "shared/constants";
-import { 
-  formatDate, 
-  // getStatusChipProps
-} from "shared/utility";
-// import Stack from "@mui/material/Stack";
-// import Chip from "@mui/material/Chip";
+import { Space, Table, Avatar } from "antd";
+import { LISTING_PAGE } from "shared/constants";
+import { formatDate } from "shared/utility";
 import { useNavigate } from "react-router-dom";
 import projectIcon from "../../assets/images/icons/projectIcon3.svg";
 import userListingIcon from "../../assets/images/icons/userListingicon2.svg";
-// import MultiSelectWithChip from "components/form/MultiSelectWithChip";
-import SearchInput from 'components/form/SearchInput';
+import SearchInput from "components/form/SearchInput";
 
 const NestedListing = ({ data, filterStatusValue }) => {
   const navigate = useNavigate();
   const [dataSource, setDataSource] = useState([]);
   const [searchText, setSearchText] = useState(""); // State for search input
   const [selectedProjectStatuses, setSelectedProjectStatuses] = useState([]); // State for selected project statuses
-  const [popoverVisible, setPopoverVisible] = useState(false);
-  // const [statusData, setStatusData] = useState([
-  //   "Draft",
-  //   "In Progress",
-  //   "Processing",
-  //   "Success",
-  //   "Failed",
-  // ]);
+  const [sortConfigs, setSortConfigs] = useState({});
 
   // Fetch data when the component mounts
   useEffect(() => {
     const fetchData = () => {
-    const users = data?.map((user) => ({
-      key: user?.user_id,
-      name: `${user?.user_first_name} ${user?.user_last_name}`,
-      profile: user?.user_profile,
-      role_name: user?.role_name,
-      industry: user?.industry_names,
+      const users = data?.map((user) => ({
+        key: user?.user_id,
+        name: `${user?.user_first_name} ${user?.user_last_name}`,
+        profile: user?.user_profile,
+        role_name: user?.role_name,
+        industry: user?.industry_names,
         project_count: user?.projects?.length,
-        projects: (user?.projects || []).sort((a, b) => new Date(b.created_at) - new Date(a.created_at)),
-    }));
+        projects: (user?.projects || []).sort(
+          (a, b) => new Date(b.created_at) - new Date(a.created_at),
+        ),
+      }));
 
-    setDataSource(users);
+      setDataSource(users);
     };
 
     fetchData();
@@ -70,17 +50,23 @@ const NestedListing = ({ data, filterStatusValue }) => {
       title: LISTING_PAGE.PROJECT_NAME,
       dataIndex: "project_name",
       key: "project_name",
+      sorter: true,
+      sortDirections: ["ascend", "descend", "ascend"],
       render: (text, record) => {
         return (
-        <>
-        <img src={projectIcon} width="30px" style={{verticalAlign:"middle",marginRight:"10px"}}/>
-        <a
-          onClick={() => handleNavigateToProject(record.project_id)}
-          style={{ color: "#5B0429", cursor: "pointer" }}
-        >
-          {record.project_name}
-        </a>
-        </>
+          <>
+            <img
+              src={projectIcon}
+              width="30px"
+              style={{ verticalAlign: "middle", marginRight: "10px" }}
+            />
+            <a
+              onClick={() => handleNavigateToProject(record.project_id)}
+              style={{ color: "#5B0429", cursor: "pointer" }}
+            >
+              {record.project_name}
+            </a>
+          </>
         );
       },
     },
@@ -88,11 +74,15 @@ const NestedListing = ({ data, filterStatusValue }) => {
       title: LISTING_PAGE.PROJECT_No,
       dataIndex: "project_id",
       key: "project_id",
+      sorter: true,
+      sortDirections: ["ascend", "descend", "ascend"],
     },
     {
       title: LISTING_PAGE.NO_OF_RUNS,
       dataIndex: "no_of_runs",
       key: "no_of_runs",
+      sorter: true,
+      sortDirections: ["ascend", "descend", "ascend"],
     },
     // {
     //   title: LISTING_PAGE.REGULATORY_SANTARDS,
@@ -103,21 +93,27 @@ const NestedListing = ({ data, filterStatusValue }) => {
       title: LISTING_PAGE.INDUSTRY,
       dataIndex: "industry_name",
       key: "industry_name",
+      sorter: true,
+      sortDirections: ["ascend", "descend", "ascend"],
     },
     {
       title: LISTING_PAGE.START_DATE,
       dataIndex: "created_at",
       key: "created_at",
+      sorter: true,
+      sortDirections: ["ascend", "descend", "ascend"],
       render: (created_at) => (created_at ? formatDate(created_at) : ""),
     },
     {
       title: LISTING_PAGE.LAST_RUN,
       dataIndex: "last_run",
       key: "last_run",
+      sorter: true,
+      sortDirections: ["ascend", "descend", "ascend"],
       render: (last_run) =>
         last_run !== "null" && last_run !== null && last_run !== ""
           ? formatDate(last_run)
-          : "",
+          : "--",
     },
     // {
     //   title: LISTING_PAGE.STATUS,
@@ -200,7 +196,7 @@ const NestedListing = ({ data, filterStatusValue }) => {
       // dataIndex: 'industry',
       key: "industry",
       render: (record) => {
-        console.log("industry", record);
+        // console.log("industry", record);
         return (
           record &&
           record?.industry?.map((data, index) => {
@@ -221,15 +217,27 @@ const NestedListing = ({ data, filterStatusValue }) => {
     },
   ];
 
+  const handleExpandedTableChange = (recordKey) => (pagination, _, sorter) => {
+    if (sorter?.columnKey && sorter?.order) {
+      setSortConfigs((prev) => ({
+        ...prev,
+        [recordKey]: { sortBy: sorter.columnKey, sortOrder: sorter.order },
+      }));
+    } else {
+      setSortConfigs((prev) => ({
+        ...prev,
+        [recordKey]: { sortBy: null, sortOrder: null },
+      }));
+    }
+  };
+
   const expandedRowRender = (record) => {
-    // Filter projects based on project status
-    const userProjects = record.projects.filter((project) => {
-      // Filter by project status if any status is selected
+    const { sortBy, sortOrder } = sortConfigs[record.key] || {};
+    let userProjects = record.projects.filter((project) => {
       const matchesStatus =
         selectedProjectStatuses.length === 0 ||
         selectedProjectStatuses.includes(project.status);
 
-      // Filter by project name or user name search text
       const matchesSearchText =
         project.project_name.toLowerCase().includes(searchText.toLowerCase()) ||
         record.name.toLowerCase().includes(searchText.toLowerCase());
@@ -237,14 +245,41 @@ const NestedListing = ({ data, filterStatusValue }) => {
       return matchesStatus && matchesSearchText;
     });
 
+    // Client-side sort scoped to this row
+    if (sortBy) {
+      userProjects = [...userProjects].sort((a, b) => {
+        const aVal = a[sortBy] ?? "";
+        const bVal = b[sortBy] ?? "";
+
+        if (sortBy === "created_at" || sortBy === "last_run") {
+          const parseDate = (val) => {
+            if (!val || val === "null") return 0;
+            const normalized = val.toString().replace(" ", "T").split(".")[0];
+            const d = new Date(normalized);
+            return isNaN(d.getTime()) ? 0 : d.getTime();
+          };
+          return sortOrder === "ascend"
+            ? parseDate(aVal) - parseDate(bVal)
+            : parseDate(bVal) - parseDate(aVal);
+        }
+
+        if (typeof aVal === "number" && typeof bVal === "number") {
+          return sortOrder === "ascend" ? aVal - bVal : bVal - aVal;
+        }
+
+        return sortOrder === "ascend"
+          ? String(aVal).localeCompare(String(bVal))
+          : String(bVal).localeCompare(String(aVal));
+      });
+    }
+
     return (
-      <>
-        <Table
-          columns={expandColumns}
-          dataSource={userProjects}
-          pagination={false}
-        />
-      </>
+      <Table
+        onChange={handleExpandedTableChange(record.key)} // curry the key
+        columns={expandColumns}
+        dataSource={userProjects}
+        pagination={false}
+      />
     );
   };
 
@@ -253,24 +288,13 @@ const NestedListing = ({ data, filterStatusValue }) => {
     setSearchText(e.target.value);
   };
 
-  // const filterPopoverContent = (
-  //   <div style={{ marginBottom: "20px" }}>
-  //     <MultiSelectWithChip
-  //       label="Status"
-  //       value={selectedProjectStatuses}
-  //       options={statusData}
-  //       onChange={setSelectedProjectStatuses}
-  //     />
-  //   </div>
-  // );
-
   const filterData = (data) => {
     return data?.filter((user) => {
       const userMatches = user.name
         .toLowerCase()
         .includes(searchText.toLowerCase());
       const filteredProjects = user.projects.filter((project) =>
-        project.project_name.toLowerCase().includes(searchText.toLowerCase())
+        project.project_name.toLowerCase().includes(searchText.toLowerCase()),
       );
       return userMatches || filteredProjects.length > 0;
     });
@@ -279,29 +303,15 @@ const NestedListing = ({ data, filterStatusValue }) => {
   return (
     <>
       {/* Search input */}
-      <Space style={{float:"right", marginTop:"-20px", marginBottom:"20px"}}>
+      <Space
+        style={{ float: "right", marginTop: "-20px", marginBottom: "20px" }}
+      >
         <SearchInput
           value={searchText}
           onChange={handleSearchChange}
           placeholder="Search by project name or user name"
           width={300}
         />
-              {/* <Popover
-                content={filterPopoverContent}
-                title={BUTTON_LABEL.FILTER}
-                visible={popoverVisible}
-                onVisibleChange={setPopoverVisible}
-                trigger="click"
-              >
-                <Button
-                  type="primary"
-                  style={{
-                    boxShadow:"none"
-                  }}
-                >
-                  {BUTTON_LABEL.FILTER}
-                </Button>
-                </Popover> */}
       </Space>
 
       {/* Table rendering */}

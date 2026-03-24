@@ -68,11 +68,15 @@ const _getExtractedInfo = (projectId) => {
   );
 };
 
-const _projectListing = (page, limit) => {
+const _projectListing = (page, limit, sortBy, sortOrder, searchText, statusFilter) => {
   const params = {
     page: page,
     limit: limit,
   };
+  if (sortBy) params.sortBy = sortBy;
+  if (sortOrder) params.sortOrder = sortOrder;
+  if (searchText) params.search = searchText;
+  if (statusFilter?.length) params.status = statusFilter.join(",");
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
   const user_id = userdetails?.[0]?.user_id;
   const role = userdetails?.[0]?.role_name;
