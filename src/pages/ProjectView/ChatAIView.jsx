@@ -261,7 +261,7 @@ const ChatAIView = ({ data, projectId, isQuestionActive, setIsQuestionActive }) 
             }}
           >
             {history.length > 0 ? (
-              [...history].reverse().map((entry, index) => (
+              [...history].map((entry, index) => (
                 <Box
                   key={index}
                   sx={{
