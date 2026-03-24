@@ -23,33 +23,9 @@ import CardView from "pages/ProjectListing/CardView";
 import ToggleButtons from "pages/ProjectListing/ToggleButton";
 import { useNavigate } from "react-router";
 
-// ==============================|| SORTING HELPERS ||============================== //
-
-function descendingComparator(a, b, orderBy) {
-  if (b[orderBy] < a[orderBy]) return -1;
-  if (b[orderBy] > a[orderBy]) return 1;
-  return 0;
-}
-
-function getComparator(order, orderBy) {
-  return order === "desc"
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
-}
-
-function stableSort(array, comparator) {
-  const stabilizedThis = array.map((el, index) => [el, index]);
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) return order;
-    return a[1] - b[1];
-  });
-  return stabilizedThis.map((el) => el[0]);
-}
-
 // ==============================|| PROJECT TABLE - HEADER ||============================== //
 
-function ProjectTableHead({ order, orderBy }) {
+function ProjectTableHead() {
   const headCells = [
     { id: "project_name", label: "Project name", align: "left" },
     { id: "project_no", label: "Project no.", align: "left" },
@@ -74,18 +50,13 @@ function ProjectTableHead({ order, orderBy }) {
 // ==============================|| PROJECT TABLE ||============================== //
 
 export default function ProjectTable() {
-  const order = "asc";
-  const orderBy = "index";
   const navigate = useNavigate();
 
   const info = JSON.parse(sessionStorage.getItem("userDetails"));
   const userRole = info?.[0]?.role_name;
 
   const [data, setData] = useState([]);
-  const [viewMode, setViewMode] = useState(
-    userRole !== "Org Super Admin" && userRole !== "Admin" ? "card" : "list"
-  );
-  const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState("list");
 
   const [snackData, setSnackData] = useState({
     show: false,
@@ -103,7 +74,7 @@ export default function ProjectTable() {
     project_name,
     start_date,
     runs,
-    last_run
+    last_run,
   ) => {
     return { index, project_no, project_name, start_date, runs, last_run };
   };
@@ -121,8 +92,8 @@ export default function ProjectTable() {
               project.project_name,
               project.created_at ? formatDate(project.created_at) : "",
               project.no_of_runs ?? 0,
-              project.last_run ?? "-"
-            )
+              project.last_run==="null"||!project.last_run ? "--":project.last_run,
+            ),
           );
         } else {
           newData = response?.data?.details.map((project) =>
@@ -132,13 +103,12 @@ export default function ProjectTable() {
               project.project_name,
               project.created_at ? formatDate(project.created_at) : "",
               project.no_of_runs ?? 0,
-              project.last_run ?? "-"
-            )
+              project.last_run==="null"||!project.last_run ? "--":project.last_run,
+            ),
           );
         }
 
         setData(newData.slice(0, 6));
-        setLoading(false);
       })
       .catch((errResponse) => {
         setSnackData({
@@ -148,7 +118,6 @@ export default function ProjectTable() {
             API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
-        setLoading(false);
       });
   };
 
@@ -168,7 +137,7 @@ export default function ProjectTable() {
         alignContent: data.length > 0 ? "normal" : "space-around",
       }}
     >
-      <Typography variant="h5">Recent Projects</Typography>
+      <Typography variant="h5">Recent Projectss</Typography>
 
       {data.length > 0 &&
         userRole !== "Org Super Admin" &&
@@ -176,7 +145,7 @@ export default function ProjectTable() {
           <Box sx={{ float: "right" }}>
             <ToggleButtons
               onViewModeChange={handleViewModeChange}
-              viewSelected="card"
+              viewSelected="list"
             />
           </Box>
         )}
@@ -185,27 +154,27 @@ export default function ProjectTable() {
         viewMode === "list" ? (
           <TableContainer sx={{ overflowX: "auto" }}>
             <Table>
-              <ProjectTableHead order={order} orderBy={orderBy} />
+              <ProjectTableHead />
               <TableBody>
-                {stableSort(data, getComparator(order, orderBy)).map(
-                  (row, index) => (
-                    <TableRow key={index} hover>
-                      <TableCell>
-                        <Link
-                          color="secondary"
-                          onClick={() => handleClick(row.index)}
-                          sx={{ cursor: "pointer" }}
-                        >
-                          {row.project_name}
-                        </Link>
-                      </TableCell>
-                      <TableCell>{row.index}</TableCell>
-                      <TableCell>{row.runs}</TableCell>
-                      <TableCell>{row.last_run}</TableCell>
-                      <TableCell>{row.start_date}</TableCell>
-                    </TableRow>
-                  )
-                )}
+                {data.map((row, index) => (
+                  <TableRow key={index} hover>
+                    <TableCell>
+                      <Link
+                        color="secondary"
+                        onClick={() => handleClick(row.index)}
+                        sx={{ cursor: "pointer" }}
+                      >
+                        {row.project_name}
+                      </Link>
+                    </TableCell>
+                    <TableCell>{row.index}</TableCell>
+                    <TableCell>{row.runs}</TableCell>
+                    <TableCell>
+                      {row.last_run}
+                    </TableCell>
+                    <TableCell>{row.start_date}</TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </TableContainer>
@@ -227,7 +196,3 @@ export default function ProjectTable() {
   );
 }
 
-ProjectTableHead.propTypes = {
-  order: PropTypes.any,
-  orderBy: PropTypes.string,
-};
