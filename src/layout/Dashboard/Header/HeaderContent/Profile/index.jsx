@@ -37,6 +37,7 @@ import { API_SUCCESS_MESSAGE } from "shared/constants";
 import userIcon from  "../../../../../assets/images/icons/users2.svg";
 import informationIcon from  "../../../../../assets/images/icons/information.svg";
 import logoutIcon from  "../../../../../assets/images/icons/logout.svg";
+import { useQueryClient } from "@tanstack/react-query";
 
 // ==============================|| HEADER CONTENT - PROFILE ||============================== //
 
@@ -84,6 +85,7 @@ export default function Profile() {
   const iconBackColorOpen = "grey.100";
 
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
+  const queryClient = useQueryClient();
   const handleLogout = () => {
     let payload = {
       user_id: userdetails?.[0]?.user_id,
@@ -102,6 +104,7 @@ export default function Profile() {
         localStorage.clear();
        
         navigate("/login");
+        queryClient.clear();
       })
       .catch((errResponse) => {
         setSnackData({
