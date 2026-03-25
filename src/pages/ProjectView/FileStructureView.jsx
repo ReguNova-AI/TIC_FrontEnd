@@ -40,7 +40,7 @@ const getFileIcon = (filename) => {
   }
 };
 
-const FileStructureView = ({ data, onFileUploadSuccess }) => {
+const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
   const [localFolders, setLocalFolders] = useState([]); // Store optimistic folders
   const [expandedKeys, setExpandedKeys] = useState([]); // Store keys to expand
   const [newDoc, setNewDoc] = useState({ file: null });
@@ -378,10 +378,14 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
         title: 'Delete Document',
         content: `Are you sure you want to delete "${document.document_name}"? This action cannot be undone.`,
         okText: 'Delete',
+        okButtonProps: {
+          disabled: aiButtonLoading,
+        },
         okType: 'danger',
         cancelText: 'Cancel',
         onOk: async () => {
           try {
+            if(aiButtonLoading) return;
             const response = await ProjectApiService.deleteProjectDocument(
               document.document_id,
               document.version_id
@@ -657,6 +661,7 @@ const FileStructureView = ({ data, onFileUploadSuccess }) => {
         onDeleteFile={(doc) => handleDeleteDocument(doc)}
         onDeleteFolder={null}
         onUploadFile={handleFileChange}
+        aiButtonLoading={aiButtonLoading}
       />
 
       <input

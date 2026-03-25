@@ -204,7 +204,8 @@ const UnifiedFileTree = ({
     expandedKeys,
     onExpand,
     readOnly = false,
-    onUploadFile = null
+    onUploadFile = null,
+    aiButtonLoading
 }) => {
     // --- Modal state lives here ---
     const [previewFile, setPreviewFile] = useState(null); // { url, name }
@@ -280,7 +281,7 @@ const UnifiedFileTree = ({
 
                 if (!isPlaceholder) {
                     treeStructure[folder].children.push({
-                        title: renderFileTitle(doc, onDeleteFile, readOnly, onUploadFile, handlePreview),
+                        title: renderFileTitle(doc, onDeleteFile, readOnly, onUploadFile, handlePreview, aiButtonLoading),
                         key: `${id}-${version}`,
                         isLeaf: true,
                         data: doc
@@ -288,7 +289,7 @@ const UnifiedFileTree = ({
                 }
             } else if (!isPlaceholder) {
                 rootFiles.push({
-                    title: renderFileTitle(doc, onDeleteFile, readOnly, onUploadFile, handlePreview),
+                    title: renderFileTitle(doc, onDeleteFile, readOnly, onUploadFile, handlePreview, aiButtonLoading),
                     key: `${id}-${version}`,
                     isLeaf: true,
                     data: doc
@@ -367,7 +368,7 @@ const UnifiedFileTree = ({
 };
 
 // --- renderFileTitle now receives onPreview ---
-function renderFileTitle(doc, onDeleteFile, readOnly, onUploadFile, onPreview) {
+function renderFileTitle(doc, onDeleteFile, readOnly, onUploadFile, onPreview, aiButtonLoading) {
     const hasFile = doc.path || doc.fileObj;
 
     return (
@@ -392,8 +393,9 @@ function renderFileTitle(doc, onDeleteFile, readOnly, onUploadFile, onPreview) {
                                 onCancel={(e) => e.stopPropagation()}
                                 okText="Yes"
                                 cancelText="No"
+                                disabled={aiButtonLoading}
                             >
-                                <DeleteOutlined style={{ color: 'red', marginLeft: 8 }} onClick={(e) => e.stopPropagation()} />
+                                <DeleteOutlined style={{ color: `${aiButtonLoading ? "grey" : "red"}`, cursor: `${aiButtonLoading ? "auto" : "pointer"}`, marginLeft: 8 }} onClick={(e) => e.stopPropagation()} />
                             </Popconfirm>
                         )}
                     </div>

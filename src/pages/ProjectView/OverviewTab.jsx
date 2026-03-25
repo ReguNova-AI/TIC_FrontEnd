@@ -46,6 +46,7 @@ const OverviewTab = ({
             </Box>
             <Box sx={{ flex: 1, overflow: 'auto' }}>
               <FileStructureView
+                aiButtonLoading={aiButtonLoading}
                 data={projectData}
                 onFileUploadSuccess={onFileUploadSuccess}
               />
