@@ -31,6 +31,7 @@ import { FileUploadApiService } from "services/api/FileUploadAPIService";
 import { Spin } from "antd";
 import DocumentSection from "./AddDocuments";
 import { PaymentApiService } from "services/api/Payment";
+import { useQueryClient } from "@tanstack/react-query";
 
 const CreateProjectForm = () => {
   const [submissionStatus, setSubmissionStatus] = useState("");
@@ -76,6 +77,9 @@ const CreateProjectForm = () => {
       fetchIndustryData();
     }
   }, []);
+
+  // Get query client for manual cache invalidation
+  const queryClient = useQueryClient();
 
   const fetchIndustryData = () => {
     UserApiService.industryDetails()
@@ -420,6 +424,7 @@ const CreateProjectForm = () => {
                   projectName: formData.projectName,
                 },
               });
+              queryClient.invalidateQueries({ queryKey: ["projects"] });
             })
             .catch((errResponse) => {
               setSubmitLoading(false);
