@@ -26,3 +26,7 @@
   filter: brightness(0) saturate(100%) invert(10%) sepia(35%) saturate(5643%)
     hue-rotate(316deg) brightness(92%) contrast(107%);
 }
+
+.docx-preview{
+  padding: 0px !important;
+}

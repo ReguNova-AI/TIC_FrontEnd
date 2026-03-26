@@ -62,7 +62,7 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
   const [isUploadingMultiple, setIsUploadingMultiple] = useState(false);
   const [multipleUploadProgress, setMultipleUploadProgress] = useState(0);
   const [currentFileProgress, setCurrentFileProgress] = useState(0); // NEW: per-file S3 progress
-  const [currentFileName, setCurrentFileName] = useState("");         // NEW: per-file name display
+  const [currentFileName, setCurrentFileName] = useState(""); // NEW: per-file name display
   const [uploadedFilesCount, setUploadedFilesCount] = useState(0);
   const [totalFilesCount, setTotalFilesCount] = useState(0);
 
@@ -74,12 +74,14 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
   const checkGoogleToken = async () => {
     setIsTokenLoading(true);
     try {
-      const userdetails = JSON.parse(sessionStorage.getItem('userDetails'));
+      const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
       const userId = userdetails?.[0]?.user_id;
 
       if (userId) {
-        const response = await GoogleDrivePickerService.getGoogleAccessTokenWithCache(userId);
-        const hasToken = response && (response.access_token || response.accessToken);
+        const response =
+          await GoogleDrivePickerService.getGoogleAccessTokenWithCache(userId);
+        const hasToken =
+          response && (response.access_token || response.accessToken);
         setHasGoogleToken(hasToken);
       }
     } catch (error) {
@@ -94,15 +96,22 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
   useEffect(() => {
     const checkForGoogleAuthCompletion = () => {
       const urlParams = new URLSearchParams(window.location.search);
-      const googleAuthSuccess = urlParams.get('google_auth_success');
-      const googleAuthCode = urlParams.get('code');
-      const state = urlParams.get('state');
-      const error = urlParams.get('error');
-      const gdrive = urlParams.get('gdrive');
+      const googleAuthSuccess = urlParams.get("google_auth_success");
+      const googleAuthCode = urlParams.get("code");
+      const state = urlParams.get("state");
+      const error = urlParams.get("error");
+      const gdrive = urlParams.get("gdrive");
 
       // Check for any indication of Google auth completion
-      if (googleAuthSuccess === 'true' || googleAuthCode || (state && !error) || gdrive === '1') {
-        console.log('Google authorization detected, checking token immediately');
+      if (
+        googleAuthSuccess === "true" ||
+        googleAuthCode ||
+        (state && !error) ||
+        gdrive === "1"
+      ) {
+        console.log(
+          "Google authorization detected, checking token immediately",
+        );
         // Check token immediately without delay
         checkGoogleToken();
 
@@ -125,10 +134,9 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
       checkGoogleToken();
     };
 
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
   }, []);
-
 
   // --- File Upload logic
   // CHANGED: added optional `silent` and `onProgress` params.
@@ -152,7 +160,11 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
       });
 
       const ext = file.name.split(".").pop();
-      const payload = { documents: [fileDataUrl], type: ext, project_id : data.project_id };
+      const payload = {
+        documents: [fileDataUrl],
+        type: ext,
+        project_id: data.project_id,
+      };
 
       // CHANGED: pass onUploadProgress via otherConfig (4th arg) so axios fires progress events.
       // BaseApiService.post signature: post(url, params, data, useBaseApiPath, otherConfig)
@@ -189,7 +201,7 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
 
   // CHANGED: added optional `silent` param.
   // When silent=true (called from multi-upload loop), skips modal close and messages.
-  const handleUploadDocument = (doc_data, silent = false) => {
+  const handleUploadDocument = async (doc_data, silent = false) => {
     const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
     console.log("Document data to upload", doc_data);
     const payload = {
@@ -221,7 +233,9 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
     return apiCall
       .then((response) => {
         if (!silent) {
-          message.success(response.message || "Document uploaded successfully!");
+          message.success(
+            response.message || "Document uploaded successfully!",
+          );
           if (onFileUploadSuccess) onFileUploadSuccess();
         }
       })
@@ -229,8 +243,8 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
         if (!silent) {
           message.error(
             errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR ||
-            "Document upload failed!"
+              API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR ||
+              "Document upload failed!",
           );
         }
         throw errResponse;
@@ -255,7 +269,7 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
     setIsUploadingMultiple(true);
     setMultipleUploadProgress(0);
     setCurrentFileProgress(0); // NEW
-    setCurrentFileName("");    // NEW
+    setCurrentFileName(""); // NEW
     setUploadedFilesCount(0);
     setTotalFilesCount(files.length);
     setOpenModal(true);
@@ -278,17 +292,15 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
 
           // CHANGED: silent=true (don't touch single-file modal state),
           // onProgress callback drives the per-file progress bar in real time
-          const uploadedPath = await handleFileUpload(
-            file,
-            true,
-            (pct) => setCurrentFileProgress(pct)
+          const uploadedPath = await handleFileUpload(file, true, (pct) =>
+            setCurrentFileProgress(pct),
           );
 
           if (uploadedPath) {
             // Create document record
             const documentData = {
               document_name: file.name,
-              document_type: file.type || 'application/octet-stream',
+              document_type: file.type || "application/octet-stream",
               file_path: uploadedPath,
             };
 
@@ -296,16 +308,24 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
             await handleUploadDocument(documentData, true);
 
             successfulUploads++;
-            uploadResults.push({ file: file.name, status: 'success' });
+            uploadResults.push({ file: file.name, status: "success" });
             console.log(`Successfully uploaded: ${file.name}`);
           } else {
             failedUploads++;
-            uploadResults.push({ file: file.name, status: 'failed', error: 'No upload path returned' });
+            uploadResults.push({
+              file: file.name,
+              status: "failed",
+              error: "No upload path returned",
+            });
             console.error(`Failed to upload: ${file.name} - No upload path`);
           }
         } catch (error) {
           failedUploads++;
-          uploadResults.push({ file: file.name, status: 'failed', error: error.message });
+          uploadResults.push({
+            file: file.name,
+            status: "failed",
+            error: error.message,
+          });
           console.error(`Failed to upload: ${file.name}`, error);
         }
 
@@ -319,19 +339,20 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
       if (successfulUploads === files.length) {
         message.success(`🎉 All ${files.length} files uploaded successfully!`);
       } else if (successfulUploads > 0) {
-        message.warning(`⚠️ ${successfulUploads} of ${files.length} files uploaded successfully. ${failedUploads} failed.`);
+        message.warning(
+          `⚠️ ${successfulUploads} of ${files.length} files uploaded successfully. ${failedUploads} failed.`,
+        );
       } else {
         message.error(`❌ All ${files.length} files failed to upload.`);
       }
 
       // Log detailed results
-      console.log('Upload Results:', uploadResults);
+      console.log("Upload Results:", uploadResults);
 
       // Refresh the file structure
       if (onFileUploadSuccess && successfulUploads > 0) {
         onFileUploadSuccess();
       }
-
     } catch (error) {
       console.error("Multiple file upload failed:", error);
       message.error(`❌ Upload process failed: ${error.message}`);
@@ -351,18 +372,18 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
 
   // Handle file picker for multiple selection
   const handleMultipleFileSelect = () => {
-    console.log('handleMultipleFileSelect called');
+    console.log("handleMultipleFileSelect called");
     try {
       if (fileInputRef.current) {
-        console.log('Triggering file input click');
+        console.log("Triggering file input click");
         fileInputRef.current.click();
       } else {
-        console.error('File input ref not found');
-        message.error('File input not available. Please refresh the page.');
+        console.error("File input ref not found");
+        message.error("File input not available. Please refresh the page.");
       }
     } catch (error) {
-      console.error('Error in handleMultipleFileSelect:', error);
-      message.error('Failed to open file picker. Please try again.');
+      console.error("Error in handleMultipleFileSelect:", error);
+      message.error("Failed to open file picker. Please try again.");
     }
   };
 
@@ -375,23 +396,25 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
 
       // Show Antd Modal confirmation dialog
       Modal.confirm({
-        title: 'Delete Document',
+        title: "Delete Document",
         content: `Are you sure you want to delete "${document.document_name}"? This action cannot be undone.`,
-        okText: 'Delete',
+        okText: "Delete",
         okButtonProps: {
           disabled: aiButtonLoading,
         },
-        okType: 'danger',
-        cancelText: 'Cancel',
+        okType: "danger",
+        cancelText: "Cancel",
         onOk: async () => {
           try {
-            if(aiButtonLoading) return;
+            if (aiButtonLoading) return;
             const response = await ProjectApiService.deleteProjectDocument(
               document.document_id,
-              document.version_id
+              document.version_id,
             );
 
-            message.success(response.message || "Document deleted successfully!");
+            message.success(
+              response.message || "Document deleted successfully!",
+            );
 
             // Call the callback to refresh project data in parent component
             if (onFileUploadSuccess) {
@@ -401,8 +424,8 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
             console.error("Delete failed:", error);
             message.error(
               error?.error?.message ||
-              API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR ||
-              "Failed to delete document!"
+                API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR ||
+                "Failed to delete document!",
             );
           }
         },
@@ -412,7 +435,6 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
       message.error("Failed to initiate delete operation!");
     }
   };
-
 
   const handleFileChange = async (e, document) => {
     const file = e.target.files[0];
@@ -447,22 +469,22 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
     if (data?.project_documents) {
       // Optional: Expand all folders initially?
       // const allFolders = data.project_documents.map(d => d.folder_name).filter(Boolean);
-      // setExpandedKeys(allFolders); 
-      // Existing logic did it via transformDataToTree result. 
+      // setExpandedKeys(allFolders);
+      // Existing logic did it via transformDataToTree result.
       // We can just leave it empty or expand top level.
     }
   }, [data]);
   // ... (Unified Handlers follow) ...
   // ...
 
-
   // --- Unified Handlers
   const handleUnifiedAddFolder = async (folderName) => {
-    const existingFolders = data?.project_documents
-      ?.map(doc => doc.folder_name)
-      .filter(name => name && name !== "null") || [];
+    const existingFolders =
+      data?.project_documents
+        ?.map((doc) => doc.folder_name)
+        .filter((name) => name && name !== "null") || [];
 
-    const optimisticFolders = localFolders.map(f => f.folder_name);
+    const optimisticFolders = localFolders.map((f) => f.folder_name);
     const allFolders = [...existingFolders, ...optimisticFolders];
 
     if (allFolders.includes(folderName)) {
@@ -471,20 +493,22 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
     }
 
     // Add optimistic folder
-    setLocalFolders(prev => [...prev, {
-      folder_name: folderName,
-      document_name: null, // Placeholder
-      document_id: `temp-${Date.now()}`,
-      version: 'V1'
-    }]);
+    setLocalFolders((prev) => [
+      ...prev,
+      {
+        folder_name: folderName,
+        document_name: null, // Placeholder
+        document_id: `temp-${Date.now()}`,
+        version: "V1",
+      },
+    ]);
 
     // Expand new folder
     const folderKey = folderName.replace(/\s+/g, "-");
-    setExpandedKeys(prev => [...prev, folderKey]);
+    setExpandedKeys((prev) => [...prev, folderKey]);
 
     message.success("Folder created successfully!");
   };
-
 
   const handleUnifiedAddFile = async (fileData) => {
     const { name, type, file, folderName } = fileData;
@@ -519,14 +543,19 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
           message.success("Document created and file uploaded!");
         }
       } else {
-        const createResponse = await ProjectApiService.createProjectDocument(payload);
-        message.success(createResponse.message || "Document created successfully!");
+        const createResponse =
+          await ProjectApiService.createProjectDocument(payload);
+        message.success(
+          createResponse.message || "Document created successfully!",
+        );
       }
 
       if (onFileUploadSuccess) onFileUploadSuccess();
       setAddingFileToFolder(null);
     } catch (errResponse) {
-      message.error(errResponse?.error?.message || "Failed to create document!");
+      message.error(
+        errResponse?.error?.message || "Failed to create document!",
+      );
     }
   };
 
@@ -534,9 +563,16 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
     <div>
       <div style={{ marginBottom: 20 }}>
         {/* Unified Controls & Google Drive Layout */}
-        <div style={{ display: "flex", flexDirection: 'row', gap: 16, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-
-          <div style={{ flex: 1, minWidth: '600px' }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            gap: 16,
+            alignItems: "flex-start",
+            flexWrap: "wrap",
+          }}
+        >
+          <div style={{ flex: 1, minWidth: "600px" }}>
             <UnifiedDocumentControl
               onAddFolder={handleUnifiedAddFolder}
               onAddFile={handleUnifiedAddFile}
@@ -556,7 +592,7 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
               <GoogleDriveFileCard
                 projectId={data?.project_id}
                 onUploadSuccess={onFileUploadSuccess}
-                style={{ width: "100%" }} 
+                style={{ width: "100%" }}
               />
             ) : (
               <GoogleDrivePicker projectId={data?.project_id} />
@@ -568,10 +604,16 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
         <Modal
           open={openModal}
           footer={null}
-          onCancel={() => { if (!isUploadingMultiple) setOpenModal(false); }} // CHANGED: block accidental close during upload
-          closable={!isUploadingMultiple}     // CHANGED
+          onCancel={() => {
+            if (!isUploadingMultiple) setOpenModal(false);
+          }} // CHANGED: block accidental close during upload
+          closable={!isUploadingMultiple} // CHANGED
           maskClosable={!isUploadingMultiple} // CHANGED
-          title={isUploadingMultiple ? "Uploading Multiple Files" : "Uploading Document"}
+          title={
+            isUploadingMultiple
+              ? "Uploading Multiple Files"
+              : "Uploading Document"
+          }
           centered
         >
           {isUploadingMultiple ? (
@@ -581,7 +623,7 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
                 <Typography.Text strong>
                   Uploading {uploadedFilesCount} of {totalFilesCount} files
                 </Typography.Text>
-                <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>
+                <div style={{ fontSize: 12, color: "#666", marginTop: 4 }}>
                   Progress: {Math.round(multipleUploadProgress)}% complete
                 </div>
               </div>
@@ -590,15 +632,30 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
                 status={multipleUploadProgress === 100 ? "success" : "active"}
                 format={(percent) => `${percent}%`}
                 strokeColor={{
-                  '0%': "#ffffff",
-                  '100%': brand.primary,
+                  "0%": "#ffffff",
+                  "100%": brand.primary,
                 }}
               />
 
               {/* NEW: per-file progress card */}
               {currentFileName && (
-                <div style={{ marginTop: 16, padding: '10px 12px', backgroundColor: '#fafafa', border: '1px solid #f0f0f0', borderRadius: 6 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                <div
+                  style={{
+                    marginTop: 16,
+                    padding: "10px 12px",
+                    backgroundColor: "#fafafa",
+                    border: "1px solid #f0f0f0",
+                    borderRadius: 6,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      marginBottom: 6,
+                    }}
+                  >
                     {getFileIcon(currentFileName)}
                     <Typography.Text ellipsis style={{ flex: 1, fontSize: 13 }}>
                       {currentFileName}
@@ -617,23 +674,36 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
                 </div>
               )}
 
-              <div style={{ marginTop: 8, fontSize: 12, color: '#666' }}>
+              <div style={{ marginTop: 8, fontSize: 12, color: "#666" }}>
                 Files will be uploaded to the root directory
               </div>
-              {uploadedFilesCount === totalFilesCount && totalFilesCount > 0 && (
-                <div style={{ marginTop: 12, padding: 8, backgroundColor: '#f6ffed', border: '1px solid #b7eb8f', borderRadius: 4 }}>
-                  <Typography.Text style={{ color: '#52c41a', fontSize: 12 }}>
-                    ✅ Upload completed! Refreshing file structure...
-                  </Typography.Text>
-                </div>
-              )}
+              {uploadedFilesCount === totalFilesCount &&
+                totalFilesCount > 0 && (
+                  <div
+                    style={{
+                      marginTop: 12,
+                      padding: 8,
+                      backgroundColor: "#f6ffed",
+                      border: "1px solid #b7eb8f",
+                      borderRadius: 4,
+                    }}
+                  >
+                    <Typography.Text style={{ color: "#52c41a", fontSize: 12 }}>
+                      ✅ Upload completed! Refreshing file structure...
+                    </Typography.Text>
+                  </div>
+                )}
             </div>
           ) : (
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 {getFileIcon(uploadingFile?.name)}
                 <span
-                  style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis" }}
+                  style={{
+                    flex: 1,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
                 >
                   {uploadingFile?.name}
                 </span>
@@ -649,7 +719,6 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
           )}
         </Modal>
       </div>
-
 
       <UnifiedFileTree
         documents={combinedDocuments}
@@ -669,15 +738,15 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
         type="file"
         multiple
         accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.jpg,.jpeg,.png"
-        style={{ display: 'none' }}
+        style={{ display: "none" }}
         onChange={(e) => {
-          console.log('File input changed, files:', e.target.files);
+          console.log("File input changed, files:", e.target.files);
           const files = Array.from(e.target.files);
           if (files.length > 0) {
-            console.log('Selected files:', files);
+            console.log("Selected files:", files);
             handleMultipleFileUpload(files);
           }
-          e.target.value = '';
+          e.target.value = "";
         }}
       />
     </div>
