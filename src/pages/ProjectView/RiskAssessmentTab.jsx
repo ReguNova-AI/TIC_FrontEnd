@@ -240,7 +240,7 @@ const RiskAssessmentTab = ({ projectData }) => {
               <input
                 id="config"
                 type="file"
-                accept={[".xlsx", ".csv"]}
+                accept={[".xlsx"]}
                 style={{ display: "none" }}
                 onChange={(e) => handleFileChange(e)}
               />

@@ -213,12 +213,12 @@ const ChatAIView = ({ data, projectId, isQuestionActive, setIsQuestionActive }) 
       {/* Chat history */}
       <Box
         sx={{
-
+          mt:2,
           textAlign: "left",
           flex: 1,
           display: "flex",
           flexDirection: "column",
-          minHeight: 0, // This is crucial for flex children to shrink
+          // minHeight: 0, // This is crucial for flex children to shrink
         }}
       >
         <Typography variant="h6" sx={{ marginBottom: 2, flexShrink: 0, color:"primary.main" }}>
