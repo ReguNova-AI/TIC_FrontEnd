@@ -16,7 +16,7 @@ import UnifiedDocumentControl from "../../components/UnifiedDocumentControl";
 import { GoogleDrivePickerService } from "services/api/googleDrivePickerService";
 import UnifiedFileTree from "../../components/UnifiedFileTree"; // Added
 import { brand } from "themes/theme/brand";
-const getFileIcon = (filename) => {
+export const getFileIcon = (filename) => {
   if (!filename) return <FileUnknownOutlined style={{ color: "#595959" }} />;
   const ext = filename.split(".").pop().toLowerCase();
   switch (ext) {
