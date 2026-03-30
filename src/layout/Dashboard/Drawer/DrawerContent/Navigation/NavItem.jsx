@@ -47,31 +47,18 @@ export default function NavItem({ item, level }) {
     listItemProps = { component: "a", href: item.url, target: itemTarget };
   }
 
-  const icons = {
-    dashboard: dashboard2,
-    myProject: projects,
-    certificateManager: certificate3,
-    downloadReports: report,
-    users: users2,
-    organization: organization,
-    configuration: setting, // Default icon
-  };
   const { pathname } = useLocation();
-  const isSelected =
-    !!matchPath({ path: item.url, end: false }, pathname) ||
-    openItem === item.id;
+  const isSelected = !!matchPath({ path: item.url, end: false }, pathname) || openItem === item.id;
+
   const Icon = item.icon;
-  // const itemIcon = item.icon ? <Icon style={{ fontSize: drawerOpen ? '1rem' : '1.25rem' }} /> : false;
-  const itemIcon = item.id ? (
-    <img
-      src={icons[item.id] || dashboardIcon} // fallback icon
-      width={drawerOpen ? "22px" : "27px"}
-      alt={`${item.title} icon`} // Add alt for accessibility
-      className={`nav-icon ${isSelected ? "nav-icon--selected" : ""}`}
+  const itemIcon = Icon ? (
+    <Icon 
+      style={{ 
+        fontSize: drawerOpen ? '22px' : '26px',
+        color: isSelected ? '#5B0428' : '#888888'
+      }} 
     />
-  ) : (
-    false
-  );
+  ) : false;
 
   // active menu item on page load
   useEffect(() => {
@@ -87,12 +74,17 @@ export default function NavItem({ item, level }) {
       selected={isSelected}
       sx={{
         zIndex: 1201,
-        pl: drawerOpen ? `${level * 28}px` : 1.5,
-        py: !drawerOpen && level === 1 ? 1.25 : 0.75,
-        // mb:drawerOpen ? 1 : 0,
+        pl: drawerOpen ? `${level * 24}px` : 1.5,
+        py: 1.25,
         justifyContent : drawerOpen ? "left" : "center",
-        borderBottom: `1px solid ${theme.palette.secondary.light}`,
-        textTransform: "uppercase",
+        borderBottom: "none",
+        textTransform: "none",
+        mb: 0.5,
+        color: isSelected ? "#5B0428" : "#888888",
+        bgcolor: 'transparent',
+        "&:hover": {
+          bgcolor: 'transparent'
+        }
       }}
     >
       {itemIcon && (
@@ -117,9 +109,13 @@ export default function NavItem({ item, level }) {
         <ListItemText
           primary={
             <Typography
-              variant="h6"
-              sx={{ ml:1, fontSize:"0.775rem",fontWeight:isSelected ?700 : 500}}
-              
+              sx={{ 
+                ml: 1.5, 
+                fontSize: "15px",
+                fontWeight: isSelected ? 600 : 500,
+                color: isSelected ? "#5B0428" : "#888888",
+                letterSpacing: "0.2px"
+              }}
             >
               {item.title} 
             </Typography>

@@ -1,25 +1,19 @@
 // assets
-import DashboardOutlined from "@ant-design/icons/DashboardOutlined";
-import FileTextOutlined from "@ant-design/icons/FileTextOutlined";
-import LineChartOutlined from "@ant-design/icons/LineChartOutlined";
-import SafetyCertificateOutlined from "@ant-design/icons/SafetyCertificateOutlined";
-import ProductOutlined from "@ant-design/icons/ProductOutlined";
-import ProjectOutlined from "@ant-design/icons/ProjectOutlined";
-import UserOutlined from "@ant-design/icons/UserOutlined";
-import SettingOutlined from "@ant-design/icons/SettingOutlined";
-import PartitionOutlined from "@ant-design/icons/PartitionOutlined";
+import PieChartOutlineIcon from "@mui/icons-material/PieChartOutline";
+import WorkOutlineIcon from "@mui/icons-material/WorkOutline";
+import PeopleOutlinedIcon from "@mui/icons-material/PeopleOutlined";
+import PersonSearchOutlinedIcon from "@mui/icons-material/PersonSearchOutlined";
+import AccountTreeOutlinedIcon from "@mui/icons-material/AccountTreeOutlined";
+import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 
 // icons
 const icons = {
-  DashboardOutlined,
-  FileTextOutlined,
-  LineChartOutlined,
-  SafetyCertificateOutlined,
-  ProjectOutlined,
-  ProductOutlined,
-  UserOutlined,
-  SettingOutlined,
-  PartitionOutlined,
+  DashboardOutlined: PieChartOutlineIcon,
+  ProjectOutlined: WorkOutlineIcon,
+  UserOutlined: PeopleOutlinedIcon,
+  ExternalUserOutlined: PersonSearchOutlinedIcon,
+  PartitionOutlined: AccountTreeOutlinedIcon,
+  SettingOutlined: SettingsOutlinedIcon,
 };
 
 // ==============================|| MENU ITEMS - DASHBOARD ||============================== //
@@ -34,14 +28,14 @@ const dashboard = {
       title: "Dashboard",
       type: "item",
       url: "/dashboard",
-      icon: icons.ProductOutlined,
+      icon: icons.DashboardOutlined,
       breadcrumbs: false,
       access: ["all"],
       superAdminAccess: true,
     },
     {
       id: "myProject",
-      title: "My projects",
+      title: "My Projects",
       type: "item",
       url: "/projects",
       icon: icons.ProjectOutlined,
@@ -49,43 +43,6 @@ const dashboard = {
       access: ["all"],
       superAdminAccess: true,
     },
-    // {
-    //   id: 'documents',
-    //   title: 'Documents',
-    //   type: 'item',
-    //   url: '/documents',
-    //   icon: icons.FileTextOutlined,
-    //   breadcrumbs: false,
-    //   access:["all"],
-    // },
-    // {
-    //   id: "certificateManager",
-    //   title: "Certificate Manager",
-    //   type: "item",
-    //   url: "/certificateManager",
-    //   icon: icons.SafetyCertificateOutlined,
-    //   breadcrumbs: false,
-    //   access: ["all"],
-    //   superAdminAccess: false,
-    // },
-    // {
-    //   id: 'downloadReports',
-    //   title: 'Download Reports',
-    //   type: 'collapse',
-    //   url: '/reports',
-    //   icon: icons.LineChartOutlined,
-    //   breadcrumbs: false,
-    //   access:["all"],
-    //   superAdminAccess:true
-    //   // children: [
-    //   //   {
-    //   //     id: 2,
-    //   //     title: 'Reports',
-    //   //     url: '/dashboard/sub',
-    //   //     icon: icons.ProductOutlined,
-    //   //   },
-    //   // ],
-    // },
     {
       id: "users",
       title: "Users",
@@ -101,7 +58,7 @@ const dashboard = {
       title: "External Users",
       type: "item",
       url: "/externalUsers",
-      icon: icons.UserOutlined,
+      icon: icons.ExternalUserOutlined,
       breadcrumbs: false,
       access: ["Super Admin", "Org Super Admin", "Admin", "External User"],
       superAdminAccess: true,

@@ -16,7 +16,7 @@ import { useDispatch } from "react-redux";
 // project import
 import MainCard from "components/MainCard";
 import AnalyticEcommerce from "components/cards/statistics/AnalyticEcommerce";
-import CountView from "components/cards/statistics/CountView";
+import DashboardStats from "./DashboardStats";
 
 // import ReportAreaChart from "./ReportAreaChart";
 // import UniqueVisitorCard from "./UniqueVisitorCard";
@@ -141,10 +141,7 @@ export default function DashboardDefault() {
     <Grid container rowSpacing={4.5} columnSpacing={2.75}>
       {/* row 1 */}
       <Grid item xs={12} sx={{ mb: -2.25 }}>
-        <Typography variant="h5">Dashboard</Typography>
-      </Grid>
-      <Grid item xs={12} sx={{ mb: -2.25 }}>
-        <CountView data={countData} />
+        <DashboardStats data={countData} />
       </Grid>
 
       {/* <AnalyticEcommerce title="Total Page Views" count="4,42,236" percentage={59.3} extra="35,000" /> */}
@@ -193,7 +190,7 @@ export default function DashboardDefault() {
               iconRender={true}
               icon={orgIcon}
             />
-            <br />
+            {/* <br />
             <AnalyticEcommerce
               title="Total Active Users"
               count={userCount || 0}
@@ -208,7 +205,7 @@ export default function DashboardDefault() {
               graphic={false}
               iconRender={true}
               icon={UserIcon2}
-            />
+            /> */}
 
 
           </Grid>
@@ -244,25 +241,13 @@ export default function DashboardDefault() {
         <UniqueVisitorCard />
       </Grid> */}
 
-          <Grid item xs={12} md={7} lg={8}>
-            {/* <Grid container alignItems="center" justifyContent="space-between">
-              <Grid item>
-                <Typography variant="h5">Recent Projects</Typography>
-              </Grid>
-              <Grid item />
-            </Grid> */}
-            <MainCard
-              
-              content={false}
-              style={{ boxShadow: "6px 12px 20px #e4e4e4", minHeight: "428px" }}
-            >
+          <Grid item xs={12} md={12} lg={12}>
               <ProjectTable />
-            </MainCard>
           </Grid>
           <Grid item xs={12} md={5} lg={4}>
             {userRole === "Org Super Admin" || userRole === "Admin" ? (
               <>
-              <AnalyticEcommerce
+              {/* <AnalyticEcommerce
                 title="Total Active Users"
                 count={userCount || 0}
                 graphic={false}
@@ -276,7 +261,7 @@ export default function DashboardDefault() {
               graphic={false}
               iconRender={true}
               icon={UserIcon2}
-            />
+            /> */}
             </>
             ) : (
               <>

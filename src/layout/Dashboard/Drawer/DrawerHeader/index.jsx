@@ -5,7 +5,6 @@ import { useTheme } from '@mui/material/styles';
 
 // project import
 import DrawerHeaderStyled from './DrawerHeaderStyled';
-import Logo from 'components/logo';
 
 // ==============================|| DRAWER HEADER ||============================== //
 
@@ -13,8 +12,8 @@ export default function DrawerHeader({ open }) {
   const theme = useTheme();
 
   return (
-    <DrawerHeaderStyled theme={theme} open={!!open}>
-      <Logo isIcon={!open} sx={{ width: open ? 'auto' : 35, height: 35 }} />
+    <DrawerHeaderStyled theme={theme} open={!!open} sx={{ minHeight: '64px' }}>
+      {/* Logo moved to Header/index.jsx, this acts as a spacer */}
     </DrawerHeaderStyled>
   );
 }
