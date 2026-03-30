@@ -35,9 +35,16 @@ export default function Header() {
   // Determine title based on path
   let title = "Dashboard";
   const path = location.pathname.toLowerCase();
-  if (path.includes('project')) title = "My Projects";
-  if (path.includes('user')) title = "Users";
-  if (path.includes('external')) title = "External Users";
+  
+  if (path.includes('createproject')) {
+    title = "Create Project";
+  } else if (path.includes('project')) {
+    title = "My Projects";
+  } else if (path.includes('external')) {
+    title = "External Users";
+  } else if (path.includes('user')) {
+    title = "Users";
+  }
 
   // common header
   const mainHeader = (
