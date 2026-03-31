@@ -65,6 +65,8 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
   const [currentFileName, setCurrentFileName] = useState(""); // NEW: per-file name display
   const [uploadedFilesCount, setUploadedFilesCount] = useState(0);
   const [totalFilesCount, setTotalFilesCount] = useState(0);
+  const [uploadFolder, setUploadFolder] = useState(null);
+  const [isConfig, setIsConfig] = useState(false);
 
   // Hidden file input ref for multiple file uploads
   const fileInputRef = useRef(null);
@@ -137,6 +139,7 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
     window.addEventListener("focus", handleFocus);
     return () => window.removeEventListener("focus", handleFocus);
   }, []);
+  console.log(isConfig, "isConfig");
 
   // --- File Upload logic
   // CHANGED: added optional `silent` and `onProgress` params.
@@ -164,6 +167,8 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
         documents: [fileDataUrl],
         type: ext,
         project_id: data.project_id,
+        folder_name: uploadFolder,
+        isConfig,
       };
 
       // CHANGED: pass onUploadProgress via otherConfig (4th arg) so axios fires progress events.
@@ -225,6 +230,7 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
       },
     };
     console.log("Final payload", JSON.stringify(payload, null, 2));
+    console.log(doc_data, "doc_data");
 
     const apiCall = doc_data.version_id
       ? ProjectApiService.uploadProjectDocument(payload, doc_data.version_id)
@@ -262,8 +268,7 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
       });
   };
 
-  // Handle multiple file uploads
-  const handleMultipleFileUpload = async (files) => {
+  const handleMultipleFileUpload = async (files, isConfig) => {
     if (!files || files.length === 0) return;
 
     setIsUploadingMultiple(true);
@@ -295,6 +300,7 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
           const uploadedPath = await handleFileUpload(file, true, (pct) =>
             setCurrentFileProgress(pct),
           );
+          console.log(uploadedPath, "uploadedPath");
 
           if (uploadedPath) {
             // Create document record
@@ -302,10 +308,17 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
               document_name: file.name,
               document_type: file.type || "application/octet-stream",
               file_path: uploadedPath,
+              folder_name: uploadFolder || null,
             };
-
+            await handleUploadDocument(
+              {
+                ...document,
+                ...documentData,
+              },
+              true,
+            );
             // CHANGED: silent=true so handleUploadDocument doesn't close the modal mid-batch
-            await handleUploadDocument(documentData, true);
+            // await handleUploadDocument(documentData, true);
 
             successfulUploads++;
             uploadResults.push({ file: file.name, status: "success" });
@@ -371,9 +384,11 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
   };
 
   // Handle file picker for multiple selection
-  const handleMultipleFileSelect = () => {
+  const handleMultipleFileSelect = (folder_name = null, isConfig = false) => {
     console.log("handleMultipleFileSelect called");
     try {
+      setUploadFolder(folder_name);
+      setIsConfig(isConfig);
       if (fileInputRef.current) {
         console.log("Triggering file input click");
         fileInputRef.current.click();
@@ -506,49 +521,28 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
     // Expand new folder
     const folderKey = folderName.replace(/\s+/g, "-");
     setExpandedKeys((prev) => [...prev, folderKey]);
-
-    message.success("Folder created successfully!");
-  };
-
-  const handleUnifiedAddFile = async (fileData) => {
-    const { name, type, file, folderName } = fileData;
-    const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
-
-    // Create API payload
-    const payload = {
-      project_id: data?.project_id,
-      document_name: name,
-      document_type: type,
-      uploaded_by_id: userdetails?.[0]?.user_id,
-      uploaded_by_name:
-        userdetails?.[0]?.user_first_name +
-        " " +
-        userdetails?.[0]?.user_last_name,
-      folder_name: folderName || "null",
-      document_desc: "",
-      file_path: null,
-      risk_information: { risk_level: " ", mitigation: " " },
-      information_extract: { summary: " " },
-    };
-
     try {
       // Correcting flow for file upload case:
-      if (file) {
-        const uploadedPath = await handleFileUpload(file);
-        if (uploadedPath) {
-          payload.file_path = uploadedPath;
-          // Now create
-          await ProjectApiService.createProjectDocument(payload);
+      console.log("Hi");
+      const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
 
-          message.success("Document created and file uploaded!");
-        }
-      } else {
-        const createResponse =
-          await ProjectApiService.createProjectDocument(payload);
-        message.success(
-          createResponse.message || "Document created successfully!",
-        );
-      }
+      const payload = {
+        project_id: data?.project_id,
+        uploaded_by_id: userdetails?.[0]?.user_id,
+        uploaded_by_name:
+          userdetails?.[0]?.user_first_name +
+          " " +
+          userdetails?.[0]?.user_last_name,
+        folder_name: folderName || "null",
+        file_path: null,
+        risk_information: { risk_level: " ", mitigation: " " },
+        information_extract: { summary: " " },
+      };
+      const createResponse =
+        await ProjectApiService.createProjectDocument(payload);
+      message.success(
+        createResponse.message || "Document created successfully!",
+      );
 
       if (onFileUploadSuccess) onFileUploadSuccess();
       setAddingFileToFolder(null);
@@ -557,7 +551,9 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
         errResponse?.error?.message || "Failed to create document!",
       );
     }
+    // message.success("Folder created successfully!");
   };
+  console.log(addingFileToFolder, "addingFileToFolder");
 
   return (
     <div>
@@ -575,13 +571,6 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
           <div style={{ flex: 1, minWidth: "600px" }}>
             <UnifiedDocumentControl
               onAddFolder={handleUnifiedAddFolder}
-              onAddFile={handleUnifiedAddFile}
-              showUploadMultiple={true}
-              onUploadMultiple={(e) => {
-                if (e && e.preventDefault) e.preventDefault();
-                handleMultipleFileSelect();
-              }}
-              addingToFolder={addingFileToFolder}
               onCancelAddingToFolder={() => setAddingFileToFolder(null)}
             />
           </div>
@@ -729,22 +718,38 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
         }}
         onDeleteFile={(doc) => handleDeleteDocument(doc)}
         onDeleteFolder={null}
-        onUploadFile={handleFileChange}
+        onUploadFile={(e, doc, isConfig) => {
+          if (e && e.preventDefault) e.preventDefault();
+          handleMultipleFileSelect(doc?.folder_name || null, isConfig); // ✅ unified
+        }}
         aiButtonLoading={aiButtonLoading}
       />
 
       <input
         ref={fileInputRef}
         type="file"
-        multiple
+        multiple={!isConfig}
         accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.jpg,.jpeg,.png"
         style={{ display: "none" }}
         onChange={(e) => {
-          console.log("File input changed, files:", e.target.files);
           const files = Array.from(e.target.files);
-          if (files.length > 0) {
-            console.log("Selected files:", files);
-            handleMultipleFileUpload(files);
+          if (files.length === 0) return;
+          if (isConfig) {
+            // Single file flow for config
+            handleFileUpload(files[0]).then((uploadedPath) => {
+              if (uploadedPath) {
+                handleUploadDocument({
+                  folder_name: uploadFolder,
+                  document_name: files[0].name,
+                  document_type: files[0].type,
+                  file_path: uploadedPath,
+                  isConfig: true,
+                });
+              }
+            });
+            setIsConfig(false)
+          } else {
+            handleMultipleFileUpload(files); // existing multi-upload
           }
           e.target.value = "";
         }}

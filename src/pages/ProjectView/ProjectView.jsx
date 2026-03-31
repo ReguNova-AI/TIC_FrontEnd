@@ -23,89 +23,104 @@ import Alert from "@mui/material/Alert";
 import { Spin, Modal, Result } from "antd";
 import Breadcrumbs from "@mui/material/Breadcrumbs";
 import Link from "@mui/material/Link";
-import {
-  TAB_LABEL,
-  HEADING,
-} from "shared/constants";
-const DropZoneFileUpload = lazy(() => import("pages/ProjectCreation/DropZoneFileUpload"));
+import { TAB_LABEL, HEADING } from "shared/constants";
+const DropZoneFileUpload = lazy(
+  () => import("pages/ProjectCreation/DropZoneFileUpload"),
+);
 import reportIcon from "../../assets/images/icons/report1.png";
 
 // React Query hooks
-import {
-  useProjectDetails,
-  useStandardData,
-} from "./useProjectQueries";
+import { useProjectDetails, useStandardData } from "./useProjectQueries";
 
 // Custom hooks
-import { useProjectOperations, createHistoryObject } from "./useProjectOperations";
+import {
+  useProjectOperations,
+  createHistoryObject,
+} from "./useProjectOperations";
 import { useModalManager, useSnackbarManager } from "./useUIManager";
 import { useAIAssessmentOperations } from "../../components/hooks/useAIAssessmentOperations";
-import AIAssessmentStatusIndicator, { markAssessmentStart } from "../../components/AIAssessmentStatusIndicator";
+import AIAssessmentStatusIndicator, {
+  markAssessmentStart,
+} from "../../components/AIAssessmentStatusIndicator";
 import { getStatusChipProps } from "shared/utility";
 import { brand } from "themes/theme/brand";
+import { useRiskSummaryOperations } from "components/hooks/useRiskSummaryOperations";
+import { markRiskSummaryStart } from "components/RiskSummaryStatusIndicator";
 
 // Helper function to create a history object based on changes
 export { createHistoryObject };
 
 // Minimal inline spinner used as Suspense fallback inside tab panels
 const TabFallback = () => (
-  <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", py: 6 }}>
+  <Box
+    sx={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      py: 6,
+    }}
+  >
     <CircularProgress size={28} />
   </Box>
 );
 
-  function CustomTabPanel(props) {
-    const { children, value, index, ...other } = props;
+function CustomTabPanel(props) {
+  const { children, value, index, ...other } = props;
 
-    return (
-      <div
-        role="tabpanel"
-        // hidden={value !== index}
-        id={`simple-tabpanel-${index}`}
-        aria-labelledby={`simple-tab-${index}`}
-        {...other}
-        style={{ height: '100%', overflow: 'hidden', display: value === index ? 'flex' : 'none', flexDirection: 'column' }}
+  return (
+    <div
+      role="tabpanel"
+      // hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+      style={{
+        height: "100%",
+        overflow: "hidden",
+        display: value === index ? "flex" : "none",
+        flexDirection: "column",
+      }}
+    >
+      <Box
+        sx={{
+          p: 2,
+          height: "100%",
+          overflowY: "auto",
+          overflowX: "hidden",
+          "&::-webkit-scrollbar": {
+            width: "6px",
+          },
+          "&::-webkit-scrollbar-track": {
+            background: "#f1f1f1",
+            borderRadius: "3px",
+          },
+          "&::-webkit-scrollbar-thumb": {
+            background: "#c1c1c1",
+            borderRadius: "3px",
+            "&:hover": {
+              background: "#a8a8a8",
+            },
+          },
+        }}
       >
-          <Box
-            sx={{
-              p: 2,
-              height: '100%',
-              overflowY: 'auto',
-              overflowX: 'hidden',
-              '&::-webkit-scrollbar': {
-                width: '6px',
-              },
-              '&::-webkit-scrollbar-track': {
-                background: '#f1f1f1',
-                borderRadius: '3px',
-              },
-              '&::-webkit-scrollbar-thumb': {
-                background: '#c1c1c1',
-                borderRadius: '3px',
-                '&:hover': {
-                  background: '#a8a8a8',
-                },
-              },
-            }}
-          >
-            {children}
-          </Box>
-      </div>
-    );
-  }
+        {children}
+      </Box>
+    </div>
+  );
+}
 
-  CustomTabPanel.propTypes = {
-    children: PropTypes.node,
-    index: PropTypes.number.isRequired,
-    value: PropTypes.number.isRequired,
+CustomTabPanel.propTypes = {
+  children: PropTypes.node,
+  index: PropTypes.number.isRequired,
+  value: PropTypes.number.isRequired,
+};
+
+function a11yProps(index) {
+  return {
+    id: `simple-tab-${index}`,
+    "aria-controls": `simple-tabpanel-${index}`,
   };
-
-  function a11yProps(index) {
-    return {
-      id: `simple-tab-${index}`,
-      "aria-controls": `simple-tabpanel-${index}`,
-    };
-  }
+}
 
 const ProjectView = () => {
   const [value, setValue] = React.useState(0);
@@ -140,7 +155,10 @@ const ProjectView = () => {
   } = useStandardData();
 
   // Extracted data from React Query
-  const projectData = useMemo(() => projectQueryData?.project || {}, [projectQueryData?.project]);
+  const projectData = useMemo(
+    () => projectQueryData?.project || {},
+    [projectQueryData?.project],
+  );
   const historyData = projectQueryData?.history || [];
 
   // Custom hooks
@@ -154,17 +172,32 @@ const ProjectView = () => {
   } = useProjectOperations(projectData, getUserName());
 
   // AI Assessment operations with global state
-  const {
-    currentProjectStatus,
-    handleRunAIAssessment,
-    isProcessing,
-  } = useAIAssessmentOperations(projectData);
+  const { currentProjectStatus, handleRunAIAssessment, isProcessing } =
+    useAIAssessmentOperations(projectData);
+  const { isRiskSummaryLoading, handleRegenerateRiskSummary } =
+    useRiskSummaryOperations(projectData);
+
+  const runAIAssessmentAndGenerateSummary = async () => {
+    try {
+      markAssessmentStart(projectData?.project_id);
+      const res=handleRunAIAssessment();
+      console.log(res,"res");
+        
+      markRiskSummaryStart(projectData?.project_id);
+      handleRegenerateRiskSummary();
+    } catch (error) {
+      console.log(error, "error");
+    }
+  };
 
   // ✅ AI Assessment Status
   const aiStatus = projectData?.AIAssesmentStatus;
   // const isAIAssessmentLoading = aiStatus?.toLowerCase() === 'processing';
   const isAIAssessmentLoading =
-    isProcessing || aiStatus?.toLowerCase() === 'processing';
+    isProcessing || aiStatus?.toLowerCase() === "processing";
+  const hasSomeUploadedFiles = projectData?.project_documents?.some(
+    (doc) => doc?.file_path !== null,
+  );
   // Polling — lives here in ProjectView, unaffected by tab lazy-loading
   useEffect(() => {
     if (isAIAssessmentLoading) {
@@ -218,22 +251,31 @@ const ProjectView = () => {
 
   function getUserName() {
     const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
-    return userdetails?.[0].user_first_name + " " + userdetails?.[0].user_last_name;
+    return (
+      userdetails?.[0].user_first_name + " " + userdetails?.[0].user_last_name
+    );
   }
 
   useEffect(() => {
     if (runAssessmentState === "run" && runState && projectData?.project_id) {
       projectData?.checkListResponse
         ? runComplianceAssessment(
-          projectData?.checkListResponse,
-          projectData?.project_id,
-          "partial",
-          standardData
-        )
+            projectData?.checkListResponse,
+            projectData?.project_id,
+            "partial",
+            standardData,
+          )
         : runChecklistCRT(standardData);
       setRunState(false);
     }
-  }, [projectData, standardData, runAssessmentState, runState, runComplianceAssessment, runChecklistCRT]);
+  }, [
+    projectData,
+    standardData,
+    runAssessmentState,
+    runState,
+    runComplianceAssessment,
+    runChecklistCRT,
+  ]);
 
   useEffect(() => {
     if (
@@ -249,13 +291,16 @@ const ProjectView = () => {
         setStandardChatState(false);
       }
     }
-  }, [standardData, projectData?.standardUploaded, standardChatState, runChecklistAPI]);
+  }, [
+    standardData,
+    projectData?.standardUploaded,
+    standardChatState,
+    runChecklistAPI,
+  ]);
 
   // Set chat loading based on project documents
   useEffect(() => {
-    setChatloading(
-      projectData?.project_documents?.length > 0 ? false : true
-    );
+    setChatloading(projectData?.project_documents?.length > 0 ? false : true);
   }, [projectData?.project_documents]);
 
   // Handle chat response updates
@@ -286,7 +331,7 @@ const ProjectView = () => {
         uploadedDocument,
         previousData,
         "documentUpload",
-        getUserName()
+        getUserName(),
       );
 
       const updatedHistory = [...historyData, newHistory];
@@ -303,7 +348,10 @@ const ProjectView = () => {
 
   const handleChange = (event, newValue) => {
     // Prevent navigation to disabled tabs when completion is 0 or less
-    if ((isAIAssessmentLoading || projectData?.success_count <= 0) && newValue > 0) {
+    if (
+      (isAIAssessmentLoading || projectData?.success_count <= 0) &&
+      newValue > 0
+    ) {
       return;
     }
     // Mark this tab as visited so it renders for the first time
@@ -346,10 +394,7 @@ const ProjectView = () => {
             My Projects
           </Link>
 
-          <Link
-            color="inherit"
-            aria-current="page"
-          >
+          <Link color="inherit" aria-current="page">
             <span style={{ color: brand.primary, fontWeight: 600 }}>
               {projectData?.project_name}
             </span>
@@ -363,47 +408,71 @@ const ProjectView = () => {
             background: "#fff",
             borderRadius: "10px",
             border: "1px solid #e4e4e4",
-            height: 'calc(100vh - 160px)', // Fixed height with proper spacing
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden', // Prevent outer container from scrolling
+            height: "calc(100vh - 160px)", // Fixed height with proper spacing
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden", // Prevent outer container from scrolling
           }}
         >
           {/* Tab Headers */}
-          <Box sx={{ borderBottom: 1, borderColor: "divider", flexShrink: 0, }}>
+          <Box sx={{ borderBottom: 1, borderColor: "divider", flexShrink: 0 }}>
             {/* Linear Progress Bar - Attached to Tabs */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
-
-              <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1, paddingTop: "8px", paddingLeft: '16px', paddingRight: '16px' }}>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "start",
+              }}
+            >
+              <Box
+                sx={{ display: "flex", flexDirection: "column", width: "100%" }}
+              >
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    mb: 1,
+                    paddingTop: "8px",
+                    paddingLeft: "16px",
+                    paddingRight: "16px",
+                  }}
+                >
                   <Typography variant="h5" color="text.primary">
                     {projectData?.project_name}
                   </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                    }}
+                  >
                     {/* <Typography variant="body2" color="text.secondary">
                       Progress :
                     </Typography>
                     <Typography variant="body2" fontWeight="bold" style={{ marginLeft: '8px', marginRight: '8px' }}>
                       {Math.round(projectData?.completion_percentage || 0)}%
                     </Typography> */}
-                    {((projectData?.completion_percentage || 0) === 0) && <Typography variant="body2" color="text.secondary" >
-                      ( Upload project files to enable AI features)
-                    </Typography>}
+                    {!hasSomeUploadedFiles && (
+                      <Typography variant="body2" color="text.secondary">
+                        Upload file(s) to enable AI features
+                      </Typography>
+                    )}
                   </Box>
-
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                     {/* <Box sx={{ marginRight: 3 }}>
                       {!isAIAssessmentLoading&&statusChip(projectData?.AIAssesmentStatus)}
                     </Box> */}
                     <Box>
-                      <AIAssessmentStatusIndicator 
-                        projectId={projectData?.project_id} 
+                      <AIAssessmentStatusIndicator
+                        projectId={projectData?.project_id}
                         isLoading={isAIAssessmentLoading}
                         backendStatus={projectData?.AIAssesmentStatus}
-                        variant="progress" 
-                        size="small" 
-                       />
+                        variant="progress"
+                        size="small"
+                      />
                     </Box>
                   </Box>
                 </Box>
@@ -415,14 +484,23 @@ const ProjectView = () => {
                     padding: 0,
                     margin: 0,
                     borderRadius: 0,
-                    backgroundColor: 'rgba(0, 0, 0, 0.08)',
-                    '& .MuiLinearProgress-bar': {
+                    backgroundColor: "rgba(0, 0, 0, 0.08)",
+                    "& .MuiLinearProgress-bar": {
                       borderRadius: 0,
                     },
                   }}
                 />
               </Box>
-              <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '0 16px' }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  width: "100%",
+                  padding: "0 16px",
+                }}
+              >
                 <Tabs
                   value={value}
                   onChange={handleChange}
@@ -432,39 +510,41 @@ const ProjectView = () => {
                   <Tab
                     label={TAB_LABEL.SUMMARY_REPORT}
                     {...a11yProps(1)}
-                    disabled={isAIAssessmentLoading || projectData?.success_count <= 0}
+                    disabled={
+                      isAIAssessmentLoading || projectData?.success_count <= 0
+                    }
                   />
                   <Tab
                     label={TAB_LABEL.CHAT_AI}
                     {...a11yProps(2)}
-                    disabled={isAIAssessmentLoading || projectData?.success_count <= 0}
+                    disabled={
+                      isAIAssessmentLoading || projectData?.success_count <= 0
+                    }
                   />
                   <Tab
                     label={TAB_LABEL.RISK_ASSESSMENT}
                     {...a11yProps(3)}
-                    disabled={isAIAssessmentLoading || projectData?.success_count <= 0}
+                    disabled={
+                      isAIAssessmentLoading || projectData?.success_count <= 0
+                    }
                   />
                 </Tabs>
               </Box>
             </Box>
 
-
             {/* Linear Progress Bar - Attached to Tabs */}
-
           </Box>
 
           {/* Tab Content Container */}
-          <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
+          <Box sx={{ flexGrow: 1, overflow: "hidden" }}>
             {/* Overview — always eager, always rendered */}
             <CustomTabPanel value={value} index={0}>
               <OverviewTab
                 projectData={projectData}
                 handleModalOpen={handleModalOpen}
-                handleRunAIAssessment={() => {
-                  markAssessmentStart(projectData?.project_id);
-                  handleRunAIAssessment();
-                }}
+                handleRunAIAssessment={runAIAssessmentAndGenerateSummary}
                 aiButtonLoading={isAIAssessmentLoading}
+                hasSomeUploadedFiles={hasSomeUploadedFiles}
                 onFileUploadSuccess={refetchProjectData}
               />
             </CustomTabPanel>
@@ -508,7 +588,11 @@ const ProjectView = () => {
         </Box>
 
         {/* File Upload Dialog — lazy */}
-        <Dialog open={openModal} onClose={handleFileModalClose} style={{ zIndex: "999" }}>
+        <Dialog
+          open={openModal}
+          onClose={handleFileModalClose}
+          style={{ zIndex: "999" }}
+        >
           <DialogTitle>Upload Documents</DialogTitle>
           <DialogContent>
             {openModal && (
@@ -572,10 +656,7 @@ const ProjectView = () => {
             <Typography style={{ margin: "27px 5px" }}>
               We got your request and will notify you once it is ready.
             </Typography>
-            <Button
-              variant="contained"
-              onClick={handleProgressModalClose}
-            >
+            <Button variant="contained" onClick={handleProgressModalClose}>
               Close
             </Button>
           </Box>
@@ -589,10 +670,7 @@ const ProjectView = () => {
           autoHideDuration={3000}
           onClose={hideSnackbar}
         >
-          <Alert
-            onClose={hideSnackbar}
-            severity={snackData.type}
-          >
+          <Alert onClose={hideSnackbar} severity={snackData.type}>
             {snackData.message}
           </Alert>
         </Snackbar>

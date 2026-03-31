@@ -15,6 +15,7 @@ const OverviewTab = ({
   handleRunAIAssessment,
   aiButtonLoading,
   onFileUploadSuccess,
+  hasSomeUploadedFiles
 }) => {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, height: '100%' }}>
@@ -82,7 +83,7 @@ const OverviewTab = ({
             borderRadius: 2,
             padding: "12px 24px"
           }}
-          disabled={aiButtonLoading}
+          disabled={aiButtonLoading || !hasSomeUploadedFiles}
         >
           {aiButtonLoading ? 'Processing...' : 'Run AI Assessment'}
         </Button>

@@ -39,9 +39,7 @@ const CreateProjectForm = () => {
   const [userData, setUserData] = useState([]); // Initially, set userData as an empty array
   const [standardData, setStandardData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [file, setFile] = useState(null);
   const [industryData, setIndustryData] = useState([]);
-  const [selectedIndustry, setSelectedIndustry] = useState("");
   const [snackData, setSnackData] = useState({
     show: false,
     message: "",
@@ -49,6 +47,7 @@ const CreateProjectForm = () => {
   });
   const [documents, setDocuments] = useState([]);
   const [submitLoding, setSubmitLoading] = useState(false);
+console.log(documents,"documents");
 
   const [formData, setFormData] = useState({
     projectName: "",
@@ -166,68 +165,6 @@ const CreateProjectForm = () => {
       });
   };
 
-  const renderFileData = async (files) => {
-    const filesArray = Array.isArray(files) ? files : Array.from(files);
-
-    setLoading(true);
-    const processedFiles = await Promise.all(
-      filesArray &&
-      filesArray?.map(async (file) => {
-        let uploadedLink = null;
-        // Create a new FileReader to read the file as Base64
-        const reader = new FileReader();
-
-        const fileDataUrl = await new Promise((resolve, reject) => {
-          reader.onloadend = () => resolve(reader.result);
-          reader.onerror = reject; // Handle any errors while reading the file
-          reader.readAsDataURL(file); // Start reading the file
-        });
-
-        // Now that the file is read, upload the Base64 data to the API
-        try {
-          const fileType = file.name.split(".").pop();
-          const filepayload = {
-            documents: [fileDataUrl],
-            type: fileType,
-          };
-
-          const response = await FileUploadApiService.fileUpload(filepayload);
-
-          if (response) {
-            setSnackData({
-              show: true,
-              message:
-                response?.message ||
-                API_SUCCESS_MESSAGE.UPLOADED_SUCCESSFULLY,
-              type: "success",
-            });
-            setLoading(false);
-            setFormData({
-              ...formData,
-              mapping_standards: response.data.details[0], // Set file name in the select field
-              regulatory: files?.[0]?.name,
-            });
-          }
-        } catch (errResponse) {
-          console.log("errResponse", errResponse);
-          return null;
-        }
-      }),
-    );
-  };
-
-  const handleFileUpload = (e) => {
-    const uploadedFile = e.target.files[0];
-    if (uploadedFile) {
-      setFile(uploadedFile);
-      setFormData({
-        ...formData,
-        regulatory: uploadedFile.name, // Set file name in the select field
-      });
-      renderFileData(e.target.files);
-    }
-  };
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -236,20 +173,6 @@ const CreateProjectForm = () => {
     });
   };
 
-  const handleFileChange = (file) => {
-    setFormData({
-      ...formData,
-      document: file,
-    });
-  };
-
-  const handleSelectChange = (e) => {
-    const { value } = e.target;
-    setFormData({
-      ...formData,
-      teamMembers: value, // Update selected team members
-    });
-  };
 
   const handleMultiple = (selectedIds) => {
     const invitedId = formData.invited_user_list;
@@ -280,26 +203,12 @@ const CreateProjectForm = () => {
   const cleanDocuments = (documents) => {
     // Filter out documents without document_name and then clean them
     return documents
-      .filter((doc) => doc.docuemnt_name && doc.docuemnt_name.trim() !== "")
       .map(({ file, progress, ...rest }) => rest);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault(); // Prevent form submission first
-
-    // Filter documents with valid names
-    const validDocuments = documents.filter(
-      (doc) => doc.docuemnt_name && doc.docuemnt_name.trim() !== "",
-    );
-
-    if (validDocuments.length === 0) {
-      setSnackData({
-        show: true,
-        message: "Please add at least one document.",
-        type: "error",
-      });
-      return; // Stop execution, but form won't reset due to preventDefault above
-    }
+    console.log(documents,"documents in handleSubmit");
 
     // Check for empty folders
     const allFolders = [
@@ -309,21 +218,6 @@ const CreateProjectForm = () => {
           .filter((folder) => folder && folder.trim() !== ""),
       ),
     ];
-    const emptyFolders = allFolders.filter((folderName) => {
-      const documentsInFolder = validDocuments.filter(
-        (doc) => doc.folder_name === folderName,
-      );
-      return documentsInFolder.length === 0;
-    });
-
-    if (emptyFolders.length > 0) {
-      setSnackData({
-        show: true,
-        message: `Please add at least one document to the following folder(s): ${emptyFolders.join(", ")}`,
-        type: "error",
-      });
-      return; // Stop execution if there are empty folders
-    }
 
     setSubmitLoading(true);
     const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
@@ -361,6 +255,7 @@ const CreateProjectForm = () => {
       //   documents: formData.document,
       //   documents: documents,
       documents: cleanedDocuments,
+      // folder_name:[documents],
       org_id: userdetails?.[0]?.org_id,
       org_name: userdetails?.[0]?.org_name,
       created_by_id: userdetails?.[0]?.user_id,
@@ -392,7 +287,8 @@ const CreateProjectForm = () => {
     if (submissionStatus !== "Draft") {
       payload.last_run = formatDateToCustomFormat(new Date());
     }
-
+    console.log(payload,"payload");
+    
     PaymentApiService.isProjectCreationAllowed({
       user_id: userdetails?.[0]?.user_id,
     })
@@ -441,54 +337,6 @@ const CreateProjectForm = () => {
       });
   };
 
-  const handleProfileDelete = (id) => {
-    setFormData({
-      ...formData,
-      teamMembers: formData.teamMembers.filter((memberId) => memberId !== id),
-    });
-  };
-
-  const checklistfile = document.getElementById("fileInput")?.files;
-
-  const handleAddFileClick = () => {
-    document.getElementById("fileInput").click(); // Trigger the file input field
-  };
-
-  const checklistResponseCheck = (value) => {
-    const result = standardData?.filter((data) => data.standard_name === value);
-    const finalarray = [];
-
-    result?.[0]?.checkListResponse?.checklist?.map((item) => {
-      finalarray.push(
-        item
-          ?.replace(/\\n/g, "")
-          ?.replace(/\n/g, "")
-          ?.replace(/\\"/g, "")
-          ?.replace(/\"/g, "")
-          ?.replace(/'/g, ""),
-      );
-    });
-
-    //  console.log("result",result?.[0]?.checkListResponse)
-    return { checklist: finalarray };
-    //  setFormData({...formData , checkListResponse:result?.[0]?.checkListResponse})
-  };
-
-  const handleIndustryChange = (event) => {
-    const industryId = event.target.value;
-    setSelectedIndustry(industryId);
-
-    const selectedIndustry = industryData.find(
-      (industry) => industry.industry_id === industryId,
-    );
-
-    setFormData({
-      ...formData,
-      industry_id: selectedIndustry?.industry_id || "",
-      industry_name: selectedIndustry?.industry_name || "",
-    });
-  };
-
   return (
     <>
       <BreadcrumbsView currentPage="Create Project" />
@@ -519,17 +367,6 @@ const CreateProjectForm = () => {
                   required
                 />
               </Grid>
-              {/* <Grid item xs={12} sm={4}>
-                <TextField
-                  label={FORM_LABEL.PROJECT_NO}
-                  variant="outlined"
-                  fullWidth
-                  name="projectNo"
-                  value={formData.projectNo}
-                  onChange={handleInputChange}
-                  required
-                />
-              </Grid> */}
 
               <Grid item xs={12} sm={8}>
                 <TextField
@@ -563,69 +400,6 @@ const CreateProjectForm = () => {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={industryData?.length > 1 ? 4 : 8}>
-                <FormControl fullWidth>
-                  <InputLabel id="teamMembers-label">
-                    {FORM_LABEL.INVITE_MEMBERS}
-                  </InputLabel>
-                  <Select
-                    labelId="teamMembers-label"
-                    id="teamMembers"
-                    multiple
-                    value={formData.teamMembers}
-                    onChange={handleSelectChange}
-                    renderValue={(selected) => (
-                      <Box sx={{ display: "flex", flexWrap: "wrap" }}>
-                        {selected?.map((value) => {
-                          const member = userData.find(
-                            (member) => member.user_id === value,
-                          );
-                          return (
-                            <Chip
-                              key={value}
-                              label={member.user_email}
-                              sx={{ margin: 0.5 }}
-                            />
-                          );
-                        })}
-                      </Box>
-                    )}
-                  >
-                    {/* Conditionally render "No data found" if userData is empty */}
-                    {userData?.length === 0 ? (
-                      <MenuItem disabled>No data found</MenuItem>
-                    ) : (
-                      userData?.map((member) => (
-                        <MenuItem key={member.user_id} value={member.user_id}>
-                          {member.user_first_name} {member.user_last_name} -{" "}
-                          {member.user_email}
-                        </MenuItem>
-                      ))
-                    )}
-                  </Select>
-                </FormControl>
-              </Grid>
-
-              {/* Render Profile Cards for Selected Team Members */}
-              <Grid item xs={12} sm={12}>
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
-                  {formData.teamMembers?.map((selectedId) => {
-                    const member = userData.find(
-                      (user) => user.user_id === selectedId,
-                    );
-                    return member ? (
-                      <UserProfileCard
-                        key={member.user_id}
-                        id={member.user_id}
-                        name={member.user_first_name}
-                        role={member.user_email}
-                        profile={member.user_profile}
-                        onDelete={handleProfileDelete}
-                      />
-                    ) : null;
-                  })}
-                </Box>
-              </Grid>
               <Grid item xs={12} sm={12}>
                 <DocumentSection
                   documents={documents}

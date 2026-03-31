@@ -15,6 +15,7 @@ import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import folderIcon from "../assets/images/icons/folderIcon1.svg";
+import { default as UploadFileIcon } from "@mui/icons-material/UploadFile";
 import { apiHost } from 'config';
 
 // --- Modal styles ---
@@ -249,13 +250,26 @@ const UnifiedFileTree = ({
                                 </div>
                                 {!readOnly && (
                                     <div style={{ display: 'flex', alignItems: 'center' }}>
-                                        <Tooltip title="Add document to this folder">
-                                            <Button
-                                                type="text"
-                                                shape="circle"
-                                                icon={<PlusCircleOutlined style={{ fontSize: '20px' }} />}
-                                                onClick={(e) => { e.stopPropagation(); if (onAddFolderFile) onAddFolderFile(folder); }}
-                                                style={{ color: "#1976d2", border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, minWidth: 32, padding: 0 }}
+                                        <Tooltip title="Upload Config file">
+                                            <PaperClipOutlined 
+                                                style={{ fontSize: 18, color: '#1890ff' }} 
+                                                onClick={(e) => {
+                                                    console.log(e,"e");
+                                                    console.log(doc,"doc");
+                                                    e.stopPropagation();
+                                                    onUploadFile(e, doc, true); // triggers global file picker
+                                                }}
+                                            />
+                                        </Tooltip>
+                                        <Tooltip title="Upload Document(s)">
+                                            <UploadFileIcon 
+                                                style={{ fontSize: 18, color: '#1890ff' }} 
+                                                onClick={(e) => {
+                                                    console.log(e,"e");
+                                                    console.log(doc,"doc");
+                                                    e.stopPropagation();
+                                                    onUploadFile(e, doc); // triggers global file picker
+                                                }}
                                             />
                                         </Tooltip>
                                         {onDeleteFolder && (

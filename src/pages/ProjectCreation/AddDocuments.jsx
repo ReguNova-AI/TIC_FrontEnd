@@ -54,67 +54,11 @@ const documentTypes = [
 ];
 
 const DocumentSection = ({ documents, setDocuments }) => {
-  const [newDoc, setNewDoc] = useState({
-    name: "",
-    type: "",
-    desc: "",
-    file: null,
-  });
   const [currentFolder, setCurrentFolder] = useState(null);
   const [expandedKeys, setExpandedKeys] = useState([]);
 
   const generateOTP = () => {
     return Math.floor(1000 + Math.random() * 9000);
-  };
-
-  // --- Upload file
-  const handleFileUpload = async (file, docName, folderName) => {
-    if (!file) return;
-
-    try {
-      const reader = new FileReader();
-      const fileDataUrl = await new Promise((resolve, reject) => {
-        reader.onloadend = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-
-      const ext = file.name.split(".").pop();
-      const payload = { documents: [fileDataUrl], type: ext };
-
-      const response = await FileUploadApiService.fileUpload(payload, {
-        onUploadProgress: (evt) => {
-          const percent = Math.round((evt.loaded * 100) / evt.total);
-          setDocuments((prev) =>
-            prev.map((doc) =>
-              doc.docuemnt_name === docName &&
-                doc.folder_name === (folderName || "")
-                ? { ...doc, progress: percent }
-                : doc
-            )
-          );
-        },
-      });
-
-      setDocuments((prev) =>
-        prev.map((doc) =>
-          doc.docuemnt_name === docName &&
-            doc.folder_name === (folderName || "")
-            ? {
-              ...doc,
-              file,
-              path: response.data.details[0],
-              progress: 100,
-            }
-            : doc
-        )
-      );
-
-      message.success("File uploaded successfully!");
-    } catch (err) {
-      console.error(err);
-      message.error("File upload failed!");
-    }
   };
 
   // --- Delete File
@@ -172,39 +116,6 @@ const DocumentSection = ({ documents, setDocuments }) => {
     setCurrentFolder(folderName);
   };
 
-  const handleUnifiedAddFile = async (fileData) => {
-    const { name, type, desc, file, folderName } = fileData;
-
-    // Upload if file exists
-    if (file) {
-      handleFileUpload(file, name, folderName || null);
-    }
-
-    const docEntry = {
-      document_id: generateOTP(),
-      version: "V1",
-      docuemnt_name: name,
-      docuemnt_type: type,
-      docuemnt_desc: desc || "",
-      folder_name: folderName || "", // Empty for standalone
-      path: "",
-      file: file,
-      progress: 0,
-    };
-
-    setDocuments((prev) => {
-      // If adding to a folder that only had a placeholder, remove the placeholder
-      // Actually, we don't need to remove the placeholder strictly, but it cleans up 'empty' rows.
-      // The tree logic handles empty folder nodes separately.
-
-      // Let's keep placeholder if we want empty folders to stay empty visually if all files deleted?
-      // For now, logic: just add. 
-      return [...prev, docEntry];
-    });
-  };
-
-
-
   // ... inside Component
   return (
     <section>
@@ -217,8 +128,6 @@ const DocumentSection = ({ documents, setDocuments }) => {
         }}>
           <UnifiedDocumentControl
             onAddFolder={handleUnifiedAddFolder}
-            onAddFile={handleUnifiedAddFile}
-            addingToFolder={currentFolder}
             onCancelAddingToFolder={() => setCurrentFolder(null)}
           />
         </Box>

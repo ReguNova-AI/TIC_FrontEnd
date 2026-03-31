@@ -30,14 +30,7 @@ const RiskAssessmentTab = ({ projectData }) => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [openModal, setOpenModal] = useState(false);
-  const [hasItsConfig, setHasItsConfig] = useState(false);
-  const existingConfigs = JSON.parse(localStorage.getItem("hasConfig") || "[]");
   const projectId = projectData?.project_id;
-  useEffect(() => {
-    if (existingConfigs.includes(projectId)) {
-      setHasItsConfig(true);
-    }
-  }, [projectId]);
 
   const { data: riskSummary, isLoading, error } = useRiskSummary(projectId);
 
@@ -121,81 +114,7 @@ const RiskAssessmentTab = ({ projectData }) => {
 
     return null; // content is rendered into containerRef by renderAsync
   };
-  const handleFileUpload = async (file, silent = false, onProgress = null) => {
-    if (!file) return;
 
-    if (!silent) {
-      setUploadingFile(file);
-      setUploadProgress(0);
-      setUploadSuccess(false);
-      setOpenModal(true);
-    }
-
-    try {
-      const reader = new FileReader();
-      const fileDataUrl = await new Promise((resolve, reject) => {
-        reader.onloadend = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-
-      const ext = file.name.split(".").pop();
-      const payload = {
-        documents: [fileDataUrl],
-        type: ext,
-        project_id: projectId,
-        isConfig: true,
-        file_name: file.name,
-      };
-      console.log(payload, "payload");
-
-      // CHANGED: pass onUploadProgress via otherConfig (4th arg) so axios fires progress events.
-      // BaseApiService.post signature: post(url, params, data, useBaseApiPath, otherConfig)
-      // FileUploadApiService.fileUpload calls BaseApiService.post(`/api/v1/uploadToStorage`, null, filepayload)
-      // — we need to thread the config through. See note below on FileUploadApiService change.
-      const response = await FileUploadApiService.fileUpload(payload, {
-        onUploadProgress: (evt) => {
-          const percent = Math.round((evt.loaded * 100) / evt.total);
-          if (!silent) setUploadProgress(percent);
-          if (onProgress) onProgress(percent);
-        },
-      });
-
-      // Assume API returns the uploaded file path
-      const filePath = response.data.details?.[0];
-
-      if (!silent) {
-        setUploadProgress(100);
-        setUploadSuccess(true);
-        message.success("File uploaded successfully!");
-      }
-
-      return filePath;
-    } catch (err) {
-      console.error(err);
-      throw err; // CHANGED: re-throw so multi-upload loop can catch and count failures
-    }
-  };
-  const handleFileChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    try {
-      // Wait for upload to finish and get the path
-      await handleFileUpload(file);
-
-      // 🔽 Avoid duplicates
-      if (!existingConfigs.includes(projectId)) {
-        existingConfigs.push(projectId);
-      }
-      // 🔽 Save back
-      localStorage.setItem("hasConfig", JSON.stringify(existingConfigs));
-      setHasItsConfig(true);
-    } catch (error) {
-      console.error("File upload failed:", error);
-    } finally {
-      setOpenModal(false);
-    }
-  };
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
       <Box
@@ -230,21 +149,6 @@ const RiskAssessmentTab = ({ projectData }) => {
           </Box>
 
           <Box sx={{ display: "flex", gap: 1 }}>
-            <Button
-              variant="outlined"
-              component="label"
-              startIcon={<UploadFileIcon />}
-              disabled={isRiskSummaryLoading || isLoading}
-            >
-              {hasItsConfig ? "Re-upload Config File" : "Load Config File"}
-              <input
-                id="config"
-                type="file"
-                accept={[".xlsx", ".csv"]}
-                style={{ display: "none" }}
-                onChange={(e) => handleFileChange(e)}
-              />
-            </Button>
             <Button
               variant="outlined"
               startIcon={<DownloadIcon />}
