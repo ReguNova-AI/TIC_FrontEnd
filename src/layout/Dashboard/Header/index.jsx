@@ -33,18 +33,8 @@ export default function Header() {
   const iconBackColorOpen = 'transparent';
 
   // Determine title based on path
-  let title = "Dashboard";
-  const path = location.pathname.toLowerCase();
-  
-  if (path.includes('createproject')) {
-    title = "Create Project";
-  } else if (path.includes('project')) {
-    title = "My Projects";
-  } else if (path.includes('external')) {
-    title = "External Users";
-  } else if (path.includes('user')) {
-    title = "Users";
-  }
+  const title = "Dashboard";
+
 
   // common header
   const mainHeader = (
