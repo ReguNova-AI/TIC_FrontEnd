@@ -78,33 +78,7 @@ export default function DashboardLayout() {
     <Box sx={{ display: "flex", width: "100%" }}>
       <Header />
       <Drawer />
-      <IconButton
-        onClick={() => handlerDrawerOpen(!drawerOpen)}
-        size="small"
-        sx={{
-          marginTop: "66px",
-          position: "fixed",
-          marginLeft: drawerOpen ? "240px" : !downXL ? "63px" : "2px",
-          zIndex: 999998,
-          borderRadius: "50%",
-          padding: "6px",
-          bgcolor: "background.paper",
-          border: "1px solid",
-          borderColor: "divider",
-          "&:hover": {
-            bgcolor: "background.paper",
-            borderColor: "primary.main",
-          },
-        }}
-      >
-        <img
-          src={menuIcon}
-          alt="menu"
-          width="20px"
-          style={{ transform: !drawerOpen ? "none" : "scaleX(-1)" }}
-          className="nav-icon--selected"
-        />
-      </IconButton>
+
       <Box
         component="main"
         sx={{ width: "calc(100% - 260px)", flexGrow: 1, p: { xs: 2, sm: 3 } }}
