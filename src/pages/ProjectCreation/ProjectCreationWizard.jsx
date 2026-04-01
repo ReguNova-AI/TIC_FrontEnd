@@ -267,7 +267,7 @@ const ProjectCreationWizard = () => {
             </Box>
 
             {/* Step body */}
-            <Box sx={{ px: 4, py: 4, minHeight: 400 }}>
+            <Box sx={{ px: 4, py: 4, }}>
               {renderStepContent()}
             </Box>
 
