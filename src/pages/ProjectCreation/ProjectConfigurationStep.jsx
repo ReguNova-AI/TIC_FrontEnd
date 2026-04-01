@@ -50,13 +50,14 @@ const ProjectConfigurationStep = () => {
     removeConfigFileForFolder(folderId);
   };
 
-  // Download template (placeholder)
+  // Download template
   const handleDownloadTemplate = () => {
-    // TODO: Replace with actual template download endpoint
     const link = document.createElement("a");
-    link.href = "#";
-    link.download = "project_configuration_template.xlsx";
+    link.href = "/template/config_sample_template.xlsx";
+    link.download = "config_sample_template.xlsx";
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
   };
 
   return (
