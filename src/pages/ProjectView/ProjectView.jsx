@@ -15,8 +15,9 @@ import PropTypes from "prop-types";
 import OverviewTab from "./OverviewTab";
 const SummaryReportTab = lazy(() => import("./SummaryReportTab"));
 const ChatAITab = lazy(() => import("./ChatAITab"));
-const RiskAssessmentTab = lazy(() => import("./RiskAssessmentTab"));
 const EditProject = lazy(() => import("./EditProject"));
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
@@ -29,6 +30,7 @@ import {
 } from "shared/constants";
 const DropZoneFileUpload = lazy(() => import("pages/ProjectCreation/DropZoneFileUpload"));
 import reportIcon from "../../assets/images/icons/report1.png";
+import cardGrapBg from "../../assets/Card_grap.svg";
 
 // React Query hooks
 import {
@@ -40,7 +42,12 @@ import {
 import { useProjectOperations, createHistoryObject } from "./useProjectOperations";
 import { useModalManager, useSnackbarManager } from "./useUIManager";
 import { useAIAssessmentOperations } from "../../components/hooks/useAIAssessmentOperations";
-import AIAssessmentStatusIndicator, { markAssessmentStart } from "../../components/AIAssessmentStatusIndicator";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import AIAssessmentStatusIndicator, { 
+  markAssessmentStart, 
+  getElapsedSeconds, 
+  ESTIMATED_DURATION 
+} from "../../components/AIAssessmentStatusIndicator";
 import { getStatusChipProps } from "shared/utility";
 import { brand } from "themes/theme/brand";
 
@@ -124,6 +131,7 @@ const ProjectView = () => {
   // the lazy tab at all. This prevents Suspense from mounting (and running
   // useEffects inside) tabs the user has never opened.
   const [visitedTabs, setVisitedTabs] = useState(new Set([0]));
+  const [tick, setTick] = useState(0); // Real-time pulse for UI numbers
 
   // React Query hooks
   const {
@@ -152,27 +160,67 @@ const ProjectView = () => {
     runChecklistCRT,
     runChecklistAPI,
   } = useProjectOperations(projectData, getUserName());
-
+  
   // AI Assessment operations with global state
   const {
     currentProjectStatus,
     handleRunAIAssessment,
     isProcessing,
+    isMutationSuccess,
   } = useAIAssessmentOperations(projectData);
 
   // ✅ AI Assessment Status
   const aiStatus = projectData?.AIAssesmentStatus;
-  // const isAIAssessmentLoading = aiStatus?.toLowerCase() === 'processing';
+  
+  // Use localStorage timer to bridge the gap between clicking "Run" and the backend status updating
+  const elapsed = getElapsedSeconds(id);
+  const isLocalProcessing = elapsed > 0 && elapsed < ESTIMATED_DURATION;
+
   const isAIAssessmentLoading =
-    isProcessing || aiStatus?.toLowerCase() === 'processing';
-  // Polling — lives here in ProjectView, unaffected by tab lazy-loading
+    (isProcessing || 
+    aiStatus?.toLowerCase() === 'processing' || 
+    isLocalProcessing ||
+    (parseFloat(projectData?.completion_percentage) > 0 && parseFloat(projectData?.completion_percentage) < 100)) && !isMutationSuccess;
+  
+  // UI is unlocked completely ONLY when assessment is explicitly 'completed' by the backend
+  // OR when we just received a success response from the API call.
+  const isCompleted = (aiStatus?.toLowerCase() === 'completed' && !isLocalProcessing) || isMutationSuccess;
+
+  // Helper to get true progress percentage (prevents jumping to 100% immediately during re-assessment)
+  const currentProgress = useMemo(() => {
+    if (isMutationSuccess) return 100;
+    const pct = parseFloat(projectData?.completion_percentage) || 0;
+    
+    if (isAIAssessmentLoading) {
+      if (isLocalProcessing && (pct <= 0 || pct >= 100)) {
+        // Calculate a visual progress based on elapsed time (capped at 95%) 
+        // Force a minimum of 5% to prevent the 3% start.
+        const calculated = (getElapsedSeconds(id) / ESTIMATED_DURATION) * 100;
+        return Math.min(95, Math.max(5, calculated));
+      }
+      // If we are loading but backend still says 100, we force it to 5% for UX
+      return (pct >= 100 || pct <= 0) ? 5 : pct; 
+    }
+    return pct;
+  }, [projectData?.completion_percentage, isAIAssessmentLoading, isLocalProcessing, tick, id, isMutationSuccess]);
+
+  // Polling & Real-time Ticker
   useEffect(() => {
     if (isAIAssessmentLoading) {
-      const interval = setInterval(() => {
-        refetchProjectData(); // fetch latest project data from backend
-      }, 5000); // every 5 seconds
+      // 1. Backend polling every 5 seconds
+      const pollInterval = setInterval(() => {
+        refetchProjectData();
+      }, 5000);
 
-      return () => clearInterval(interval); // cleanup when status changes or component unmounts
+      // 2. Real-time UI ticker every 1 second (makes the number count up progressively)
+      const tickInterval = setInterval(() => {
+        setTick(t => t + 1);
+      }, 1000);
+
+      return () => {
+        clearInterval(pollInterval);
+        clearInterval(tickInterval);
+      };
     }
   }, [isAIAssessmentLoading, refetchProjectData]);
 
@@ -302,8 +350,8 @@ const ProjectView = () => {
   };
 
   const handleChange = (event, newValue) => {
-    // Prevent navigation to disabled tabs when completion is 0 or less
-    if ((isAIAssessmentLoading || projectData?.success_count <= 0) && newValue > 0) {
+    // If not completed and not currently processing, prevent navigation to report/chat tabs
+    if (!isCompleted && !isAIAssessmentLoading && newValue > 0) {
       return;
     }
     // Mark this tab as visited so it renders for the first time
@@ -361,101 +409,187 @@ const ProjectView = () => {
         <Box
           sx={{
             background: "#fff",
-            borderRadius: "10px",
+            borderRadius: "4px",
             border: "1px solid #e4e4e4",
-            height: 'calc(100vh - 160px)', // Fixed height with proper spacing
+            padding: "20px 28px",
+            mb: 2,
             display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden', // Prevent outer container from scrolling
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            position: 'relative',
+            overflow: 'hidden',
           }}
         >
-          {/* Tab Headers */}
-          <Box sx={{ borderBottom: 1, borderColor: "divider", flexShrink: 0, }}>
-            {/* Linear Progress Bar - Attached to Tabs */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
-
-              <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1, paddingTop: "8px", paddingLeft: '16px', paddingRight: '16px' }}>
-                  <Typography variant="h5" color="text.primary">
-                    {projectData?.project_name}
+          {/* Topographic background waves from asset */}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              bottom: 0,
+              width: '100%',
+              backgroundImage: `url(${cardGrapBg})`,
+              backgroundSize: 'auto 100%',
+              backgroundPosition: 'right center',
+              backgroundRepeat: 'no-repeat',
+              zIndex: 0,
+              pointerEvents: 'none',
+              // Add a slight mask if the asset doesn't fade on its own, but typically these assets do.
+              // To match the screenshot perfectly, it naturally sits on the right.
+            }}
+          />
+          <Box sx={{ flex: 1, zIndex: 1, mr: 4 }}>
+            <Typography variant="h4" sx={{ fontWeight: 700, color: '#5B0429', mb: 1, fontSize: '26px' }}>
+              {projectData?.project_name || "Project"}
+            </Typography>
+            
+            {isAIAssessmentLoading ? (
+              <Box sx={{ width: '100%', maxWidth: '600px' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                  <Typography variant="body1" sx={{ color: '#222', fontSize: '15px', fontWeight: 600 }}>
+                    Analyzing documents...
                   </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', }}>
-                    {/* <Typography variant="body2" color="text.secondary">
-                      Progress :
-                    </Typography>
-                    <Typography variant="body2" fontWeight="bold" style={{ marginLeft: '8px', marginRight: '8px' }}>
-                      {Math.round(projectData?.completion_percentage || 0)}%
-                    </Typography> */}
-                    {((projectData?.completion_percentage || 0) === 0) && <Typography variant="body2" color="text.secondary" >
-                      ( Upload project files to enable AI features)
-                    </Typography>}
-                  </Box>
-
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    {/* <Box sx={{ marginRight: 3 }}>
-                      {!isAIAssessmentLoading&&statusChip(projectData?.AIAssesmentStatus)}
-                    </Box> */}
-                    <Box>
-                      <AIAssessmentStatusIndicator 
-                        projectId={projectData?.project_id} 
-                        isLoading={isAIAssessmentLoading}
-                        backendStatus={projectData?.AIAssesmentStatus}
-                        variant="progress" 
-                        size="small" 
-                       />
-                    </Box>
-                  </Box>
+                  <Typography variant="caption" sx={{ color: '#5B0429', fontWeight: 700 }}>
+                    {Math.round(currentProgress)}% Complete
+                  </Typography>
+                </Box>
+                
+                {/* Simulated CSS Progress Bar (0 -> 95% over 90s) */}
+                <Box sx={{ position: 'relative', height: 6, width: '100%', backgroundColor: '#f0f0f0', borderRadius: 3, overflow: 'hidden', mt: 1 }}>
+                  <Box 
+                    sx={{ 
+                      position: 'absolute',
+                      height: '100%',
+                      background: 'linear-gradient(90deg, #5B0429 0%, #8b0a41 100%)',
+                      borderRadius: 3,
+                      width: '2%',
+                      animation: 'simulatedProgress 90s linear forwards',
+                      '@keyframes simulatedProgress': {
+                        'from': { width: '2%' },
+                        'to': { width: '95%' }
+                      }
+                    }} 
+                  />
+                </Box>
+              </Box>
+            ) : isCompleted ? (
+              <Box sx={{ width: '100%', maxWidth: '600px' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                  <Typography variant="body1" sx={{ color: '#222', fontSize: '15px' }}>
+                    <span style={{ color: '#0FA958', fontWeight: 700 }}>✓ Assessment Complete.</span> Explore your insights in <b>Project Report.</b>
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#666', fontWeight: 500 }}>
+                    100% Complete
+                  </Typography>
                 </Box>
                 <LinearProgress
                   variant="determinate"
-                  value={parseFloat(projectData?.completion_percentage) || 0}
+                  value={100}
                   sx={{
                     height: 6,
-                    padding: 0,
-                    margin: 0,
-                    borderRadius: 0,
-                    backgroundColor: 'rgba(0, 0, 0, 0.08)',
-                    '& .MuiLinearProgress-bar': {
-                      borderRadius: 0,
+                    borderRadius: 3,
+                    backgroundColor: "rgba(15, 169, 88, 0.1)",
+                    "& .MuiLinearProgress-bar": {
+                      backgroundColor: "#0FA958",
+                      borderRadius: 3,
                     },
                   }}
                 />
+                <Typography variant="caption" sx={{ color: '#999', mt: 0.5, display: 'block' }}>
+                  Last assessed just now
+                </Typography>
               </Box>
-              <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '0 16px' }}>
-                <Tabs
-                  value={value}
-                  onChange={handleChange}
-                  aria-label="basic tabs example"
-                >
-                  <Tab label={TAB_LABEL.OVERVIEW} {...a11yProps(0)} />
-                  <Tab
-                    label={TAB_LABEL.SUMMARY_REPORT}
-                    {...a11yProps(1)}
-                    disabled={isAIAssessmentLoading || projectData?.success_count <= 0}
-                  />
-                  <Tab
-                    label={TAB_LABEL.CHAT_AI}
-                    {...a11yProps(2)}
-                    disabled={isAIAssessmentLoading || projectData?.success_count <= 0}
-                  />
-                  <Tab
-                    label={TAB_LABEL.RISK_ASSESSMENT}
-                    {...a11yProps(3)}
-                    disabled={isAIAssessmentLoading || projectData?.success_count <= 0}
-                  />
-                </Tabs>
+            ) : (
+              <Box>
+                <Typography variant="body1" sx={{ color: '#222', fontSize: '15px' }}>
+                  Upload documents and run assessment to generate insights
+                </Typography>
+                <Typography variant="caption" sx={{ color: '#aaa', display: 'block', mt: 0.5 }}>
+                  Last assessed {projectData?.completion_percentage > 0 ? "previously" : "never"}
+                </Typography>
               </Box>
-            </Box>
-
-
-            {/* Linear Progress Bar - Attached to Tabs */}
-
+            )}
           </Box>
 
-          {/* Tab Content Container */}
-          <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
-            {/* Overview — always eager, always rendered */}
+          <Box sx={{ zIndex: 1 }}>
+            <Button
+              variant="contained"
+              onClick={() => {
+                if(!isAIAssessmentLoading) {
+                  markAssessmentStart(projectData?.project_id);
+                  handleRunAIAssessment();
+                }
+              }}
+              startIcon={isAIAssessmentLoading ? <CircularProgress size={18} color="inherit" /> : <AutoAwesomeIcon sx={{ fontSize: '18px' }} />}
+              sx={{
+                background: isAIAssessmentLoading ? '#5B0429' : 'linear-gradient(90deg, #5B0429 0%, #00609C 100%)',
+                '&:hover': { background: isAIAssessmentLoading ? '#40021c' : 'linear-gradient(90deg, #40021c 0%, #004c7c 100%)' },
+                borderRadius: '30px',
+                padding: '8px 20px',
+                textTransform: 'none',
+                fontWeight: 600,
+                fontSize: '14px',
+                pointerEvents: isAIAssessmentLoading ? 'none' : 'auto',
+                boxShadow: 'none'
+              }}
+            >
+              {isAIAssessmentLoading ? "Running assessment" : "Re-Run AI Assessment"}
+            </Button>
+          </Box>
+        </Box>
+
+        {/* Tab Selection & Content Container */}
+        <Box
+          sx={{
+            background: "#fff",
+            borderRadius: "4px",
+            border: "1px solid #e4e4e4",
+            height: 'calc(100vh - 270px)',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+          }}
+        >
+          <Box sx={{ borderBottom: 1, borderColor: "divider", paddingX: 2, pt: 1 }}>
+            <Tabs
+              value={value}
+              onChange={handleChange}
+              aria-label="project tabs"
+              TabIndicatorProps={{ style: { backgroundColor: '#5B0429', height: '3px' } }}
+              sx={{
+                '& .MuiTab-root': {
+                  textTransform: 'none',
+                  fontSize: '16px',
+                  fontWeight: 500,
+                  color: '#666',
+                  minWidth: 'auto',
+                  mr: 3,
+                  '&.Mui-selected': { color: '#5B0429', fontWeight: 600 }
+                }
+              }}
+            >
+              <Tab label="Project Desk" {...a11yProps(0)} />
+              <Tab
+                label="Project Report"
+                {...a11yProps(1)}
+                disabled={!isCompleted && !isAIAssessmentLoading}
+                sx={{
+                  '&.Mui-disabled': { color: '#ccc', opacity: 0.6 }
+                }}
+              />
+              <Tab
+                label="Chat AI"
+                {...a11yProps(2)}
+                disabled={!isCompleted && !isAIAssessmentLoading}
+                sx={{
+                  '&.Mui-disabled': { color: '#ccc', opacity: 0.6 }
+                }}
+              />
+            </Tabs>
+          </Box>
+
+          {/* Tab Content Container - Replaced overflow hidden with auto to allow scrolling */}
+          <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
             <CustomTabPanel value={value} index={0}>
               <OverviewTab
                 projectData={projectData}
@@ -465,42 +599,140 @@ const ProjectView = () => {
                   handleRunAIAssessment();
                 }}
                 aiButtonLoading={isAIAssessmentLoading}
+                isCompleted={isCompleted}
                 onFileUploadSuccess={refetchProjectData}
               />
             </CustomTabPanel>
 
-            {/* Summary Report — lazy: renders only after first click */}
             <CustomTabPanel value={value} index={1}>
               {visitedTabs.has(1) && (
                 <Suspense fallback={<TabFallback />}>
-                  <SummaryReportTab projectData={projectData} />
+                  {isAIAssessmentLoading ? (
+                    <Box sx={{ 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      height: '100%', 
+                      minHeight: '400px',
+                      p: 4, 
+                      textAlign: 'center',
+                      bgcolor: '#fff'
+                    }}>
+                       <Box sx={{ position: 'relative', mb: 4 }}>
+                          <CircularProgress 
+                            variant="determinate" 
+                            value={100} 
+                            size={80} 
+                            thickness={2} 
+                            sx={{ color: '#f0f0f0' }} 
+                          />
+                          <CircularProgress 
+                            variant="determinate" 
+                            value={currentProgress} 
+                            size={80} 
+                            thickness={4} 
+                            sx={{ 
+                              color: '#5B0429', 
+                              position: 'absolute', 
+                              left: 0,
+                              '& .MuiCircularProgress-circle': { strokeLinecap: 'round' }
+                            }} 
+                          />
+                          <Box sx={{ 
+                            position: 'absolute', 
+                            top: 0, left: 0, bottom: 0, right: 0, 
+                            display: 'flex', alignItems: 'center', justifyContent: 'center' 
+                          }}>
+                            <Typography variant="caption" sx={{ fontWeight: 700, fontSize: '14px' }}>
+                              {Math.round(currentProgress)}%
+                            </Typography>
+                          </Box>
+                       </Box>
+                       
+                       <Typography variant="h6" sx={{ mb: 1, fontWeight: 700, color: '#1a1a1a', letterSpacing: '-0.5px' }}>
+                         AI Assessment in Progress
+                       </Typography>
+                       <Typography variant="body2" sx={{ mb: 1, color: '#666', maxWidth: '320px', lineHeight: 1.6 }}>
+                         We are currently analyzing your documents...
+                       </Typography>
+                       
+                       <Box sx={{ width: '100%', maxWidth: '300px' }}>
+                         <LinearProgress 
+                            variant="determinate" 
+                            value={currentProgress} 
+                            sx={{ 
+                              height: 6, 
+                              borderRadius: 3, 
+                              bgcolor: 'rgba(91, 4, 41, 0.08)',
+                              '& .MuiLinearProgress-bar': { bgcolor: '#5B0429', borderRadius: 3 }
+                            }} 
+                          />
+                       </Box>
+                    </Box>
+                  ) : (
+                    <SummaryReportTab projectData={projectData} />
+                  )}
                 </Suspense>
               )}
             </CustomTabPanel>
 
-            {/* Chat AI — lazy: mounts on first click, stays mounted.
-                Chat state (currentQuestion, response, isQuestionActive) lives
-                inside ChatAIView — display:none preserves it on tab switch. */}
             <CustomTabPanel value={value} index={2}>
               {visitedTabs.has(2) && (
                 <Suspense fallback={<TabFallback />}>
-                  <ChatAITab
-                    chatLoading={chatLoading}
-                    projectData={projectData}
-                    isQuestionActive={isChatQuestionActive}
-                    setIsQuestionActive={setIsChatQuestionActive}
-                  />
-                </Suspense>
-              )}
-            </CustomTabPanel>
-
-            {/* Risk Assessment — lazy: mounts on first click.
-                html2pdf + docx are further deferred to button-click via
-                dynamic import() inside RiskAssessmentTab handlers. */}
-            <CustomTabPanel value={value} index={3}>
-              {visitedTabs.has(3) && (
-                <Suspense fallback={<TabFallback />}>
-                  <RiskAssessmentTab projectData={projectData} />
+                  {isAIAssessmentLoading ? (
+                    <Box sx={{ 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      height: '100%', 
+                      minHeight: '400px',
+                      p: 4, 
+                      textAlign: 'center',
+                      bgcolor: '#fff'
+                    }}>
+                       <Box sx={{ 
+                         width: 60, height: 60, borderRadius: '50%', 
+                         bgcolor: 'rgba(91, 4, 41, 0.05)', 
+                         display: 'flex', alignItems: 'center', justifyContent: 'center',
+                         mb: 3
+                       }}>
+                         <AutoAwesomeIcon sx={{ color: '#5B0429', fontSize: 30 }} />
+                       </Box>
+                       
+                       <Typography variant="h6" sx={{ mb: 1, fontWeight: 700, color: '#1a1a1a' }}>
+                         Chat AI Initializing
+                       </Typography>
+                       <Typography variant="body2" sx={{ mb: 4, color: '#666', maxWidth: '320px' }}>
+                         The AI is processing your specific project context to provide accurate answers.
+                       </Typography>
+                       
+                       <Box sx={{ width: '100%', maxWidth: '240px' }}>
+                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                            <Typography variant="caption" sx={{ color: '#888', fontWeight: 600 }}>Syncing Documents...</Typography>
+                            <Typography variant="caption" sx={{ color: '#5B0429', fontWeight: 700 }}>{Math.round(projectData?.completion_percentage || 25)}%</Typography>
+                         </Box>
+                         <LinearProgress 
+                            variant="determinate" 
+                            value={parseFloat(projectData?.completion_percentage) || 25} 
+                            sx={{ 
+                              height: 4, 
+                              borderRadius: 2, 
+                              bgcolor: 'rgba(91, 4, 41, 0.08)',
+                              '& .MuiLinearProgress-bar': { bgcolor: '#5B0429', borderRadius: 2 }
+                            }} 
+                          />
+                       </Box>
+                    </Box>
+                  ) : (
+                    <ChatAITab
+                      chatLoading={chatLoading}
+                      projectData={projectData}
+                      isQuestionActive={isChatQuestionActive}
+                      setIsQuestionActive={setIsChatQuestionActive}
+                    />
+                  )}
                 </Suspense>
               )}
             </CustomTabPanel>
@@ -539,13 +771,14 @@ const ProjectView = () => {
 
         {/* Edit Project Modal — lazy */}
         <Modal
-          title={
-            modalType === "Edit" ? HEADING.EDIT_PROJECT : HEADING.INVITE_USERS
-          }
+          title={null}
           visible={isModalVisible}
           onCancel={handleModalClose}
           footer={null}
-          width={800}
+          width={560}
+          bodyStyle={{ padding: 0 }}
+          closable={false}
+          centered
         >
           {isModalVisible && (
             <Suspense fallback={<TabFallback />}>

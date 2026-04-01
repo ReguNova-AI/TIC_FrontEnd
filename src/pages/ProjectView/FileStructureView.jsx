@@ -40,7 +40,7 @@ export const getFileIcon = (filename) => {
   }
 };
 
-const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
+const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading, disabled, isCompleted }) => {
   const [localFolders, setLocalFolders] = useState([]); // Store optimistic folders
   const [expandedKeys, setExpandedKeys] = useState([]); // Store keys to expand
   const [newDoc, setNewDoc] = useState({ file: null });
@@ -561,44 +561,20 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
 
   return (
     <div>
-      <div style={{ marginBottom: 20 }}>
-        {/* Unified Controls & Google Drive Layout */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            gap: 16,
-            alignItems: "flex-start",
-            flexWrap: "wrap",
+      <div style={{ marginBottom: 16 }}>
+        <UnifiedDocumentControl
+          onAddFolder={handleUnifiedAddFolder}
+          onAddFile={handleUnifiedAddFile}
+          showUploadMultiple={true}
+          onUploadMultiple={(e) => {
+            if (e && e.preventDefault) e.preventDefault();
+            handleMultipleFileSelect();
           }}
-        >
-          <div style={{ flex: 1, minWidth: "600px" }}>
-            <UnifiedDocumentControl
-              onAddFolder={handleUnifiedAddFolder}
-              onAddFile={handleUnifiedAddFile}
-              showUploadMultiple={true}
-              onUploadMultiple={(e) => {
-                if (e && e.preventDefault) e.preventDefault();
-                handleMultipleFileSelect();
-              }}
-              addingToFolder={addingFileToFolder}
-              onCancelAddingToFolder={() => setAddingFileToFolder(null)}
-            />
-          </div>
-
-          {/* Google Drive functionality - HIDDEN as per user request */}
-          {/* <div style={{ marginTop: 0 }}>
-            {hasGoogleToken ? (
-              <GoogleDriveFileCard
-                projectId={data?.project_id}
-                onUploadSuccess={onFileUploadSuccess}
-                style={{ width: "100%" }}
-              />
-            ) : (
-              <GoogleDrivePicker projectId={data?.project_id} />
-            )}
-          </div> */}
-        </div>
+          addingToFolder={addingFileToFolder}
+          onCancelAddingToFolder={() => setAddingFileToFolder(null)}
+          disabled={disabled}
+          isCompleted={isCompleted}
+        />
 
         {/* Upload Progress Modal */}
         <Modal
