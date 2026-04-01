@@ -68,6 +68,8 @@ const ProjectCreationWizard = () => {
     submitLoading,
     loading,
     handleSubmit,
+    isUploading,
+    isCreatingProject,
     // Validation data
     projectName,
     projectDesc,
@@ -124,6 +126,18 @@ const ProjectCreationWizard = () => {
           });
           return false;
         }
+        // Check for files still uploading (no path yet)
+        const uploadingFiles = folders.flatMap((f) =>
+          f.files.filter((fi) => !fi.path).map((fi) => ({ folder: f.name, file: fi.name }))
+        );
+        if (uploadingFiles.length > 0) {
+          setSnackData({
+            show: true,
+            message: `Please wait for files to finish uploading: ${uploadingFiles.map((u) => u.file).join(", ")}`,
+            type: "error",
+          });
+          return false;
+        }
         return true;
       }
       case 2:
@@ -167,7 +181,7 @@ const ProjectCreationWizard = () => {
   return (
     <>
       <BreadcrumbsView currentPage="Create Project" />
-      <Spin tip="Processing..." size="large" spinning={loading || submitLoading}>
+      <Spin tip="Processing..." size="large" spinning={loading || submitLoading || isCreatingProject}>
         <Box sx={{ maxWidth: "1200px", margin: "auto", pb: 4 }}>
           {/* ---- Header Section (Separate Card) ---- */}
           <Box
@@ -314,6 +328,7 @@ const ProjectCreationWizard = () => {
                 <Button
                   variant="contained"
                   onClick={onNextClick}
+                  disabled={(activeStep === 1 && isUploading()) || isCreatingProject}
                   sx={{
                     textTransform: "none",
                     backgroundColor: brand.primary,
@@ -322,7 +337,7 @@ const ProjectCreationWizard = () => {
                     "&:hover": { backgroundColor: brand.primaryHover },
                   }}
                 >
-                  Next
+                  {isCreatingProject ? "Creating Project..." : "Next"}
                 </Button>
               )}
 

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
@@ -137,6 +137,14 @@ const UploadDocumentsStep = () => {
   const [expandedFolders, setExpandedFolders] = useState({});
   const nameInputRef = useRef(null);
 
+  // Auto-create "Folder 1" by default when component mounts
+  useEffect(() => {
+    if (folders.length === 0) {
+      const folder = addFolder("Folder 1");
+      setExpandedFolders({ [folder.id]: true });
+    }
+  }, []); // Only run once on mount
+
   // ---- Create folder ----
   const handleCreateFolder = () => {
     const trimmed = newFolderName.trim();
@@ -176,23 +184,24 @@ const UploadDocumentsStep = () => {
 
   return (
     <Box>
-      {/* ---- Create Folder button / inline form ---- */}
-      {!isCreatingFolder ? (
-        <Button
-          variant="contained"
-          startIcon={<CreateNewFolderOutlinedIcon />}
-          onClick={() => setIsCreatingFolder(true)}
-          sx={{
-            textTransform: "none",
-            backgroundColor: brand.primary,
-            borderRadius: "20px",
-            "&:hover": { backgroundColor: brand.primaryHover },
-            mb: 3,
-          }}
-        >
-          Create folder
-        </Button>
-      ) : (
+      {/* ---- Create Folder button (always visible) ---- */}
+      <Button
+        variant="contained"
+        startIcon={<CreateNewFolderOutlinedIcon />}
+        onClick={() => setIsCreatingFolder(true)}
+        sx={{
+          textTransform: "none",
+          backgroundColor: brand.primary,
+          borderRadius: "20px",
+          "&:hover": { backgroundColor: brand.primaryHover },
+          mb: isCreatingFolder ? 2 : 3,
+        }}
+      >
+        Create folder
+      </Button>
+
+      {/* ---- Create Folder input form (shown below button when active) ---- */}
+      {isCreatingFolder && (
         <Box
           sx={{
             display: "flex",
