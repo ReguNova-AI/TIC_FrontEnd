@@ -213,6 +213,7 @@ const SummaryReportTab = ({ projectData }) => {
       </Box>
 
       {/* ── Previously assessed reports ─────────────────────────── */}
+      {/* 
       <Box>
         <SectionHeading>Previously assessed reports</SectionHeading>
 
@@ -251,6 +252,7 @@ const SummaryReportTab = ({ projectData }) => {
           </Box>
         )}
       </Box>
+      */}
 
       {/* ── Report History Details Modal ───────────────────────── */}
       <Modal
