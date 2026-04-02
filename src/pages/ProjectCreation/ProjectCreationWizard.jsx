@@ -14,7 +14,39 @@ import UploadDocumentsStep from "./UploadDocumentsStep";
 import ProjectConfigurationStep from "./ProjectConfigurationStep";
 import ReviewAssessStep from "./ReviewAssessStep";
 import { useNavigate } from "react-router-dom";
-import { Spin } from "antd";
+import { Spin, Modal, Progress, Typography as AntTypography } from "antd";
+import CheckOutlined from "@ant-design/icons/CheckOutlined";
+import FilePdfOutlined from "@ant-design/icons/FilePdfOutlined";
+
+import FileWordOutlined from "@ant-design/icons/FileWordOutlined";
+import FileExcelOutlined from "@ant-design/icons/FileExcelOutlined";
+import FileTextOutlined from "@ant-design/icons/FileTextOutlined";
+import FileImageOutlined from "@ant-design/icons/FileImageOutlined";
+import FileUnknownOutlined from "@ant-design/icons/FileUnknownOutlined";
+
+// ---- File icon helper (matches FileStructureView) ----
+const getFileIcon = (filename) => {
+  if (!filename) return <FileUnknownOutlined style={{ color: "#595959", fontSize: 24 }} />;
+  const ext = filename.split(".").pop().toLowerCase();
+  switch (ext) {
+    case "pdf":
+      return <FilePdfOutlined style={{ color: "#cf1322", fontSize: 24 }} />;
+    case "doc":
+    case "docx":
+      return <FileWordOutlined style={{ color: "#1890ff", fontSize: 24 }} />;
+    case "xls":
+    case "xlsx":
+      return <FileExcelOutlined style={{ color: "#52c41a", fontSize: 24 }} />;
+    case "jpg":
+    case "jpeg":
+    case "png":
+      return <FileImageOutlined style={{ color: "#fa8c16", fontSize: 24 }} />;
+    case "txt":
+      return <FileTextOutlined style={{ color: "#722ed1", fontSize: 24 }} />;
+    default:
+      return <FilePdfOutlined style={{ color: "#cf1322", fontSize: 24 }} />;
+  }
+};
 
 // ---- Step labels ----
 const STEPS = [
@@ -74,6 +106,20 @@ const ProjectCreationWizard = () => {
     projectName,
     projectDesc,
     folders,
+    // Upload modal state
+    uploadModalOpen,
+    uploadingFile,
+    uploadProgress,
+    uploadSuccess,
+    uploadType,
+    // Multiple upload state
+    isUploadingMultiple,
+    multipleUploadProgress,
+    currentFileProgress,
+    currentFileName,
+    uploadedFilesCount,
+    totalFilesCount,
+    uploadingFilesList,
   } = useProjectCreation();
 
   // ---- Per-step validation ----
@@ -107,6 +153,7 @@ const ProjectCreationWizard = () => {
           });
           return false;
         }
+        // Count all files including Excel files
         const hasFiles = folders.some((f) => f.files.length > 0);
         if (!hasFiles) {
           setSnackData({
@@ -128,7 +175,9 @@ const ProjectCreationWizard = () => {
         }
         // Check for files still uploading (no path yet)
         const uploadingFiles = folders.flatMap((f) =>
-          f.files.filter((fi) => !fi.path).map((fi) => ({ folder: f.name, file: fi.name }))
+          f.files
+            .filter((fi) => !fi.path)
+            .map((fi) => ({ folder: f.name, file: fi.name }))
         );
         if (uploadingFiles.length > 0) {
           setSnackData({
@@ -386,6 +435,105 @@ const ProjectCreationWizard = () => {
           {snackData.message}
         </Alert>
       </Snackbar>
+
+      {/* ---- Upload Progress Modal ---- */}
+      <Modal
+        open={uploadModalOpen}
+        footer={null}
+        onCancel={() => {
+          if (!isUploadingMultiple) setUploadModalOpen(false);
+        }}
+        closable={!isUploadingMultiple}
+        maskClosable={!isUploadingMultiple}
+        title={
+          isUploadingMultiple
+            ? uploadType === "configuration"
+              ? "Uploading Multiple Configurations"
+              : "Uploading Multiple Files"
+            : uploadType === "configuration"
+              ? "Uploading Configuration"
+              : "Uploading Document"
+        }
+        centered
+      >
+        <div>
+          {/* Overall progress */}
+          <div style={{ marginBottom: 16 }}>
+            <AntTypography.Text strong>
+              Uploading {uploadedFilesCount} of {totalFilesCount || 1} files
+            </AntTypography.Text>
+            <div style={{ fontSize: 12, color: "#666", marginTop: 4 }}>
+              Progress: {Math.round(isUploadingMultiple ? multipleUploadProgress : uploadProgress)}% complete
+            </div>
+          </div>
+          <Progress
+            percent={Math.round(isUploadingMultiple ? multipleUploadProgress : uploadProgress)}
+            status={(isUploadingMultiple ? multipleUploadProgress : uploadProgress) === 100 ? "success" : "active"}
+            format={(percent) => `${percent}%`}
+            strokeColor={{
+              "0%": "#ffffff",
+              "100%": brand.primary,
+            }}
+          />
+
+          {/* Current file progress card */}
+          {(currentFileName || uploadingFile?.name) && (
+            <div
+              style={{
+                marginTop: 16,
+                padding: "10px 12px",
+                backgroundColor: "#fafafa",
+                border: "1px solid #f0f0f0",
+                borderRadius: 6,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  marginBottom: 6,
+                }}
+              >
+                {getFileIcon(currentFileName || uploadingFile?.name)}
+                <AntTypography.Text ellipsis style={{ flex: 1, fontSize: 13 }}>
+                  {currentFileName || uploadingFile?.name}
+                </AntTypography.Text>
+                <AntTypography.Text type="secondary" style={{ fontSize: 12 }}>
+                  {isUploadingMultiple ? currentFileProgress : uploadProgress}%
+                </AntTypography.Text>
+              </div>
+              <Progress
+                percent={isUploadingMultiple ? currentFileProgress : uploadProgress}
+                size="small"
+                showInfo={false}
+                status={(isUploadingMultiple ? currentFileProgress : uploadProgress) === 100 ? "success" : "active"}
+                strokeColor={brand.primary}
+              />
+            </div>
+          )}
+
+          <div style={{ marginTop: 8, fontSize: 12, color: "#666" }}>
+            Files will be uploaded to the selected folder
+          </div>
+          {((isUploadingMultiple && uploadedFilesCount === totalFilesCount && totalFilesCount > 0) ||
+            (!isUploadingMultiple && uploadSuccess)) && (
+            <div
+              style={{
+                marginTop: 12,
+                padding: 8,
+                backgroundColor: "#f6ffed",
+                border: "1px solid #b7eb8f",
+                borderRadius: 4,
+              }}
+            >
+              <AntTypography.Text style={{ color: "#52c41a", fontSize: 12 }}>
+                ✅ Upload completed!
+              </AntTypography.Text>
+            </div>
+          )}
+        </div>
+      </Modal>
     </>
   );
 };

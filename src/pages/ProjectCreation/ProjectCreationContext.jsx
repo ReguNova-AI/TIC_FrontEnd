@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { UserApiService } from "services/api/UserAPIService";
 import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
@@ -37,6 +37,7 @@ const formatFileSize = (bytes) => {
 // ---------- Provider ----------
 export const ProjectCreationProvider = ({ children }) => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const { startRiskSummaryProcessing } = useAIAssessment();
 
@@ -54,6 +55,12 @@ export const ProjectCreationProvider = ({ children }) => {
   // ---- Step 3: Project Configuration ----
   // { [folderId]: { file, name, path } | null }
   const [configFiles, setConfigFiles] = useState({});
+  const configFilesRef = useRef(configFiles);
+
+  // Keep ref in sync with state to avoid stale closure issues
+  useEffect(() => {
+    configFilesRef.current = configFiles;
+  }, [configFiles]);
 
   // ---- Created project state (for multi-step API approach) ----
   const [createdProjectId, setCreatedProjectId] = useState(null);
@@ -90,6 +97,22 @@ export const ProjectCreationProvider = ({ children }) => {
     type: "error",
   });
 
+  // ---- Upload modal state ----
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [uploadingFile, setUploadingFile] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [uploadType, setUploadType] = useState("document"); // "document" or "configuration"
+
+  // ---- Multiple file upload state ----
+  const [isUploadingMultiple, setIsUploadingMultiple] = useState(false);
+  const [multipleUploadProgress, setMultipleUploadProgress] = useState(0);
+  const [currentFileProgress, setCurrentFileProgress] = useState(0);
+  const [currentFileName, setCurrentFileName] = useState("");
+  const [uploadedFilesCount, setUploadedFilesCount] = useState(0);
+  const [totalFilesCount, setTotalFilesCount] = useState(0);
+  const [uploadingFilesList, setUploadingFilesList] = useState([]); // Track all files being uploaded
+
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
   const industryDetails = userdetails?.[0]?.industries;
 
@@ -101,6 +124,128 @@ export const ProjectCreationProvider = ({ children }) => {
       fetchIndustryData();
     }
   }, []);
+
+  // ---- Load project from URL if exists ----
+  useEffect(() => {
+    const projectIdFromUrl = searchParams.get("projectId");
+    if (projectIdFromUrl && !createdProjectId) {
+      // Fetch project details and restore state
+      ProjectApiService.projectDetails(projectIdFromUrl)
+        .then((response) => {
+          // API returns details as an array, get the first element
+          const projectData = response?.data?.details?.[0];
+          if (projectData) {
+            setCreatedProjectId(projectData.project_id);
+            setCreatedProject(projectData);
+            // Set form values directly
+            setProjectName(projectData.project_name || "");
+            setProjectDesc(projectData.project_description || "");
+            // Restore other form data if needed
+            setFormData((prev) => ({
+              ...prev,
+              projectNo: projectData.project_no || "",
+              regulatory: projectData.regulatory_standard || "",
+              industry_id: projectData.industry_id || "",
+              industry_name: projectData.industry_name || "",
+              mapping_standards: projectData.mapping_standards || "",
+            }));
+
+            // Restore folders and files from project_documents
+            const projectDocs = projectData.project_documents || [];
+            if (projectDocs.length > 0) {
+              // First pass: create folders from non-config documents
+              const folderMap = new Map();
+              const configDocs = [];
+
+              projectDocs.forEach((doc) => {
+                // Config files have null/empty folder_name and are Excel files
+                const isConfig = !doc.folder_name || doc.folder_name?.trim() === "";
+
+                if (isConfig) {
+                  // Collect config docs for second pass
+                  configDocs.push(doc);
+                } else {
+                  // Regular document - group by folder_name
+                  // Skip documents with empty/null folder_name (they might be orphaned)
+                  const folderName = doc.folder_name?.trim();
+                  if (!folderName) {
+                    console.warn(`Document ${doc.document_name} has no folder_name, skipping`);
+                    return; // Skip this document
+                  }
+                  if (!folderMap.has(folderName)) {
+                    folderMap.set(folderName, {
+                      id: generateId(),
+                      name: folderName,
+                      files: [],
+                    });
+                  }
+                  const folder = folderMap.get(folderName);
+                  folder.files.push({
+                    id: generateId(),
+                    name: doc.document_name,
+                    size: doc.size || 0,
+                    sizeFormatted: formatFileSize(doc.size || 0),
+                    path: doc.path || doc.file_path,
+                    progress: 100,
+                    document_id: doc.document_id,
+                    version_id: doc.version_id,
+                    file: null, // File object not stored, only metadata
+                  });
+                }
+              });
+
+              // Convert map to array and set folders
+              const restoredFolders = Array.from(folderMap.values());
+              if (restoredFolders.length > 0) {
+                setFolders(restoredFolders);
+
+                // Second pass: assign config files to folders
+                // Config files have empty folder_name, so we need to match by index or apply to all
+                // IMPORTANT: Only ONE config file per folder - use first from API order
+                const configFilesMap = {};
+
+                // Sort config docs by document_id or version_id to ensure consistent ordering
+                const sortedConfigDocs = [...configDocs].sort((a, b) => {
+                  // Sort by document_id if available, otherwise keep original order
+                  const idA = a.document_id || 0;
+                  const idB = b.document_id || 0;
+                  return idA - idB;
+                });
+
+                if (sortedConfigDocs.length > 0) {
+                  // Take only the FIRST config file from API (as per user requirement)
+                  const firstConfigDoc = sortedConfigDocs[0];
+                  console.log("[DEBUG] Loading config from API:", firstConfigDoc);
+
+                  // Apply the first config to ALL folders (global config behavior)
+                  // This ensures only ONE config file is shown across all folders
+                  restoredFolders.forEach((folder) => {
+                    configFilesMap[folder.id] = {
+                      file: null,
+                      name: firstConfigDoc.document_name,
+                      path: firstConfigDoc.path || firstConfigDoc.file_path,
+                      document_id: firstConfigDoc.document_id,
+                      version_id: firstConfigDoc.version_id,
+                    };
+                  });
+                  console.log("[DEBUG] Config loaded with document_id:", firstConfigDoc.document_id, "version_id:", firstConfigDoc.version_id);
+                }
+
+                // Set config files
+                if (Object.keys(configFilesMap).length > 0) {
+                  setConfigFiles(configFilesMap);
+                }
+              }
+            }
+          }
+        })
+        .catch((error) => {
+          console.error("Failed to load project from URL:", error);
+          // Clear invalid projectId from URL
+          setSearchParams({});
+        });
+    }
+  }, [searchParams.get("projectId")]);
 
   const fetchIndustryData = () => {
     UserApiService.industryDetails()
@@ -264,6 +409,8 @@ export const ProjectCreationProvider = ({ children }) => {
       if (projectId) {
         setCreatedProjectId(projectId);
         setCreatedProject(projectData);
+        // Store project ID in URL for persistence
+        setSearchParams({ projectId });
         setSnackData({
           show: true,
           message: "Project created successfully!",
@@ -365,13 +512,422 @@ export const ProjectCreationProvider = ({ children }) => {
     });
   }, []);
 
+  // Helper to check if file is Excel (config file)
+  const isExcelFile = (filename) => {
+    if (!filename) return false;
+    const ext = filename.split(".").pop().toLowerCase();
+    return ["xlsx", "xls", "csv"].includes(ext);
+  };
+
+  // Helper to upload a single config file
+  const uploadSingleConfigFile = async (file, folderId, isGlobal = false, forceCreateNew = false) => {
+    const reader = new FileReader();
+    const fileDataUrl = await new Promise((resolve, reject) => {
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    const ext = file.name.split(".").pop();
+    const payload = {
+      documents: [fileDataUrl],
+      type: ext,
+      folder_name: "",  // Always empty for config files
+      isConfig: true,
+      project_id: createdProjectId,
+    };
+    const response = await FileUploadApiService.fileUploadWithMetadata(payload);
+    const s3Path = response.data.details[0];
+
+    const configEntry = {
+      file,
+      name: file.name,
+      path: s3Path,
+      document_id: null,
+      version_id: null,
+    };
+
+    // If project is already created, create or update the document entry
+    // Use ref to get latest state and avoid stale closure issues
+    const currentConfigFiles = configFilesRef.current;
+    if (createdProjectId) {
+      const existingConfig = currentConfigFiles[folderId];
+
+      // If forceCreateNew is true (e.g., after replace delete), always create new document
+      if (existingConfig?.document_id && existingConfig?.version_id && !isGlobal && !forceCreateNew) {
+        const updatePayload = {
+          file_path: s3Path,
+          uploaded_by_id: userdetails?.[0]?.user_id,
+          uploaded_by_name:
+            userdetails?.[0]?.user_first_name +
+            " " +
+            userdetails?.[0]?.user_last_name,
+        };
+
+        const updateResponse = await ProjectApiService.uploadProjectDocument(
+          updatePayload,
+          existingConfig.version_id
+        );
+
+        const updatedDocData = updateResponse?.data?.details?.[0];
+        if (updatedDocData) {
+          configEntry.document_id = updatedDocData.document_id;
+          configEntry.version_id = updatedDocData.version_id;
+        } else {
+          configEntry.document_id = existingConfig.document_id;
+          configEntry.version_id = existingConfig.version_id;
+        }
+      } else {
+        const docResult = await createProjectDocumentEntry(
+          { ...configEntry, file },
+          ""
+        );
+        if (docResult) {
+          configEntry.document_id = docResult.document_id;
+          configEntry.version_id = docResult.version_id;
+        }
+      }
+    }
+
+    return configEntry;
+  };
+
+  const setConfigFileForFolder = useCallback(async (folderId, file, isGlobal = false, shouldDeleteExisting = false) => {
+    console.log("[Replace] setConfigFileForFolder called - folderId:", folderId, "shouldDeleteExisting:", shouldDeleteExisting);
+    if (!file) return;
+
+    // Handle array of files (multiple config upload)
+    const filesArray = Array.isArray(file) ? file : [file];
+    if (filesArray.length === 0) return;
+
+    const isMultiple = filesArray.length > 1;
+
+    // If replace mode (shouldDeleteExisting), delete existing config first
+    // Use ref to get latest state and avoid stale closure issues
+    const currentConfigFiles = configFilesRef.current;
+    console.log("[DEBUG] setConfigFileForFolder - shouldDeleteExisting:", shouldDeleteExisting, "folderId:", folderId, "isGlobal:", isGlobal);
+    console.log("[DEBUG] currentConfigFiles:", currentConfigFiles);
+
+    if (shouldDeleteExisting) {
+      if (isGlobal) {
+        // Global upload: delete ALL existing config files across all folders
+        console.log("[DEBUG] Global upload with shouldDeleteExisting - deleting all configs");
+        for (const [fid, existingConfig] of Object.entries(currentConfigFiles)) {
+          if (existingConfig) {
+            try {
+              if (existingConfig.document_id && existingConfig.version_id) {
+                console.log("[DEBUG] Global delete - calling deleteProjectDocument with:", existingConfig.document_id, existingConfig.version_id);
+                await ProjectApiService.deleteProjectDocument(
+                  existingConfig.document_id,
+                  existingConfig.version_id
+                );
+                console.log("[DEBUG] Global delete - deleteProjectDocument succeeded for folder:", fid);
+              } else {
+                console.log("[DEBUG] Global delete - No document_id or version_id for folder:", fid);
+              }
+            } catch (error) {
+              console.error("[DEBUG] Global delete - Failed to delete config for folder:", fid, error);
+            }
+          }
+        }
+        // Clear all configs from state
+        setConfigFiles({});
+      } else if (folderId) {
+        // Per-folder upload: delete only this folder's config
+        const existingConfig = currentConfigFiles[folderId];
+        console.log("[DEBUG] existingConfig for folder:", existingConfig);
+        if (existingConfig) {
+          try {
+            // Delete from server using document delete API (not S3 delete)
+            if (existingConfig.document_id && existingConfig.version_id) {
+              console.log("[DEBUG] Calling deleteProjectDocument with:", existingConfig.document_id, existingConfig.version_id);
+              await ProjectApiService.deleteProjectDocument(
+                existingConfig.document_id,
+                existingConfig.version_id
+              );
+              console.log("[DEBUG] deleteProjectDocument succeeded");
+            } else {
+              console.log("[DEBUG] No document_id or version_id, cannot delete - config:", existingConfig);
+            }
+            // Remove from state
+            setConfigFiles((prev) => {
+              const newConfig = { ...prev };
+              delete newConfig[folderId];
+              return newConfig;
+            });
+          } catch (error) {
+            console.error("[DEBUG] Failed to delete existing config:", error);
+            // Continue with upload even if delete fails
+          }
+        } else {
+          console.log("[DEBUG] No existing config found for folderId:", folderId);
+        }
+      }
+    } else {
+      console.log("[DEBUG] Skipping delete - shouldDeleteExisting:", shouldDeleteExisting);
+    }
+
+    try {
+      // Set upload type to configuration for config files
+      setUploadType("configuration");
+
+      if (isMultiple) {
+        // Multiple files - use multiple upload modal
+        setIsUploadingMultiple(true);
+        setMultipleUploadProgress(0);
+        setCurrentFileProgress(0);
+        setCurrentFileName("");
+        setUploadedFilesCount(0);
+        setTotalFilesCount(filesArray.length);
+        setUploadingFilesList(
+          filesArray.map((f, index) => ({
+            id: `config-${index}`,
+            name: f.name,
+            progress: 0,
+            status: 'uploading',
+          }))
+        );
+        setUploadModalOpen(true);
+      } else {
+        // Single file - use single upload modal
+        setUploadingFile(filesArray[0]);
+        setUploadProgress(0);
+        setUploadSuccess(false);
+        setUploadModalOpen(true);
+      }
+
+      const uploadedConfigs = [];
+
+      for (let i = 0; i < filesArray.length; i++) {
+        const currentFile = filesArray[i];
+
+        if (isMultiple) {
+          setCurrentFileName(currentFile.name);
+          setCurrentFileProgress(0);
+          setUploadingFilesList(prev =>
+            prev.map((f, idx) =>
+              idx === i ? { ...f, progress: 0, status: 'uploading' } : f
+            )
+          );
+        }
+
+        try {
+          // Pass shouldDeleteExisting as forceCreateNew to ensure new document is created after delete
+          const configEntry = await uploadSingleConfigFile(currentFile, folderId, isGlobal, shouldDeleteExisting);
+          uploadedConfigs.push(configEntry);
+
+          if (isMultiple) {
+            setCurrentFileProgress(100);
+            setUploadingFilesList(prev =>
+              prev.map((f, idx) =>
+                idx === i ? { ...f, progress: 100, status: 'completed' } : f
+              )
+            );
+            setUploadedFilesCount(i + 1);
+            setMultipleUploadProgress(((i + 1) / filesArray.length) * 100);
+          } else {
+            setUploadProgress(100);
+            setUploadSuccess(true);
+          }
+
+          // Apply config to folders
+          if (isGlobal) {
+            setConfigFiles((prev) => {
+              const newConfig = { ...prev };
+              folders.forEach((f) => {
+                newConfig[f.id] = { ...configEntry };
+              });
+              return newConfig;
+            });
+          } else {
+            setConfigFiles((prev) => ({
+              ...prev,
+              [folderId]: configEntry,
+            }));
+          }
+        } catch (error) {
+          console.error(`Failed to upload config file ${currentFile.name}:`, error);
+          if (isMultiple) {
+            setUploadingFilesList(prev =>
+              prev.map((f, idx) =>
+                idx === i ? { ...f, progress: 0, status: 'error' } : f
+              )
+            );
+            setUploadedFilesCount(i + 1);
+            setMultipleUploadProgress(((i + 1) / filesArray.length) * 100);
+          }
+        }
+      }
+
+      // Show success message
+      setSnackData({
+        show: true,
+        message: isGlobal
+          ? `Configuration file${filesArray.length > 1 ? 's' : ''} uploaded successfully for all folders!`
+          : `Configuration file${filesArray.length > 1 ? 's' : ''} uploaded successfully!`,
+        type: "success",
+      });
+
+      // Close modal after delay
+      if (isMultiple) {
+        setTimeout(() => {
+          setIsUploadingMultiple(false);
+          setUploadModalOpen(false);
+          setMultipleUploadProgress(0);
+          setCurrentFileProgress(0);
+          setCurrentFileName("");
+          setUploadedFilesCount(0);
+          setTotalFilesCount(0);
+          setUploadingFilesList([]);
+        }, 1500);
+      } else {
+        setTimeout(() => {
+          setUploadModalOpen(false);
+          setUploadingFile(null);
+        }, 800);
+      }
+    } catch (err) {
+      console.error("Config upload failed:", err);
+      setSnackData({
+        show: true,
+        message: "Configuration file upload failed!",
+        type: "error",
+      });
+      if (isMultiple) {
+        setIsUploadingMultiple(false);
+        setUploadModalOpen(false);
+      }
+    }
+  }, [createdProjectId, folders, createProjectDocumentEntry, userdetails]);
+
   const addFilesToFolder = useCallback(
     async (folderId, fileList) => {
       const filesArray = Array.isArray(fileList) ? fileList : Array.from(fileList);
       const folder = folders.find((f) => f.id === folderId);
       const folderName = folder?.name || "";
 
-      for (const file of filesArray) {
+      // Separate Excel files from regular files
+      const excelFiles = filesArray.filter((f) => isExcelFile(f.name));
+      const regularFiles = filesArray.filter((f) => !isExcelFile(f.name));
+
+      // Handle Excel files - create separate folders for each Excel file
+      if (excelFiles.length > 0) {
+        // Upload Excel files as config for this folder
+        await setConfigFileForFolder(folderId, excelFiles, false);
+
+        // Also add Excel files to the folder's files list so they show in uploaded files section
+        for (const excelFile of excelFiles) {
+          const fileId = generateId();
+          const fileEntry = {
+            id: fileId,
+            file: excelFile,
+            name: excelFile.name,
+            size: excelFile.size,
+            sizeFormatted: formatFileSize(excelFile.size),
+            path: "",
+            progress: 0,
+            document_id: null,
+            version_id: null,
+            isExcel: true, // Mark as Excel file
+          };
+
+          // Add to current folder's files
+          setFolders((prev) =>
+            prev.map((f) =>
+              f.id === folderId ? { ...f, files: [...f.files, fileEntry] } : f
+            )
+          );
+
+          // Upload Excel file to get S3 path
+          try {
+            const reader = new FileReader();
+            const fileDataUrl = await new Promise((resolve, reject) => {
+              reader.onloadend = () => resolve(reader.result);
+              reader.onerror = reject;
+              reader.readAsDataURL(excelFile);
+            });
+
+            const ext = excelFile.name.split(".").pop();
+            const payload = {
+              documents: [fileDataUrl],
+              type: ext,
+              folder_name: folderName,
+              isConfig: false,
+              project_id: createdProjectId,
+            };
+
+            const response = await FileUploadApiService.fileUploadWithMetadata(payload);
+            const s3Path = response.data.details[0];
+
+            // Update file entry with S3 path
+            const updatedFileEntry = {
+              ...fileEntry,
+              path: s3Path,
+              progress: 100,
+            };
+
+            // If project is already created, create the document entry
+            if (createdProjectId) {
+              const docResult = await createProjectDocumentEntry(updatedFileEntry, folderName);
+              if (docResult) {
+                updatedFileEntry.document_id = docResult.document_id;
+                updatedFileEntry.version_id = docResult.version_id;
+              }
+            }
+
+            setFolders((prev) =>
+              prev.map((f) =>
+                f.id === folderId
+                  ? {
+                      ...f,
+                      files: f.files.map((fi) =>
+                        fi.id === fileId ? updatedFileEntry : fi
+                      ),
+                    }
+                  : f
+              )
+            );
+          } catch (err) {
+            console.error("Excel file upload failed:", err);
+          }
+        }
+      }
+
+      // Only process regular files here
+      if (regularFiles.length === 0) {
+        return; // All files were Excel, handled above
+      }
+
+      // Continue with regular files only
+      const filesToProcess = regularFiles;
+
+      // If multiple files, use multiple upload mode
+      const isMultiple = filesToProcess.length > 1;
+
+      // Set upload type to document for regular files
+      setUploadType("document");
+
+      if (isMultiple) {
+        setIsUploadingMultiple(true);
+        setMultipleUploadProgress(0);
+        setCurrentFileProgress(0);
+        setCurrentFileName("");
+        setUploadedFilesCount(0);
+        setTotalFilesCount(filesToProcess.length);
+        // Initialize uploading files list with all files
+        setUploadingFilesList(
+          filesToProcess.map((file, index) => ({
+            id: `temp-${index}`,
+            name: file.name,
+            progress: 0,
+            status: 'uploading', // uploading, completed, error
+          }))
+        );
+        setUploadModalOpen(true);
+      }
+
+      for (let i = 0; i < filesToProcess.length; i++) {
+        const file = filesToProcess[i];
         const fileId = generateId();
         const fileEntry = {
           id: fileId,
@@ -391,6 +947,23 @@ export const ProjectCreationProvider = ({ children }) => {
             f.id === folderId ? { ...f, files: [...f.files, fileEntry] } : f
           )
         );
+
+        // Show upload modal for single file or update current file for multiple
+        if (isMultiple) {
+          setCurrentFileName(file.name);
+          setCurrentFileProgress(0);
+          // Update current file progress in the list
+          setUploadingFilesList(prev =>
+            prev.map((f, idx) =>
+              idx === i ? { ...f, progress: 0, status: 'uploading' } : f
+            )
+          );
+        } else {
+          setUploadingFile(file);
+          setUploadProgress(0);
+          setUploadSuccess(false);
+          setUploadModalOpen(true);
+        }
 
         // Upload in background with metadata
         try {
@@ -412,6 +985,19 @@ export const ProjectCreationProvider = ({ children }) => {
 
           const response = await FileUploadApiService.fileUploadWithMetadata(payload);
           const s3Path = response.data.details[0];
+
+          if (isMultiple) {
+            setCurrentFileProgress(100);
+            // Mark file as completed in the list
+            setUploadingFilesList(prev =>
+              prev.map((f, idx) =>
+                idx === i ? { ...f, progress: 100, status: 'completed' } : f
+              )
+            );
+          } else {
+            setUploadProgress(100);
+            setUploadSuccess(true);
+          }
 
           // Update file entry with S3 path
           const updatedFileEntry = {
@@ -441,17 +1027,53 @@ export const ProjectCreationProvider = ({ children }) => {
                 : f
             )
           );
+
+          // Update multiple upload progress
+          if (isMultiple) {
+            setUploadedFilesCount(i + 1);
+            setMultipleUploadProgress(((i + 1) / filesToProcess.length) * 100);
+          } else {
+            // Close modal after a brief delay for single file
+            setTimeout(() => {
+              setUploadModalOpen(false);
+              setUploadingFile(null);
+            }, 800);
+          }
         } catch (err) {
           console.error("File upload failed:", err);
           setSnackData({
             show: true,
-            message: "File upload failed!",
+            message: `File upload failed for ${file.name}!`,
             type: "error",
           });
+          if (isMultiple) {
+            setUploadedFilesCount(i + 1);
+            setMultipleUploadProgress(((i + 1) / filesToProcess.length) * 100);
+            // Mark file as error in the list
+            setUploadingFilesList(prev =>
+              prev.map((f, idx) =>
+                idx === i ? { ...f, progress: 0, status: 'error' } : f
+              )
+            );
+          }
         }
       }
+
+      // Close modal after delay for multiple files
+      if (isMultiple) {
+        setTimeout(() => {
+          setIsUploadingMultiple(false);
+          setUploadModalOpen(false);
+          setMultipleUploadProgress(0);
+          setCurrentFileProgress(0);
+          setCurrentFileName("");
+          setUploadedFilesCount(0);
+          setTotalFilesCount(0);
+          setUploadingFilesList([]);
+        }, 1500);
+      }
     },
-    [folders, createdProjectId, createProjectDocumentEntry]
+    [folders, createdProjectId, createProjectDocumentEntry, setConfigFileForFolder]
   );
 
   const removeFileFromFolder = useCallback(async (folderId, fileId) => {
@@ -469,6 +1091,14 @@ export const ProjectCreationProvider = ({ children }) => {
         console.error("Failed to delete document from server:", error);
         // Continue with local removal even if server deletion fails
       }
+    } else if (file?.path) {
+      // If no document_id but file has path (S3), delete from S3
+      try {
+        await FileUploadApiService.fileDelete({ path: file.path });
+      } catch (error) {
+        console.error("Failed to delete file from S3:", error);
+        // Continue with local removal even if S3 deletion fails
+      }
     }
 
     setFolders((prev) =>
@@ -482,7 +1112,8 @@ export const ProjectCreationProvider = ({ children }) => {
 
   // ---- Step 3: Remove config for a folder ----
   const removeConfigFileForFolder = useCallback(async (folderId) => {
-    const config = configFiles[folderId];
+    // Use ref to get latest state and avoid stale closure issues
+    const config = configFilesRef.current[folderId];
 
     // If config has document_id and version_id, delete from server
     if (config?.document_id && config?.version_id) {
@@ -493,6 +1124,13 @@ export const ProjectCreationProvider = ({ children }) => {
         );
       } catch (error) {
         console.error("Failed to delete config document:", error);
+      }
+    } else if (config?.path) {
+      // If no document_id but config has path (S3), delete from S3
+      try {
+        await FileUploadApiService.fileDelete({ path: config.path });
+      } catch (error) {
+        console.error("Failed to delete config file from S3:", error);
       }
     }
 
@@ -508,113 +1146,70 @@ export const ProjectCreationProvider = ({ children }) => {
       message: "Configuration file removed successfully!",
       type: "success",
     });
-  }, [configFiles]);
-  const setConfigFileForFolder = useCallback(async (folderId, file, isGlobal = false) => {
-    if (!file) return;
-    try {
-      const reader = new FileReader();
-      const fileDataUrl = await new Promise((resolve, reject) => {
-        reader.onloadend = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
+  }, []);
 
-      const ext = file.name.split(".").pop();
-      const payload = {
-        documents: [fileDataUrl],
-        type: ext,
-        folder_name: "",  // Always empty for config files
-        isConfig: true,
-        project_id: createdProjectId,
-      };
-      const response = await FileUploadApiService.fileUploadWithMetadata(payload);
-      const s3Path = response.data.details[0];
+  // ---- Register unregistered files when projectId becomes available ----
+  useEffect(() => {
+    const registerUnregisteredFiles = async () => {
+      if (!createdProjectId) return;
 
-      const configEntry = {
-        file,
-        name: file.name,
-        path: s3Path,
-        document_id: null,
-        version_id: null,
-      };
-
-      // If project is already created, create or update the document entry
-      if (createdProjectId) {
-        // Check if config already exists for this folder
-        const existingConfig = configFiles[folderId];
-
-        if (existingConfig?.document_id && existingConfig?.version_id && !isGlobal) {
-          // Update existing document for this folder
-          const updatePayload = {
-            file_path: s3Path,
-            uploaded_by_id: userdetails?.[0]?.user_id,
-            uploaded_by_name:
-              userdetails?.[0]?.user_first_name +
-              " " +
-              userdetails?.[0]?.user_last_name,
-          };
-
-          const updateResponse = await ProjectApiService.uploadProjectDocument(
-            updatePayload,
-            existingConfig.version_id
-          );
-
-          const updatedDocData = updateResponse?.data?.details?.[0];
-          if (updatedDocData) {
-            configEntry.document_id = updatedDocData.document_id;
-            configEntry.version_id = updatedDocData.version_id;
-          } else {
-            // Fallback to existing IDs if response doesn't have them
-            configEntry.document_id = existingConfig.document_id;
-            configEntry.version_id = existingConfig.version_id;
-          }
-        } else {
-          // Create new document entry
-          const docResult = await createProjectDocumentEntry(
-            { ...configEntry, file },
-            ""  // Always empty folder name for config files
-          );
-          if (docResult) {
-            configEntry.document_id = docResult.document_id;
-            configEntry.version_id = docResult.version_id;
+      // Register files in folders that don't have document_id
+      for (const folder of folders) {
+        for (const file of folder.files) {
+          if (file.path && !file.document_id) {
+            const fileEntry = {
+              id: file.id,
+              name: file.name,
+              file: file.file,
+              path: file.path,
+            };
+            const docResult = await createProjectDocumentEntry(fileEntry, folder.name);
+            if (docResult) {
+              // Update the file with document_id and version_id
+              setFolders((prev) =>
+                prev.map((f) =>
+                  f.id === folder.id
+                    ? {
+                        ...f,
+                        files: f.files.map((fi) =>
+                          fi.id === file.id
+                            ? { ...fi, document_id: docResult.document_id, version_id: docResult.version_id }
+                            : fi
+                        ),
+                      }
+                    : f
+                )
+              );
+            }
           }
         }
       }
 
-      // For global uploads, apply to all folders
-      if (isGlobal) {
-        setConfigFiles((prev) => {
-          const newConfig = { ...prev };
-          // Apply same config to all folders
-          folders.forEach((f) => {
-            newConfig[f.id] = { ...configEntry };
-          });
-          return newConfig;
-        });
-      } else {
-        // For per-folder upload, only apply to specific folder
-        setConfigFiles((prev) => ({
-          ...prev,
-          [folderId]: configEntry,
-        }));
+      // Register config files that don't have document_id
+      // Use ref to get latest state and avoid stale closure issues
+      const currentConfigFiles = configFilesRef.current;
+      for (const [folderId, config] of Object.entries(currentConfigFiles)) {
+        if (config?.path && !config.document_id) {
+          const docResult = await createProjectDocumentEntry(
+            { ...config, file: config.file },
+            "" // Empty folder name for config
+          );
+          if (docResult) {
+            setConfigFiles((prev) => ({
+              ...prev,
+              [folderId]: {
+                ...prev[folderId],
+                document_id: docResult.document_id,
+                version_id: docResult.version_id,
+              },
+            }));
+          }
+        }
       }
+    };
 
-      setSnackData({
-        show: true,
-        message: isGlobal
-          ? "Configuration file uploaded successfully for all folders!"
-          : "Configuration file uploaded successfully!",
-        type: "success",
-      });
-    } catch (err) {
-      console.error("Config upload failed:", err);
-      setSnackData({
-        show: true,
-        message: "Configuration file upload failed!",
-        type: "error",
-      });
-    }
-  }, [createdProjectId, folders, configFiles, createProjectDocumentEntry, userdetails]);
+    registerUnregisteredFiles();
+  }, [createdProjectId]); // Only run when createdProjectId changes
 
   // ---- Navigation ----
   const handleNext = useCallback(async () => {
@@ -665,7 +1260,9 @@ export const ProjectCreationProvider = ({ children }) => {
   // ---- Build config documents array for API ----
   const buildConfigDocumentsArray = useCallback(() => {
     const docs = [];
-    Object.entries(configFiles).forEach(([folderId, configFile]) => {
+    // Use ref to get latest state and avoid stale closure issues
+    const currentConfigFiles = configFilesRef.current;
+    Object.entries(currentConfigFiles).forEach(([folderId, configFile]) => {
       if (configFile && configFile.path) {
         docs.push({
           document_id: configFile.document_id || null,  // Fixed: was always null
@@ -685,7 +1282,7 @@ export const ProjectCreationProvider = ({ children }) => {
       }
     });
     return docs;
-  }, [configFiles]);
+  }, []);
 
   // ---- Helper: Upload files for AI Assessment ----
   const uploadFilesForAIAssessment = useCallback(async () => {
@@ -710,7 +1307,9 @@ export const ProjectCreationProvider = ({ children }) => {
     });
 
     // Add config files
-    Object.entries(configFiles).forEach(([folderId, configFile]) => {
+    // Use ref to get latest state and avoid stale closure issues
+    const currentConfigFiles = configFilesRef.current;
+    Object.entries(currentConfigFiles).forEach(([folderId, configFile]) => {
       if (configFile && configFile.path) {
         files.push({
           path: configFile.path,
@@ -742,7 +1341,7 @@ export const ProjectCreationProvider = ({ children }) => {
       });
       return false;
     }
-  }, [createdProjectId, folders, configFiles]);
+  }, [createdProjectId, folders]);
 
   // ---- Submit: Only run AI Assessment ----
   const handleSubmit = useCallback(
@@ -882,6 +1481,23 @@ export const ProjectCreationProvider = ({ children }) => {
     handleSubmit,
     buildDocumentsArray,
     buildConfigDocumentsArray,
+
+    // Upload modal state
+    uploadModalOpen,
+    setUploadModalOpen,
+    uploadingFile,
+    uploadProgress,
+    uploadSuccess,
+    uploadType,
+
+    // Multiple upload state
+    isUploadingMultiple,
+    multipleUploadProgress,
+    currentFileProgress,
+    currentFileName,
+    uploadedFilesCount,
+    totalFilesCount,
+    uploadingFilesList,
   };
 
   return (

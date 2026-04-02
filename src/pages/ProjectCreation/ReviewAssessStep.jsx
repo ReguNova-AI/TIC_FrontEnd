@@ -10,6 +10,7 @@ import Divider from "@mui/material/Divider";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import FolderOutlinedIcon from "@mui/icons-material/FolderOutlined";
 import InsertDriveFileOutlinedIcon from "@mui/icons-material/InsertDriveFileOutlined";
+import GridOnOutlinedIcon from "@mui/icons-material/GridOnOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { useProjectCreation } from "./ProjectCreationContext";
 
@@ -183,34 +184,99 @@ const ReviewAssessStep = () => {
           </Typography>
         ) : (
           <Box>
-            {folders.map((folder) => (
-              <Box
-                key={folder.id}
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1.5,
-                  py: 1.5,
-                  px: 2,
-                  borderRadius: "6px",
-                  backgroundColor: "#f5f5f5",
-                  mb: 1,
-                }}
-              >
-                <FolderOutlinedIcon
-                  sx={{ color: brand.primary, fontSize: 20 }}
-                />
-                <Typography
-                  variant="body2"
-                  sx={{ flex: 1, fontWeight: 500, color: "#434343" }}
+            {folders.map((folder) => {
+              const config = configFiles[folder.id];
+              const hasConfig = !!config;
+
+              return (
+                <Accordion
+                  key={folder.id}
+                  defaultExpanded={false}
+                  disableGutters
+                  sx={{
+                    mb: 1,
+                    boxShadow: "none",
+                    borderRadius: "6px !important",
+                    border: "1px solid #f0f0f0",
+                    "&::before": { display: "none" },
+                  }}
                 >
-                  {folder.name}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#8c8c8c" }}>
-                  {folder.files.length} file{folder.files.length !== 1 ? "s" : ""}
-                </Typography>
-              </Box>
-            ))}
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    sx={{
+                      minHeight: 44,
+                      "& .MuiAccordionSummary-content": {
+                        alignItems: "center",
+                        gap: 1,
+                        my: 0.5,
+                      },
+                    }}
+                  >
+                    <FolderOutlinedIcon
+                      sx={{ color: brand.primary, fontSize: 20 }}
+                    />
+                    <Typography variant="body2" sx={{ fontWeight: 600, flex: 1 }}>
+                      {folder.name}
+                    </Typography>
+                    {hasConfig && (
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 0.5,
+                          mr: 1,
+                        }}
+                      >
+                        <GridOnOutlinedIcon
+                          sx={{ fontSize: 14, color: brand.primary }}
+                        />
+                        <Typography
+                          variant="caption"
+                          sx={{ color: "#262626", fontWeight: 500 }}
+                        >
+                          {config.name}
+                        </Typography>
+                      </Box>
+                    )}
+                  </AccordionSummary>
+                  <AccordionDetails sx={{ py: 0, px: 2, pb: 1.5 }}>
+                    {hasConfig ? (
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1.5,
+                          py: 0.75,
+                          px: 1,
+                          borderRadius: "4px",
+                          border: "1px solid #f5f5f5",
+                          mb: 0.5,
+                          backgroundColor: "#fafafa",
+                        }}
+                      >
+                        <GridOnOutlinedIcon
+                          sx={{ color: "#52c41a", fontSize: 18 }}
+                        />
+                        <Typography
+                          variant="body2"
+                          sx={{ flex: 1, color: "#434343" }}
+                          noWrap
+                        >
+                          {config.name}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: "#8c8c8c" }}>
+                          Configuration File
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <Typography variant="caption" sx={{ color: "#bfbfbf" }}>
+                        No configuration file for this folder.
+                      </Typography>
+                    )}
+                  </AccordionDetails>
+                </Accordion>
+              );
+            })}
           </Box>
         )}
       </ReviewSection>

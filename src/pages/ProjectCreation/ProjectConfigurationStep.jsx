@@ -1,5 +1,5 @@
 import { brand } from "themes/theme/brand";
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
@@ -10,12 +10,19 @@ import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import GridOnOutlinedIcon from "@mui/icons-material/GridOnOutlined";
 import CloseIcon from "@mui/icons-material/Close";
 import SyncIcon from "@mui/icons-material/Sync";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import Accordion from "@mui/material/Accordion";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import { Modal, message } from "antd";
 import { useProjectCreation } from "./ProjectCreationContext";
 
 const ProjectConfigurationStep = () => {
   const { folders, configFiles, setConfigFileForFolder, removeConfigFileForFolder } = useProjectCreation();
   const fileInputRefs = useRef({});
   const globalFileInputRef = useRef(null);
+  const [expandedFolders, setExpandedFolders] = useState({});
+  const [replacingFolderId, setReplacingFolderId] = useState(null);
 
   // Handle global config upload (applies to all folders)
   const handleGlobalUpload = () => {
@@ -25,29 +32,68 @@ const ProjectConfigurationStep = () => {
   const onGlobalFileChange = (e) => {
     const file = e.target.files?.[0];
     if (file && folders.length > 0) {
-      // Upload as global config (no specific folder)
-      setConfigFileForFolder(null, file, true);
+      // Check if any folder already has a config file
+      const hasExistingConfig = folders.some(folder => configFiles[folder.id]);
+      // Upload as global config with delete flag if config exists
+      setConfigFileForFolder(null, file, true, hasExistingConfig);
     }
     e.target.value = "";
   };
 
   // Handle per-folder config upload
   const handleFolderUpload = (folderId) => {
+    setReplacingFolderId(null);
+    fileInputRefs.current[folderId]?.click();
+  };
+
+  // Handle replace config - deletes existing first then uploads new
+  const handleReplaceConfig = (folderId) => {
+    console.log("[DEBUG] handleReplaceConfig called with folderId:", folderId);
+    setReplacingFolderId(folderId);
     fileInputRefs.current[folderId]?.click();
   };
 
   const onFolderFileChange = (folderId) => (e) => {
     const file = e.target.files?.[0];
+    console.log("[DEBUG] onFolderFileChange - folderId:", folderId, "replacingFolderId:", replacingFolderId);
     if (file) {
       // Upload for specific folder
-      setConfigFileForFolder(folderId, file, false);
+      // If this folder was in replace mode, delete existing config first
+      const isReplace = replacingFolderId === folderId;
+      console.log("[DEBUG] isReplace:", isReplace);
+      setConfigFileForFolder(folderId, file, false, isReplace);
     }
+    // Reset replacing state
+    setReplacingFolderId(null);
     e.target.value = "";
   };
 
-  // Handle delete config for a folder
-  const handleDeleteConfig = (folderId) => {
-    removeConfigFileForFolder(folderId);
+  // Handle delete config with confirmation modal
+  const handleDeleteConfig = (folderId, configName) => {
+    Modal.confirm({
+      title: "Delete Configuration",
+      content: `Are you sure you want to delete "${configName}"? This action cannot be undone.`,
+      okText: "Delete",
+      okType: "danger",
+      cancelText: "Cancel",
+      onOk: async () => {
+        try {
+          await removeConfigFileForFolder(folderId);
+          message.success("Configuration deleted successfully!");
+        } catch (error) {
+          console.error("Delete failed:", error);
+          message.error("Failed to delete configuration!");
+        }
+      },
+    });
+  };
+
+  // Toggle folder expansion
+  const toggleFolderExpand = (folderId) => {
+    setExpandedFolders((prev) => ({
+      ...prev,
+      [folderId]: !prev[folderId],
+    }));
   };
 
   // Download template
@@ -104,7 +150,7 @@ const ProjectConfigurationStep = () => {
         </Button>
       </Box>
 
-      {/* ---- Folder list (simple rows per mockup UL6) ---- */}
+      {/* ---- Folder list with accordion ---- */}
       {folders.length === 0 ? (
         <Box
           sx={{
@@ -120,44 +166,50 @@ const ProjectConfigurationStep = () => {
         </Box>
       ) : (
         <Box>
-          {folders.map((folder, index) => {
+          {folders.map((folder) => {
             const config = configFiles[folder.id];
             const hasConfig = !!config;
+            const isExpanded = expandedFolders[folder.id];
 
             return (
-              <Box
+              <Accordion
                 key={folder.id}
+                expanded={isExpanded}
+                onChange={() => toggleFolderExpand(folder.id)}
+                disableGutters
                 sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  px: 2.5,
-                  py: 1.5,
-                  borderRadius: "6px",
-                  border: "1px solid #f0f0f0",
-                  mb: 1.5,
-                  backgroundColor: "#fafafa",
-                  "&:hover": { backgroundColor: "#f5f5f5" },
-                  transition: "background-color 0.15s",
+                  mb: 2,
+                  borderRadius: "8px !important",
+                  border: "1px solid #e8e8e8",
+                  "&::before": { display: "none" },
+                  boxShadow: "none",
+                  overflow: "hidden",
                 }}
               >
-                {/* Folder icon + name */}
-                <FolderOutlinedIcon sx={{ color: brand.primary, mr: 1.5 }} />
-                <Typography variant="body2" sx={{ fontWeight: 600, flex: 1 }}>
-                  {folder.name}
-                </Typography>
-
-                {/* File count */}
-                <Typography
-                  variant="body2"
-                  sx={{ color: "#8c8c8c", mr: 3 }}
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  sx={{
+                    backgroundColor: "#fafafa",
+                    px: 2,
+                    "& .MuiAccordionSummary-content": {
+                      alignItems: "center",
+                      gap: 1,
+                    },
+                  }}
                 >
-                  {folder.files.length} file{folder.files.length !== 1 ? "s" : ""}
-                </Typography>
+                  <FolderOutlinedIcon sx={{ color: brand.primary, mr: 1 }} />
+                  <Typography sx={{ fontWeight: 600, flex: 1, color: "#262626" }}>
+                    {folder.name}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: "#8c8c8c", mr: 2 }}
+                  >
+                    {folder.files.length} file{folder.files.length !== 1 ? "s" : ""}
+                  </Typography>
 
-                {/* Config file display or Upload button */}
-                {hasConfig ? (
-                  <>
-                    {/* Config file name with grid icon */}
+                  {/* Config file indicator (summary view) */}
+                  {hasConfig && (
                     <Box
                       sx={{
                         display: "flex",
@@ -167,70 +219,110 @@ const ProjectConfigurationStep = () => {
                       }}
                     >
                       <GridOnOutlinedIcon
-                        sx={{ fontSize: 18, color: brand.primary }}
+                        sx={{ fontSize: 16, color: brand.primary }}
                       />
                       <Typography
-                        variant="body2"
+                        variant="caption"
                         sx={{ color: "#262626", fontWeight: 500 }}
                       >
                         {config.name}
                       </Typography>
                     </Box>
+                  )}
+                </AccordionSummary>
 
-                    {/* Replace button */}
-                    <Button
-                      size="small"
-                      variant="text"
-                      startIcon={<SyncIcon sx={{ fontSize: 16 }} />}
-                      onClick={() => handleFolderUpload(folder.id)}
-                      sx={{
-                        textTransform: "none",
-                        color: brand.primary,
-                        fontWeight: 500,
-                        mr: 1,
-                        "&:hover": { backgroundColor: "rgba(91,4,41,0.04)" },
-                      }}
-                    >
-                      Replace
-                    </Button>
-
-                    {/* Delete button */}
-                    <IconButton
-                      size="small"
-                      onClick={() => handleDeleteConfig(folder.id)}
-                      sx={{
-                        color: "#8c8c8c",
-                        "&:hover": { color: "#ff4d4f", backgroundColor: "rgba(255,77,79,0.04)" },
-                      }}
-                    >
-                      <CloseIcon sx={{ fontSize: 18 }} />
-                    </IconButton>
-                  </>
-                ) : (
-                  /* Upload for this folder button */
-                  <Button
-                    size="small"
-                    variant="text"
-                    startIcon={<UploadFileOutlinedIcon sx={{ fontSize: 18 }} />}
-                    onClick={() => handleFolderUpload(folder.id)}
+                <AccordionDetails sx={{ p: 2 }}>
+                  {/* Config file section */}
+                  <Box
                     sx={{
-                      textTransform: "none",
-                      color: brand.primary,
-                      fontWeight: 500,
-                      "&:hover": { backgroundColor: "rgba(91,4,41,0.04)" },
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      pt: 2,
+                      borderTop: "1px solid #f0f0f0",
                     }}
                   >
-                    Upload for this folder
-                  </Button>
-                )}
-                <input
-                  ref={(el) => (fileInputRefs.current[folder.id] = el)}
-                  type="file"
-                  hidden
-                  accept=".xlsx,.csv,.xls"
-                  onChange={onFolderFileChange(folder.id)}
-                />
-              </Box>
+                    <Typography
+                      variant="body2"
+                      sx={{ fontWeight: 600, color: "#262626" }}
+                    >
+                      Configuration File:
+                    </Typography>
+
+                    {hasConfig ? (
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 0.5,
+                          }}
+                        >
+                          <GridOnOutlinedIcon
+                            sx={{ fontSize: 18, color: brand.primary }}
+                          />
+                          <Typography
+                            variant="body2"
+                            sx={{ color: "#262626", fontWeight: 500 }}
+                          >
+                            {config.name}
+                          </Typography>
+                        </Box>
+
+                        <Button
+                          size="small"
+                          variant="text"
+                          startIcon={<SyncIcon sx={{ fontSize: 16 }} />}
+                          onClick={() => handleReplaceConfig(folder.id)}
+                          sx={{
+                            textTransform: "none",
+                            color: brand.primary,
+                            fontWeight: 500,
+                            ml: 2,
+                            "&:hover": { backgroundColor: "rgba(91,4,41,0.04)" },
+                          }}
+                        >
+                          Replace
+                        </Button>
+
+                        <IconButton
+                          size="small"
+                          onClick={() => handleDeleteConfig(folder.id, config.name)}
+                          sx={{
+                            color: "#8c8c8c",
+                            "&:hover": { color: "#ff4d4f", backgroundColor: "rgba(255,77,79,0.04)" },
+                          }}
+                        >
+                          <CloseIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                      </Box>
+                    ) : (
+                      <Button
+                        size="small"
+                        variant="text"
+                        startIcon={<UploadFileOutlinedIcon sx={{ fontSize: 18 }} />}
+                        onClick={() => handleFolderUpload(folder.id)}
+                        sx={{
+                          textTransform: "none",
+                          color: brand.primary,
+                          fontWeight: 500,
+                          "&:hover": { backgroundColor: "rgba(91,4,41,0.04)" },
+                        }}
+                      >
+                        Upload for this folder
+                      </Button>
+                    )}
+                  </Box>
+
+                  <input
+                    ref={(el) => (fileInputRefs.current[folder.id] = el)}
+                    type="file"
+                    hidden
+                    accept=".xlsx,.csv,.xls"
+                    onChange={onFolderFileChange(folder.id)}
+                  />
+                </AccordionDetails>
+              </Accordion>
             );
           })}
         </Box>
