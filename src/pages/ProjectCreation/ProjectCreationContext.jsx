@@ -512,10 +512,6 @@ export const ProjectCreationProvider = ({ children }) => {
   const setConfigFileForFolder = useCallback(async (folderId, file, isGlobal = false) => {
     if (!file) return;
     try {
-      // Get folder name only for per-folder uploads
-      const folder = isGlobal ? null : folders.find((f) => f.id === folderId);
-      const folderName = folder?.name || "";
-
       const reader = new FileReader();
       const fileDataUrl = await new Promise((resolve, reject) => {
         reader.onloadend = () => resolve(reader.result);
@@ -527,7 +523,7 @@ export const ProjectCreationProvider = ({ children }) => {
       const payload = {
         documents: [fileDataUrl],
         type: ext,
-        folder_name: isGlobal ? "" : folderName,  // Empty for global, folder name for specific
+        folder_name: "",  // Always empty for config files
         isConfig: true,
         project_id: createdProjectId,
       };
@@ -576,7 +572,7 @@ export const ProjectCreationProvider = ({ children }) => {
           // Create new document entry
           const docResult = await createProjectDocumentEntry(
             { ...configEntry, file },
-            isGlobal ? "" : folderName
+            ""  // Always empty folder name for config files
           );
           if (docResult) {
             configEntry.document_id = docResult.document_id;
@@ -671,14 +667,13 @@ export const ProjectCreationProvider = ({ children }) => {
     const docs = [];
     Object.entries(configFiles).forEach(([folderId, configFile]) => {
       if (configFile && configFile.path) {
-        const folder = folders.find((f) => f.id === parseInt(folderId));
         docs.push({
           document_id: configFile.document_id || null,  // Fixed: was always null
           version: configFile.version_id || "V1",       // Fixed: use version_id
           docuemnt_name: configFile.name,
           docuemnt_type: "Configuration Document",
           docuemnt_desc: "",
-          folder_name: folder?.name || "",
+          folder_name: "",  // Always empty for config files
           path: configFile.path,
           relativePath: configFile.name,
           name: configFile.name,
@@ -690,7 +685,7 @@ export const ProjectCreationProvider = ({ children }) => {
       }
     });
     return docs;
-  }, [configFiles, folders]);
+  }, [configFiles]);
 
   // ---- Helper: Upload files for AI Assessment ----
   const uploadFilesForAIAssessment = useCallback(async () => {
@@ -794,9 +789,6 @@ export const ProjectCreationProvider = ({ children }) => {
         // ---- Trigger Risk Assessment ----
         startRiskSummaryProcessing(createdProjectId, projectName).catch(err => {
           console.error("Failed to start risk summary processing in global context:", err);
-        });
-        ProjectApiService.regenerateRiskSummary(createdProjectId).catch(err => {
-          console.error("Failed to trigger regenerateRiskSummary API:", err);
         });
 
         navigate(`/projectView/${createdProjectId}`, {
