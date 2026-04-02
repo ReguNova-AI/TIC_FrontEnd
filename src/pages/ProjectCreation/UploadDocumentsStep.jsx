@@ -4,6 +4,7 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import IconButton from "@mui/material/IconButton";
+import Chip from "@mui/material/Chip";
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
@@ -16,7 +17,9 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import CloudUploadOutlinedIcon from "@mui/icons-material/CloudUploadOutlined";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
+import GridOnOutlinedIcon from "@mui/icons-material/GridOnOutlined";
 import { useDropzone } from "react-dropzone";
+import { Modal, message } from "antd";
 import { brand } from "themes/theme/brand";
 import { useProjectCreation } from "./ProjectCreationContext";
 
@@ -29,10 +32,18 @@ const formatFileSize = (bytes) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 };
 
+// ---- Check if file is an Excel/Config file ----
+const isExcelFile = (filename) => {
+  if (!filename) return false;
+  const ext = filename.split(".").pop().toLowerCase();
+  return ["xlsx", "xls", "csv"].includes(ext);
+};
+
 // ---- DropZone per-folder (matches mockup: cloud icon left, text+browse right) ----
 const FolderDropZone = ({ folderId, onFilesAdded }) => {
   const onDrop = useCallback(
     (acceptedFiles) => {
+      // Accept all files including Excel files - they will be shown in uploaded files section
       if (acceptedFiles.length > 0) {
         onFilesAdded(folderId, acceptedFiles);
       }
@@ -45,6 +56,15 @@ const FolderDropZone = ({ folderId, onFilesAdded }) => {
     multiple: true,
     noClick: true,
     noKeyboard: true,
+    accept: {
+      'application/pdf': ['.pdf'],
+      'application/msword': ['.doc'],
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+      'text/plain': ['.txt'],
+      'application/vnd.ms-excel': ['.xls'],
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+      'text/csv': ['.csv'],
+    },
   });
 
   return (
@@ -91,7 +111,7 @@ const FolderDropZone = ({ folderId, onFilesAdded }) => {
           Click to upload or drag and drop files here
         </Typography>
         <Typography variant="body2" sx={{ color: "#8c8c8c", mb: 1.5 }}>
-          Supported file formats: PDF, DOCX
+          Supported file formats: PDF, DOCX, DOC, TXT, XLSX, XLS, CSV
         </Typography>
         <Button
           variant="outlined"
@@ -137,9 +157,13 @@ const UploadDocumentsStep = () => {
   const [expandedFolders, setExpandedFolders] = useState({});
   const nameInputRef = useRef(null);
 
-  // Auto-create "Folder 1" by default when component mounts
+  // Auto-create "Folder 1" by default when component mounts (only for new projects)
   useEffect(() => {
-    if (folders.length === 0) {
+    // Only auto-create folder if this is a brand new project (no projectId in URL)
+    const urlParams = new URLSearchParams(window.location.search);
+    const projectIdFromUrl = urlParams.get("projectId");
+
+    if (!projectIdFromUrl && folders.length === 0) {
       const folder = addFolder("Folder 1");
       setExpandedFolders({ [folder.id]: true });
     }
@@ -158,6 +182,26 @@ const UploadDocumentsStep = () => {
   const handleCancelCreate = () => {
     setNewFolderName("");
     setIsCreatingFolder(false);
+  };
+
+  // ---- Delete file with confirmation ----
+  const handleDeleteFile = (folderId, file) => {
+    Modal.confirm({
+      title: "Delete Document",
+      content: `Are you sure you want to delete "${file.name}"? This action cannot be undone.`,
+      okText: "Delete",
+      okType: "danger",
+      cancelText: "Cancel",
+      onOk: async () => {
+        try {
+          await removeFileFromFolder(folderId, file.id);
+          message.success("Document deleted successfully!");
+        } catch (error) {
+          console.error("Delete failed:", error);
+          message.error("Failed to delete document!");
+        }
+      },
+    });
   };
 
   // ---- Rename ----
@@ -365,6 +409,7 @@ const UploadDocumentsStep = () => {
                 <Typography sx={{ fontWeight: 600, flex: 1, color: "#262626" }}>
                   {folder.name}
                 </Typography>
+                {/* Count all files including Excel files */}
                 {folder.files.length > 0 && (
                   <Typography
                     variant="caption"
@@ -393,51 +438,75 @@ const UploadDocumentsStep = () => {
               onFilesAdded={addFilesToFolder}
             />
 
-            {/* File list */}
+            {/* File list - show all files including Excel files */}
             {folder.files.length > 0 && (
               <Box sx={{ mt: 2 }}>
                 {folder.files.map((f) => (
-                  <Box
-                    key={f.id}
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1.5,
-                      py: 1,
-                      px: 1.5,
-                      borderRadius: "6px",
-                      border: "1px solid #f0f0f0",
-                      mb: 1,
-                      "&:hover": { backgroundColor: "#fafafa" },
-                    }}
-                  >
-                    <InsertDriveFileOutlinedIcon
-                      sx={{ color: brand.primary, fontSize: 20 }}
-                    />
-                    <Typography
-                      variant="body2"
-                      sx={{ flex: 1, color: "#434343" }}
-                      noWrap
+                    <Box
+                      key={f.id}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1.5,
+                        py: 1,
+                        px: 1.5,
+                        borderRadius: "6px",
+                        border: "1px solid #f0f0f0",
+                        mb: 1,
+                        "&:hover": { backgroundColor: "#fafafa" },
+                      }}
                     >
-                      {f.name}
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      sx={{ color: "#8c8c8c", minWidth: 70, textAlign: "right" }}
-                    >
-                      {formatFileSize(f.size)}
-                    </Typography>
-                    <IconButton
-                      size="small"
-                      onClick={() => removeFileFromFolder(folder.id, f.id)}
-                    >
-                      <DeleteOutlineIcon
-                        fontSize="small"
-                        sx={{ color: "#ff4d4f" }}
-                      />
-                    </IconButton>
-                  </Box>
-                ))}
+                      {isExcelFile(f.name) ? (
+                        <GridOnOutlinedIcon
+                          sx={{ color: "#52c41a", fontSize: 20 }}
+                        />
+                      ) : (
+                        <InsertDriveFileOutlinedIcon
+                          sx={{ color: brand.primary, fontSize: 20 }}
+                        />
+                      )}
+                      <Typography
+                        variant="body2"
+                        sx={{ flex: 1, color: "#434343" }}
+                        noWrap
+                      >
+                        {f.name}
+                      </Typography>
+                      {isExcelFile(f.name) && (
+                        <Chip
+                          icon={<GridOnOutlinedIcon sx={{ fontSize: 14 }} />}
+                          label="Config"
+                          size="small"
+                          sx={{
+                            height: 20,
+                            fontSize: 11,
+                            backgroundColor: "rgba(91,4,41,0.08)",
+                            color: brand.primary,
+                            fontWeight: 500,
+                            mr: 1,
+                            "& .MuiChip-icon": {
+                              color: brand.primary,
+                            },
+                          }}
+                        />
+                      )}
+                      <Typography
+                        variant="caption"
+                        sx={{ color: "#8c8c8c", minWidth: 70, textAlign: "right" }}
+                      >
+                        {formatFileSize(f.size)}
+                      </Typography>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleDeleteFile(folder.id, f)}
+                      >
+                        <DeleteOutlineIcon
+                          fontSize="small"
+                          sx={{ color: "#ff4d4f" }}
+                        />
+                      </IconButton>
+                    </Box>
+                  ))}
               </Box>
             )}
           </AccordionDetails>
