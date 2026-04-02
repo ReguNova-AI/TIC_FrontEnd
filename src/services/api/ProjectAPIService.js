@@ -218,7 +218,7 @@ const _externalProjectListing = () => {
 };
 
 const _uploadFilesToAIserver = (payload) => {
-  return BaseApiService.post(`/api/v1/org/projects/counts?`, null, payload);
+  return BaseApiService.post(`/api/v3/run-assessment`, null, payload);
 };
 
 const _downloadRiskSummary = (projectId) => {
