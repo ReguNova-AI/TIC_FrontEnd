@@ -48,19 +48,16 @@ const ProjectConfigurationStep = () => {
 
   // Handle replace config - deletes existing first then uploads new
   const handleReplaceConfig = (folderId) => {
-    console.log("[DEBUG] handleReplaceConfig called with folderId:", folderId);
     setReplacingFolderId(folderId);
     fileInputRefs.current[folderId]?.click();
   };
 
   const onFolderFileChange = (folderId) => (e) => {
     const file = e.target.files?.[0];
-    console.log("[DEBUG] onFolderFileChange - folderId:", folderId, "replacingFolderId:", replacingFolderId);
     if (file) {
       // Upload for specific folder
       // If this folder was in replace mode, delete existing config first
       const isReplace = replacingFolderId === folderId;
-      console.log("[DEBUG] isReplace:", isReplace);
       setConfigFileForFolder(folderId, file, false, isReplace);
     }
     // Reset replacing state

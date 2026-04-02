@@ -215,7 +215,6 @@ export const ProjectCreationProvider = ({ children }) => {
                 if (sortedConfigDocs.length > 0) {
                   // Take only the FIRST config file from API (as per user requirement)
                   const firstConfigDoc = sortedConfigDocs[0];
-                  console.log("[DEBUG] Loading config from API:", firstConfigDoc);
 
                   // Apply the first config to ALL folders (global config behavior)
                   // This ensures only ONE config file is shown across all folders
@@ -228,7 +227,6 @@ export const ProjectCreationProvider = ({ children }) => {
                       version_id: firstConfigDoc.version_id,
                     };
                   });
-                  console.log("[DEBUG] Config loaded with document_id:", firstConfigDoc.document_id, "version_id:", firstConfigDoc.version_id);
                 }
 
                 // Set config files
@@ -593,7 +591,6 @@ export const ProjectCreationProvider = ({ children }) => {
   };
 
   const setConfigFileForFolder = useCallback(async (folderId, file, isGlobal = false, shouldDeleteExisting = false) => {
-    console.log("[Replace] setConfigFileForFolder called - folderId:", folderId, "shouldDeleteExisting:", shouldDeleteExisting);
     if (!file) return;
 
     // Handle array of files (multiple config upload)
@@ -605,25 +602,19 @@ export const ProjectCreationProvider = ({ children }) => {
     // If replace mode (shouldDeleteExisting), delete existing config first
     // Use ref to get latest state and avoid stale closure issues
     const currentConfigFiles = configFilesRef.current;
-    console.log("[DEBUG] setConfigFileForFolder - shouldDeleteExisting:", shouldDeleteExisting, "folderId:", folderId, "isGlobal:", isGlobal);
-    console.log("[DEBUG] currentConfigFiles:", currentConfigFiles);
 
     if (shouldDeleteExisting) {
       if (isGlobal) {
         // Global upload: delete ALL existing config files across all folders
-        console.log("[DEBUG] Global upload with shouldDeleteExisting - deleting all configs");
         for (const [fid, existingConfig] of Object.entries(currentConfigFiles)) {
           if (existingConfig) {
             try {
               if (existingConfig.document_id && existingConfig.version_id) {
-                console.log("[DEBUG] Global delete - calling deleteProjectDocument with:", existingConfig.document_id, existingConfig.version_id);
                 await ProjectApiService.deleteProjectDocument(
                   existingConfig.document_id,
                   existingConfig.version_id
                 );
-                console.log("[DEBUG] Global delete - deleteProjectDocument succeeded for folder:", fid);
               } else {
-                console.log("[DEBUG] Global delete - No document_id or version_id for folder:", fid);
               }
             } catch (error) {
               console.error("[DEBUG] Global delete - Failed to delete config for folder:", fid, error);
@@ -635,19 +626,16 @@ export const ProjectCreationProvider = ({ children }) => {
       } else if (folderId) {
         // Per-folder upload: delete only this folder's config
         const existingConfig = currentConfigFiles[folderId];
-        console.log("[DEBUG] existingConfig for folder:", existingConfig);
         if (existingConfig) {
           try {
             // Delete from server using document delete API (not S3 delete)
             if (existingConfig.document_id && existingConfig.version_id) {
-              console.log("[DEBUG] Calling deleteProjectDocument with:", existingConfig.document_id, existingConfig.version_id);
               await ProjectApiService.deleteProjectDocument(
                 existingConfig.document_id,
                 existingConfig.version_id
               );
-              console.log("[DEBUG] deleteProjectDocument succeeded");
             } else {
-              console.log("[DEBUG] No document_id or version_id, cannot delete - config:", existingConfig);
+              console.info("[DEBUG] No document_id or version_id, cannot delete - config:", existingConfig);
             }
             // Remove from state
             setConfigFiles((prev) => {
@@ -660,11 +648,10 @@ export const ProjectCreationProvider = ({ children }) => {
             // Continue with upload even if delete fails
           }
         } else {
-          console.log("[DEBUG] No existing config found for folderId:", folderId);
+          console.info("[DEBUG] No existing config found for folderId:", folderId);
         }
       }
     } else {
-      console.log("[DEBUG] Skipping delete - shouldDeleteExisting:", shouldDeleteExisting);
     }
 
     try {
