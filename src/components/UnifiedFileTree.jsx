@@ -4,6 +4,7 @@ import { Tooltip, Button, Progress, Popconfirm } from "antd";
 import { 
     FolderOpen,
     Folder,
+    FilePlus,
     ChevronDown, 
     ChevronUp,
     X, 
@@ -207,7 +208,23 @@ function FolderRow({ folder, expanded, onToggle, onAddFolderFile, onDeleteFolder
                 </Box>
 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-
+                    {!readOnly && onAddFolderFile && expanded && (
+                        <Tooltip title="Add file to this folder">
+                            <Box 
+                                onClick={(e) => { e.stopPropagation(); onAddFolderFile(folderName); }}
+                                sx={{ 
+                                    p: 0.5, 
+                                    cursor: 'pointer',
+                                    borderRadius: '4px', 
+                                    '&:hover': { bgcolor: 'rgba(91,4,41,0.05)' },
+                                    display: 'flex',
+                                    alignItems: 'center'
+                                }}
+                            >
+                                <FilePlus size={16} color="#5B0429" />
+                            </Box>
+                        </Tooltip>
+                    )}
                     {expanded
                         ? <ChevronUp size={16} color="#aaa" />
                         : <ChevronDown size={16} color="#aaa" />
@@ -219,10 +236,44 @@ function FolderRow({ folder, expanded, onToggle, onAddFolderFile, onDeleteFolder
             {expanded && (
                 <Box sx={{ p: 2, bgcolor: '#fff', borderTop: '1px solid #e4e4e4' }}>
                     {children.length === 0 ? (
-                        <Box sx={{ px: 2, py: 1.5, textAlign: 'center', border: '1px dashed #e4e4e4', borderRadius: '4px', bgcolor: '#fafafa' }}>
-                            <Typography sx={{ fontSize: '13px', color: '#bbb', fontStyle: 'italic' }}>
-                                Folder is empty. Click "Add file" to upload.
+                        <Box 
+                            sx={{ 
+                                px: 2, 
+                                py: 2.5, 
+                                textAlign: 'center', 
+                                border: '1px dashed #e4e4e4', 
+                                borderRadius: '4px', 
+                                bgcolor: '#fafafa',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                gap: 1.5
+                            }}
+                        >
+                            <Typography sx={{ fontSize: '13px', color: '#888', fontStyle: 'italic' }}>
+                                This folder is empty.
                             </Typography>
+                            {!readOnly && onAddFolderFile && (
+                                <Button
+                                    variant="outlined"
+                                    size="small"
+                                    startIcon={<Upload size={14} />}
+                                    onClick={() => onAddFolderFile(folderName)}
+                                    sx={{
+                                        textTransform: 'none',
+                                        fontSize: '12px',
+                                        borderRadius: '20px',
+                                        color: '#5B0429',
+                                        borderColor: '#5B0429',
+                                        '&:hover': {
+                                            bgcolor: 'rgba(91,4,41,0.05)',
+                                            borderColor: '#4a0322'
+                                        }
+                                    }}
+                                >
+                                    Add file to this folder
+                                </Button>
+                            )}
                         </Box>
                     ) : (
                         children.map((child) => (

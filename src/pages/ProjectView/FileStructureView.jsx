@@ -47,6 +47,7 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading, disable
 
   // New folder and file creation states (Remove gData usage references eventually)
   const [addingFileToFolder, setAddingFileToFolder] = useState(null); // Track which folder is getting a new file
+  const [targetUploadFolder, setTargetUploadFolder] = useState(null); // Track folder for direct uploads
 
   // --- Upload modal state
   const [uploadingFile, setUploadingFile] = useState(null);
@@ -141,7 +142,7 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading, disable
   // --- File Upload logic
   // CHANGED: added optional `silent` and `onProgress` params.
   // Existing single-file callers pass nothing — behaviour is identical for them.
-  const handleFileUpload = async (file, silent = false, onProgress = null) => {
+  const handleFileUpload = async (file, silent = false, onProgress = null, isConfig = false, folderName = "") => {
     if (!file) return;
 
     if (!silent) {
@@ -162,8 +163,10 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading, disable
       const ext = file.name.split(".").pop();
       const payload = {
         documents: [fileDataUrl],
-        type: ext,
+        folder_name: folderName || "",
+        isConfig: isConfig,
         project_id: data.project_id,
+        type: ext,
       };
 
       // CHANGED: pass onUploadProgress via otherConfig (4th arg) so axios fires progress events.
@@ -263,48 +266,44 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading, disable
   };
 
   // Handle multiple file uploads
-  const handleMultipleFileUpload = async (files) => {
+  const handleMultipleFileUpload = async (files, folderName = "") => {
     if (!files || files.length === 0) return;
 
     setIsUploadingMultiple(true);
     setMultipleUploadProgress(0);
-    setCurrentFileProgress(0); // NEW
-    setCurrentFileName(""); // NEW
+    setCurrentFileProgress(0); 
+    setCurrentFileName(""); 
     setUploadedFilesCount(0);
     setTotalFilesCount(files.length);
     setOpenModal(true);
 
+    const uploadResults = [];
     let successfulUploads = 0;
     let failedUploads = 0;
-    const uploadResults = [];
 
     try {
-      // Process files sequentially to avoid overwhelming the server
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-
-        // NEW: update which file is currently uploading and reset its progress bar
         setCurrentFileName(file.name);
         setCurrentFileProgress(0);
 
         try {
-          console.log(`Uploading file ${i + 1}/${files.length}: ${file.name}`);
-
-          // CHANGED: silent=true (don't touch single-file modal state),
-          // onProgress callback drives the per-file progress bar in real time
-          const uploadedPath = await handleFileUpload(file, true, (pct) =>
-            setCurrentFileProgress(pct),
+          const uploadedPath = await handleFileUpload(
+            file, 
+            true, 
+            (pct) => setCurrentFileProgress(pct),
+            false,
+            folderName || ""
           );
 
           if (uploadedPath) {
-            // Create document record
             const documentData = {
               document_name: file.name,
-              document_type: file.type || "application/octet-stream",
+              document_type: "Project Document", 
               file_path: uploadedPath,
+              folder_name: folderName || "null",
             };
 
-            // CHANGED: silent=true so handleUploadDocument doesn't close the modal mid-batch
             await handleUploadDocument(documentData, true);
 
             successfulUploads++;
@@ -334,6 +333,9 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading, disable
         setUploadedFilesCount(i + 1);
         setMultipleUploadProgress(currentProgress);
       }
+      
+      // Reset target folder after batch is done
+      setTargetUploadFolder(null);
 
       // Show completion message
       if (successfulUploads === files.length) {
@@ -446,7 +448,8 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading, disable
     console.log("Selected document:", document);
     try {
       // Wait for upload to finish and get the path
-      const uploadedPath = await handleFileUpload(file);
+      // isConfig=false, folderName from document
+      const uploadedPath = await handleFileUpload(file, false, null, false, document?.folder_name);
       console.log("Uploaded document:", document);
       if (uploadedPath) {
         handleUploadDocument({
@@ -460,7 +463,9 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading, disable
   };
 
   const combinedDocuments = useMemo(() => {
-    const apiDocs = data?.project_documents || [];
+    const apiDocs = (data?.project_documents || []).filter(
+      (doc) => doc.document_type !== "Configuration Document"
+    );
     return [...apiDocs, ...localFolders];
   }, [data, localFolders]);
 
@@ -534,7 +539,8 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading, disable
     try {
       // Correcting flow for file upload case:
       if (file) {
-        const uploadedPath = await handleFileUpload(file);
+        // isConfig=false, folderName from payload
+        const uploadedPath = await handleFileUpload(file, false, null, false, payload.folder_name);
         if (uploadedPath) {
           payload.file_path = uploadedPath;
           // Now create
@@ -701,7 +707,10 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading, disable
         expandedKeys={expandedKeys}
         onExpand={setExpandedKeys}
         onAddFolderFile={(folderName) => {
-          setAddingFileToFolder(folderName);
+          setTargetUploadFolder(folderName);
+          if (fileInputRef.current) {
+            fileInputRef.current.click();
+          }
         }}
         onDeleteFile={(doc) => handleDeleteDocument(doc)}
         onDeleteFolder={null}
@@ -719,8 +728,7 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading, disable
           console.log("File input changed, files:", e.target.files);
           const files = Array.from(e.target.files);
           if (files.length > 0) {
-            console.log("Selected files:", files);
-            handleMultipleFileUpload(files);
+            handleMultipleFileUpload(files, targetUploadFolder);
           }
           e.target.value = "";
         }}

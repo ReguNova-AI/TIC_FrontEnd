@@ -150,6 +150,7 @@ const ProjectView = () => {
   // Extracted data from React Query
   const projectData = useMemo(() => projectQueryData?.project || {}, [projectQueryData?.project]);
   const historyData = projectQueryData?.history || [];
+  const hasDocuments = (projectData?.project_documents?.length > 0);
 
   // Custom hooks
   const {
@@ -350,8 +351,8 @@ const ProjectView = () => {
   };
 
   const handleChange = (event, newValue) => {
-    // If not completed and not currently processing, prevent navigation to report/chat tabs
-    if (!isCompleted && !isAIAssessmentLoading && newValue > 0) {
+    // If not completed, not currently processing, and no historical success, prevent navigation to report/chat tabs
+    if (!(projectData?.success_count > 0 || isCompleted || isAIAssessmentLoading) && newValue > 0) {
       return;
     }
     // Mark this tab as visited so it renders for the first time
@@ -530,10 +531,13 @@ const ProjectView = () => {
                 fontWeight: 600,
                 fontSize: '14px',
                 pointerEvents: isAIAssessmentLoading ? 'none' : 'auto',
-                boxShadow: 'none'
+                boxShadow: 'none',
+                cursor: 'pointer'
               }}
             >
-              {isAIAssessmentLoading ? "Running assessment" : "Re-Run AI Assessment"}
+              {isAIAssessmentLoading 
+                ? "Running assessment" 
+                : (projectData?.success_count > 0 ? "Re-Run AI Assessment" : "Run AI Assessment")}
             </Button>
           </Box>
         </Box>
@@ -572,7 +576,7 @@ const ProjectView = () => {
               <Tab
                 label="Project Report"
                 {...a11yProps(1)}
-                disabled={!isCompleted && !isAIAssessmentLoading}
+                disabled={!(projectData?.success_count > 0 || isCompleted || isAIAssessmentLoading)}
                 sx={{
                   '&.Mui-disabled': { color: '#ccc', opacity: 0.6 }
                 }}
@@ -580,7 +584,7 @@ const ProjectView = () => {
               <Tab
                 label="Chat AI"
                 {...a11yProps(2)}
-                disabled={!isCompleted && !isAIAssessmentLoading}
+                disabled={!(projectData?.success_count > 0 || isCompleted || isAIAssessmentLoading)}
                 sx={{
                   '&.Mui-disabled': { color: '#ccc', opacity: 0.6 }
                 }}
@@ -601,6 +605,7 @@ const ProjectView = () => {
                 aiButtonLoading={isAIAssessmentLoading}
                 isCompleted={isCompleted}
                 onFileUploadSuccess={refetchProjectData}
+                updateProjectDetails={updateProjectDetails}
               />
             </CustomTabPanel>
 

@@ -254,12 +254,12 @@ export const DataQueryProvider = ({ children }) => {
       });
 
       // Send processing notification (fire and forget)
-      sendNotification(
+      /* sendNotification(
         'Data Extraction Started',
         `Data extraction is now running for project: ${projectName}`,
         'info',
         projectId
-      ).catch(console.error);
+      ).catch(console.error); */
 
       // Show processing message
       message.loading({
@@ -300,12 +300,12 @@ export const DataQueryProvider = ({ children }) => {
       const notificationTitle = success ? 'Data Extraction Completed' : 'Data Extraction Failed';
       const notificationType = success ? 'success' : 'error';
       
-      sendNotification(
+      /* sendNotification(
         notificationTitle,
         `Data extraction has been ${success ? 'completed' : 'failed'} for project: ${projectName}`,
         notificationType,
         projectId
-      ).catch(console.error);
+      ).catch(console.error); */
 
       // Show completion message
       message[notificationType]({

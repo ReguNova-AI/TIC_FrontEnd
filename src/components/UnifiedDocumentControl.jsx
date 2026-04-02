@@ -24,7 +24,8 @@ import {
     ChevronDown, 
     FileSpreadsheet, 
     Image, 
-    HelpCircle 
+    HelpCircle,
+    Paperclip
 } from 'lucide-react';
 import { default as UnknownIcon } from "@mui/icons-material/Help";
 
@@ -206,28 +207,35 @@ const UnifiedDocumentControl = ({
                                     sx={{ bgcolor: 'white' }}
                                 />
                             </Grid>
-                            {/* <Grid item xs={12} md={3}>
+                            <Grid item xs={12} md={3}>
                                 <Button
                                     fullWidth
                                     component="label"
                                     variant="outlined"
-                                    startIcon={<AttachFileIcon />}
-                                    sx={{ textTransform: 'none', bgcolor: 'white', height: '40px' }}
+                                    startIcon={<Paperclip size={18} />}
+                                    sx={{ 
+                                        textTransform: 'none', 
+                                        bgcolor: 'white', 
+                                        height: '40px',
+                                        color: '#5B0429',
+                                        borderColor: '#5B0429',
+                                        borderRadius: '4px',
+                                        '&:hover': {
+                                            bgcolor: 'rgba(91,4,41,0.05)',
+                                            borderColor: '#4a0322'
+                                        }
+                                    }}
                                 >
-                                    {newDoc.file ? (
-                                        <Typography noWrap variant="body2" sx={{ maxWidth: '100%' }}>
-                                            {newDoc.file.name}
-                                        </Typography>
-                                    ) : (
-                                        "Attach File"
-                                    )}
+                                    <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>
+                                        {newDoc.file ? newDoc.file.name : "Attach File"}
+                                    </Box>
                                     <input
                                         type="file"
                                         hidden
                                         onChange={(e) => setNewDoc({ ...newDoc, file: e.target.files[0] })}
                                     />
                                 </Button>
-                            </Grid> */}
+                            </Grid>
                         </Grid>
                     </Box>
                 </Stack>

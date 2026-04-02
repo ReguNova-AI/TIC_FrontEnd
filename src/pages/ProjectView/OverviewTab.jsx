@@ -1,10 +1,14 @@
-import React from "react";
+import React, { useState, useRef } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import PropTypes from "prop-types";
 import FileStructureView from "./FileStructureView";
 import { Pencil, FolderClosed, FileText, RefreshCw, X } from "lucide-react";
+import { FileUploadApiService } from "services/api/FileUploadAPIService";
+import { ProjectApiService } from "services/api/ProjectAPIService";
+import { message, Modal, Progress } from "antd";
+import { brand } from "themes/theme/brand";
 
 const OverviewTab = ({
   projectData,
@@ -13,8 +17,193 @@ const OverviewTab = ({
   aiButtonLoading,
   isCompleted,
   onFileUploadSuccess,
+  updateProjectDetails,
 }) => {
   const isAssessing = aiButtonLoading;
+  
+  // Enabled if it was just completed OR if it has a historical success count > 0
+  const isActionEnabled = isCompleted || projectData?.success_count > 0;
+  // Always disable if currently assessing to prevent concurrent modification
+  const shouldDisable = isAssessing || !isActionEnabled;
+
+  // Configuration upload state
+  const [isConfigUploading, setIsConfigUploading] = useState(false);
+  const [configUploadProgress, setConfigUploadProgress] = useState(0);
+  const [currentConfigFileName, setCurrentConfigFileName] = useState("");
+  const [docToReplace, setDocToReplace] = useState(null);
+  const replaceInputRef = useRef(null);
+
+  const handleConfigUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    setIsConfigUploading(true);
+    setConfigUploadProgress(0);
+    setCurrentConfigFileName("");
+
+    let successCount = 0;
+    const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
+
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        setCurrentConfigFileName(file.name);
+
+        // Convert to base64
+        const reader = new FileReader();
+        const fileDataUrl = await new Promise((resolve, reject) => {
+          reader.onloadend = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+
+        const ext = file.name.split(".").pop();
+        const payload = {
+          documents: [fileDataUrl],
+          folder_name: file.name.replace(/\.[^/.]+$/, ""), // Use filename (no ext) as folder name
+          isConfig: true,
+          project_id: projectData?.project_id,
+          type: ext,
+        };
+
+        // 1. Upload to storage
+        const uploadResponse = await FileUploadApiService.fileUpload(payload, {
+          onUploadProgress: (evt) => {
+            // Percent within the single file
+          },
+        });
+
+        const filePath = uploadResponse.data.details?.[0];
+
+        if (filePath) {
+          // 2. Create actual document record
+          const docPayload = {
+            project_id: projectData?.project_id,
+            document_name: file.name,
+            document_type: "Configuration Document",
+            uploaded_by_id: userdetails?.[0]?.user_id,
+            uploaded_by_name: userdetails?.[0]?.user_first_name + " " + userdetails?.[0]?.user_last_name,
+            folder_name: file.name.replace(/\.[^/.]+$/, ""),
+            document_desc: "",
+            file_path: filePath,
+            risk_information: { risk_level: " ", mitigation: " " },
+            information_extract: { summary: " " },
+          };
+
+          await ProjectApiService.createProjectDocument(docPayload);
+          successCount++;
+        }
+
+        // Update overall progress
+        setConfigUploadProgress(((i + 1) / files.length) * 100);
+      }
+
+      if (successCount > 0) {
+        if (onFileUploadSuccess) onFileUploadSuccess(); // Refresh project data
+        message.success(`Successfully uploaded ${successCount} configuration file(s).`);
+      }
+    } catch (error) {
+      console.error("Config upload failed:", error);
+      message.error("Failed to upload project configuration.");
+    } finally {
+      setTimeout(() => {
+        setIsConfigUploading(false);
+        setConfigUploadProgress(0);
+        setCurrentConfigFileName("");
+      }, 1500);
+      e.target.value = ""; // Clear input
+    }
+  };
+
+  const handleDeleteConfig = async (doc) => {
+    if (!doc.version_id || !doc.document_id) {
+      message.error("Document ID not found!");
+      return;
+    }
+
+    if (window.confirm(`Are you sure you want to delete "${doc.document_name}"?`)) {
+      try {
+        await ProjectApiService.deleteProjectDocument(doc.document_id, doc.version_id);
+        message.success("Configuration deleted successfully!");
+        if (onFileUploadSuccess) onFileUploadSuccess();
+      } catch (error) {
+        console.error("Delete failed:", error);
+        message.error("Failed to delete configuration.");
+      }
+    }
+  };
+
+  const handleReplaceConfig = (doc) => {
+    // We'll store the document being replaced in state
+    setDocToReplace(doc);
+    if (replaceInputRef.current) {
+      replaceInputRef.current.click();
+    }
+  };
+
+  const onReplaceFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !docToReplace) return;
+
+    setIsConfigUploading(true);
+    setCurrentConfigFileName(`Replacing with ${file.name}...`);
+
+    try {
+      // 1. Upload new file to storage
+      const reader = new FileReader();
+      const fileDataUrl = await new Promise((resolve, reject) => {
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const ext = file.name.split(".").pop();
+      const uploadPayload = {
+        documents: [fileDataUrl],
+        folder_name: docToReplace.folder_name,
+        isConfig: true,
+        project_id: projectData?.project_id,
+        type: ext,
+      };
+
+      const uploadResponse = await FileUploadApiService.fileUpload(uploadPayload);
+      const filePath = uploadResponse.data.details?.[0];
+
+      if (filePath) {
+        // 2. Update existing document with new path
+        const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
+        const updatePayload = {
+          project_id: projectData?.project_id,
+          document_name: file.name,
+          document_type: "Configuration Document",
+          uploaded_by_id: userdetails?.[0]?.user_id,
+          uploaded_by_name: userdetails?.[0]?.user_first_name + " " + userdetails?.[0]?.user_last_name,
+          folder_name: docToReplace.folder_name,
+          document_desc: "",
+          file_path: filePath,
+          risk_information: { risk_level: " ", mitigation: " " },
+          information_extract: { summary: " " },
+        };
+
+        await ProjectApiService.uploadProjectDocument(updatePayload, docToReplace.version_id);
+        message.success("Configuration replaced successfully!");
+        if (onFileUploadSuccess) onFileUploadSuccess();
+      }
+    } catch (error) {
+      console.error("Replace failed:", error);
+      message.error("Failed to replace configuration.");
+    } finally {
+      setIsConfigUploading(false);
+      setCurrentConfigFileName("");
+      setDocToReplace(null);
+      e.target.value = "";
+    }
+  };
+
+  // Filter configuration documents
+  const configDocs = (projectData?.project_documents || []).filter(
+    (doc) => doc.document_type === "Configuration Document"
+  );
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100%', pt: 2, pb: 20, px: 2 }}>
@@ -36,11 +225,11 @@ const OverviewTab = ({
           <Button
             startIcon={<Pencil size={13} />}
             onClick={() => handleModalOpen('Edit')}
-            disabled={!isCompleted}
+            disabled={shouldDisable}
             size="small"
             sx={{
               textTransform: 'none',
-              color: isCompleted ? '#5B0429' : '#ccc',
+              color: isActionEnabled ? '#5B0429' : '#ccc',
               fontSize: '12px',
               fontWeight: 500,
               padding: 0,
@@ -89,8 +278,8 @@ const OverviewTab = ({
           aiButtonLoading={aiButtonLoading}
           data={projectData}
           onFileUploadSuccess={onFileUploadSuccess}
-          disabled={!isCompleted}
-          isCompleted={isCompleted}
+          disabled={shouldDisable}
+          isCompleted={isActionEnabled}
         />
       </Box>
 
@@ -114,10 +303,10 @@ const OverviewTab = ({
                 <line x1="12" y1="3" x2="12" y2="15" />
               </svg>
             }
-            disabled={!isCompleted}
+            disabled={shouldDisable}
             sx={{
-              bgcolor: isCompleted ? '#5B0429' : '#f5f5f5',
-              color: isCompleted ? '#fff' : '#aaa',
+              bgcolor: isActionEnabled ? '#5B0429' : '#f5f5f5',
+              color: isActionEnabled ? '#fff' : '#aaa',
               textTransform: 'none',
               boxShadow: 'none',
               borderRadius: '20px',
@@ -125,13 +314,20 @@ const OverviewTab = ({
               py: 0.75,
               fontSize: '13px',
               fontWeight: 500,
-              border: isCompleted ? 'none' : '1px solid #e0e0e0',
-              '&:hover': { bgcolor: isCompleted ? '#4a0322' : '#f0f0f0', boxShadow: 'none' },
+              border: isActionEnabled ? 'none' : '1px solid #e0e0e0',
+              '&:hover': { bgcolor: isActionEnabled ? '#4a0322' : '#f0f0f0', boxShadow: 'none' },
               '&.Mui-disabled': { bgcolor: '#f5f5f5', color: '#ccc', borderColor: '#e0e0e0' },
             }}
           >
             Upload project configuration
-            <input type="file" hidden accept=".xlsx,.csv" />
+            <input 
+              type="file" 
+              hidden 
+              multiple 
+              accept=".xlsx,.csv" 
+              onChange={handleConfigUpload}
+              disabled={shouldDisable}
+            />
           </Button>
           <Button
             variant="outlined"
@@ -142,17 +338,17 @@ const OverviewTab = ({
                 <line x1="12" y1="15" x2="12" y2="3" />
               </svg>
             }
-            disabled={!isCompleted}
+            disabled={shouldDisable}
             sx={{
-              borderColor: isCompleted ? '#5B0429' : '#e0e0e0',
-              color: isCompleted ? '#5B0429' : '#aaa',
+              borderColor: isActionEnabled ? '#5B0429' : '#e0e0e0',
+              color: isActionEnabled ? '#5B0429' : '#aaa',
               textTransform: 'none',
               borderRadius: '20px',
               px: 2.5,
               py: 0.75,
               fontSize: '13px',
               fontWeight: 500,
-              '&:hover': { borderColor: isCompleted ? '#4a0322' : '#d0d0d0', color: isCompleted ? '#4a0322' : '#888', bgcolor: isCompleted ? 'rgba(91,4,41,0.05)' : 'transparent' },
+              '&:hover': { borderColor: isActionEnabled ? '#4a0322' : '#d0d0d0', color: isActionEnabled ? '#4a0322' : '#888', bgcolor: isActionEnabled ? 'rgba(91,4,41,0.05)' : 'transparent' },
               '&.Mui-disabled': { borderColor: '#e0e0e0', color: '#ccc' },
             }}
           >
@@ -161,9 +357,9 @@ const OverviewTab = ({
         </Box>
 
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          {(projectData?.project_configuration || []).map((folder) => (
+          {configDocs.map((doc, index) => (
             <Box
-              key={folder.name || folder}
+              key={doc.document_id}
               sx={{
                 px: 2,
                 py: 1.5,
@@ -178,26 +374,42 @@ const OverviewTab = ({
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <FolderClosed color="#5B0429" size={18} />
                 <Typography sx={{ fontWeight: 500, fontSize: '14px', color: '#222' }}>
-                  {folder.name || folder}
+                  {`Folder ${index + 1}`}
                 </Typography>
               </Box>
-              {isCompleted && (
+              {isActionEnabled && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, color: '#5B0429' }}>
                     <FileText size={15} color="#5B0429" />
-                    <Typography sx={{ fontSize: '13px', fontWeight: 600 }}>sheet.xlsx</Typography>
+                    <Typography sx={{ fontSize: '13px', fontWeight: 600 }}>{doc.document_name}</Typography>
                   </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, cursor: 'pointer', color: '#666', '&:hover': { color: '#444' } }}>
+                  <Box 
+                    onClick={() => handleReplaceConfig(doc)}
+                    sx={{ display: 'flex', alignItems: 'center', gap: 0.5, cursor: 'pointer', color: '#666', '&:hover': { color: '#444' } }}
+                  >
                     <RefreshCw size={13} />
                     <Typography sx={{ fontSize: '13px' }}>Replace</Typography>
                   </Box>
-                  <X size={15} color="#e53935" style={{ cursor: 'pointer' }} />
+                  <X 
+                    size={15} 
+                    color="#e53935" 
+                    style={{ cursor: 'pointer' }} 
+                    onClick={() => handleDeleteConfig(doc)}
+                  />
                 </Box>
               )}
             </Box>
           ))}
 
-          {(!projectData?.project_configuration || projectData.project_configuration.length === 0) && (
+          <input
+            type="file"
+            ref={replaceInputRef}
+            onChange={onReplaceFileChange}
+            style={{ display: "none" }}
+            accept=".pdf,.doc,.docx,.xls,.xlsx"
+          />
+
+          {configDocs.length === 0 && (
             <Box sx={{ py: 3, color: '#bbb', fontSize: '13px', textAlign: 'center', fontStyle: 'italic', border: '1px dashed #e4e4e4', borderRadius: '4px', bgcolor: '#fafafa' }}>
               No configuration folders added yet.
             </Box>
@@ -206,6 +418,30 @@ const OverviewTab = ({
       </Box>
 
       <Box sx={{ height: 60 }} />
+
+      {/* Configuration Upload Modal */}
+      <Modal
+        open={isConfigUploading}
+        footer={null}
+        closable={false}
+        maskClosable={false}
+        title="Uploading Project Configuration"
+        centered
+      >
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+            File: {currentConfigFileName}
+          </Typography>
+          <Progress 
+            percent={Math.round(configUploadProgress)} 
+            status={configUploadProgress === 100 ? "success" : "active"}
+            strokeColor={brand.primary}
+          />
+        </Box>
+        <Typography variant="caption" sx={{ color: '#666' }}>
+          Uploading files sequentially to the project storage...
+        </Typography>
+      </Modal>
     </Box>
   );
 };
@@ -216,6 +452,7 @@ OverviewTab.propTypes = {
   handleRunAIAssessment: PropTypes.func.isRequired,
   aiButtonLoading: PropTypes.bool.isRequired,
   onFileUploadSuccess: PropTypes.func,
+  updateProjectDetails: PropTypes.func,
 };
 
 export default OverviewTab;
