@@ -322,27 +322,4 @@ export const useChatMutation = (projectId) => {
   });
 };
 
-// Regenerate Risk Summary Mutation Hook
-export const useRegenerateRiskSummary = (projectId) => {
-  const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: () => ProjectApiService.regenerateRiskSummary(projectId),
-    onSuccess: (response) => {
-      // Invalidate and refetch risk summary to show the new data
-      queryClient.invalidateQueries({
-        queryKey: PROJECT_QUERY_KEYS.riskSummary(projectId),
-      });
-
-      message.success("Risk assessment regenerated successfully!");
-    },
-    onError: (error) => {
-      console.error("Risk summary regeneration failed:", error);
-      message.error(
-        error?.response?.data?.message ||
-        error?.message ||
-        "Failed to regenerate risk assessment. Please try again."
-      );
-    },
-  });
-};

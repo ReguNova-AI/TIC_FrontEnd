@@ -572,6 +572,10 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading }) => {
             <UnifiedDocumentControl
               onAddFolder={handleUnifiedAddFolder}
               onCancelAddingToFolder={() => setAddingFileToFolder(null)}
+              onUploadFile={(e) => {
+                if (e && e.preventDefault) e.preventDefault();
+                handleMultipleFileSelect("", true); // ✅ unified
+              }}
             />
           </div>
 

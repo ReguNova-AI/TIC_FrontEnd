@@ -44,8 +44,6 @@ import AIAssessmentStatusIndicator, {
 } from "../../components/AIAssessmentStatusIndicator";
 import { getStatusChipProps } from "shared/utility";
 import { brand } from "themes/theme/brand";
-import { useRiskSummaryOperations } from "components/hooks/useRiskSummaryOperations";
-import { markRiskSummaryStart } from "components/RiskSummaryStatusIndicator";
 
 // Helper function to create a history object based on changes
 export { createHistoryObject };
@@ -174,8 +172,6 @@ const ProjectView = () => {
   // AI Assessment operations with global state
   const { currentProjectStatus, handleRunAIAssessment, isProcessing } =
     useAIAssessmentOperations(projectData);
-  const { isRiskSummaryLoading, handleRegenerateRiskSummary } =
-    useRiskSummaryOperations(projectData);
 
   const runAIAssessmentAndGenerateSummary = async () => {
     try {
@@ -183,8 +179,6 @@ const ProjectView = () => {
       const res=handleRunAIAssessment();
       console.log(res,"res");
         
-      markRiskSummaryStart(projectData?.project_id);
-      handleRegenerateRiskSummary();
     } catch (error) {
       console.log(error, "error");
     }

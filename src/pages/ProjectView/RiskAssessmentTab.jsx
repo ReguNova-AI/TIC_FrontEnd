@@ -12,7 +12,6 @@ import UploadFileIcon from "@mui/icons-material/UploadFile";
 import { PROJECT_DETAIL_PAGE } from "shared/constants";
 import { useRiskSummary } from "./useProjectQueries";
 import { ProjectApiService } from "../../services/api/ProjectAPIService";
-import { useRiskSummaryOperations } from "../../components/hooks/useRiskSummaryOperations";
 import RiskSummaryStatusIndicator, {
   markRiskSummaryStart,
 } from "../../components/RiskSummaryStatusIndicator";
@@ -33,9 +32,6 @@ const RiskAssessmentTab = ({ projectData }) => {
   const projectId = projectData?.project_id;
 
   const { data: riskSummary, isLoading, error } = useRiskSummary(projectId);
-
-  const { isRiskSummaryLoading, handleRegenerateRiskSummary } =
-    useRiskSummaryOperations(projectData);
 
   useEffect(() => {
     if (!riskSummary?.doc_path_aws) return;
@@ -108,7 +104,7 @@ const RiskAssessmentTab = ({ projectData }) => {
       );
     }
 
-    if (!riskSummary && !isRiskSummaryLoading) {
+    if (!riskSummary) {
       return <Typography>No Risk Summary available.</Typography>;
     }
 
@@ -153,9 +149,7 @@ const RiskAssessmentTab = ({ projectData }) => {
               variant="outlined"
               startIcon={<DownloadIcon />}
               onClick={handleDownloadFullDocx}
-              disabled={
-                !riskSummary?.doc_path_aws || isRiskSummaryLoading || isLoading
-              }
+              disabled={!riskSummary?.doc_path_aws || isLoading}
               size="small"
               sx={{
                 textTransform: "none",
@@ -163,32 +157,6 @@ const RiskAssessmentTab = ({ projectData }) => {
               }}
             >
               Download Report
-            </Button>
-
-            <Button
-              variant="outlined"
-              startIcon={<RefreshIcon />}
-              onClick={() => {
-                markRiskSummaryStart(projectId);
-                handleRegenerateRiskSummary();
-              }}
-              disabled={isRiskSummaryLoading || isLoading}
-              size="small"
-              sx={{
-                textTransform: "none",
-                "&:hover": { backgroundColor: "#e3f2fd" },
-              }}
-            >
-              {isRiskSummaryLoading ? (
-                <>
-                  <CircularProgress size={16} sx={{ mr: 1 }} />
-                  {!riskSummary ? "Generating..." : "Regenerating..."}
-                </>
-              ) : !riskSummary ? (
-                "Generate Assessment"
-              ) : (
-                "Regenerate Assessment"
-              )}
             </Button>
           </Box>
         </Box>
