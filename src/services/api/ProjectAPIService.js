@@ -44,13 +44,6 @@ const _getRiskSummary = (projectId) => {
   );
 };
 
-const _regenerateRiskSummary = (projectId) => {
-  return BaseApiService.get(
-    `/api/v3/risk/summary?project_id=${projectId}`,
-    null,
-    null,
-  );
-};
 
 const _getChatHistory = (projectId) => {
   return BaseApiService.get(
@@ -218,7 +211,7 @@ const _externalProjectListing = () => {
 };
 
 const _uploadFilesToAIserver = (payload) => {
-  return BaseApiService.post(`/api/v1/org/projects/counts?`, null, payload);
+  return BaseApiService.post(`/api/v3/run-assessment`, null, payload);
 };
 
 const _downloadRiskSummary = (projectId) => {
@@ -250,7 +243,6 @@ export const ProjectApiService = {
   deleteProjectDocument: _deleteProjectDocument,
   extractParameters: _extractParameters,
   getRiskSummary: _getRiskSummary,
-  regenerateRiskSummary: _regenerateRiskSummary,
   downloadRiskSummary: _downloadRiskSummary,
   getChatHistory: _getChatHistory,
   getExtractedInfo: _getExtractedInfo,
