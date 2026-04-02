@@ -46,6 +46,8 @@ export const createHistoryObject = (data, previousData, heading, userName) => {
             ? data.standardUploaded
             : ""
           : "",
+      projectConfiguration:
+        heading === "projectConfiguration" ? "Uploaded project configuration" : "",
       status: previousData.status,
     },
   };
@@ -98,6 +100,10 @@ export const useProjectOperations = (projectData, userName) => {
         updatedResponse.project_no = data.projectNo;
         updatedResponse.invite_members = data.invite_Users;
         updatedResponse.invited_user_list = data.invited_user_list;
+      }
+
+      if (heading === "projectMappingStandards") {
+        updatedResponse.mapping_standards = data.mapping_standards;
       }
 
       const newHistory = createHistoryObject(

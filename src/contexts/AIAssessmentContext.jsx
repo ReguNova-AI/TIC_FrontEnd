@@ -170,12 +170,12 @@ export const AIAssessmentProvider = ({ children }) => {
       });
 
       // Send processing notification
-      await sendNotification(
+      /* await sendNotification(
         'AI Assessment Started',
         `AI Assessment is now running for project: ${projectName}`,
         'info',
         projectId
-      );
+      ); */
 
       // Show processing message
       message.loading({
@@ -206,12 +206,12 @@ export const AIAssessmentProvider = ({ children }) => {
       const notificationTitle = success ? 'AI Assessment Completed' : 'AI Assessment Failed';
       const notificationType = success ? 'success' : 'error';
       
-      await sendNotification(
+      /* await sendNotification(
         notificationTitle,
         `AI Assessment has been ${success ? 'completed' : 'failed'} for project: ${projectName}`,
         notificationType,
         projectId
-      );
+      ); */
 
       // Show completion message
       message[notificationType]({
@@ -264,12 +264,12 @@ export const AIAssessmentProvider = ({ children }) => {
              });
 
              // Send processing notification
-             await sendNotification(
+             /* await sendNotification(
                'Risk Assessment Started',
                `Risk assessment is now being regenerated for project: ${projectName}`,
                'info',
                projectId
-             );
+             ); */
 
              // Show processing message
              message.loading({
@@ -299,12 +299,12 @@ export const AIAssessmentProvider = ({ children }) => {
            const notificationTitle = success ? 'Risk Assessment Completed' : 'Risk Assessment Failed';
            const notificationType = success ? 'success' : 'error';
            
-           await sendNotification(
-             notificationTitle,
-             `Risk assessment has been ${success ? 'completed' : 'failed'} for project: ${projectName}`,
-             notificationType,
-             projectId
-           );
+// await sendNotification(
+// notificationTitle,
+// `Risk assessment has been ${success ? 'completed' : 'failed'} for project: ${projectName}`,
+// notificationType,
+// projectId
+// );
 
            // Show completion message
            message[notificationType]({

@@ -1,23 +1,27 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Tree, Tooltip, Button, Progress, Popconfirm } from "antd";
-import FilePdfOutlined from "@ant-design/icons/FilePdfOutlined";
-import FileWordOutlined from "@ant-design/icons/FileWordOutlined";
-import FileExcelOutlined from "@ant-design/icons/FileExcelOutlined";
-import FileTextOutlined from "@ant-design/icons/FileTextOutlined";
-import FileImageOutlined from "@ant-design/icons/FileImageOutlined";
-import FileUnknownOutlined from "@ant-design/icons/FileUnknownOutlined";
-import DeleteOutlined from "@ant-design/icons/DeleteOutlined";
-import PlusCircleOutlined from "@ant-design/icons/PlusCircleOutlined";
-import PaperClipOutlined from "@ant-design/icons/PaperClipOutlined";
+import { Tooltip, Button, Progress, Popconfirm } from "antd";
+import { 
+    FolderOpen,
+    Folder,
+    FilePlus,
+    ChevronDown, 
+    ChevronUp,
+    X, 
+    Image, 
+    Layers,
+    Upload,
+    Trash2,
+    FileText,
+    FileArchive
+} from 'lucide-react';
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
-import CloseIcon from "@mui/icons-material/Close";
-import folderIcon from "../assets/images/icons/folderIcon1.svg";
+import Typography from "@mui/material/Typography";
 import { apiHost } from 'config';
 
-// --- Modal styles ---
+// ── Modal style ──────────────────────────────────────────────────────────────
 const modalBoxStyle = {
     position: 'absolute',
     top: '50%',
@@ -27,175 +31,270 @@ const modalBoxStyle = {
     height: '90vh',
     bgcolor: 'background.paper',
     boxShadow: 24,
-    borderRadius: 2,
+    borderRadius: 1,
     display: 'flex',
     flexDirection: 'column',
     overflow: 'hidden',
 };
 
-// --- File preview renderer inside modal ---
-// --- File preview renderer inside modal ---
+// ── File preview ─────────────────────────────────────────────────────────────
 const FilePreview = ({ fileUrl, filename }) => {
-    console.log(filename,"filename");
-    console.log(fileUrl,"fileUrl");
-    
     const [blobUrl, setBlobUrl] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
-
     const ext = filename?.split('.').pop().toLowerCase();
 
     useEffect(() => {
         if (!fileUrl) return;
-
         let objectUrl = null;
         setLoading(true);
         setError(false);
         setBlobUrl(null);
-
-        fetch(fileUrl, { credentials: 'include' })   // 'include' sends cookies if your API needs auth
-            .then(res => {
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                return res.blob();
-            })
-            .then(blob => {
-                objectUrl = URL.createObjectURL(blob);
-                setBlobUrl(objectUrl);
-            })
-            .catch(err => {
-                console.error('File fetch failed:', err);
-                setError(true);
-            })
+        fetch(fileUrl, { credentials: 'include' })
+            .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.blob(); })
+            .then(blob => { objectUrl = URL.createObjectURL(blob); setBlobUrl(objectUrl); })
+            .catch(() => setError(true))
             .finally(() => setLoading(false));
-
-        // Revoke the blob URL when the component unmounts or fileUrl changes
-        return () => {
-            if (objectUrl) URL.revokeObjectURL(objectUrl);
-        };
+        return () => { if (objectUrl) URL.revokeObjectURL(objectUrl); };
     }, [fileUrl]);
 
     if (!fileUrl || !filename) return null;
-
-    if (loading) {
-        return (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 12 }}>
-                <span style={{ color: '#888' }}>Loading preview…</span>
-            </div>
-        );
-    }
-
-    if (error || !blobUrl) {
-        return (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 12 }}>
-                <FileUnknownOutlined style={{ fontSize: 48, color: '#595959' }} />
-                <p style={{ color: '#555' }}>Could not load preview.</p>
-                <a href={fileUrl} target="_blank" rel="noreferrer">Open in new tab</a>
-            </div>
-        );
-    }
-
-    // Images — blob URL works perfectly
-    if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext)) {
-        return (
-            <img
-                src={blobUrl}
-                alt={filename}
-                style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', margin: 'auto', display: 'block' }}
-            />
-        );
-    }
-
-    // PDF — blob URL bypasses X-Frame-Options completely
-    if (ext === 'pdf') {
-        return (
-            <iframe
-                src={blobUrl}
-                title={filename}
-                width="100%"
-                height="100%"
-                style={{ border: 'none', flex: 1, zIndex:10000 }}
-            />
-        );
-    }
-
-    // Word / Excel — blob URL + Google Docs Viewer won't work (needs a public URL)
-    // So for Office files, fetch the blob and use it directly via an object URL
-    // with a mime-type override, or fall back to a download prompt
-    if (['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'].includes(ext)) {
-        // Google Docs Viewer requires a publicly accessible URL, so use the original URL
-        // If your server is publicly accessible swap blobUrl → encoded original URL
-        const encodedUrl = encodeURIComponent(fileUrl);
-        return (
-            <iframe
-                src={`https://docs.google.com/viewer?url=${encodedUrl}&embedded=true`}
-                title={filename}
-                width="100%"
-                height="100%"
-                style={{ border: 'none', flex: 1 }}
-            />
-        );
-    }
-
-    // Plain text — render blob URL in an iframe
-    if (ext === 'txt') {
-        return (
-            <iframe
-                src={blobUrl}
-                title={filename}
-                width="100%"
-                height="100%"
-                style={{ border: 'none', flex: 1, fontFamily: 'monospace' }}
-            />
-        );
-    }
-
-    // Unsupported
-    return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 12 }}>
-            <FileUnknownOutlined style={{ fontSize: 48, color: '#595959' }} />
-            <p style={{ color: '#555' }}>Preview not available for <strong>.{ext}</strong> files.</p>
-            <a href={fileUrl} target="_blank" rel="noreferrer" download>Download file</a>
-        </div>
-    );
+    if (loading) return <Box sx={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100%' }}><Typography color="text.secondary">Loading preview…</Typography></Box>;
+    if (error || !blobUrl) return <Box sx={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', height:'100%', gap:1.5 }}><Typography>Could not load preview.</Typography><a href={fileUrl} target="_blank" rel="noreferrer">Open in new tab</a></Box>;
+    if (['jpg','jpeg','png','gif','webp','svg'].includes(ext)) return <img src={blobUrl} alt={filename} style={{ maxWidth:'100%', maxHeight:'100%', objectFit:'contain', margin:'auto', display:'block' }} />;
+    if (ext === 'pdf') return <iframe src={blobUrl} title={filename} width="100%" height="100%" style={{ border:'none', flex:1 }} />;
+    if (['doc','docx','xls','xlsx','ppt','pptx'].includes(ext)) return <iframe src={`https://docs.google.com/viewer?url=${encodeURIComponent(fileUrl)}&embedded=true`} title={filename} width="100%" height="100%" style={{ border:'none', flex:1 }} />;
+    if (ext === 'txt') return <iframe src={blobUrl} title={filename} width="100%" height="100%" style={{ border:'none', flex:1 }} />;
+    return <Box sx={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', height:'100%', gap:1.5 }}><Typography>Preview not available for <strong>.{ext}</strong> files.</Typography><a href={fileUrl} download target="_blank" rel="noreferrer">Download file</a></Box>;
 };
 
-// --- Utility: build icon, accepts onPreview callback instead of opening new tab ---
+// ── File icon click handler ───────────────────────────────────────────────────
 const getFileIcon = (filename, onPreview, docName) => {
-    if (!filename) return <FileUnknownOutlined style={{ color: "#595959" }} />;
-
+    if (!filename) return <FileText size={17} color="#999" />;
     const handleClick = (e) => {
         e.stopPropagation();
         try {
-            const fileUrl = filename.startsWith("http://") || filename.startsWith("https://")
-                ? filename
-                : `${apiHost}/${filename}`;
-            onPreview(fileUrl, filename, docName);   // 👈 open modal instead of new tab
-        } catch (error) {
-            console.error("Error resolving file URL", error);
-        }
+            const fileUrl = filename.startsWith("http://") || filename.startsWith("https://") ? filename : `${apiHost}/${filename}`;
+            onPreview(fileUrl, filename, docName);
+        } catch (err) { console.error("Error resolving file URL", err); }
     };
-
     const ext = filename.split(".").pop().toLowerCase();
+    const props = { size: 17, style: { cursor: 'pointer', flexShrink: 0 }, onClick: handleClick };
     switch (ext) {
-        case "pdf":
-            return <FilePdfOutlined style={{ color: "#cf1322", cursor: 'pointer' }} onClick={handleClick} />;
-        case "doc":
-        case "docx":
-            return <FileWordOutlined style={{ color: "#1890ff", cursor: 'pointer' }} onClick={handleClick} />;
-        case "xls":
-        case "xlsx":
-            return <FileExcelOutlined style={{ color: "#52c41a", cursor: 'pointer' }} onClick={handleClick} />;
-        case "jpg":
-        case "jpeg":
-        case "png":
-            return <FileImageOutlined style={{ color: "#fa8c16", cursor: 'pointer' }} onClick={handleClick} />;
-        case "txt":
-            return <FileTextOutlined style={{ color: "#722ed1", cursor: 'pointer' }} onClick={handleClick} />;
-        default:
-            return <FileUnknownOutlined style={{ color: "#595959", cursor: 'pointer' }} onClick={handleClick} />;
+        case "pdf": return <FileText {...props} color="#5B0429" />;
+        case "doc": case "docx": return <FileText {...props} color="#1565C0" />;
+        case "xls": case "xlsx": return <FileArchive {...props} color="#2E7D32" />;
+        case "jpg": case "jpeg": case "png": return <Image {...props} color="#E65100" />;
+        case "txt": return <FileText {...props} color="#555" />;
+        default: return <Layers {...props} color="#5B0429" />;
     }
 };
 
+// ── Single file row ───────────────────────────────────────────────────────────
+function FileRow({ doc, onDeleteFile, readOnly, onUploadFile, onPreview, aiButtonLoading }) {
+    const hasFile = doc.path || doc.fileObj;
+
+    return (
+        <Box
+            sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                px: 2,
+                py: '10px',
+                mb: 1, // Add margin bottom for standalone cards
+                bgcolor: '#fff',
+                border: '1px solid #e4e4e4', // Standalone border
+                borderRadius: '4px', // Rounded corners
+                '&:last-child': { mb: 0 },
+                '&:hover': { bgcolor: '#fafafa', borderColor: '#d0d0d0' },
+                transition: 'all 0.15s',
+            }}
+        >
+            {/* File icon + name */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1, minWidth: 0 }}>
+                {getFileIcon(doc.fileObj ? doc.fileObj.name : doc.path, onPreview, doc.name)}
+                <Typography sx={{ fontSize: '13px', fontWeight: 500, color: '#222', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {doc.name}
+                </Typography>
+                {doc.fileObj?.size && (
+                    <Typography sx={{ fontSize: '12px', color: '#aaa', flexShrink: 0 }}>
+                        {(doc.fileObj.size / 1024 / 1024).toFixed(1)}mb
+                    </Typography>
+                )}
+            </Box>
+
+            {/* Actions */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                {doc.progress !== undefined && doc.progress < 100 && doc.progress > 0 && (
+                    <Progress type="circle" percent={doc.progress} width={20} />
+                )}
+
+                {hasFile ? (
+                    !readOnly && onDeleteFile && (
+                        <Popconfirm
+                            title="Delete File"
+                            description="Are you sure you want to delete this file?"
+                            onConfirm={(e) => { e?.stopPropagation(); onDeleteFile(doc); }}
+                            onCancel={(e) => e?.stopPropagation()}
+                            okText="Delete" cancelText="Cancel"
+                            disabled={aiButtonLoading}
+                        >
+                            <Trash2
+                                size={15}
+                                color={aiButtonLoading ? "rgba(91, 4, 41, 0.3)" : "#ef4444"}
+                                style={{ cursor: aiButtonLoading ? "default" : "pointer" }}
+                                onClick={(e) => e.stopPropagation()}
+                            />
+                        </Popconfirm>
+                    )
+                ) : (
+                    !readOnly && onUploadFile && (
+                        <Tooltip title="Upload file">
+                            <label htmlFor={`file-up-${doc.id}`} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', marginBottom: 0 }} onClick={(e) => e.stopPropagation()}>
+                                <Upload size={15} color="#5B0429" />
+                                <input id={`file-up-${doc.id}`} type="file" style={{ display: 'none' }} onChange={(e) => onUploadFile(e, doc)} />
+                            </label>
+                        </Tooltip>
+                    )
+                )}
+            </Box>
+        </Box>
+    );
+}
+
+// ── Folder accordion ──────────────────────────────────────────────────────────
+function FolderRow({ folder, expanded, onToggle, onAddFolderFile, onDeleteFolder, onDeleteFile, readOnly, onUploadFile, onPreview, aiButtonLoading }) {
+    const { folderName, children } = folder;
+    const count = children.length;
+
+    return (
+        <Box
+            sx={{
+                border: '1px solid #e4e4e4',
+                borderRadius: '4px',
+                overflow: 'hidden',
+                bgcolor: '#fff',
+            }}
+        >
+            {/* Folder header row */}
+            <Box
+                onClick={onToggle}
+                sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    px: 2,
+                    py: '11px',
+                    cursor: 'pointer',
+                    bgcolor: expanded ? '#fafafe' : '#fff',
+                    '&:hover': { bgcolor: '#f7f7fb' },
+                    transition: 'background 0.15s',
+                    borderBottom: expanded ? '1px solid #e4e4e4' : 'none',
+                    userSelect: 'none',
+                }}
+            >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1, minWidth: 0 }}>
+                    {expanded
+                        ? <FolderOpen size={18} color="#5B0429" style={{ flexShrink: 0 }} />
+                        : <Folder size={18} color="#5B0429" style={{ flexShrink: 0 }} />
+                    }
+                    <Typography sx={{ fontWeight: 600, color: '#222', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {folderName}
+                    </Typography>
+                    <Typography sx={{ color: '#aaa', fontSize: '13px', flexShrink: 0, ml: 0.5 }}>
+                        {count} {count === 1 ? 'file' : 'files'}
+                    </Typography>
+                </Box>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {!readOnly && onAddFolderFile && expanded && (
+                        <Tooltip title="Add file to this folder">
+                            <Box 
+                                onClick={(e) => { e.stopPropagation(); onAddFolderFile(folderName); }}
+                                sx={{ 
+                                    p: 0.5, 
+                                    cursor: 'pointer',
+                                    borderRadius: '4px', 
+                                    '&:hover': { bgcolor: 'rgba(91,4,41,0.05)' },
+                                    display: 'flex',
+                                    alignItems: 'center'
+                                }}
+                            >
+                                <FilePlus size={16} color="#5B0429" />
+                            </Box>
+                        </Tooltip>
+                    )}
+                    {expanded
+                        ? <ChevronUp size={16} color="#aaa" />
+                        : <ChevronDown size={16} color="#aaa" />
+                    }
+                </Box>
+            </Box>
+
+            {/* Folder contents */}
+            {expanded && (
+                <Box sx={{ p: 2, bgcolor: '#fff', borderTop: '1px solid #e4e4e4' }}>
+                    {children.length === 0 ? (
+                        <Box 
+                            sx={{ 
+                                px: 2, 
+                                py: 2.5, 
+                                textAlign: 'center', 
+                                border: '1px dashed #e4e4e4', 
+                                borderRadius: '4px', 
+                                bgcolor: '#fafafa',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                gap: 1.5
+                            }}
+                        >
+                            <Typography sx={{ fontSize: '13px', color: '#888', fontStyle: 'italic' }}>
+                                This folder is empty.
+                            </Typography>
+                            {!readOnly && onAddFolderFile && (
+                                <Button
+                                    variant="outlined"
+                                    size="small"
+                                    startIcon={<Upload size={14} />}
+                                    onClick={() => onAddFolderFile(folderName)}
+                                    sx={{
+                                        textTransform: 'none',
+                                        fontSize: '12px',
+                                        borderRadius: '20px',
+                                        color: '#5B0429',
+                                        borderColor: '#5B0429',
+                                        '&:hover': {
+                                            bgcolor: 'rgba(91,4,41,0.05)',
+                                            borderColor: '#4a0322'
+                                        }
+                                    }}
+                                >
+                                    Add file to this folder
+                                </Button>
+                            )}
+                        </Box>
+                    ) : (
+                        children.map((child) => (
+                            <FileRow
+                                key={child.key}
+                                doc={child.data}
+                                onDeleteFile={onDeleteFile}
+                                readOnly={readOnly}
+                                onUploadFile={onUploadFile}
+                                onPreview={onPreview}
+                                aiButtonLoading={aiButtonLoading}
+                            />
+                        ))
+                    )}
+                </Box>
+            )}
+        </Box>
+    );
+}
+
+// ── Main Component ────────────────────────────────────────────────────────────
 const UnifiedFileTree = ({
     documents,
     onAddFolderFile,
@@ -207,23 +306,17 @@ const UnifiedFileTree = ({
     onUploadFile = null,
     aiButtonLoading
 }) => {
-    // --- Modal state lives here ---
-    const [previewFile, setPreviewFile] = useState(null); // { url, name }
+    const [previewFile, setPreviewFile] = useState(null);
 
-    const handlePreview = (fileUrl, filename, docName) => {
-        console.log(fileUrl,"fileUrlll");
-        
-        setPreviewFile({ url: fileUrl, name: filename, docName });
-    };
-
+    const handlePreview = (fileUrl, filename, docName) => setPreviewFile({ url: fileUrl, name: filename, docName });
     const handleClosePreview = () => setPreviewFile(null);
 
-    // --- Transform Data to Tree ---
-    const treeData = useMemo(() => {
-        const treeStructure = {};
+    // Build tree structure from flat documents array
+    const { folders, rootFiles } = useMemo(() => {
+        const folderMap = {};
         const rootFiles = [];
 
-        const normalizedDocs = documents.map(doc => ({
+        const normalized = documents.map(doc => ({
             ...doc,
             name: doc.document_name || doc.docuemnt_name,
             type: doc.document_type || doc.docuemnt_type,
@@ -231,210 +324,113 @@ const UnifiedFileTree = ({
             id: doc.document_id,
             version: doc.version_id || doc.version,
             path: doc.file_path || doc.path,
-            fileObj: doc.file
+            fileObj: doc.file,
         }));
 
-        normalizedDocs.forEach((doc) => {
+        normalized.forEach((doc) => {
             const { folder, name, id, version } = doc;
             const isPlaceholder = !name;
 
             if (folder && folder !== "null") {
-                if (!treeStructure[folder]) {
-                    treeStructure[folder] = {
-                        title: (
-                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
-                                <div style={{ display: "flex", alignItems: "center" }}>
-                                    <img src={folderIcon} width="20px" style={{ marginRight: "8px" }} alt="folder" />
-                                    <span style={{ fontWeight: 500, color: "#5B0429" }}>{folder}</span>
-                                </div>
-                                {!readOnly && (
-                                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                                        <Tooltip title="Add document to this folder">
-                                            <Button
-                                                type="text"
-                                                shape="circle"
-                                                icon={<PlusCircleOutlined style={{ fontSize: '20px' }} />}
-                                                onClick={(e) => { e.stopPropagation(); if (onAddFolderFile) onAddFolderFile(folder); }}
-                                                style={{ color: "#1976d2", border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, minWidth: 32, padding: 0 }}
-                                            />
-                                        </Tooltip>
-                                        {onDeleteFolder && (
-                                            <Popconfirm
-                                                title="Delete Folder"
-                                                description="Delete this folder and all contents?"
-                                                onConfirm={(e) => { e.stopPropagation(); onDeleteFolder(folder); }}
-                                                onCancel={(e) => e.stopPropagation()}
-                                                okText="Yes"
-                                                cancelText="No"
-                                            >
-                                                <DeleteOutlined style={{ color: 'red', marginLeft: 8, fontSize: 16 }} onClick={(e) => e.stopPropagation()} />
-                                            </Popconfirm>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        ),
+                if (!folderMap[folder]) {
+                    folderMap[folder] = {
                         key: folder.replace(/\s+/g, "-"),
-                        children: []
+                        folderName: folder,
+                        children: [],
                     };
                 }
-
                 if (!isPlaceholder) {
-                    treeStructure[folder].children.push({
-                        title: renderFileTitle(doc, onDeleteFile, readOnly, onUploadFile, handlePreview, aiButtonLoading),
+                    folderMap[folder].children.push({
                         key: `${id}-${version}`,
-                        isLeaf: true,
-                        data: doc
+                        data: doc,
                     });
                 }
             } else if (!isPlaceholder) {
-                rootFiles.push({
-                    title: renderFileTitle(doc, onDeleteFile, readOnly, onUploadFile, handlePreview, aiButtonLoading),
-                    key: `${id}-${version}`,
-                    isLeaf: true,
-                    data: doc
-                });
+                rootFiles.push({ key: `${id}-${version}`, data: doc });
             }
         });
 
-        // Sort folders alphabetically
-        const sortedFolders = Object.values(treeStructure).sort((a, b) =>
-            (a.key || '').localeCompare(b.key || '')
-        );
+        const sortedFolders = Object.values(folderMap).sort((a, b) => a.folderName.localeCompare(b.folderName));
+        return { folders: sortedFolders, rootFiles };
+    }, [documents]);
 
-        // Sort files within folders
-        sortedFolders.forEach(folder => {
-            folder.children.sort((a, b) => (a.title.props.children[0].props.children[0] || '').localeCompare(b.title.props.children[0].props.children[0] || ''));
-        });
+    const toggleFolder = (key) => {
+        if (expandedKeys.includes(key)) {
+            onExpand(expandedKeys.filter(k => k !== key));
+        } else {
+            onExpand([...expandedKeys, key]);
+        }
+    };
 
-        // Sort root files
-        rootFiles.sort((a, b) => (a.title.props.children[0].props.children[0] || '').localeCompare(b.title.props.children[0].props.children[0] || ''));
-
-        return [...sortedFolders, ...rootFiles];
-    }, [documents, onAddFolderFile, onDeleteFile, onDeleteFolder, readOnly, onUploadFile]);
-    // Note: handlePreview is stable (defined outside useMemo with useState), 
-    // but if you want to be safe, wrap it in useCallback.
+    const hasContent = folders.length > 0 || rootFiles.length > 0;
 
     return (
-        <>
-            <Tree
-                showIcon={false}
-                showLine={{ showLeafIcon: false }}
-                treeData={treeData}
-                expandedKeys={expandedKeys}
-                onExpand={onExpand}
-                selectable={false}
-                blockNode={true}
-                height={500}
-            />
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, width: '100%', mt: 1.5 }}>
 
-            {/* ---- File Preview Modal ---- */}
-            <Modal
-                open={!!previewFile}
-                onClose={handleClosePreview}
-                aria-labelledby="file-preview-modal"
-                style={{zIndex:999999}}
-            >
+            {/* Folders */}
+            {folders.map(folder => (
+                <FolderRow
+                    key={folder.key}
+                    folder={folder}
+                    expanded={expandedKeys.includes(folder.key)}
+                    onToggle={() => toggleFolder(folder.key)}
+                    onAddFolderFile={onAddFolderFile}
+                    onDeleteFolder={onDeleteFolder}
+                    onDeleteFile={onDeleteFile}
+                    readOnly={readOnly}
+                    onUploadFile={onUploadFile}
+                    onPreview={handlePreview}
+                    aiButtonLoading={aiButtonLoading}
+                />
+            ))}
+
+            {/* Root files wrapped in a default folder accordion */}
+            {rootFiles.length > 0 && (
+                <FolderRow
+                    key="uncategorized"
+                    folder={{ folderName: "Main Documents", children: rootFiles, key: "uncategorized" }}
+                    expanded={expandedKeys.includes("uncategorized")}
+                    onToggle={() => toggleFolder("uncategorized")}
+                    onAddFolderFile={null} // Don't allow adding to root through this button
+                    onDeleteFolder={null}
+                    onDeleteFile={onDeleteFile}
+                    readOnly={readOnly}
+                    onUploadFile={onUploadFile}
+                    onPreview={handlePreview}
+                    aiButtonLoading={aiButtonLoading}
+                />
+            )}
+
+
+
+            {/* Empty state */}
+            {!hasContent && (
+                <Box sx={{ py: 4, textAlign: 'center', border: '1px dashed #e4e4e4', borderRadius: '4px', bgcolor: '#fafafa' }}>
+                    <Typography sx={{ fontSize: '13px', color: '#bbb', fontStyle: 'italic' }}>
+                        No documents uploaded yet. Create a folder or upload files.
+                    </Typography>
+                </Box>
+            )}
+
+            {/* File preview modal */}
+            <Modal open={!!previewFile} onClose={handleClosePreview} style={{ zIndex: 999999 }}>
                 <Box sx={modalBoxStyle}>
-                    {/* Header bar */}
-                    <Box sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        px: 2,
-                        py: 1,
-                        borderBottom: '1px solid #e0e0e0',
-                        bgcolor: '#fafafa',
-                        flexShrink: 0,
-                    }}>
-                        <span style={{ fontWeight: 500, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <Box sx={{ display:'flex', alignItems:'center', justifyContent:'space-between', px:2, py:1.25, borderBottom:'1px solid #e0e0e0', bgcolor:'#fafafa', flexShrink:0 }}>
+                        <Typography sx={{ fontWeight:500, fontSize:14, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
                             {previewFile?.docName}
-                        </span>
-                        <IconButton size="small" onClick={handleClosePreview} aria-label="close preview">
-                            <CloseIcon fontSize="small" />
+                        </Typography>
+                        <IconButton size="small" onClick={handleClosePreview}>
+                            <X size={16} />
                         </IconButton>
                     </Box>
-
-                    {/* Preview content */}
-                    <Box sx={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', p: previewFile && ['jpg','jpeg','png','gif','webp','svg'].includes(previewFile.name?.split('.').pop().toLowerCase()) ? 2 : 0 }}>
-                        {previewFile && (
-                            <FilePreview fileUrl={previewFile.url} filename={previewFile.name} />
-                        )}
+                    <Box sx={{ flex:1, overflow:'auto', display:'flex', flexDirection:'column', p: previewFile && ['jpg','jpeg','png','gif','webp','svg'].includes(previewFile.name?.split('.').pop().toLowerCase()) ? 2 : 0 }}>
+                        {previewFile && <FilePreview fileUrl={previewFile.url} filename={previewFile.name} />}
                     </Box>
                 </Box>
             </Modal>
-        </>
+        </Box>
     );
 };
-
-// --- renderFileTitle now receives onPreview ---
-function renderFileTitle(doc, onDeleteFile, readOnly, onUploadFile, onPreview, aiButtonLoading) {
-    const hasFile = doc.path || doc.fileObj;
-
-    return (
-        <div style={{ display: "flex", cursor: "auto", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
-            <span style={{ flex: 1, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", marginRight: 8 }}>
-                {doc.name} <span style={{ color: '#888' }}>({doc.type})</span>
-            </span>
-            <div style={{ display: "flex", alignItems: "center", flexDirection: 'row' }}>
-                {/* Progress indicator if available */}
-                {doc.progress !== undefined && doc.progress < 100 && doc.progress > 0 && (
-                    <Progress type="circle" percent={doc.progress} width={20} style={{ marginRight: 8 }} />
-                )}
-
-                {hasFile ? (
-                    <div style={{ display: "flex", alignItems: "center", flexDirection: 'row' }}>
-                        {/* 👇 pass onPreview through */}
-                        {getFileIcon(doc.fileObj ? doc.fileObj.name : doc.path, onPreview, doc.name)}
-                        {!readOnly && onDeleteFile && (
-                            <Popconfirm
-                                title="Delete File"
-                                onConfirm={(e) => { e.stopPropagation(); onDeleteFile(doc); }}
-                                onCancel={(e) => e.stopPropagation()}
-                                okText="Yes"
-                                cancelText="No"
-                                disabled={aiButtonLoading}
-                            >
-                                <DeleteOutlined style={{ color: `${aiButtonLoading ? "grey" : "red"}`, cursor: `${aiButtonLoading ? "auto" : "pointer"}`, marginLeft: 8 }} onClick={(e) => e.stopPropagation()} />
-                            </Popconfirm>
-                        )}
-                    </div>
-                ) : (
-                    !readOnly && onUploadFile && (
-                        <div style={{ display: "flex", alignItems: "center", flexDirection: 'row' }}>
-                            <Tooltip title="Upload Document">
-                                <label
-                                    htmlFor={`file-upload-${doc.id}`}
-                                    style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', marginBottom: 0 }}
-                                    onClick={(e) => e.stopPropagation()}
-                                >
-                                    <PaperClipOutlined style={{ fontSize: 18, color: '#1890ff' }} />
-                                    <input
-                                        id={`file-upload-${doc.id}`}
-                                        type="file"
-                                        style={{ display: 'none' }}
-                                        onChange={(e) => onUploadFile(e, doc)}
-                                    />
-                                </label>
-                            </Tooltip>
-                            {onDeleteFile && (
-                                <Popconfirm
-                                    title="Delete Document Entry"
-                                    onConfirm={(e) => { e.stopPropagation(); onDeleteFile(doc); }}
-                                    onCancel={(e) => e.stopPropagation()}
-                                    okText="Yes"
-                                    cancelText="No"
-                                >
-                                    <DeleteOutlined style={{ color: 'red', marginLeft: 8 }} onClick={(e) => e.stopPropagation()} />
-                                </Popconfirm>
-                            )}
-                        </div>
-                    )
-                )}
-            </div>
-        </div>
-    );
-}
 
 UnifiedFileTree.propTypes = {
     documents: PropTypes.array.isRequired,
@@ -444,7 +440,8 @@ UnifiedFileTree.propTypes = {
     expandedKeys: PropTypes.array,
     onExpand: PropTypes.func,
     readOnly: PropTypes.bool,
-    onUploadFile: PropTypes.func
+    onUploadFile: PropTypes.func,
+    aiButtonLoading: PropTypes.bool,
 };
 
 export default UnifiedFileTree;
