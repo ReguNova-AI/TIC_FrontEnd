@@ -8,22 +8,25 @@ import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
+import Menu from '@mui/material/Menu';
+import Stack from '@mui/material/Stack';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
-import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { default as CreateNewFolderIcon } from "@mui/icons-material/CreateNewFolder";
-import { default as NoteAddIcon } from "@mui/icons-material/NoteAdd";
-import { default as UploadFileIcon } from "@mui/icons-material/UploadFile";
-import { default as FolderIcon } from "@mui/icons-material/Folder";
-import { default as InsertDriveFileIcon } from "@mui/icons-material/InsertDriveFile";
-import { default as CloseIcon } from "@mui/icons-material/Close";
-import { default as SaveIcon } from "@mui/icons-material/Save";
-// import { default as AttachFile } from "@mui/icons-material/AttachFileIcon";
-import { default as PdfIcon } from "@mui/icons-material/PictureAsPdf";
-import { default as DescriptionIcon } from "@mui/icons-material/Description";
-import { default as ExcelIcon } from "@mui/icons-material/TableChart";
-import { default as ImageIcon } from "@mui/icons-material/Image";
+import { 
+    FolderPlus, 
+    FilePlus, 
+    Upload, 
+    Folder, 
+    FileText, 
+    X, 
+    Save, 
+    ChevronDown, 
+    FileSpreadsheet, 
+    Image, 
+    HelpCircle,
+    Paperclip
+} from 'lucide-react';
 import { default as UnknownIcon } from "@mui/icons-material/Help";
 
 const UnifiedDocumentControl = ({
@@ -34,7 +37,8 @@ const UnifiedDocumentControl = ({
     addingToFolder = null,
     onCancelAddingToFolder = () => { },
     showUploadMultiple = false,
-    onUploadMultiple = () => { }
+    onUploadMultiple = () => { },
+    disabled = false
 }) => {
     const [mode, setMode] = useState('view'); // 'view', 'folder', 'file'
     const [newFolderName, setNewFolderName] = useState("");
@@ -44,6 +48,13 @@ const UnifiedDocumentControl = ({
         desc: "",
         file: null
     });
+    const handleCreateFolderClick = () => {
+        setMode('folder');
+    };
+
+    const handleUploadFilesClick = (e) => {
+        onUploadMultiple(e);
+    };
 
     useEffect(() => {
         if (addingToFolder) {
@@ -80,42 +91,40 @@ const UnifiedDocumentControl = ({
     };
 
     const renderButtons = () => (
-        <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
+        <Box>
             <Button
-                variant="outlined"
-                startIcon={<CreateNewFolderIcon />}
-                onClick={() => setMode('folder')}
-                sx={{ textTransform: 'none', borderRadius: 2 }}
+                variant="text"
+                startIcon={<FolderPlus size={16} color={!disabled ? "#fff" : "rgba(91, 4, 41, 0.4)"} />}
+                onClick={handleCreateFolderClick}
+                disabled={disabled}
+                sx={{ 
+                    textTransform: 'none', 
+                    borderRadius: '20px', 
+                    height: '34px',
+                    color: !disabled ? '#fff' : 'rgba(91, 4, 41, 0.4)',
+                    fontWeight: 500,
+                    fontSize: '13px',
+                    bgcolor: !disabled ? '#5B0429' : 'rgba(91, 4, 41, 0.05)',
+                    px: 2.5,
+                    border: !disabled ? 'none' : '1px solid rgba(91, 4, 41, 0.1)',
+                    '&:hover': { 
+                        bgcolor: !disabled ? '#4a0322' : 'rgba(91, 4, 41, 0.1)', 
+                    },
+                    '&.Mui-disabled': { 
+                        bgcolor: 'rgba(91, 4, 41, 0.05)', 
+                        color: 'rgba(91, 4, 41, 0.4)'
+                    }
+                }}
             >
-                Create New Folder
+                Create folder
             </Button>
-            <Button
-                variant="contained"
-                color="primary"
-                startIcon={<NoteAddIcon />}
-                onClick={() => setMode('file')}
-                sx={{ textTransform: 'none', borderRadius: 2 }}
-            >
-                Create New Document
-            </Button>
-            {showUploadMultiple && (
-                <Button
-                    variant="contained"
-                    color="secondary"
-                    startIcon={<UploadFileIcon />}
-                    onClick={onUploadMultiple}
-                    sx={{ textTransform: 'none', borderRadius: 2, backgroundColor: '#722ed1', '&:hover': { backgroundColor: '#531dab' } }}
-                >
-                    Upload Multiple Files
-                </Button>
-            )}
-        </Stack>
+        </Box>
     );
 
     const renderFolderForm = () => (
-        <Card variant="outlined" sx={{ p: 2, mb: 2, backgroundColor: '#f6ffed', borderColor: '#5B0429', borderRadius: 2 }}>
+        <Card variant="outlined" sx={{ p: 2, mb: 2, backgroundColor: '#f6ffed', borderColor: '#5B0429', borderRadius: '4px' }}>
             <Stack direction="row" spacing={2} alignItems="center">
-                <CreateNewFolderIcon sx={{color:"primary.main"}}/>
+                <FolderPlus size={20} color="#5B0429" />
                 <TextField
                     size="small"
                     placeholder="Enter folder name..."
@@ -125,17 +134,17 @@ const UnifiedDocumentControl = ({
                 />
                 <Button
                     variant="contained"
-                    startIcon={<SaveIcon />}
+                    startIcon={<Save size={18} />}
                     onClick={handleSubmitFolder}
-                    sx={{ textTransform: 'none' }}
+                    sx={{ textTransform: 'none', bgcolor: '#5B0429', borderRadius: '20px', height: '40px', '&:hover': { bgcolor: '#4a0322' } }}
                 >
                     Create
                 </Button>
                 <Button
                     variant="outlined"
-                    startIcon={<CloseIcon />}
+                    startIcon={<X size={18} />}
                     onClick={handleReset}
-                    sx={{ textTransform: 'none' }}
+                    sx={{ textTransform: 'none', color: '#5B0429', borderColor: '#5B0429', borderRadius: '20px', height: '40px' }}
                 >
                     Cancel
                 </Button>
@@ -144,19 +153,19 @@ const UnifiedDocumentControl = ({
     );
 
     const renderFileForm = () => (
-        <Card variant="outlined" sx={{ p: 2, mb: 2, backgroundColor: '#f0f9ff', borderColor: '#5B0429', borderRadius: 2 }}>
+        <Card variant="outlined" sx={{ p: 2, mb: 2, backgroundColor: '#f0f9ff', borderColor: '#5B0429', borderRadius: '4px' }}>
             <Stack spacing={2}>
                 {addingToFolder && (
-                    <Box sx={{ p: 1, px: 2, bgcolor: '#e6f7ff', border: '1px solid #5B0429', borderRadius: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <FolderIcon color="primary" fontSize="small" />
-                        <Typography variant="body2" color="primary">
+                    <Box sx={{ p: 1, px: 2, bgcolor: '#e6f7ff', border: '1px solid #5B0429', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Folder size={18} color="#5B0429" />
+                        <Typography variant="body2" color="#5B0429">
                             Adding to folder: <strong>{addingToFolder}</strong>
                         </Typography>
                     </Box>
                 )}
 
                 <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="flex-start">
-                    <InsertDriveFileIcon color="primary" sx={{ mt: 1 }} />
+                    <FileText size={20} color="#5B0429" style={{ marginTop: '8px' }} />
 
                     <Box sx={{ flexGrow: 1, width: '100%' }}>
                         <Grid container spacing={2} alignItems="center">
@@ -178,15 +187,13 @@ const UnifiedDocumentControl = ({
                                         label="Type"
                                         onChange={(e) => setNewDoc({ ...newDoc, type: e.target.value })}
                                         size='small'
-
-
                                     >
-                                        <MenuItem value="Project Document"><InsertDriveFileIcon color="primary" fontSize="small" /> <span>Project Document</span></MenuItem>
-                                        <MenuItem value="Specification"><DescriptionIcon color="secondary" fontSize="small" /> <span>Specification</span></MenuItem>
-                                        <MenuItem value="Drawing"><ImageIcon color="action" fontSize="small" /> <span>Drawing</span></MenuItem>
-                                        <MenuItem value="Report"><ExcelIcon color="success" fontSize="small" /> <span>Report</span></MenuItem>
-                                        <MenuItem value="Certificate"><PdfIcon color="error" fontSize="small" /> <span>Certificate</span></MenuItem>
-                                        <MenuItem value="Other"><UnknownIcon color="action" fontSize="small" /> <span>Other</span></MenuItem>
+                                        <MenuItem value="Project Document"><FileText size={16} color="#5B0429" style={{ marginRight: '8px' }} /> <span>Project Document</span></MenuItem>
+                                        <MenuItem value="Specification"><FileText size={16} color="#5B0429" style={{ marginRight: '8px' }} /> <span>Specification</span></MenuItem>
+                                        <MenuItem value="Drawing"><Image size={16} color="#5B0429" style={{ marginRight: '8px' }} /> <span>Drawing</span></MenuItem>
+                                        <MenuItem value="Report"><FileSpreadsheet size={16} color="#5B0429" style={{ marginRight: '8px' }} /> <span>Report</span></MenuItem>
+                                        <MenuItem value="Certificate"><FileText size={16} color="#cf1322" style={{ marginRight: '8px' }} /> <span>Certificate</span></MenuItem>
+                                        <MenuItem value="Other"><HelpCircle size={16} color="#5B0429" style={{ marginRight: '8px' }} /> <span>Other</span></MenuItem>
                                     </Select>
                                 </FormControl>
                             </Grid>
@@ -200,28 +207,35 @@ const UnifiedDocumentControl = ({
                                     sx={{ bgcolor: 'white' }}
                                 />
                             </Grid>
-                            {/* <Grid item xs={12} md={3}>
+                            <Grid item xs={12} md={3}>
                                 <Button
                                     fullWidth
                                     component="label"
                                     variant="outlined"
-                                    startIcon={<AttachFileIcon />}
-                                    sx={{ textTransform: 'none', bgcolor: 'white', height: '40px' }}
+                                    startIcon={<Paperclip size={18} />}
+                                    sx={{ 
+                                        textTransform: 'none', 
+                                        bgcolor: 'white', 
+                                        height: '40px',
+                                        color: '#5B0429',
+                                        borderColor: '#5B0429',
+                                        borderRadius: '4px',
+                                        '&:hover': {
+                                            bgcolor: 'rgba(91,4,41,0.05)',
+                                            borderColor: '#4a0322'
+                                        }
+                                    }}
                                 >
-                                    {newDoc.file ? (
-                                        <Typography noWrap variant="body2" sx={{ maxWidth: '100%' }}>
-                                            {newDoc.file.name}
-                                        </Typography>
-                                    ) : (
-                                        "Attach File"
-                                    )}
+                                    <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>
+                                        {newDoc.file ? newDoc.file.name : "Attach File"}
+                                    </Box>
                                     <input
                                         type="file"
                                         hidden
                                         onChange={(e) => setNewDoc({ ...newDoc, file: e.target.files[0] })}
                                     />
                                 </Button>
-                            </Grid> */}
+                            </Grid>
                         </Grid>
                     </Box>
                 </Stack>
@@ -229,18 +243,17 @@ const UnifiedDocumentControl = ({
                 <Stack direction="row" spacing={1} justifyContent="flex-end">
                     <Button
                         variant="outlined"
-                        startIcon={<CloseIcon />}
+                        startIcon={<X size={18} />}
                         onClick={handleReset}
-                        sx={{ textTransform: 'none' }}
+                        sx={{ textTransform: 'none', color: '#5B0429', borderColor: '#5B0429', borderRadius: '20px', height: '40px' }}
                     >
                         Cancel
                     </Button>
                     <Button
                         variant="contained"
-                        color="primary"
-                        startIcon={<SaveIcon />}
+                        startIcon={<Save size={18} />}
                         onClick={handleSubmitFile}
-                        sx={{ textTransform: 'none' }}
+                        sx={{ textTransform: 'none', bgcolor: '#5B0429', borderRadius: '20px', height: '40px', '&:hover': { bgcolor: '#4a0322' } }}
                     >
                         {addingToFolder ? "Add to Folder" : "Add Document"}
                     </Button>

@@ -3,6 +3,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAIAssessment } from '../../contexts/AIAssessmentContext';
 import { ProjectApiService } from '../../services/api/ProjectAPIService';
 import { message } from 'antd';
+import { clearAssessmentTimer } from '../AIAssessmentStatusIndicator';
+import { useState } from 'react';
 
 /**
  * Custom hook for AI Assessment operations with global state management
@@ -18,17 +20,23 @@ export const useAIAssessmentOperations = (projectData) => {
     getProjectStatus,
   } = useAIAssessment();
 
+  const [isMutationSuccess, setIsMutationSuccess] = useState(false);
+
   // Upload files to AI server mutation
   const uploadFilesToAIServerMutation = useMutation({
     mutationFn: (payload) => ProjectApiService.uploadFilesToAIserver(payload),
     onMutate: async (payload) => {
       // Start processing state
+      setIsMutationSuccess(false);
       await startAIAssessment(
         payload.project_id,
         projectData?.project_name || 'Unknown Project'
       );
     },
     onSuccess: (response, variables) => {
+      // Set local success state
+      setIsMutationSuccess(true);
+
       // Stop processing with success
       stopAIAssessment(
         variables.project_id,
@@ -36,6 +44,9 @@ export const useAIAssessmentOperations = (projectData) => {
         'Completed',
         true
       );
+
+      // Clear local timer immediately so UI can unlock
+      clearAssessmentTimer(variables.project_id);
 
       // Invalidate and refetch project details
       queryClient.invalidateQueries({
@@ -49,6 +60,7 @@ export const useAIAssessmentOperations = (projectData) => {
       );
     },
     onError: (error, variables) => {
+      setIsMutationSuccess(false);
       // Stop processing with error
       stopAIAssessment(
         variables.project_id,
@@ -56,6 +68,9 @@ export const useAIAssessmentOperations = (projectData) => {
         'Failed',
         false
       );
+
+      // Clear local timer
+      clearAssessmentTimer(variables.project_id);
 
       // Show error message
       message.error(
@@ -78,6 +93,7 @@ export const useAIAssessmentOperations = (projectData) => {
       return;
     }
 
+    setIsMutationSuccess(false);
     // Prepare file paths
     let files = [];
     if (projectData?.project_documents?.length > 0) {
@@ -117,6 +133,8 @@ export const useAIAssessmentOperations = (projectData) => {
     // State
     currentProjectStatus,
     isProcessing: uploadFilesToAIServerMutation.isPending,
+    isGlobalProcessing: isProjectProcessing(projectData?.project_id),
+    isMutationSuccess,
 
     // Actions
     handleRunAIAssessment,

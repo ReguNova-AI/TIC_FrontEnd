@@ -198,29 +198,19 @@ const RiskAssessmentTab = ({ projectData }) => {
   };
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-      <Box
-        sx={{
-          padding: "20px",
-          borderRadius: "10px",
-          border: "1px solid #e4e4e4",
-          backgroundColor: "#fff",
-        }}
-      >
-        {/* Header bar — unchanged */}
+      <Box sx={{ width: '100%' }}>
+        {/* Header bar — Hidded per user request to clean up report UX */}
         <Box
           sx={{
-            display: "flex",
+            display: "none",
             justifyContent: "space-between",
             alignItems: "center",
-            marginBottom: "10px",
+            padding: "16px",
             borderBottom: "1px solid #f0f0f0",
-            paddingBottom: "15px",
+            backgroundColor: "#fafafa"
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Typography style={{ fontSize: "18px" }}>
-              {PROJECT_DETAIL_PAGE.RISK_SUMMARY}
-            </Typography>
             <RiskSummaryStatusIndicator
               projectId={projectId}
               variant="progress"
@@ -292,12 +282,12 @@ const RiskAssessmentTab = ({ projectData }) => {
         {/* State-based messages (loading / error / empty) */}
         {renderRiskSummary()}
 
-        {/* ✅ Always mounted so containerRef is available when useEffect fires */}
         <Box
           sx={{
             maxHeight: "65vh",
             overflowY: "auto",
-            px: 2,
+            px: 4,
+            py: 2,
             "& table": { borderCollapse: "collapse" },
             "&::-webkit-scrollbar": { width: "8px" },
             "&::-webkit-scrollbar-thumb": {

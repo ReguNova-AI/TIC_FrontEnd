@@ -8,7 +8,7 @@ import { useAIAssessment } from '../contexts/AIAssessmentContext';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const ESTIMATED_DURATION = 180; // seconds
+export const ESTIMATED_DURATION = 120; // seconds
 const LS_KEY = (projectId) => `ai_assessment_start_${projectId}`;
 
 // ─── Message resolver ─────────────────────────────────────────────────────────
@@ -64,7 +64,7 @@ export const clearAssessmentTimer = (projectId) => {
   localStorage.removeItem(LS_KEY(projectId));
 };
 
-const getElapsedSeconds = (projectId) => {
+export const getElapsedSeconds = (projectId) => {
   const raw = localStorage.getItem(LS_KEY(projectId));
   if (!raw) return 0;
   return Math.floor((Date.now() - parseInt(raw, 10)) / 1000);
