@@ -60,7 +60,7 @@ const OverviewTab = ({
         const ext = file.name.split(".").pop();
         const payload = {
           documents: [fileDataUrl],
-          folder_name: file.name.replace(/\.[^/.]+$/, ""), // Use filename (no ext) as folder name
+          folder_name: "", // Empty for configuration files as requested
           isConfig: true,
           project_id: projectData?.project_id,
           type: ext,
@@ -83,7 +83,7 @@ const OverviewTab = ({
             document_type: "Configuration Document",
             uploaded_by_id: userdetails?.[0]?.user_id,
             uploaded_by_name: userdetails?.[0]?.user_first_name + " " + userdetails?.[0]?.user_last_name,
-            folder_name: file.name.replace(/\.[^/.]+$/, ""),
+            folder_name: "",
             document_desc: "",
             file_path: filePath,
             risk_information: { risk_level: " ", mitigation: " " },
@@ -160,7 +160,7 @@ const OverviewTab = ({
       const ext = file.name.split(".").pop();
       const uploadPayload = {
         documents: [fileDataUrl],
-        folder_name: docToReplace.folder_name,
+        folder_name: "",
         isConfig: true,
         project_id: projectData?.project_id,
         type: ext,
@@ -178,7 +178,7 @@ const OverviewTab = ({
           document_type: "Configuration Document",
           uploaded_by_id: userdetails?.[0]?.user_id,
           uploaded_by_name: userdetails?.[0]?.user_first_name + " " + userdetails?.[0]?.user_last_name,
-          folder_name: docToReplace.folder_name,
+          folder_name: "",
           document_desc: "",
           file_path: filePath,
           risk_information: { risk_level: " ", mitigation: " " },

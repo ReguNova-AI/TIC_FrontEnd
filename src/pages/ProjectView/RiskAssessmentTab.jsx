@@ -145,6 +145,7 @@ const RiskAssessmentTab = ({ projectData }) => {
         type: ext,
         project_id: projectId,
         isConfig: true,
+        folder_name: "", // Empty for configuration files
         file_name: file.name,
       };
       console.log(payload, "payload");
