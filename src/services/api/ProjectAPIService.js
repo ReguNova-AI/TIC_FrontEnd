@@ -32,6 +32,14 @@ const _deleteProjectDocument = (documentId, versionId) => {
   );
 };
 
+const _deleteRiskSummary = (versionId) => {
+  return BaseApiService.delete(
+    `/api/v1/risk_summary/${versionId}`,
+    null,
+    null,
+  );
+};
+
 const _extractParameters = (payload) => {
   return BaseApiService.post(`/api/v3/parameters/extract`, null, payload);
 };
@@ -240,6 +248,7 @@ export const ProjectApiService = {
   uploadProjectDocument: _uploadProjectDocument,
   createProjectDocument: _createProjectDocument,
   deleteProjectDocument: _deleteProjectDocument,
+  deleteRiskSummary: _deleteRiskSummary,
   extractParameters: _extractParameters,
   getRiskSummary: _getRiskSummary,
   downloadRiskSummary: _downloadRiskSummary,

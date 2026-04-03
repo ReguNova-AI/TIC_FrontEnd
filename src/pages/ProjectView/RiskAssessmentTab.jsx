@@ -9,7 +9,7 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import DownloadIcon from "@mui/icons-material/Download";
 import { renderAsync } from "docx-preview";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
-import { PROJECT_DETAIL_PAGE } from "shared/constants";
+import { API_ERROR_MESSAGE, PROJECT_DETAIL_PAGE } from "shared/constants";
 import { useRiskSummary } from "./useProjectQueries";
 import { ProjectApiService } from "../../services/api/ProjectAPIService";
 import RiskSummaryStatusIndicator, {
@@ -32,7 +32,12 @@ const RiskAssessmentTab = ({ projectData }) => {
   const projectId = projectData?.project_id;
   const [selectedSummary, setSelectedSummary] = useState(null);
   const [unselectedSummaries, setUnselectedSummaries] = useState(null);
-  const { data: riskSummaries, isLoading, error } = useRiskSummary(projectId);
+  const {
+    data: riskSummaries,
+    isLoading,
+    error,
+    refetch: refetchRiskSummaries,
+  } = useRiskSummary(projectId);
   useEffect(() => {
     setSelectedSummary(riskSummaries?.[0]);
   }, [riskSummaries]);
@@ -127,6 +132,26 @@ const RiskAssessmentTab = ({ projectData }) => {
     return null; // content is rendered into containerRef by renderAsync
   };
 
+  const handleDeleteSummary = async () => {
+    try {
+      const response = await ProjectApiService.deleteRiskSummary(
+        selectedSummary.version_id,
+      );
+
+      message.success(response.message || "Document deleted successfully!");
+
+      // Call the callback to refresh project data in parent component
+      refetchRiskSummaries();
+    } catch (error) {
+      console.error("Delete failed:", error);
+      message.error(
+        error?.error?.message ||
+          API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR ||
+          "Failed to delete document!",
+      );
+    }
+  };
+
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
       <Box
@@ -208,6 +233,7 @@ const RiskAssessmentTab = ({ projectData }) => {
               {index + 1}
               <button onClick={() => setSelectedSummary(summary)}>View</button>
               <button onClick={handleDownloadFullDocx}>Download</button>
+              <button onClick={handleDeleteSummary}>Delete</button>
             </li>
           ))}
       </ul>
