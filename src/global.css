@@ -27,6 +27,25 @@
     hue-rotate(316deg) brightness(92%) contrast(107%);
 }
 
-.docx-preview{
+.docx-preview {
   padding: 0px !important;
+  table {
+    width: 100% !important;
+    td:nth-child(n + 1):nth-child(-n + 2),
+    th:nth-child(n + 1):nth-child(-n + 2) {
+      width: 6% !important;
+    }
+    td:nth-child(3),
+    th:nth-child(3) {
+      width: 10% !important;
+    }
+    td:nth-child(4),
+    th:nth-child(4) {
+      width: 35% !important;
+    }
+    td:nth-child(5),
+    th:nth-child(5) {
+      width: 40% !important;
+    }
+  }
 }

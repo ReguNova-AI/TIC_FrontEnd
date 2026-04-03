@@ -20,6 +20,7 @@ import { getFileIcon } from "./FileStructureView";
 import { FileUploadApiService } from "services/api/FileUploadAPIService";
 import CheckOutlined from "@ant-design/icons/CheckOutlined";
 import { message, Progress, Modal } from "antd";
+import DeleteForever from "@mui/icons-material/DeleteForever";
 
 const RiskAssessmentTab = ({ projectData }) => {
   const containerRef = useRef(null);
@@ -198,6 +199,19 @@ const RiskAssessmentTab = ({ projectData }) => {
               }}
             >
               Download Report
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<DeleteForever />}
+              onClick={handleDeleteSummary}
+              disabled={!selectedSummary?.doc_path_aws || isLoading}
+              size="small"
+              sx={{
+                textTransform: "none",
+                "&:hover": { backgroundColor: "#e3f2fd" },
+              }}
+            >
+              Delete Report
             </Button>
           </Box>
         </Box>
