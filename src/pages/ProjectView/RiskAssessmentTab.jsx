@@ -10,7 +10,6 @@ import DownloadIcon from "@mui/icons-material/Download";
 import { renderAsync } from "docx-preview";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import { API_ERROR_MESSAGE, PROJECT_DETAIL_PAGE } from "shared/constants";
-import { useRiskSummary } from "./useProjectQueries";
 import { ProjectApiService } from "../../services/api/ProjectAPIService";
 import RiskSummaryStatusIndicator, {
   markRiskSummaryStart,
@@ -21,6 +20,7 @@ import { FileUploadApiService } from "services/api/FileUploadAPIService";
 import CheckOutlined from "@ant-design/icons/CheckOutlined";
 import { message, Progress, Modal } from "antd";
 import DeleteForever from "@mui/icons-material/DeleteForever";
+import { useDownloadRiskSummary, useRiskSummaries } from "./useRiskSummary";
 
 const RiskAssessmentTab = ({ projectData }) => {
   const containerRef = useRef(null);
@@ -38,7 +38,11 @@ const RiskAssessmentTab = ({ projectData }) => {
     isLoading,
     error,
     refetch: refetchRiskSummaries,
-  } = useRiskSummary(projectId);
+  } = useRiskSummaries(projectId);
+  const { data: downloadedData } = useDownloadRiskSummary(
+    selectedSummary?.version_id,
+  );
+
   useEffect(() => {
     setSelectedSummary(riskSummaries?.[0]);
   }, [riskSummaries]);
@@ -48,19 +52,15 @@ const RiskAssessmentTab = ({ projectData }) => {
     );
     setUnselectedSummaries(remainingSummaries);
   }, [selectedSummary]);
-  console.log(riskSummaries, "riskSummaries");
 
   useEffect(() => {
-    if (!selectedSummary?.doc_path_aws) return;
+    if (!downloadedData) return;
 
     const renderDocx = async () => {
       setIsDocxRendering(true);
       setRenderError(null);
       try {
-        const response = await ProjectApiService.downloadRiskSummary(
-          selectedSummary?.version_id,
-        );
-        const arrayBuffer = await response.data.arrayBuffer();
+        const arrayBuffer = await downloadedData.data.arrayBuffer();
 
         await renderAsync(arrayBuffer, containerRef.current, null, {
           className: "docx-preview",
@@ -82,7 +82,7 @@ const RiskAssessmentTab = ({ projectData }) => {
     };
 
     renderDocx();
-  }, [selectedSummary?.doc_path_aws, projectId]); // ✅ stable primitive dep
+  }, [downloadedData]); // ✅ stable primitive dep
 
   const handleDownloadFullDocx = () => {
     if (!selectedSummary?.doc_path_aws) return;

@@ -235,26 +235,6 @@ export const useUpdateProjectChecklist = () => {
   });
 };
 
-// Risk Summary Hook
-export const useRiskSummary = (projectId) => {
-  return useQuery({
-    queryKey: PROJECT_QUERY_KEYS.riskSummary(projectId),
-    queryFn: () => ProjectApiService.getRiskSummary(projectId),
-    enabled: !!projectId,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    refetchOnWindowFocus: false,
-    select: (response) => {
-      console.log("Risk summary response:", response);
-      // console.error("Risk summary doc path:", response?.data?.risk_summary?.doc_path_aws);
-      // Handle different response formats
-      return response.data.risk_summaries ?? [];
-    },
-    onError: (error) => {
-      console.error("Failed to fetch risk summary:", error);
-    },
-  });
-};
-
 // Chat History Hook
 export const useChatHistory = (projectId) => {
   return useQuery({
