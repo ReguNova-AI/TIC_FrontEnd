@@ -30,17 +30,30 @@ const RiskAssessmentTab = ({ projectData }) => {
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const projectId = projectData?.project_id;
-
-  const { data: riskSummary, isLoading, error } = useRiskSummary(projectId);
+  const [selectedSummary, setSelectedSummary] = useState(null);
+  const [unselectedSummaries, setUnselectedSummaries] = useState(null);
+  const { data: riskSummaries, isLoading, error } = useRiskSummary(projectId);
+  useEffect(() => {
+    setSelectedSummary(riskSummaries?.[0]);
+  }, [riskSummaries]);
+  useEffect(() => {
+    const remainingSummaries = riskSummaries?.filter(
+      (summary) => summary?.version_id !== selectedSummary?.version_id,
+    );
+    setUnselectedSummaries(remainingSummaries);
+  }, [selectedSummary]);
+  console.log(riskSummaries, "riskSummaries");
 
   useEffect(() => {
-    if (!riskSummary?.doc_path_aws) return;
+    if (!selectedSummary?.doc_path_aws) return;
 
     const renderDocx = async () => {
       setIsDocxRendering(true);
       setRenderError(null);
       try {
-        const response = await ProjectApiService.downloadRiskSummary(projectId);
+        const response = await ProjectApiService.downloadRiskSummary(
+          selectedSummary?.version_id,
+        );
         const arrayBuffer = await response.data.arrayBuffer();
 
         await renderAsync(arrayBuffer, containerRef.current, null, {
@@ -63,13 +76,16 @@ const RiskAssessmentTab = ({ projectData }) => {
     };
 
     renderDocx();
-  }, [riskSummary?.doc_path_aws, projectId]); // ✅ stable primitive dep
+  }, [selectedSummary?.doc_path_aws, projectId]); // ✅ stable primitive dep
 
   const handleDownloadFullDocx = () => {
-    if (!riskSummary?.doc_path_aws) return;
+    if (!selectedSummary?.doc_path_aws) return;
     const link = document.createElement("a");
-    link.href = `${apiPath}/${riskSummary.doc_path_aws}`;
-    link.setAttribute("download", riskSummary.doc_path_aws.split("/").pop());
+    link.href = `${apiPath}/${selectedSummary.doc_path_aws}`;
+    link.setAttribute(
+      "download",
+      selectedSummary.doc_path_aws.split("/").pop(),
+    );
     document.body.appendChild(link);
     link.click();
     link.parentNode.removeChild(link);
@@ -104,8 +120,8 @@ const RiskAssessmentTab = ({ projectData }) => {
       );
     }
 
-    if (!riskSummary) {
-      return <Typography>No Risk Summary available.</Typography>;
+    if (!selectedSummary) {
+      return <Typography>This Risk Summary is not available.</Typography>;
     }
 
     return null; // content is rendered into containerRef by renderAsync
@@ -140,7 +156,7 @@ const RiskAssessmentTab = ({ projectData }) => {
               projectId={projectId}
               variant="progress"
               size="small"
-              isRegenerating={!!riskSummary}
+              isRegenerating={!!selectedSummary}
             />
           </Box>
 
@@ -149,7 +165,7 @@ const RiskAssessmentTab = ({ projectData }) => {
               variant="outlined"
               startIcon={<DownloadIcon />}
               onClick={handleDownloadFullDocx}
-              disabled={!riskSummary?.doc_path_aws || isLoading}
+              disabled={!selectedSummary?.doc_path_aws || isLoading}
               size="small"
               sx={{
                 textTransform: "none",
@@ -178,13 +194,23 @@ const RiskAssessmentTab = ({ projectData }) => {
             },
             // hide until rendered — avoids flash of empty box
             display:
-              riskSummary && !isDocxRendering && !renderError
+              selectedSummary && !isDocxRendering && !renderError
                 ? "block"
                 : "none",
           }}
           ref={containerRef}
         />
       </Box>
+      <ul>
+        {unselectedSummaries?.length > 0 &&
+          unselectedSummaries.map((summary, index) => (
+            <li>
+              {index + 1}
+              <button onClick={() => setSelectedSummary(summary)}>View</button>
+              <button onClick={handleDownloadFullDocx}>Download</button>
+            </li>
+          ))}
+      </ul>
       <Modal
         open={openModal}
         footer={null}

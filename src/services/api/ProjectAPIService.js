@@ -213,9 +213,9 @@ const _uploadFilesToAIserver = (payload) => {
   return BaseApiService.post(`/api/v3/run-assessment`, null, payload);
 };
 
-const _downloadRiskSummary = (projectId) => {
+const _downloadRiskSummary = (versionId) => {
   return BaseApiService.get(
-    `/api/v1/project_document/download-risk-summary/${projectId}`,
+    `/api/v1/project_document/download-risk-summary/${versionId}`,
     null,
     null,
     { responseType: "blob" },
