@@ -13,7 +13,7 @@ import UnifiedFileTree from "../../components/UnifiedFileTree"; // Added
 
 // --- Utility: format size
 const formatFileSize = (bytes) => {
-  if (!bytes) return "0 Bytes";
+  if (!bytes) return "";
   const k = 1024;
   const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
