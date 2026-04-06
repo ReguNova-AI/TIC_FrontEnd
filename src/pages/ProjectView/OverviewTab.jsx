@@ -199,9 +199,13 @@ const OverviewTab = ({
     }
   };
 
-  // Filter configuration documents
+  // Filter configuration documents (where document_type is "Configuration Document" OR folder_name is null/empty)
   const configDocs = (projectData?.project_documents || []).filter(
-    (doc) => doc.document_type === "Configuration Document"
+    (doc) => 
+      doc.document_type === "Configuration Document" || 
+      !doc.folder_name || 
+      doc.folder_name === "null" || 
+      doc.folder_name === ""
   );
 
   return (

@@ -164,17 +164,21 @@ export const ProjectCreationProvider = ({ children }) => {
             });
           }
           const folder = folderMap.get(folderName);
-          folder.files.push({
-            id: generateId(),
-            name: doc.document_name,
-            size: doc.size || 0,
-            sizeFormatted: formatFileSize(doc.size || 0),
-            path: doc.path || doc.file_path,
-            progress: 100,
-            document_id: doc.document_id,
-            version_id: doc.version_id,
-            file: null,
-          });
+          const docPath = doc.path || doc.file_path;
+          
+          if (docPath) {
+            folder.files.push({
+              id: generateId(),
+              name: doc.document_name,
+              size: doc.size || 0,
+              sizeFormatted: formatFileSize(doc.size || 0),
+              path: docPath,
+              progress: 100,
+              document_id: doc.document_id,
+              version_id: doc.version_id,
+              file: null,
+            });
+          }
         }
       });
 
@@ -484,11 +488,40 @@ export const ProjectCreationProvider = ({ children }) => {
   }, [createdProjectId, userdetails]);
 
   // ---- Step 2: Folder / File helpers ----
-  const addFolder = useCallback((name) => {
-    const newFolder = { id: generateId(), name, files: [] };
+  const addFolder = useCallback(async (name) => {
+    let newFolder = { id: generateId(), name, files: [] };
+
+    if (createdProjectId) {
+      const payload = {
+        project_id: createdProjectId,
+        document_name: name,
+        uploaded_by_id: userdetails?.[0]?.user_id,
+        uploaded_by_name:
+          userdetails?.[0]?.user_first_name +
+          " " +
+          userdetails?.[0]?.user_last_name,
+        folder_name: name,
+        file_path: null,
+        risk_information: {
+          risk_level: " ",
+          mitigation: " ",
+        },
+        information_extract: {
+          summary: " ",
+        },
+      };
+
+      try {
+        await ProjectApiService.createProjectDocument(payload);
+      } catch (error) {
+        console.error("Failed to sync folder to DB:", error);
+        throw error;
+      }
+    }
+
     setFolders((prev) => [...prev, newFolder]);
     return newFolder;
-  }, []);
+  }, [createdProjectId, userdetails]);
 
   const renameFolder = useCallback((folderId, newName) => {
     setFolders((prev) =>

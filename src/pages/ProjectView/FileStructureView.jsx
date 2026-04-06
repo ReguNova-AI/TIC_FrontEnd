@@ -464,7 +464,11 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading, disable
 
   const combinedDocuments = useMemo(() => {
     const apiDocs = (data?.project_documents || []).filter(
-      (doc) => doc.document_type !== "Configuration Document"
+      (doc) => 
+        doc.document_type !== "Configuration Document" && 
+        doc.folder_name && 
+        doc.folder_name !== "null" && 
+        doc.folder_name !== ""
     );
     return [...apiDocs, ...localFolders];
   }, [data, localFolders]);

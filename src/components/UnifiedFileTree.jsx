@@ -329,7 +329,8 @@ const UnifiedFileTree = ({
 
         normalized.forEach((doc) => {
             const { folder, name, id, version } = doc;
-            const isPlaceholder = !name;
+            // A placeholder is either an entry without a name or a database entry representing a folder (no file_path)
+            const isPlaceholder = !name || !doc.path;
 
             if (folder && folder !== "null") {
                 if (!folderMap[folder]) {

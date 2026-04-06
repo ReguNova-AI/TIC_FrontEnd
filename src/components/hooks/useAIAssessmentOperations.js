@@ -28,6 +28,7 @@ export const useAIAssessmentOperations = (projectData) => {
     onMutate: async (payload) => {
       // Start processing state
       setIsMutationSuccess(false);
+      message.info('AI Assessment started. Analyzing documents...');
       await startAIAssessment(
         payload.project_id,
         projectData?.project_name || 'Unknown Project'
