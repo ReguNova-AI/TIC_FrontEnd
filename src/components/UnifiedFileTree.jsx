@@ -208,7 +208,7 @@ function FolderRow({ folder, expanded, onToggle, onAddFolderFile, onDeleteFolder
                 </Box>
 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    {!readOnly && onAddFolderFile && expanded && (
+                    {!readOnly && onAddFolderFile && expanded && !aiButtonLoading && (
                         <Tooltip title="Add file to this folder">
                             <Box 
                                 onClick={(e) => { e.stopPropagation(); onAddFolderFile(folderName); }}
@@ -253,7 +253,7 @@ function FolderRow({ folder, expanded, onToggle, onAddFolderFile, onDeleteFolder
                             <Typography sx={{ fontSize: '13px', color: '#888', fontStyle: 'italic' }}>
                                 This folder is empty.
                             </Typography>
-                            {!readOnly && onAddFolderFile && (
+                            {!readOnly && onAddFolderFile && !aiButtonLoading && (
                                 <Button
                                     variant="outlined"
                                     size="small"

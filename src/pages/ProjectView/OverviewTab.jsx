@@ -21,10 +21,9 @@ const OverviewTab = ({
 }) => {
   const isAssessing = aiButtonLoading;
   
-  // Enabled if it was just completed OR if it has a historical success count > 0
-  const isActionEnabled = isCompleted || projectData?.success_count > 0;
-  // Always disable if currently assessing to prevent concurrent modification
-  const shouldDisable = isAssessing || !isActionEnabled;
+  // Available at all times except when an assessment is actively running
+  const isActionEnabled = !isAssessing;
+  const shouldDisable = isAssessing;
 
   // Configuration upload state
   const [isConfigUploading, setIsConfigUploading] = useState(false);
@@ -406,7 +405,7 @@ const OverviewTab = ({
             ref={replaceInputRef}
             onChange={onReplaceFileChange}
             style={{ display: "none" }}
-            accept=".pdf,.doc,.docx,.xls,.xlsx"
+            accept=".xlsx,.csv"
           />
 
           {configDocs.length === 0 && (

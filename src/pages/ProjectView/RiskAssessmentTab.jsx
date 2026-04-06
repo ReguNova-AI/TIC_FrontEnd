@@ -9,8 +9,8 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import DownloadIcon from "@mui/icons-material/Download";
 import { renderAsync } from "docx-preview";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
-import { PROJECT_DETAIL_PAGE } from "shared/constants";
 import { useRiskSummary } from "./useProjectQueries";
+import { useQuery } from "@tanstack/react-query";
 import { ProjectApiService } from "../../services/api/ProjectAPIService";
 import { useRiskSummaryOperations } from "../../components/hooks/useRiskSummaryOperations";
 import RiskSummaryStatusIndicator, {
@@ -22,7 +22,7 @@ import { FileUploadApiService } from "services/api/FileUploadAPIService";
 import CheckOutlined from "@ant-design/icons/CheckOutlined";
 import { message, Progress, Modal } from "antd";
 
-const RiskAssessmentTab = ({ projectData }) => {
+const RiskAssessmentTab = ({ projectData, versionId, docPath }) => {
   const containerRef = useRef(null);
   const [isDocxRendering, setIsDocxRendering] = useState(false);
   const [renderError, setRenderError] = useState(null);
@@ -33,28 +33,56 @@ const RiskAssessmentTab = ({ projectData }) => {
   const [hasItsConfig, setHasItsConfig] = useState(false);
   const existingConfigs = JSON.parse(localStorage.getItem("hasConfig") || "[]");
   const projectId = projectData?.project_id;
+
+  // Use versionId when provided (history view), else fall back to projectId (latest)
+  const activeId = versionId || projectId;
+
   useEffect(() => {
     if (existingConfigs.includes(projectId)) {
       setHasItsConfig(true);
     }
   }, [projectId]);
 
-  const { data: riskSummary, isLoading, error } = useRiskSummary(projectId);
+  // Only fetch from API when docPath is NOT already provided by the parent.
+  // When docPath IS provided, we can skip the list-fetch and render directly.
+  const { data: riskSummary, isLoading, error } = useRiskSummary(
+    docPath ? null : activeId  // pass null to disable the query when docPath is known
+  );
+
+  // Resolved doc_path_aws: prefer the prop (from list), fall back to hook data
+  const resolvedDocPath = docPath || riskSummary?.doc_path_aws;
 
   const { isRiskSummaryLoading, handleRegenerateRiskSummary } =
     useRiskSummaryOperations(projectData);
 
+  // Call React Query to cache the binary document blob.
+  // Because older versions are immutable, we keep staleTime as Infinity for high performance.
+  const { 
+    data: documentArrayBuffer, 
+    isFetching: isDownloadingDocx, 
+    error: downloadError 
+  } = useQuery({
+    queryKey: ["risk_summary_docx_blob", activeId],
+    queryFn: async () => {
+      const response = await ProjectApiService.downloadRiskSummary(activeId);
+      return response.data.arrayBuffer();
+    },
+    enabled: !!resolvedDocPath && !!activeId,
+    staleTime: Infinity, 
+    refetchOnWindowFocus: false,
+  });
+
   useEffect(() => {
-    if (!riskSummary?.doc_path_aws) return;
+    if (!documentArrayBuffer || !containerRef.current) return;
+
+    // Clear the container before re-rendering a new version
+    containerRef.current.innerHTML = "";
 
     const renderDocx = async () => {
       setIsDocxRendering(true);
       setRenderError(null);
       try {
-        const response = await ProjectApiService.downloadRiskSummary(projectId);
-        const arrayBuffer = await response.data.arrayBuffer();
-
-        await renderAsync(arrayBuffer, containerRef.current, null, {
+        await renderAsync(documentArrayBuffer, containerRef.current, null, {
           className: "docx-preview",
           inWrapper: false,
           ignoreWidth: true,
@@ -74,20 +102,24 @@ const RiskAssessmentTab = ({ projectData }) => {
     };
 
     renderDocx();
-  }, [riskSummary?.doc_path_aws, projectId]); // ✅ stable primitive dep
+  }, [documentArrayBuffer, activeId]); // re-render whenever the active arrayBuffer changes
+
+  useEffect(() => {
+    if (downloadError) setRenderError("Failed to load document preview.");
+  }, [downloadError]);
 
   const handleDownloadFullDocx = () => {
-    if (!riskSummary?.doc_path_aws) return;
+    if (!resolvedDocPath) return;
     const link = document.createElement("a");
-    link.href = `${apiPath}/${riskSummary.doc_path_aws}`;
-    link.setAttribute("download", riskSummary.doc_path_aws.split("/").pop());
+    link.href = `${apiPath}/${resolvedDocPath}`;
+    link.setAttribute("download", resolvedDocPath.split("/").pop());
     document.body.appendChild(link);
     link.click();
     link.parentNode.removeChild(link);
   };
 
   const renderRiskSummary = () => {
-    if (error) {
+    if (error && !docPath) {
       return (
         <Alert severity="error" sx={{ mt: 2 }}>
           {error?.message || "Failed to fetch risk summary data."}
@@ -99,24 +131,18 @@ const RiskAssessmentTab = ({ projectData }) => {
       return <Alert severity="warning">{renderError}</Alert>;
     }
 
-    if (isDocxRendering) {
+    if (isDocxRendering || isDownloadingDocx) {
       return (
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            py: 8,
-          }}
-        >
+        <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", py: 8 }}>
           <CircularProgress />
           <Typography sx={{ ml: 2 }}>Loading document...</Typography>
         </Box>
       );
     }
 
-    if (!riskSummary && !isRiskSummaryLoading) {
-      return <Typography>No Risk Summary available.</Typography>;
+    // Only show "No Risk Summary" when we have no docPath from parent AND no hook data
+    if (!resolvedDocPath && !isLoading && !isRiskSummaryLoading) {
+      return <Typography sx={{ p: 2, color: "#888" }}>No Risk Summary available.</Typography>;
     }
 
     return null; // content is rendered into containerRef by renderAsync
@@ -297,7 +323,7 @@ const RiskAssessmentTab = ({ projectData }) => {
             },
             // hide until rendered — avoids flash of empty box
             display:
-              riskSummary && !isDocxRendering && !renderError
+              resolvedDocPath && !isDocxRendering && !renderError
                 ? "block"
                 : "none",
           }}
@@ -339,6 +365,8 @@ const RiskAssessmentTab = ({ projectData }) => {
 
 RiskAssessmentTab.propTypes = {
   projectData: PropTypes.object.isRequired,
+  versionId: PropTypes.number,
+  docPath: PropTypes.string,
 };
 
 export default RiskAssessmentTab;

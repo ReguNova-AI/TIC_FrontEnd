@@ -27,6 +27,27 @@
     hue-rotate(316deg) brightness(92%) contrast(107%);
 }
 
-.docx-preview{
+.docx-preview {
   padding: 0px !important;
 }
+
+.docx-preview table {
+  width: 100% !important;
+}
+
+.docx-preview table td:nth-child(n+1):nth-child(-n+2),
+.docx-preview table th:nth-child(n+1):nth-child(-n+2) {
+  width: 6% !important;
+}
+
+.docx-preview table td:nth-child(3),
+.docx-preview table th:nth-child(3) {
+  width: 18% !important;
+}
+
+.docx-preview table td:nth-child(4),
+.docx-preview table th:nth-child(4) {
+  width: 70% !important;
+}
+
+/* td:nth-child(5), th:nth-child(5) { width: 40% !important; } */

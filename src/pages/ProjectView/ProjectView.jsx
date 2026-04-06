@@ -175,7 +175,8 @@ const ProjectView = () => {
   
   // Use localStorage timer to bridge the gap between clicking "Run" and the backend status updating
   const elapsed = getElapsedSeconds(id);
-  const isLocalProcessing = elapsed > 0 && elapsed < ESTIMATED_DURATION;
+  // Keep true as long as there's a timer; we will cap the mathematical percentage at 99% instead of unmounting it.
+  const isLocalProcessing = elapsed > 0;
 
   const isAIAssessmentLoading =
     (isProcessing || 
@@ -189,18 +190,21 @@ const ProjectView = () => {
 
   // Helper to get true progress percentage (prevents jumping to 100% immediately during re-assessment)
   const currentProgress = useMemo(() => {
+    // Only show 100% when the backend has explicitly confirmed completion
     if (isMutationSuccess) return 100;
     const pct = parseFloat(projectData?.completion_percentage) || 0;
     
     if (isAIAssessmentLoading) {
       if (isLocalProcessing && (pct <= 0 || pct >= 100)) {
-        // Calculate a visual progress based on elapsed time (capped at 95%) 
-        // Force a minimum of 5% to prevent the 3% start.
+        // Calculate a visual progress based on elapsed time.
+        // Capped at 99% — bar stays frozen here until API resolves.
         const calculated = (getElapsedSeconds(id) / ESTIMATED_DURATION) * 100;
-        return Math.min(95, Math.max(5, calculated));
+        return Math.min(99, Math.max(5, calculated));
       }
-      // If we are loading but backend still says 100, we force it to 5% for UX
-      return (pct >= 100 || pct <= 0) ? 5 : pct; 
+      // If backend reports 100 while we are still loading, hold at 99
+      // to avoid a false "complete" flash before the mutation resolves.
+      if (pct >= 100 || pct <= 0) return 5;
+      return Math.min(99, pct); // never exceed 99 while loading
     }
     return pct;
   }, [projectData?.completion_percentage, isAIAssessmentLoading, isLocalProcessing, tick, id, isMutationSuccess]);
@@ -351,8 +355,12 @@ const ProjectView = () => {
   };
 
   const handleChange = (event, newValue) => {
-    // If not completed, not currently processing, and no historical success, prevent navigation to report/chat tabs
-    if (!(projectData?.success_count > 0 || isCompleted || isAIAssessmentLoading) && newValue > 0) {
+    // 1. If currently assessing, block Report (1) and Chat AI (2) tabs strictly
+    if (isAIAssessmentLoading && newValue > 0) {
+      return;
+    }
+    // 2. If not currently assessing and no historical success, also block
+    if (!(projectData?.success_count > 0 || isCompleted) && newValue > 0) {
       return;
     }
     // Mark this tab as visited so it renders for the first time
@@ -455,7 +463,7 @@ const ProjectView = () => {
                   </Typography>
                 </Box>
                 
-                {/* Simulated CSS Progress Bar (0 -> 95% over 90s) */}
+                {/* Progress bar driven by currentProgress — stays at 99% until API resolves */}
                 <Box sx={{ position: 'relative', height: 6, width: '100%', backgroundColor: '#f0f0f0', borderRadius: 3, overflow: 'hidden', mt: 1 }}>
                   <Box 
                     sx={{ 
@@ -463,12 +471,8 @@ const ProjectView = () => {
                       height: '100%',
                       background: 'linear-gradient(90deg, #5B0429 0%, #8b0a41 100%)',
                       borderRadius: 3,
-                      width: '2%',
-                      animation: 'simulatedProgress 90s linear forwards',
-                      '@keyframes simulatedProgress': {
-                        'from': { width: '2%' },
-                        'to': { width: '95%' }
-                      }
+                      width: `${currentProgress}%`,
+                      transition: 'width 1s linear',
                     }} 
                   />
                 </Box>
@@ -576,7 +580,7 @@ const ProjectView = () => {
               <Tab
                 label="Project Report"
                 {...a11yProps(1)}
-                disabled={!(projectData?.success_count > 0 || isCompleted || isAIAssessmentLoading)}
+                disabled={isAIAssessmentLoading || !(projectData?.success_count > 0 || isCompleted)}
                 sx={{
                   '&.Mui-disabled': { color: '#ccc', opacity: 0.6 }
                 }}
@@ -584,7 +588,7 @@ const ProjectView = () => {
               <Tab
                 label="Chat AI"
                 {...a11yProps(2)}
-                disabled={!(projectData?.success_count > 0 || isCompleted || isAIAssessmentLoading)}
+                disabled={isAIAssessmentLoading || !(projectData?.success_count > 0 || isCompleted)}
                 sx={{
                   '&.Mui-disabled': { color: '#ccc', opacity: 0.6 }
                 }}
@@ -612,72 +616,16 @@ const ProjectView = () => {
             <CustomTabPanel value={value} index={1}>
               {visitedTabs.has(1) && (
                 <Suspense fallback={<TabFallback />}>
-                  {isAIAssessmentLoading ? (
-                    <Box sx={{ 
-                      display: 'flex', 
-                      flexDirection: 'column', 
-                      alignItems: 'center', 
-                      justifyContent: 'center', 
-                      height: '100%', 
-                      minHeight: '400px',
-                      p: 4, 
-                      textAlign: 'center',
-                      bgcolor: '#fff'
-                    }}>
-                       <Box sx={{ position: 'relative', mb: 4 }}>
-                          <CircularProgress 
-                            variant="determinate" 
-                            value={100} 
-                            size={80} 
-                            thickness={2} 
-                            sx={{ color: '#f0f0f0' }} 
-                          />
-                          <CircularProgress 
-                            variant="determinate" 
-                            value={currentProgress} 
-                            size={80} 
-                            thickness={4} 
-                            sx={{ 
-                              color: '#5B0429', 
-                              position: 'absolute', 
-                              left: 0,
-                              '& .MuiCircularProgress-circle': { strokeLinecap: 'round' }
-                            }} 
-                          />
-                          <Box sx={{ 
-                            position: 'absolute', 
-                            top: 0, left: 0, bottom: 0, right: 0, 
-                            display: 'flex', alignItems: 'center', justifyContent: 'center' 
-                          }}>
-                            <Typography variant="caption" sx={{ fontWeight: 700, fontSize: '14px' }}>
-                              {Math.round(currentProgress)}%
-                            </Typography>
-                          </Box>
-                       </Box>
-                       
-                       <Typography variant="h6" sx={{ mb: 1, fontWeight: 700, color: '#1a1a1a', letterSpacing: '-0.5px' }}>
-                         AI Assessment in Progress
-                       </Typography>
-                       <Typography variant="body2" sx={{ mb: 1, color: '#666', maxWidth: '320px', lineHeight: 1.6 }}>
-                         We are currently analyzing your documents...
-                       </Typography>
-                       
-                       <Box sx={{ width: '100%', maxWidth: '300px' }}>
-                         <LinearProgress 
-                            variant="determinate" 
-                            value={currentProgress} 
-                            sx={{ 
-                              height: 6, 
-                              borderRadius: 3, 
-                              bgcolor: 'rgba(91, 4, 41, 0.08)',
-                              '& .MuiLinearProgress-bar': { bgcolor: '#5B0429', borderRadius: 3 }
-                            }} 
-                          />
-                       </Box>
-                    </Box>
-                  ) : (
-                    <SummaryReportTab projectData={projectData} />
-                  )}
+                  <SummaryReportTab
+                    projectData={projectData}
+                    handleRunAIAssessment={() => {
+                      markAssessmentStart(projectData?.project_id);
+                      handleRunAIAssessment();
+                    }}
+                    aiButtonLoading={isAIAssessmentLoading}
+                    isCompleted={isCompleted}
+                    currentProgress={currentProgress}
+                  />
                 </Suspense>
               )}
             </CustomTabPanel>
@@ -685,59 +633,12 @@ const ProjectView = () => {
             <CustomTabPanel value={value} index={2}>
               {visitedTabs.has(2) && (
                 <Suspense fallback={<TabFallback />}>
-                  {isAIAssessmentLoading ? (
-                    <Box sx={{ 
-                      display: 'flex', 
-                      flexDirection: 'column', 
-                      alignItems: 'center', 
-                      justifyContent: 'center', 
-                      height: '100%', 
-                      minHeight: '400px',
-                      p: 4, 
-                      textAlign: 'center',
-                      bgcolor: '#fff'
-                    }}>
-                       <Box sx={{ 
-                         width: 60, height: 60, borderRadius: '50%', 
-                         bgcolor: 'rgba(91, 4, 41, 0.05)', 
-                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                         mb: 3
-                       }}>
-                         <AutoAwesomeIcon sx={{ color: '#5B0429', fontSize: 30 }} />
-                       </Box>
-                       
-                       <Typography variant="h6" sx={{ mb: 1, fontWeight: 700, color: '#1a1a1a' }}>
-                         Chat AI Initializing
-                       </Typography>
-                       <Typography variant="body2" sx={{ mb: 4, color: '#666', maxWidth: '320px' }}>
-                         The AI is processing your specific project context to provide accurate answers.
-                       </Typography>
-                       
-                       <Box sx={{ width: '100%', maxWidth: '240px' }}>
-                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                            <Typography variant="caption" sx={{ color: '#888', fontWeight: 600 }}>Syncing Documents...</Typography>
-                            <Typography variant="caption" sx={{ color: '#5B0429', fontWeight: 700 }}>{Math.round(projectData?.completion_percentage || 25)}%</Typography>
-                         </Box>
-                         <LinearProgress 
-                            variant="determinate" 
-                            value={parseFloat(projectData?.completion_percentage) || 25} 
-                            sx={{ 
-                              height: 4, 
-                              borderRadius: 2, 
-                              bgcolor: 'rgba(91, 4, 41, 0.08)',
-                              '& .MuiLinearProgress-bar': { bgcolor: '#5B0429', borderRadius: 2 }
-                            }} 
-                          />
-                       </Box>
-                    </Box>
-                  ) : (
-                    <ChatAITab
-                      chatLoading={chatLoading}
-                      projectData={projectData}
-                      isQuestionActive={isChatQuestionActive}
-                      setIsQuestionActive={setIsChatQuestionActive}
-                    />
-                  )}
+                  <ChatAITab
+                    chatLoading={chatLoading}
+                    projectData={projectData}
+                    isQuestionActive={isChatQuestionActive}
+                    setIsQuestionActive={setIsChatQuestionActive}
+                  />
                 </Suspense>
               )}
             </CustomTabPanel>
