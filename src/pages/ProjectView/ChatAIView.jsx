@@ -16,86 +16,95 @@ import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 // Spring animation config
 const springTransition = { type: "spring", stiffness: 100, damping: 10 };
 
-// AI bubble — left side, gray
-const AIBubble = ({ text, isThinking = false }) => (
-  <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-start", mb: 3, maxWidth: "85%" }}>
+// AI bubble — left side, white box with top-left notch
+const AIBubble = ({ text, isThinking = false, timestamp }) => (
+  <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-start", mb: 3, maxWidth: "85%", position: "relative" }}>
     <Box
       sx={{
         position: "relative",
-        bgcolor: "#F5F5F5",
-        borderRadius: "8px",
+        bgcolor: "#FFF",
+        borderRadius: "12px",
+        border: "1px solid #EAEAEA",
         px: 2.5,
         py: 2,
         fontSize: "14px",
         lineHeight: 1.6,
-        color: "#222",
+        color: "#333",
         wordBreak: "break-word",
-        boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
-        // Speech bubble triangular notch (left)
-        "&::after": {
+        boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+        // Speech notch (top-left)
+        "&::before": {
           content: '""',
           position: "absolute",
-          bottom: "100%",
-          left: "12px",
+          top: "-10px",
+          left: "10px",
           width: 0,
           height: 0,
           borderStyle: "solid",
-          borderWidth: "0 0 10px 10px",
-          borderColor: "transparent transparent #F5F5F5 transparent",
-          transform: "translateY(1px)"
+          borderWidth: "0 10px 10px 0",
+          borderColor: "transparent #EAEAEA transparent transparent",
+        },
+        "&::after": {
+          content: '""',
+          position: "absolute",
+          top: "-8px",
+          left: "11px",
+          width: 0,
+          height: 0,
+          borderStyle: "solid",
+          borderWidth: "0 10px 10px 0",
+          borderColor: "transparent #FFF transparent transparent",
         },
       }}
     >
       {isThinking ? (
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <Typography sx={{ fontStyle: "italic", color: "#888", fontSize: "14px" }}>Thinking...</Typography>
-        </Box>
+        <Typography sx={{ fontStyle: "italic", color: "#888", fontSize: "14px" }}>Thinking...</Typography>
       ) : (
         text
       )}
     </Box>
-    {/* AI label */}
-    <Box sx={{ display: "flex", alignItems: "center", gap: 0.8, mt: 1, ml: 0.5 }}>
-      <AutoAwesomeIcon sx={{ fontSize: "14px", color: "#5B0429" }} />
-      <Typography sx={{ fontSize: "12px", color: "#666", fontWeight: 700 }}>AI</Typography>
+    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", mt: 1, px: 0.5 }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
+        <AutoAwesomeIcon sx={{ fontSize: "14px", color: "#5B0429" }} />
+        <Typography sx={{ fontSize: "12px", color: "#5B0429", fontWeight: 700 }}>AI</Typography>
+      </Box>
+      <Typography sx={{ fontSize: "12px", color: "#999", fontWeight: 500 }}>
+        {isThinking ? "Just now" : (timestamp || "Just now")}
+      </Typography>
     </Box>
   </Box>
 );
 
-// User bubble — right side, maroon
-const UserBubble = ({ text, timestamp = "Just now" }) => (
-  <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-end", mb: 3, ml: "auto", maxWidth: "85%" }}>
+// User bubble — right side, maroon box with top-right notch
+const UserBubble = ({ text }) => (
+  <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-end", mb: 3, ml: "auto", maxWidth: "85%", position: "relative" }}>
     <Box
       sx={{
         position: "relative",
         bgcolor: "#5B0429",
-        borderRadius: "8px",
+        borderRadius: "12px",
         px: 2.5,
         py: 2,
         fontSize: "14px",
         lineHeight: 1.6,
         color: "#fff",
         wordBreak: "break-word",
-        boxShadow: "0 4px 12px rgba(91,4,41,0.15)",
-        // Speech bubble triangular notch (right)
+        boxShadow: "0 4px 15px rgba(91,4,41,0.15)",
+        // Speech notch (top-right)
         "&::after": {
           content: '""',
           position: "absolute",
-          bottom: "100%",
-          right: "12px",
+          top: "-10px",
+          right: "10px",
           width: 0,
           height: 0,
           borderStyle: "solid",
-          borderWidth: "0 10px 10px 0",
-          borderColor: "transparent #5B0429 transparent transparent",
-          transform: "translateY(1px)"
+          borderWidth: "0 0 10px 10px",
+          borderColor: "transparent transparent #5B0429 transparent",
         },
       }}
     >
       {text}
-    </Box>
-    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1, mr: 0.5 }}>
-      <Typography sx={{ fontSize: "12px", color: "#999", fontWeight: 500 }}>{timestamp}</Typography>
     </Box>
   </Box>
 );
@@ -112,7 +121,7 @@ const ChatAIView = ({ data, projectId, isQuestionActive, setIsQuestionActive }) 
   const { data: chatHistoryData, isLoading: isLoadingHistory } = useChatHistory(projectId);
   const chatMutation = useChatMutation(projectId);
 
-  // Sort history Chronologically (Older Top, Newer Bottom)
+  // Sort history Reverse Chronologically (Newest Top, Older Bottom)
   const history = useMemo(() => {
     if (!chatHistoryData) return [];
     // Copy and search for date-like fields
@@ -125,23 +134,24 @@ const ChatAIView = ({ data, projectId, isQuestionActive, setIsQuestionActive }) 
       return raw.sort((a, b) => {
         const timeA = new Date(a.date || a.created_at || a.timestamp || 0).getTime();
         const timeB = new Date(b.date || b.created_at || b.timestamp || 0).getTime();
-        return timeA - timeB;
+        return timeB - timeA; // Newest first
       });
     }
 
-    // Default to oldest-first. If the API returns newest-first (common), 
-    // reversing it will provide the correct Chronological order.
-    return raw.reverse();
+    // Default to newest-first.
+    return raw;
   }, [chatHistoryData]);
 
-  // Auto-scroll to bottom
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  // Auto-scroll to top when a new question is asked
+  const scrollToTop = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [history.length, currentQuestion, response]);
+    if (currentQuestion) {
+      scrollToTop();
+    }
+  }, [currentQuestion, response]);
 
   const handleSearch = useCallback(async () => {
     if (!query.trim() || isQuestionActive) return;
@@ -194,7 +204,7 @@ const ChatAIView = ({ data, projectId, isQuestionActive, setIsQuestionActive }) 
         p: 2
       }}
     >
-      <Typography sx={{ fontWeight: 700, fontSize: '18px', color: '#1a1a1a', mb: 2, px: 1 }}>
+      <Typography sx={{ fontWeight: 700, fontSize: '20px', color: '#333', mb: 3 }}>
         Project Report
       </Typography>
       {/* ── Input row ── */}
@@ -202,12 +212,9 @@ const ChatAIView = ({ data, projectId, isQuestionActive, setIsQuestionActive }) 
         sx={{
           display: "flex",
           gap: 1.5,
-          pt: 2,
-          pb: 1.5,
-          px: 1,
+          pb: 3,
           flexShrink: 0,
           alignItems: "center",
-          borderBottom: "1px solid #f0f0f0",
         }}
       >
         <TextField
@@ -221,9 +228,10 @@ const ChatAIView = ({ data, projectId, isQuestionActive, setIsQuestionActive }) 
           disabled={isQuestionActive}
           sx={{
             "& .MuiOutlinedInput-root": {
-              borderRadius: "24px",
+              borderRadius: "4px",
               fontSize: "14px",
-              bgcolor: "#fafafa",
+              bgcolor: "#fff",
+              "& fieldset": { borderColor: "#ddd" },
               "&.Mui-focused fieldset": { borderColor: "#5B0429" },
             },
           }}
@@ -233,22 +241,36 @@ const ChatAIView = ({ data, projectId, isQuestionActive, setIsQuestionActive }) 
           onClick={handleSearch}
           disabled={isQuestionActive || !query.trim()}
           sx={{
-            minWidth: "72px",
-            height: "38px",
-            borderRadius: "24px",
+            minWidth: "90px",
+            height: "40px",
+            borderRadius: "40px", // pill shape
             textTransform: "none",
-            fontWeight: 600,
+            fontWeight: 700,
             fontSize: "14px",
             bgcolor: "#5B0429",
             boxShadow: "none",
             flexShrink: 0,
             "&:hover": { bgcolor: "#4a0322", boxShadow: "none" },
-            "&.Mui-disabled": { bgcolor: "#e0e0e0", color: "#aaa" },
+            "&.Mui-disabled": { bgcolor: "#f0f0f0", color: "#aaa" },
           }}
         >
           {isQuestionActive ? <CircularProgress size={18} color="inherit" /> : "Ask"}
         </Button>
       </Box>
+
+      {/* ── Chat area container with frame ── */}
+      <Box
+        sx={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          border: "1px solid #EAEAEA",
+          borderRadius: "4px",
+          bgcolor: "#fff",
+          minHeight: 0,
+          overflow: "hidden"
+        }}
+      >
 
       {/* ── Chat area ── */}
       <Box
@@ -264,25 +286,10 @@ const ChatAIView = ({ data, projectId, isQuestionActive, setIsQuestionActive }) 
           "&::-webkit-scrollbar-thumb": { background: "#ddd", borderRadius: "6px" },
         }}
       >
-        {/* History — oldest first */}
-        {isLoadingHistory ? (
-          <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", py: 4, gap: 1 }}>
-            <CircularProgress size={20} />
-            <Typography sx={{ color: "#888", fontSize: "14px" }}>Loading history...</Typography>
-          </Box>
-        ) : (
-          history.map((entry, index) => (
-            <Box key={`history-${index}`}>
-              <UserBubble 
-                text={entry.question} 
-                timestamp={entry.date || entry.created_at || entry.timestamp ? new Date(entry.date || entry.created_at || entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Just now"} 
-              />
-              <AIBubble text={entry.answer} />
-            </Box>
-          ))
-        )}
+        {/* Scroll anchor at the very top */}
+        <div ref={messagesEndRef} />
 
-        {/* Current live question + response */}
+        {/* Current live question + response — now at the top */}
         <motion.div
           animate={{ opacity: currentQuestion ? 1 : 0, y: currentQuestion ? 0 : 10 }}
           transition={springTransition}
@@ -297,8 +304,29 @@ const ChatAIView = ({ data, projectId, isQuestionActive, setIsQuestionActive }) 
               )}
             </Box>
           )}
-          <div ref={messagesEndRef} />
         </motion.div>
+
+        {/* History — newest first */}
+        {isLoadingHistory ? (
+          <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", py: 4, gap: 1 }}>
+            <CircularProgress size={20} />
+            <Typography sx={{ color: "#888", fontSize: "14px" }}>Loading history...</Typography>
+          </Box>
+        ) : (
+          history.map((entry, index) => {
+            const dateStr = entry.date || entry.created_at || entry.timestamp;
+            const timeLabel = dateStr 
+              ? new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+              : "Just now";
+
+            return (
+              <Box key={`history-${index}`}>
+                <UserBubble text={entry.question} />
+                <AIBubble text={entry.answer} timestamp={timeLabel} />
+              </Box>
+            );
+          })
+        )}
 
         {/* Empty state */}
         {!isLoadingHistory && history.length === 0 && !currentQuestion && (
@@ -310,6 +338,7 @@ const ChatAIView = ({ data, projectId, isQuestionActive, setIsQuestionActive }) 
           </Box>
         )}
       </Box>
+    </Box>
 
       <Snackbar
         style={{ top: "80px" }}

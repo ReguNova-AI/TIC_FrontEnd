@@ -51,7 +51,7 @@ const AdminOrgNestedListing = ({ data }) => {
   // Columns for Project table
   const projectColumns = [
     {
-      title: "Project Name",
+      title: <span style={{ textTransform: 'none', fontSize: '14px' }}>Project Name</span>,
       dataIndex: "project_name",
       key: "project_name",
       render: (text, record) => {
@@ -73,12 +73,12 @@ const AdminOrgNestedListing = ({ data }) => {
       },
     },
     {
-      title: "Project No",
+      title: <span style={{ textTransform: 'none', fontSize: '14px' }}>Project No</span>,
       dataIndex: "project_no",
       key: "project_no",
     },
     {
-      title: "No. of Runs",
+      title: <span style={{ textTransform: 'none', fontSize: '14px' }}>No. of Runs</span>,
       dataIndex: "no_of_runs",
       key: "no_of_runs",
     },
@@ -88,14 +88,14 @@ const AdminOrgNestedListing = ({ data }) => {
     //   key: "regulatory_standard",
     // },
     {
-      title: "Start Date",
+      title: <span style={{ textTransform: 'none', fontSize: '14px' }}>Start Date</span>,
       dataIndex: "created_at",
       key: "created_at",
       render: (created_at) =>
         created_at && created_at !== "null" ? formatDate(created_at) : "",
     },
     {
-      title: "Last Run",
+      title: <span style={{ textTransform: 'none', fontSize: '14px' }}>Last Run</span>,
       dataIndex: "last_run",
       key: "last_run",
       render: (last_run) =>
@@ -140,12 +140,12 @@ const AdminOrgNestedListing = ({ data }) => {
   // Columns for Industry table
   const industryColumns = [
     {
-      title: "Industry Name",
+      title: <span style={{ textTransform: 'none', fontSize: '14px' }}>Industry Name</span>,
       dataIndex: "industry_name",
       key: "industry_name",
     },
     {
-      title: "Number of Projects",
+      title: <span style={{ textTransform: 'none', fontSize: '14px' }}>Number of Projects</span>,
       dataIndex: "projects",
       key: "projects",
       render: (projects) => (projects ? projects.length : 0),
@@ -155,7 +155,7 @@ const AdminOrgNestedListing = ({ data }) => {
   // Columns for Organization table
   const columns = [
     {
-      title: "Organization",
+      title: <span style={{ textTransform: 'none', fontSize: '14px' }}>Organization</span>,
       dataIndex: "org_name",
       key: "org_name",
       render: (value, record) => (
@@ -178,13 +178,13 @@ const AdminOrgNestedListing = ({ data }) => {
       ),
     },
     {
-      title: "Total Industries",
+      title: <span style={{ textTransform: 'none', fontSize: '14px' }}>Total Industries</span>,
       dataIndex: "industries",
       key: "industries",
       render: (industries) => (industries ? industries.length : 0),
     },
     {
-      title: "Total Projects",
+      title: <span style={{ textTransform: 'none', fontSize: '14px' }}>Total Projects</span>,
       key: "total_projects",
       render: (_, record) => {
         const totalProjects = (record.industries || []).reduce(

@@ -8,13 +8,13 @@ import { extractApiError } from "shared/utility";
 // Query Keys
 export const PROJECT_QUERY_KEYS = {
   projects: "projects",
-  projectDetails: (id) => ["projects", "details", id],
+  projectDetails: (id) => ["projects", "details", id ? Number(id) : id],
   standardData: "standardData",
-  chatResponse: (projectId) => ["projects", "chat", projectId],
-  riskSummaryList: (projectId) => ["projects", "riskSummaryList", projectId],
-  riskSummary: (versionId) => ["projects", "riskSummary", versionId],
-  chatHistory: (projectId) => ["projects", "chatHistory", projectId],
-  extractedInfo: (projectId) => ["projects", "extractedInfo", projectId],
+  chatResponse: (projectId) => ["projects", "chat", projectId ? Number(projectId) : projectId],
+  riskSummaryList: (projectId) => ["projects", "riskSummaryList", projectId ? Number(projectId) : projectId],
+  riskSummary: (id) => ["projects", "riskSummary", id ? Number(id) : id],
+  chatHistory: (projectId) => ["projects", "chatHistory", projectId ? Number(projectId) : projectId],
+  extractedInfo: (projectId) => ["projects", "extractedInfo", projectId ? Number(projectId) : projectId],
 };
 
 // Custom Hooks for Project Data
@@ -117,7 +117,7 @@ export const useUploadFilesToAIServer = () => {
       message.success("Assessment completed");
     },
     onError: (error) => {
-      message.error(API_ERROR_MESSAGE.FAILED_TO_RUN_ASSESSMENT);
+      message.error(extractApiError(error));
     },
   });
 };
