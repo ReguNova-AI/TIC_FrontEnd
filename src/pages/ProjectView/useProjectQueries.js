@@ -11,7 +11,8 @@ export const PROJECT_QUERY_KEYS = {
   projectDetails: (id) => ["projects", "details", id],
   standardData: "standardData",
   chatResponse: (projectId) => ["projects", "chat", projectId],
-  riskSummary: (projectId) => ["projects", "riskSummary", projectId],
+  riskSummaryList: (projectId) => ["projects", "riskSummaryList", projectId],
+  riskSummary: (versionId) => ["projects", "riskSummary", versionId],
   chatHistory: (projectId) => ["projects", "chatHistory", projectId],
   extractedInfo: (projectId) => ["projects", "extractedInfo", projectId],
 };
@@ -235,22 +236,52 @@ export const useUpdateProjectChecklist = () => {
   });
 };
 
-// Risk Summary Hook
-export const useRiskSummary = (projectId) => {
+// Risk Summary List Hook — fetches all versions for a project
+export const useRiskSummaryList = (projectId) => {
   return useQuery({
-    queryKey: PROJECT_QUERY_KEYS.riskSummary(projectId),
+    queryKey: PROJECT_QUERY_KEYS.riskSummaryList(projectId),
     queryFn: () => ProjectApiService.getRiskSummary(projectId),
     enabled: !!projectId,
     staleTime: 1000 * 60 * 5, // 5 minutes
     refetchOnWindowFocus: false,
     select: (response) => {
-      console.log("Risk summary response:", response);
-      console.error("Risk summary doc path:", response?.data?.risk_summary?.doc_path_aws);
-      // Handle different response formats
+      // API returns { data: { risk_summaries: [...] } } when called with project_id
+      if (Array.isArray(response?.data?.risk_summaries)) {
+        // Sort descending by version_id so latest is first
+        return [...response.data.risk_summaries].sort((a, b) => b.version_id - a.version_id);
+      }
+      return [];
+    },
+    onError: (error) => {
+      console.error("Failed to fetch risk summary list:", error);
+    },
+  });
+};
+
+// Risk Summary Hook — fetches a single version detail by version_id (or project_id for legacy)
+export const useRiskSummary = (id) => {
+  return useQuery({
+    queryKey: PROJECT_QUERY_KEYS.riskSummary(id),
+    queryFn: () => ProjectApiService.getRiskSummary(id),
+    enabled: !!id,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: false,
+    select: (response) => {
+      // When called with a version_id the API returns { data: { risk_summary: {...} } }
       if (response?.data?.risk_summary?.doc_path_aws) {
         return {
           summary: response.data.risk_summary?.risks_summary,
-          doc_path_aws: response.data.risk_summary?.doc_path_aws
+          doc_path_aws: response.data.risk_summary?.doc_path_aws,
+          version_id: response.data.risk_summary?.version_id,
+        };
+      }
+      // Fallback: if the server still returns the list shape, pick the first entry
+      if (Array.isArray(response?.data?.risk_summaries) && response.data.risk_summaries.length > 0) {
+        const latest = [...response.data.risk_summaries].sort((a, b) => b.version_id - a.version_id)[0];
+        return {
+          summary: null,
+          doc_path_aws: latest.doc_path_aws,
+          version_id: latest.version_id,
         };
       }
       return null;

@@ -223,6 +223,14 @@ const _downloadRiskSummary = (projectId) => {
   );
 };
 
+const _deleteRiskSummary = (versionId) => {
+  return BaseApiService.delete(
+    `/api/v1/risk_summary/${versionId}`,
+    null,
+    null,
+  );
+};
+
 export const ProjectApiService = {
   projectCreate: _projectCreate,
   projectListing: _projectListing,
@@ -247,4 +255,5 @@ export const ProjectApiService = {
   getChatHistory: _getChatHistory,
   getExtractedInfo: _getExtractedInfo,
   uploadFilesToAIserver: _uploadFilesToAIserver,
+  deleteRiskSummary: _deleteRiskSummary,
 };

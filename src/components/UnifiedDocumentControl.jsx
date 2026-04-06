@@ -91,7 +91,7 @@ const UnifiedDocumentControl = ({
     };
 
     const renderButtons = () => (
-        <Box>
+        <Box sx={{ display: 'flex', gap: 1.5 }}>
             <Button
                 variant="text"
                 startIcon={<FolderPlus size={16} color={!disabled ? "#fff" : "rgba(91, 4, 41, 0.4)"} />}
@@ -118,6 +118,34 @@ const UnifiedDocumentControl = ({
             >
                 Create folder
             </Button>
+            {showUploadMultiple && (
+                <Button
+                    variant="outlined"
+                    startIcon={<Upload size={16} />}
+                    onClick={handleUploadFilesClick}
+                    disabled={disabled}
+                    sx={{ 
+                        textTransform: 'none', 
+                        borderRadius: '20px', 
+                        height: '34px',
+                        color: !disabled ? '#5B0429' : 'rgba(91, 4, 41, 0.4)',
+                        borderColor: !disabled ? '#5B0429' : 'rgba(91, 4, 41, 0.2)',
+                        fontWeight: 500,
+                        fontSize: '13px',
+                        px: 2.5,
+                        '&:hover': { 
+                            bgcolor: 'rgba(91, 4, 41, 0.05)',
+                            borderColor: '#4a0322'
+                        },
+                        '&.Mui-disabled': { 
+                            borderColor: 'rgba(91, 4, 41, 0.1)', 
+                            color: 'rgba(91, 4, 41, 0.4)'
+                        }
+                    }}
+                >
+                    Upload Multiple
+                </Button>
+            )}
         </Box>
     );
 
