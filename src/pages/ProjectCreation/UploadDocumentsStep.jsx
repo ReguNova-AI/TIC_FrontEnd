@@ -164,19 +164,27 @@ const UploadDocumentsStep = () => {
     const projectIdFromUrl = urlParams.get("projectId");
 
     if (!projectIdFromUrl && folders.length === 0) {
-      const folder = addFolder("Folder 1");
-      setExpandedFolders({ [folder.id]: true });
+      addFolder("Folder 1").then((folder) => {
+        setExpandedFolders({ [folder.id]: true });
+      });
     }
   }, []); // Only run once on mount
 
   // ---- Create folder ----
-  const handleCreateFolder = () => {
+  const handleCreateFolder = async () => {
     const trimmed = newFolderName.trim();
     if (!trimmed) return;
-    const folder = addFolder(trimmed);
-    setExpandedFolders((prev) => ({ ...prev, [folder.id]: true }));
-    setNewFolderName("");
-    setIsCreatingFolder(false);
+    
+    try {
+      const folder = await addFolder(trimmed);
+      setExpandedFolders((prev) => ({ ...prev, [folder.id]: true }));
+      setNewFolderName("");
+      setIsCreatingFolder(false);
+      message.success("Folder created successfully!");
+    } catch (error) {
+      console.error("Folder creation failed:", error);
+      message.error("Failed to create folder. Please try again.");
+    }
   };
 
   const handleCancelCreate = () => {

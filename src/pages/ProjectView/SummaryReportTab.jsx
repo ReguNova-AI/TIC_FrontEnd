@@ -140,6 +140,7 @@ const SummaryReportTab = ({ projectData, handleRunAIAssessment, aiButtonLoading,
   const [downloadingVersionId, setDownloadingVersionId] = useState(null);
   const [deletingVersionId, setDeletingVersionId] = useState(null);
   const viewerRef = useRef(null);
+  const prevLatestRef = useRef(null);
   const projectId = projectData?.project_id;
 
   // Step 1: fetch list of all versions using project_id
@@ -148,8 +149,13 @@ const SummaryReportTab = ({ projectData, handleRunAIAssessment, aiButtonLoading,
 
   // Step 2: once list loads, auto-select the latest version (first in sorted-desc list)
   useEffect(() => {
-    if (riskSummaries.length > 0 && selectedVersionId === null) {
-      setSelectedVersionId(riskSummaries[0].version_id);
+    if (riskSummaries.length > 0) {
+      const latestId = riskSummaries[0].version_id;
+      // Auto-select if nothing is selected yet, OR if a brand new version just arrived
+      if (selectedVersionId === null || latestId !== prevLatestRef.current) {
+        setSelectedVersionId(latestId);
+      }
+      prevLatestRef.current = latestId;
     }
   }, [riskSummaries, selectedVersionId]);
 

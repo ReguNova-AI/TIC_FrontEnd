@@ -1,4 +1,5 @@
 import React, { lazy, Suspense, useEffect, useState, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import Tabs from "@mui/material/Tabs";
@@ -17,11 +18,10 @@ const SummaryReportTab = lazy(() => import("./SummaryReportTab"));
 const ChatAITab = lazy(() => import("./ChatAITab"));
 const EditProject = lazy(() => import("./EditProject"));
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
-import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
-import { Spin, Modal, Result } from "antd";
+import { Spin, Modal, Result, message } from "antd";
 import Breadcrumbs from "@mui/material/Breadcrumbs";
 import Link from "@mui/material/Link";
 import {
@@ -36,6 +36,7 @@ import cardGrapBg from "../../assets/Card_grap.svg";
 import {
   useProjectDetails,
   useStandardData,
+  PROJECT_QUERY_KEYS,
 } from "./useProjectQueries";
 
 // Custom hooks
@@ -119,6 +120,7 @@ const ProjectView = () => {
   const location = useLocation();
   const { runAssessmentState } = location.state || {};
   const { id } = useParams();
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [chatResponse, setChatResponse] = useState([]);
   const [chatLoading, setChatloading] = useState(false);
@@ -132,6 +134,25 @@ const ProjectView = () => {
   // useEffects inside) tabs the user has never opened.
   const [visitedTabs, setVisitedTabs] = useState(new Set([0]));
   const [tick, setTick] = useState(0); // Real-time pulse for UI numbers
+  const prevStatusRef = React.useRef(null); // Track status to prevent duplicate toasts
+
+  // Helper to format timestamps (e.g., "Apr 06, 2026, 08:01 AM")
+  const formatDateTime = (dateStr) => {
+    if (!dateStr) return "";
+    try {
+      const date = new Date(dateStr);
+      return new Intl.DateTimeFormat('en-US', {
+        month: 'short',
+        day: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      }).format(date);
+    } catch (e) {
+      return dateStr;
+    }
+  };
 
   // React Query hooks
   const {
@@ -179,34 +200,44 @@ const ProjectView = () => {
   const isLocalProcessing = elapsed > 0;
 
   const isAIAssessmentLoading =
-    (isProcessing || 
-    aiStatus?.toLowerCase() === 'processing' || 
-    isLocalProcessing ||
-    (parseFloat(projectData?.completion_percentage) > 0 && parseFloat(projectData?.completion_percentage) < 100)) && !isMutationSuccess;
+    aiStatus?.toLowerCase() === 'processing' ||
+    isProcessing ||
+    isLocalProcessing;
   
-  // UI is unlocked completely ONLY when assessment is explicitly 'completed' by the backend
+  // UI is unlocked completely ONLY when assessment is explicitly 'completed'/'success' by the backend
   // OR when we just received a success response from the API call.
-  const isCompleted = (aiStatus?.toLowerCase() === 'completed' && !isLocalProcessing) || isMutationSuccess;
+  const isCompleted =
+    aiStatus?.toLowerCase() === 'completed' ||
+    aiStatus?.toLowerCase() === 'success' ||
+    isMutationSuccess;
 
-  // Helper to get true progress percentage (prevents jumping to 100% immediately during re-assessment)
+  const isFailed = aiStatus?.toLowerCase() === 'failed';
+
+  // Helper to get true progress percentage (smooth 0–99% simulation while processing)
   const currentProgress = useMemo(() => {
-    // Only show 100% when the backend has explicitly confirmed completion
+    // 1. Handle explicit mutation success immediately
     if (isMutationSuccess) return 100;
-    const pct = parseFloat(projectData?.completion_percentage) || 0;
+    
+    // 2. Extracted backend percentage (stale if high during new run)
+    const backendPct = parseFloat(projectData?.completion_percentage) || 0;
     
     if (isAIAssessmentLoading) {
-      if (isLocalProcessing && (pct <= 0 || pct >= 100)) {
-        // Calculate a visual progress based on elapsed time.
-        // Capped at 99% — bar stays frozen here until API resolves.
-        const calculated = (getElapsedSeconds(id) / ESTIMATED_DURATION) * 100;
-        return Math.min(99, Math.max(5, calculated));
-      }
-      // If backend reports 100 while we are still loading, hold at 99
-      // to avoid a false "complete" flash before the mutation resolves.
-      if (pct >= 100 || pct <= 0) return 5;
-      return Math.min(99, pct); // never exceed 99 while loading
+      // 3. Time-based simulation (moving towards 99%)
+      const elapsed = getElapsedSeconds(id);
+      const simulatedPct = (elapsed / ESTIMATED_DURATION) * 100;
+      
+      // 4. Floor: don't start from 100% (stale) or 0% (visual delay)
+      // If backend reports 100 while still processing, ignore it.
+      const currentStablePct = (backendPct >= 100 || backendPct <= 0) ? 5 : backendPct;
+      
+      // 5. Interpolate: bar moves according to whichever is ahead (backend or simulation)
+      let displayPct = Math.max(currentStablePct, simulatedPct);
+      
+      // 6. Hard Cap: never exceed 99% until status officially changes from "Processing"
+      return Math.min(99, displayPct);
     }
-    return pct;
+    
+    return backendPct;
   }, [projectData?.completion_percentage, isAIAssessmentLoading, isLocalProcessing, tick, id, isMutationSuccess]);
 
   // Polling & Real-time Ticker
@@ -368,6 +399,37 @@ const ProjectView = () => {
     setValue(newValue);
   };
 
+  // Toast notifications for AI status transitions (only on change)
+  useEffect(() => {
+    const currentStatus = aiStatus?.toLowerCase();
+    const prevStatus = prevStatusRef.current;
+
+    if (currentStatus && currentStatus !== prevStatus) {
+      // Only show toasts if this is a transition (ignore initial mount where prevStatus is null)
+      if (prevStatus !== null) {
+        if (currentStatus === "processing") {
+          message.info("Assessment in progress. Analyzing documents...");
+        } else if (currentStatus === "completed" || currentStatus === "success") {
+          message.success("AI Assessment completed successfully!");
+          
+          // Invalidate and refetch all assessment-related data automatically
+          queryClient.invalidateQueries({
+            queryKey: PROJECT_QUERY_KEYS.projectDetails(id),
+          });
+          queryClient.invalidateQueries({
+            queryKey: PROJECT_QUERY_KEYS.riskSummaryList(id),
+          });
+          queryClient.invalidateQueries({
+            queryKey: PROJECT_QUERY_KEYS.extractedInfo(id),
+          });
+        } else if (currentStatus === "failed") {
+          message.error("AI Assessment failed. Please check your documents.");
+        }
+      }
+      prevStatusRef.current = currentStatus;
+    }
+  }, [aiStatus, id, queryClient]);
+
   // Show error if project fails to load
   if (projectError || standardError) {
     return (
@@ -483,34 +545,53 @@ const ProjectView = () => {
                   <Typography variant="body1" sx={{ color: '#222', fontSize: '15px' }}>
                     <span style={{ color: '#0FA958', fontWeight: 700 }}>✓ Assessment Complete.</span> Explore your insights in <b>Project Report.</b>
                   </Typography>
-                  <Typography variant="caption" sx={{ color: '#666', fontWeight: 500 }}>
-                    100% Complete
+                  {isMutationSuccess && (
+                    <Typography variant="caption" sx={{ color: '#0FA958', fontWeight: 700 }}>
+                      100% Complete
+                    </Typography>
+                  )}
+                </Box>
+                {isMutationSuccess && (
+                  <LinearProgress 
+                    variant="determinate" 
+                    value={100} 
+                    sx={{
+                      height: 4,
+                      borderRadius: 1,
+                      backgroundColor: "rgba(15, 169, 88, 0.1)",
+                      "& .MuiLinearProgress-bar": {
+                        backgroundColor: "#0FA958",
+                        borderRadius: 1,
+                      },
+                    }}
+                  />
+                )}
+                {!isMutationSuccess && projectData?.updated_at && (
+                  <Typography variant="caption" sx={{ color: '#aaa', display: 'block', mt: 0.5 }}>
+                    Last assessed {formatDateTime(projectData.updated_at)}
+                  </Typography>
+                )}
+              </Box>
+            ) : isFailed ? (
+              <Box sx={{ width: '100%', maxWidth: '600px' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                  <Typography variant="body1" sx={{ color: '#d32f2f', fontWeight: 600, fontSize: '15px' }}>
+                    ⚠ Assessment Failed. Please check your documents or retry.
                   </Typography>
                 </Box>
-                <LinearProgress
-                  variant="determinate"
-                  value={100}
-                  sx={{
-                    height: 6,
-                    borderRadius: 3,
-                    backgroundColor: "rgba(15, 169, 88, 0.1)",
-                    "& .MuiLinearProgress-bar": {
-                      backgroundColor: "#0FA958",
-                      borderRadius: 3,
-                    },
-                  }}
-                />
-                <Typography variant="caption" sx={{ color: '#999', mt: 0.5, display: 'block' }}>
-                  Last assessed just now
-                </Typography>
+                {projectData?.updated_at && (
+                  <Typography variant="caption" sx={{ color: '#999', display: 'block', mt: 0.5 }}>
+                    Failed on {formatDateTime(projectData.updated_at)}
+                  </Typography>
+                )}
               </Box>
             ) : (
               <Box>
                 <Typography variant="body1" sx={{ color: '#222', fontSize: '15px' }}>
-                  Upload documents and run assessment to generate insights
+                  Upload documents and run AI assessment to generate insights
                 </Typography>
                 <Typography variant="caption" sx={{ color: '#aaa', display: 'block', mt: 0.5 }}>
-                  Last assessed {projectData?.completion_percentage > 0 ? "previously" : "never"}
+                  Status: {aiStatus || "Idle"}
                 </Typography>
               </Box>
             )}
@@ -541,7 +622,7 @@ const ProjectView = () => {
             >
               {isAIAssessmentLoading 
                 ? "Running assessment" 
-                : (projectData?.success_count > 0 ? "Re-Run AI Assessment" : "Run AI Assessment")}
+                : (isFailed ? "Retry AI Assessment" : (projectData?.success_count > 0 || isCompleted ? "Re-Run AI Assessment" : "Run AI Assessment"))}
             </Button>
           </Box>
         </Box>
