@@ -194,7 +194,7 @@ export const AIAssessmentProvider = ({ children }) => {
   }, [sendNotification]);
 
   // Stop AI Assessment processing
-  const stopAIAssessment = useCallback(async (projectId, projectName, status = 'Completed', success = true) => {
+  const stopAIAssessment = useCallback(async (projectId, projectName, status = 'Completed', success = true, errorMessage = null) => {
     try {
       dispatch({
         type: AI_ASSESSMENT_ACTIONS.STOP_PROCESSING,
@@ -215,7 +215,9 @@ export const AIAssessmentProvider = ({ children }) => {
 
       // Show completion message
       message[notificationType]({
-        content: `AI Assessment ${success ? 'completed' : 'failed'} for ${projectName}`,
+        content: success 
+          ? `AI Assessment completed for ${projectName}` 
+          : (errorMessage || `AI Assessment failed for ${projectName}`),
         duration: 5,
         key: `ai-assessment-${projectId}`,
       });
@@ -288,7 +290,7 @@ export const AIAssessmentProvider = ({ children }) => {
            }
          }, [sendNotification]);
 
-         const stopRiskSummaryProcessing = useCallback(async (projectId, projectName, status, success) => {
+         const stopRiskSummaryProcessing = useCallback(async (projectId, projectName, status, success, errorMessage = null) => {
            dispatch({
              type: AI_ASSESSMENT_ACTIONS.STOP_RISK_SUMMARY_PROCESSING,
              projectId,
@@ -308,7 +310,9 @@ export const AIAssessmentProvider = ({ children }) => {
 
            // Show completion message
            message[notificationType]({
-             content: `Risk assessment ${success ? 'completed' : 'failed'} for ${projectName}`,
+             content: success 
+               ? `Risk assessment completed for ${projectName}` 
+               : (errorMessage || `Risk assessment failed for ${projectName}`),
              duration: 5,
              key: `risk-assessment-${projectId}`,
            });

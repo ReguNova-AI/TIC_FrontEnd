@@ -4,6 +4,7 @@ import { useAIAssessment } from '../../contexts/AIAssessmentContext';
 import { ProjectApiService } from '../../services/api/ProjectAPIService';
 import { PROJECT_QUERY_KEYS } from '../../pages/ProjectView/useProjectQueries';
 import { message } from 'antd';
+import { extractApiError } from '../../shared/utility';
 
 /**
  * Custom hook for Risk Summary operations with global state management
@@ -51,19 +52,15 @@ export const useRiskSummaryOperations = (projectData) => {
       );
     },
     onError: (error) => {
-      // Stop processing with error
+      const errorMessage = extractApiError(error);
+      
+      // Stop processing with error and provide specific message
       stopRiskSummaryProcessing(
         projectData?.project_id,
         projectData?.project_name || 'Unknown Project',
         'Failed',
-        false
-      );
-
-      // Show error message
-      message.error(
-        error?.response?.data?.message ||
-        error?.message ||
-        'Failed to regenerate risk assessment. Please try again.'
+        false,
+        errorMessage
       );
     },
   });

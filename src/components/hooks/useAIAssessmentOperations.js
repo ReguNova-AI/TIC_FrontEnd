@@ -5,6 +5,7 @@ import { ProjectApiService } from '../../services/api/ProjectAPIService';
 import { message } from 'antd';
 import { clearAssessmentTimer } from '../AIAssessmentStatusIndicator';
 import { useState } from 'react';
+import { extractApiError } from '../../shared/utility';
 
 /**
  * Custom hook for AI Assessment operations with global state management
@@ -62,23 +63,19 @@ export const useAIAssessmentOperations = (projectData) => {
     },
     onError: (error, variables) => {
       setIsMutationSuccess(false);
-      // Stop processing with error
+      const errorMessage = extractApiError(error);
+      
+      // Stop processing with error and provide the extracted message
       stopAIAssessment(
         variables.project_id,
         projectData?.project_name || 'Unknown Project',
         'Failed',
-        false
+        false,
+        errorMessage
       );
 
       // Clear local timer
       clearAssessmentTimer(variables.project_id);
-
-      // Show error message
-      message.error(
-        error?.response?.data?.message ||
-        error?.message ||
-        'AI Assessment failed'
-      );
     },
   });
 

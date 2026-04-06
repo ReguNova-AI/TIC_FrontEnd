@@ -47,7 +47,7 @@ const NestedListing = ({ data, filterStatusValue }) => {
 
   const expandColumns = [
     {
-      title: LISTING_PAGE.PROJECT_NAME,
+      title: <span style={{ textTransform: 'none', fontSize: '14px' }}>{LISTING_PAGE.PROJECT_NAME}</span>,
       dataIndex: "project_name",
       key: "project_name",
       sorter: true,
@@ -71,14 +71,14 @@ const NestedListing = ({ data, filterStatusValue }) => {
       },
     },
     {
-      title: LISTING_PAGE.PROJECT_No,
+      title: <span style={{ textTransform: 'none', fontSize: '14px' }}>{LISTING_PAGE.PROJECT_No}</span>,
       dataIndex: "project_id",
       key: "project_id",
       sorter: true,
       sortDirections: ["ascend", "descend", "ascend"],
     },
     {
-      title: LISTING_PAGE.NO_OF_RUNS,
+      title: <span style={{ textTransform: 'none', fontSize: '14px' }}>{LISTING_PAGE.NO_OF_RUNS}</span>,
       dataIndex: "no_of_runs",
       key: "no_of_runs",
       sorter: true,
@@ -90,14 +90,14 @@ const NestedListing = ({ data, filterStatusValue }) => {
     //   key: "regulatory_standard",
     // },
     {
-      title: LISTING_PAGE.INDUSTRY,
+      title: <span style={{ textTransform: 'none', fontSize: '14px' }}>{LISTING_PAGE.INDUSTRY}</span>,
       dataIndex: "industry_name",
       key: "industry_name",
       sorter: true,
       sortDirections: ["ascend", "descend", "ascend"],
     },
     {
-      title: LISTING_PAGE.START_DATE,
+      title: <span style={{ textTransform: 'none', fontSize: '14px' }}>{LISTING_PAGE.START_DATE}</span>,
       dataIndex: "created_at",
       key: "created_at",
       sorter: true,
@@ -105,7 +105,7 @@ const NestedListing = ({ data, filterStatusValue }) => {
       render: (created_at) => (created_at ? formatDate(created_at) : ""),
     },
     {
-      title: LISTING_PAGE.LAST_RUN,
+      title: <span style={{ textTransform: 'none', fontSize: '14px' }}>{LISTING_PAGE.LAST_RUN}</span>,
       dataIndex: "last_run",
       key: "last_run",
       sorter: true,
@@ -160,7 +160,7 @@ const NestedListing = ({ data, filterStatusValue }) => {
 
   const columns = [
     {
-      title: "User",
+      title: <span style={{ textTransform: 'none', fontSize: '14px' }}>User</span>,
       key: "profile",
       render: (value, record) => {
         let avatarSrc = value.profile || "";
@@ -192,7 +192,7 @@ const NestedListing = ({ data, filterStatusValue }) => {
       },
     },
     {
-      title: "Industry",
+      title: <span style={{ textTransform: 'none', fontSize: '14px' }}>Industry</span>,
       // dataIndex: 'industry',
       key: "industry",
       render: (record) => {
@@ -206,12 +206,12 @@ const NestedListing = ({ data, filterStatusValue }) => {
       },
     },
     {
-      title: "Role",
+      title: <span style={{ textTransform: 'none', fontSize: '14px' }}>Role</span>,
       dataIndex: "role_name",
       key: "role_name",
     },
     {
-      title: "Project Created",
+      title: <span style={{ textTransform: 'none', fontSize: '14px' }}>Project Created</span>,
       dataIndex: "project_count",
       key: "project_count",
     },

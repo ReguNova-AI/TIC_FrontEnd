@@ -42,7 +42,7 @@ export const COUNT_CARD_LABELS = Object.freeze({
 
 export const LISTING_PAGE = Object.freeze({
   PROJECT_NAME: "Project Name",
-  PROJECT_No: "Project No",
+  PROJECT_No: "Project No.",
   NO_OF_RUNS: "No. of runs",
   INDUSTRY: "Industry",
   MAPPING_STANDARDS: "Mapping Standards",

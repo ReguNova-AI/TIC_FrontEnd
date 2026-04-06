@@ -133,9 +133,9 @@ const AssessmentView = () => {
       <Table sx={{ minWidth: 650 }}>
         <TableHead>
           <TableRow>
-            <TableCell><strong>Requirements</strong></TableCell>
-            <TableCell align="center"><strong>Fulfilled or Not</strong></TableCell>
-            <TableCell><strong>Explanation</strong></TableCell>
+            <TableCell sx={{ textTransform: 'none', fontWeight: 600, fontSize: '14px' }}><strong>Requirements</strong></TableCell>
+            <TableCell align="center" sx={{ textTransform: 'none', fontWeight: 600, fontSize: '14px' }}><strong>Fulfilled or Not</strong></TableCell>
+            <TableCell sx={{ textTransform: 'none', fontWeight: 600, fontSize: '14px' }}><strong>Explanation</strong></TableCell>
           </TableRow>
         </TableHead>
         <TableBody>

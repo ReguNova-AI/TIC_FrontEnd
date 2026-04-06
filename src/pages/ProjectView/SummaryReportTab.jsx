@@ -14,18 +14,7 @@ import { PROJECT_QUERY_KEYS } from "./useProjectQueries"; // Will need to invali
 import { useQueryClient } from "@tanstack/react-query";
 import { message } from "antd";
 
-// ── Section heading ──────────────────────────────────────────────────────────
-const SectionHeading = ({ children, action }) => (
-  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
-    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-      <Box sx={{ width: 3, height: 20, bgcolor: "#5B0429", borderRadius: "2px", flexShrink: 0 }} />
-      <Typography sx={{ fontWeight: 700, fontSize: "15px", color: "#1a1a1a" }}>
-        {children}
-      </Typography>
-    </Box>
-    {action}
-  </Box>
-);
+import Collapse from "@mui/material/Collapse";
 
 // ── Timestamp formatter ───────────────────────────────────────────────────────
 const timeAgo = (ts) => {
@@ -45,90 +34,149 @@ const timeAgo = (ts) => {
   return "just now";
 };
 
-// ── Report row in history table ───────────────────────────────────────────────
-const ReportRow = ({ entry, projectName, isActive, onView, onDownload, isDownloading, onDelete, isDeleting }) => {
+// ── Report Accordion Item ───────────────────────────────────────────────────
+const ReportAccordionItem = ({ 
+  entry, 
+  projectName, 
+  isOpen, 
+  onToggle, 
+  onDownload, 
+  isDownloading, 
+  onDelete, 
+  isDeleting,
+  projectData 
+}) => {
+  const itemRef = useRef(null);
+
+  // Auto-scroll when this specific item is opened
+  useEffect(() => {
+    if (isOpen) {
+      setTimeout(() => {
+        itemRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
+    }
+  }, [isOpen]);
+
   return (
-    <Box
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        px: 2,
-        py: 1.5,
-        border: "1px solid #eaeaea",
-        borderRadius: "6px",
-        bgcolor: "#fff",
-      }}
-    >
-      <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-        <FileBarChart2 size={18} color="#5B0429" strokeWidth={2} />
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <Typography sx={{ fontSize: "14px", fontWeight: 600, color: "#333" }}>
-            {projectName ? `${projectName}-report` : `project-report`}
-          </Typography>
-          <Typography sx={{ fontSize: "13px", color: "#999", ml: 1 }}>
-            {timeAgo(entry.timestamp)}
-          </Typography>
+    <Box ref={itemRef} sx={{ display: "flex", flexDirection: "column", mb: 2 }}>
+      {/* Header Row */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          px: 2,
+          py: 1.5,
+          border: "1px solid #eaeaea",
+          borderRadius: isOpen ? "6px 6px 0 0" : "6px",
+          bgcolor: "#fff",
+          zIndex: 1,
+          boxShadow: isOpen ? "0 2px 8px rgba(0,0,0,0.04)" : "none",
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <FileBarChart2 size={18} color="#5B0429" strokeWidth={2} />
+              <Typography sx={{ fontSize: "14px", fontWeight: 700, color: "#333" }}>
+                {projectName ? `${projectName}-report` : `project-report`}
+              </Typography>
+              {entry._isLatest && (
+                <Box sx={{ bgcolor: "rgba(91,4,41,0.08)", color: "#5B0429", px: 1, py: 0.2, borderRadius: "4px", fontSize: "11px", fontWeight: 700, ml: 1 }}>
+                  LATEST
+                </Box>
+              )}
+            </Box>
+            <Typography sx={{ fontSize: "12px", color: "#999", mt: 0.5, ml: 3.2 }}>
+              v{entry.version_id} • {timeAgo(entry.timestamp)}
+            </Typography>
+          </Box>
+        </Box>
+
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Button
+            size="small"
+            variant={isOpen ? "contained" : "outlined"}
+            onClick={onToggle}
+            sx={{
+              textTransform: "none",
+              fontSize: "13px",
+              borderRadius: "30px",
+              fontWeight: 600,
+              px: 3,
+              height: "32px",
+              bgcolor: isOpen ? "#5B0429" : "transparent",
+              borderColor: "#5B0429",
+              color: isOpen ? "#fff" : "#5B0429",
+              boxShadow: "none",
+              "&:hover": { 
+                borderColor: "#5B0429", 
+                bgcolor: isOpen ? "#470119" : "rgba(91,4,41,0.04)",
+                boxShadow: "none" 
+              },
+            }}
+          >
+            View
+          </Button>
+          <Button
+            size="small"
+            variant="outlined"
+            onClick={() => onDownload(entry)}
+            disabled={isDownloading}
+            sx={{
+              textTransform: "none",
+              fontSize: "13px",
+              borderRadius: "30px",
+              fontWeight: 500,
+              px: 3,
+              height: "32px",
+              borderColor: "#ddd",
+              color: "#666",
+              "&:hover": { borderColor: "#999", bgcolor: "#f9f9f9" },
+            }}
+          >
+            {isDownloading ? <CircularProgress size={14} color="inherit" /> : "Download"}
+          </Button>
+          <IconButton
+            size="small"
+            onClick={() => onDelete(entry)}
+            disabled={isDeleting}
+            sx={{
+              color: "#d32f2f",
+              bgcolor: "rgba(211,47,47,0.05)",
+              borderRadius: "6px",
+              height: "32px",
+              width: "32px",
+              ml: 0.5,
+              "&:hover": { bgcolor: "rgba(211,47,47,0.12)" },
+              "&.Mui-disabled": { opacity: 0.5 },
+            }}
+          >
+            {isDeleting ? <CircularProgress size={14} color="inherit" /> : <Trash2 size={16} />}
+          </IconButton>
         </Box>
       </Box>
 
-      <Box sx={{ display: "flex", gap: 1 }}>
-        <Button
-          size="small"
-          variant="outlined"
-          onClick={() => onView(entry)}
+      {/* Accordion Content */}
+      <Collapse in={isOpen} timeout="auto">
+        <Box
           sx={{
-            textTransform: "none",
-            fontSize: "13px",
-            borderRadius: "30px",
-            fontWeight: 500,
-            px: 3,
-            height: "32px",
-            borderColor: "rgba(91,4,41,0.5)",
-            color: "#5B0429",
-            "&:hover": { borderColor: "#5B0429", bgcolor: "rgba(91,4,41,0.04)" },
+            border: "1px solid #eaeaea",
+            borderTop: "none",
+            borderRadius: "0 0 6px 6px",
+            bgcolor: "#fff",
+            p: 2,
+            boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+            minHeight: "300px",
           }}
         >
-          View
-        </Button>
-        <Button
-          size="small"
-          variant="contained"
-          onClick={() => onDownload(entry)}
-          disabled={isDownloading}
-          sx={{
-            textTransform: "none",
-            fontSize: "13px",
-            borderRadius: "30px",
-            bgcolor: "#5B0429",
-            color: "#fff",
-            fontWeight: 500,
-            px: 3,
-            height: "32px",
-            boxShadow: "none",
-            "&:hover": { bgcolor: "#470119", boxShadow: "none" },
-          }}
-        >
-          {isDownloading ? <CircularProgress size={14} color="inherit" /> : "Download"}
-        </Button>
-        <IconButton
-          size="small"
-          onClick={() => onDelete(entry)}
-          disabled={isDeleting}
-          sx={{
-            color: "#d32f2f", // standard error/red color
-            bgcolor: "rgba(211,47,47,0.08)",
-            borderRadius: "6px",
-            height: "32px",
-            width: "32px",
-            ml: 0.5,
-            "&:hover": { bgcolor: "rgba(211,47,47,0.15)" },
-            "&.Mui-disabled": { opacity: 0.5 },
-          }}
-        >
-          {isDeleting ? <CircularProgress size={14} color="inherit" /> : <Trash2 size={16} />}
-        </IconButton>
-      </Box>
+          <RiskAssessmentTab
+            projectData={projectData}
+            versionId={entry.version_id}
+            docPath={entry.doc_path_aws}
+          />
+        </Box>
+      </Collapse>
     </Box>
   );
 };
@@ -251,90 +299,34 @@ const SummaryReportTab = ({ projectData, handleRunAIAssessment, aiButtonLoading,
   }
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 5 }}>
-      {/* ── Report Preview ──────────────────────────────────────── */}
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
       <Box>
-        <SectionHeading
-          action={
-            <Button
-              size="small"
-              variant="contained"
-              startIcon={
-                downloadingVersionId === selectedVersionId
-                  ? <CircularProgress size={14} color="inherit" />
-                  : <DownloadIcon sx={{ fontSize: 15 }} />
-              }
-              disabled={!selectedVersionId || !!downloadingVersionId}
-              onClick={handleDownloadSelected}
-              sx={{
-                textTransform: "none",
-                fontSize: "13px",
-                borderRadius: "4px",
-                bgcolor: "#5B0428",
-                color: "#fff",
-                fontWeight: 600,
-                px: 2.5,
-                py: 0.8,
-                boxShadow: "none",
-                "&:hover": { bgcolor: "#470119", boxShadow: "none" },
-                "&.Mui-disabled": { bgcolor: "#f0f0f0", color: "#bfbfbf" },
-              }}
-            >
-              Download full report
-            </Button>
-          }
-        >
-          {isLatestSelected
-            ? "Latest Report"
-            : `Historical Report — Version ${selectedVersionId}`}
-        </SectionHeading>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
+          <Box sx={{ width: 3, height: 20, bgcolor: "#5B0429", borderRadius: "2px", flexShrink: 0 }} />
+          <Typography sx={{ fontWeight: 700, fontSize: "16px", color: "#1a1a1a" }}>
+            Project Assessment Reports
+          </Typography>
+        </Box>
 
-        <Box
-          ref={viewerRef}
-          className="latest-report-preview"
-          sx={{
-            border: "1px solid #e8e8e8",
-            borderRadius: "4px",
-            overflow: "hidden",
-            bgcolor: "#fff",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-            minHeight: "300px",
-          }}
-        >
-          {/*
-            Pass versionId AND docPath from the already-fetched list.
-            This avoids a redundant GET /risk-summary/{versionId} call
-            and prevents the "No Risk Summary available" state.
-          */}
-          <RiskAssessmentTab
-            projectData={projectData}
-            versionId={selectedVersionId}
-            docPath={selectedEntry?.doc_path_aws}
-          />
+        <Box sx={{ display: "flex", flexDirection: "column" }}>
+          {annotatedList.map((entry) => (
+            <ReportAccordionItem
+              key={entry.version_id}
+              entry={entry}
+              projectName={projectData?.project_name}
+              isOpen={entry.version_id === selectedVersionId}
+              onToggle={() => 
+                setSelectedVersionId(entry.version_id === selectedVersionId ? null : entry.version_id)
+              }
+              onDownload={handleDownloadVersion}
+              isDownloading={downloadingVersionId === entry.version_id}
+              onDelete={handleDeleteVersion}
+              isDeleting={deletingVersionId === entry.version_id}
+              projectData={projectData}
+            />
+          ))}
         </Box>
       </Box>
-
-      {/* ── Version History Table ─────────────────────────────────── */}
-      {annotatedList.length > 1 && (
-        <Box>
-          <SectionHeading>Previously assessed reports</SectionHeading>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-            {annotatedList.slice(1).map((entry) => (
-              <ReportRow
-                key={entry.version_id}
-                entry={entry}
-                projectName={projectData?.project_name}
-                isActive={entry.version_id === selectedVersionId}
-                onView={handleViewReport}
-                onDownload={handleDownloadVersion}
-                isDownloading={downloadingVersionId === entry.version_id}
-                onDelete={handleDeleteVersion}
-                isDeleting={deletingVersionId === entry.version_id}
-              />
-            ))}
-          </Box>
-        </Box>
-      )}
     </Box>
   );
 };

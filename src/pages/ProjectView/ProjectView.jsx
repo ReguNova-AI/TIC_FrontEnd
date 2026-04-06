@@ -226,9 +226,10 @@ const ProjectView = () => {
       const elapsed = getElapsedSeconds(id);
       const simulatedPct = (elapsed / ESTIMATED_DURATION) * 100;
       
-      // 4. Floor: don't start from 100% (stale) or 0% (visual delay)
-      // If backend reports 100 while still processing, ignore it.
-      const currentStablePct = (backendPct >= 100 || backendPct <= 0) ? 5 : backendPct;
+      // 4. Floor/Stale Data handling: 
+      // If we just started (elapsed < 15s), ignore any backend percentage that is suspiciously high (likely stale from prev run)
+      const isStale = (elapsed < 15 && backendPct > 10);
+      const currentStablePct = (backendPct >= 100 || backendPct <= 0 || isStale) ? 5 : backendPct;
       
       // 5. Interpolate: bar moves according to whichever is ahead (backend or simulation)
       let displayPct = Math.max(currentStablePct, simulatedPct);

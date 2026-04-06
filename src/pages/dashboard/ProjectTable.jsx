@@ -57,14 +57,18 @@ function ProjectTableHead() {
     { id: "last_run", label: "Last Run", align: "left" },
     { id: "start_date", label: "Created Date", align: "left" },
     { id: "modified_date", label: "Modified Date", align: "left" },
-    { id: "actions", label: "Actions", align: "right" },
+    { id: "actions", label: "Actions", align: "center" },
   ];
 
   return (
     <TableHead>
       <TableRow>
         {headCells.map((headCell) => (
-          <TableCell key={headCell.id} align={headCell.align}>
+          <TableCell 
+            key={headCell.id} 
+            align={headCell.align}
+            sx={{ textTransform: 'none', fontWeight: 600, fontSize: '14px' }}
+          >
             {headCell.label}
           </TableCell>
         ))}
@@ -215,7 +219,7 @@ export default function ProjectTable() {
                     </TableCell>
                     <TableCell sx={{ fontSize: '13px', color: '#555' }}>{row.start_date}</TableCell>
                     <TableCell sx={{ fontSize: '13px', color: '#555' }}>{row.modified_date}</TableCell>
-                    <TableCell align="right">
+                    <TableCell align="center">
                       <Stack direction="row" spacing={1} justifyContent="center" alignItems="center">
                         <IconButton size="small">
                            <TrashLucideIcon color="#D32F2F" size={17} />

@@ -256,7 +256,7 @@ const Listing = () => {
 
   const columns = [
     {
-      title: LISTING_PAGE.PROJECT_NAME,
+      title: <span style={{ textTransform: 'none', fontSize: '14px' }}>{LISTING_PAGE.PROJECT_NAME}</span>,
       dataIndex: "project_name",
       key: "project_name",
       sorter: true,
@@ -278,14 +278,14 @@ const Listing = () => {
       ),
     },
     {
-      title: LISTING_PAGE.PROJECT_No,
+      title: <span style={{ textTransform: 'none', fontSize: '14px' }}>{LISTING_PAGE.PROJECT_No}</span>,
       dataIndex: "index",
       key: "project_id",
       sorter: true,
       sortDirections: ["ascend", "descend", "ascend"],
     },
     {
-      title: LISTING_PAGE.NO_OF_RUNS,
+      title: <span style={{ textTransform: 'none', fontSize: '14px' }}>{LISTING_PAGE.NO_OF_RUNS}</span>,
       dataIndex: "no_of_runs",
       key: "no_of_runs",
       sorter: true,
@@ -296,7 +296,7 @@ const Listing = () => {
     userRole === "Admin"
       ? [
           {
-            title: LISTING_PAGE.INDUSTRY,
+            title: <span style={{ textTransform: 'none', fontSize: '14px' }}>{LISTING_PAGE.INDUSTRY}</span>,
             dataIndex: "industry",
             key: "industry",
             sorter: true,
@@ -305,19 +305,19 @@ const Listing = () => {
         ]
       : []),
     {
-      title: LISTING_PAGE.REGULATORY_SANTARDS,
+      title: <span style={{ textTransform: 'none', fontSize: '14px' }}>{LISTING_PAGE.REGULATORY_SANTARDS}</span>,
       dataIndex: "regulatory_standard",
       key: "regulatory_standard",
     },
     {
-      title: LISTING_PAGE.START_DATE,
+      title: <span style={{ textTransform: 'none', fontSize: '14px' }}>{LISTING_PAGE.START_DATE}</span>,
       dataIndex: "created_at",
       key: "created_at",
       sorter: true,
       sortDirections: ["ascend", "descend", "ascend"],
     },
     {
-      title: LISTING_PAGE.LAST_RUN,
+      title: <span style={{ textTransform: 'none', fontSize: '14px' }}>{LISTING_PAGE.LAST_RUN}</span>,
       dataIndex: "last_run",
       key: "last_run",
       sorter: true,
@@ -361,8 +361,9 @@ const Listing = () => {
       },
     },
     {
-      title: LISTING_PAGE.ACTION,
+      title: <span style={{ textTransform: 'none' }}>{LISTING_PAGE.ACTION}</span>,
       key: "action",
+      align: "center",
       dataIndex: "status",
       render: (status, record) => (
         <Button
