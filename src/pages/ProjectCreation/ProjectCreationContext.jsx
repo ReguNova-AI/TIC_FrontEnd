@@ -27,7 +27,7 @@ export const useProjectCreation = () => {
 const generateId = () => Math.floor(1000 + Math.random() * 9000);
 
 const formatFileSize = (bytes) => {
-  if (!bytes) return "0 Bytes";
+  if (!bytes) return "";
   const k = 1024;
   const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -125,121 +125,117 @@ export const ProjectCreationProvider = ({ children }) => {
     }
   }, []);
 
+  // ---- Restore project state from project data ----
+  const restoreProjectState = useCallback((projectData) => {
+    setCreatedProjectId(projectData.project_id);
+    setCreatedProject(projectData);
+    setProjectName(projectData.project_name || "");
+    setProjectDesc(projectData.project_description || "");
+    setFormData((prev) => ({
+      ...prev,
+      projectNo: projectData.project_no || "",
+      regulatory: projectData.regulatory_standard || "",
+      industry_id: projectData.industry_id || "",
+      industry_name: projectData.industry_name || "",
+      mapping_standards: projectData.mapping_standards || "",
+    }));
+
+    const projectDocs = projectData.project_documents || [];
+    if (projectDocs.length > 0) {
+      const folderMap = new Map();
+      const configDocs = [];
+
+      projectDocs.forEach((doc) => {
+        const isConfig = !doc.folder_name || doc.folder_name?.trim() === "";
+
+        if (isConfig) {
+          configDocs.push(doc);
+        } else {
+          const folderName = doc.folder_name?.trim();
+          if (!folderName) {
+            console.warn(`Document ${doc.document_name} has no folder_name, skipping`);
+            return;
+          }
+          if (!folderMap.has(folderName)) {
+            folderMap.set(folderName, {
+              id: generateId(),
+              name: folderName,
+              files: [],
+            });
+          }
+          const folder = folderMap.get(folderName);
+          folder.files.push({
+            id: generateId(),
+            name: doc.document_name,
+            size: doc.size || 0,
+            sizeFormatted: formatFileSize(doc.size || 0),
+            path: doc.path || doc.file_path,
+            progress: 100,
+            document_id: doc.document_id,
+            version_id: doc.version_id,
+            file: null,
+          });
+        }
+      });
+
+      const restoredFolders = Array.from(folderMap.values());
+      if (restoredFolders.length > 0) {
+        setFolders(restoredFolders);
+
+        const configFilesMap = {};
+        const sortedConfigDocs = [...configDocs].sort((a, b) => {
+          const idA = a.document_id || 0;
+          const idB = b.document_id || 0;
+          return idA - idB;
+        });
+
+        if (sortedConfigDocs.length > 0) {
+          const firstConfigDoc = sortedConfigDocs[0];
+          restoredFolders.forEach((folder) => {
+            configFilesMap[folder.id] = {
+              file: null,
+              name: firstConfigDoc.document_name,
+              path: firstConfigDoc.path || firstConfigDoc.file_path,
+              document_id: firstConfigDoc.document_id,
+              version_id: firstConfigDoc.version_id,
+            };
+          });
+        }
+
+        if (Object.keys(configFilesMap).length > 0) {
+          setConfigFiles(configFilesMap);
+        }
+      }
+    }
+  }, []);
+
+  // ---- Refresh project state from server ----
+  const refreshProjectState = useCallback(async () => {
+    if (!createdProjectId) return;
+    try {
+      const response = await ProjectApiService.projectDetails(createdProjectId);
+      const projectData = response?.data?.details?.[0];
+      if (projectData) {
+        restoreProjectState(projectData);
+      }
+    } catch (error) {
+      console.error("Failed to refresh project state:", error);
+    }
+  }, [createdProjectId, restoreProjectState]);
+
   // ---- Load project from URL if exists ----
   useEffect(() => {
     const projectIdFromUrl = searchParams.get("projectId");
     if (projectIdFromUrl && !createdProjectId) {
-      // Fetch project details and restore state
       ProjectApiService.projectDetails(projectIdFromUrl)
         .then((response) => {
-          // API returns details as an array, get the first element
           const projectData = response?.data?.details?.[0];
           if (projectData) {
-            setCreatedProjectId(projectData.project_id);
-            setCreatedProject(projectData);
-            // Set form values directly
-            setProjectName(projectData.project_name || "");
-            setProjectDesc(projectData.project_description || "");
-            // Restore other form data if needed
-            setFormData((prev) => ({
-              ...prev,
-              projectNo: projectData.project_no || "",
-              regulatory: projectData.regulatory_standard || "",
-              industry_id: projectData.industry_id || "",
-              industry_name: projectData.industry_name || "",
-              mapping_standards: projectData.mapping_standards || "",
-            }));
-
-            // Restore folders and files from project_documents
-            const projectDocs = projectData.project_documents || [];
-            if (projectDocs.length > 0) {
-              // First pass: create folders from non-config documents
-              const folderMap = new Map();
-              const configDocs = [];
-
-              projectDocs.forEach((doc) => {
-                // Config files have null/empty folder_name and are Excel files
-                const isConfig = !doc.folder_name || doc.folder_name?.trim() === "";
-
-                if (isConfig) {
-                  // Collect config docs for second pass
-                  configDocs.push(doc);
-                } else {
-                  // Regular document - group by folder_name
-                  // Skip documents with empty/null folder_name (they might be orphaned)
-                  const folderName = doc.folder_name?.trim();
-                  if (!folderName) {
-                    console.warn(`Document ${doc.document_name} has no folder_name, skipping`);
-                    return; // Skip this document
-                  }
-                  if (!folderMap.has(folderName)) {
-                    folderMap.set(folderName, {
-                      id: generateId(),
-                      name: folderName,
-                      files: [],
-                    });
-                  }
-                  const folder = folderMap.get(folderName);
-                  folder.files.push({
-                    id: generateId(),
-                    name: doc.document_name,
-                    size: doc.size || 0,
-                    sizeFormatted: formatFileSize(doc.size || 0),
-                    path: doc.path || doc.file_path,
-                    progress: 100,
-                    document_id: doc.document_id,
-                    version_id: doc.version_id,
-                    file: null, // File object not stored, only metadata
-                  });
-                }
-              });
-
-              // Convert map to array and set folders
-              const restoredFolders = Array.from(folderMap.values());
-              if (restoredFolders.length > 0) {
-                setFolders(restoredFolders);
-
-                // Second pass: assign config files to folders
-                // Config files have empty folder_name, so we need to match by index or apply to all
-                // IMPORTANT: Only ONE config file per folder - use first from API order
-                const configFilesMap = {};
-
-                // Sort config docs by document_id or version_id to ensure consistent ordering
-                const sortedConfigDocs = [...configDocs].sort((a, b) => {
-                  // Sort by document_id if available, otherwise keep original order
-                  const idA = a.document_id || 0;
-                  const idB = b.document_id || 0;
-                  return idA - idB;
-                });
-
-                if (sortedConfigDocs.length > 0) {
-                  // Take only the FIRST config file from API (as per user requirement)
-                  const firstConfigDoc = sortedConfigDocs[0];
-
-                  // Apply the first config to ALL folders (global config behavior)
-                  // This ensures only ONE config file is shown across all folders
-                  restoredFolders.forEach((folder) => {
-                    configFilesMap[folder.id] = {
-                      file: null,
-                      name: firstConfigDoc.document_name,
-                      path: firstConfigDoc.path || firstConfigDoc.file_path,
-                      document_id: firstConfigDoc.document_id,
-                      version_id: firstConfigDoc.version_id,
-                    };
-                  });
-                }
-
-                // Set config files
-                if (Object.keys(configFilesMap).length > 0) {
-                  setConfigFiles(configFilesMap);
-                }
-              }
-            }
+            restoreProjectState(projectData);
           }
         })
         .catch((error) => {
           console.error("Failed to load project from URL:", error);
-          // Clear invalid projectId from URL
           setSearchParams({});
         });
     }
@@ -614,7 +610,6 @@ export const ProjectCreationProvider = ({ children }) => {
                   existingConfig.document_id,
                   existingConfig.version_id
                 );
-              } else {
               }
             } catch (error) {
               console.error("[DEBUG] Global delete - Failed to delete config for folder:", fid, error);
@@ -634,8 +629,6 @@ export const ProjectCreationProvider = ({ children }) => {
                 existingConfig.document_id,
                 existingConfig.version_id
               );
-            } else {
-              console.info("[DEBUG] No document_id or version_id, cannot delete - config:", existingConfig);
             }
             // Remove from state
             setConfigFiles((prev) => {
@@ -746,6 +739,11 @@ export const ProjectCreationProvider = ({ children }) => {
         }
       }
 
+      // Refresh project state to get latest document IDs from server
+      if (createdProjectId) {
+        await refreshProjectState();
+      }
+
       // Show success message
       setSnackData({
         show: true,
@@ -785,7 +783,7 @@ export const ProjectCreationProvider = ({ children }) => {
         setUploadModalOpen(false);
       }
     }
-  }, [createdProjectId, folders, createProjectDocumentEntry, userdetails]);
+  }, [createdProjectId, folders, createProjectDocumentEntry, userdetails, refreshProjectState]);
 
   const addFilesToFolder = useCallback(
     async (folderId, fileList) => {
@@ -1046,6 +1044,11 @@ export const ProjectCreationProvider = ({ children }) => {
         }
       }
 
+      // Refresh project state to get latest document IDs from server
+      if (createdProjectId) {
+        await refreshProjectState();
+      }
+
       // Close modal after delay for multiple files
       if (isMultiple) {
         setTimeout(() => {
@@ -1060,14 +1063,14 @@ export const ProjectCreationProvider = ({ children }) => {
         }, 1500);
       }
     },
-    [folders, createdProjectId, createProjectDocumentEntry, setConfigFileForFolder]
+    [folders, createdProjectId, createProjectDocumentEntry, setConfigFileForFolder, refreshProjectState]
   );
 
   const removeFileFromFolder = useCallback(async (folderId, fileId) => {
     const folder = folders.find((f) => f.id === folderId);
     const file = folder?.files.find((fi) => fi.id === fileId);
 
-    // If file has document_id and version_id, delete from server first
+    // Delete from server using document delete API
     if (file?.document_id && file?.version_id) {
       try {
         await ProjectApiService.deleteProjectDocument(
@@ -1077,14 +1080,6 @@ export const ProjectCreationProvider = ({ children }) => {
       } catch (error) {
         console.error("Failed to delete document from server:", error);
         // Continue with local removal even if server deletion fails
-      }
-    } else if (file?.path) {
-      // If no document_id but file has path (S3), delete from S3
-      try {
-        await FileUploadApiService.fileDelete({ path: file.path });
-      } catch (error) {
-        console.error("Failed to delete file from S3:", error);
-        // Continue with local removal even if S3 deletion fails
       }
     }
 
@@ -1111,13 +1106,6 @@ export const ProjectCreationProvider = ({ children }) => {
         );
       } catch (error) {
         console.error("Failed to delete config document:", error);
-      }
-    } else if (config?.path) {
-      // If no document_id but config has path (S3), delete from S3
-      try {
-        await FileUploadApiService.fileDelete({ path: config.path });
-      } catch (error) {
-        console.error("Failed to delete config file from S3:", error);
       }
     }
 
