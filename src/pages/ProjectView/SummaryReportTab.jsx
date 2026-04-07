@@ -12,7 +12,7 @@ import { ProjectApiService } from "../../services/api/ProjectAPIService";
 import { FileBarChart2, Calendar, User, Trash2 } from "lucide-react";
 import { PROJECT_QUERY_KEYS } from "./useProjectQueries"; // Will need to invalidate
 import { useQueryClient } from "@tanstack/react-query";
-import { message } from "antd";
+import { message, Modal } from "antd";
 
 import Collapse from "@mui/material/Collapse";
 
@@ -250,29 +250,39 @@ const SummaryReportTab = ({ projectData, handleRunAIAssessment, aiButtonLoading,
   // Delete a specific version's DOCX using version_id
   const handleDeleteVersion = async (entry) => {
     if (deletingVersionId) return;
-    setDeletingVersionId(entry.version_id);
-    try {
-      await ProjectApiService.deleteRiskSummary(entry.version_id);
-      message.success("Report deleted successfully");
-      
-      // If we just deleted the version currently being previewed, select the next available one
-      if (selectedVersionId === entry.version_id) {
-        const remaining = riskSummaries.filter(e => e.version_id !== entry.version_id);
-        if (remaining.length > 0) {
-          setSelectedVersionId(remaining[0].version_id);
-        } else {
-          setSelectedVersionId(null);
+
+    Modal.confirm({
+      title: "Delete Report",
+      content: `Are you sure you want to delete this version (v${entry.version_id})? This action cannot be undone.`,
+      okText: "Delete",
+      okType: "danger",
+      cancelText: "Cancel",
+      onOk: async () => {
+        setDeletingVersionId(entry.version_id);
+        try {
+          await ProjectApiService.deleteRiskSummary(entry.version_id);
+          message.success("Report deleted successfully");
+          
+          // If we just deleted the version currently being previewed, select the next available one
+          if (selectedVersionId === entry.version_id) {
+            const remaining = riskSummaries.filter(e => e.version_id !== entry.version_id);
+            if (remaining.length > 0) {
+              setSelectedVersionId(remaining[0].version_id);
+            } else {
+              setSelectedVersionId(null);
+            }
+          }
+          
+          // Invalidate the cache to trigger a true refetch
+          queryClient.invalidateQueries(PROJECT_QUERY_KEYS.riskSummaryList(projectId));
+        } catch (err) {
+          console.error("Delete failed:", err);
+          message.error("Failed to delete report");
+        } finally {
+          setDeletingVersionId(null);
         }
-      }
-      
-      // Invalidate the cache to trigger a true refetch
-      queryClient.invalidateQueries(PROJECT_QUERY_KEYS.riskSummaryList(projectId));
-    } catch (err) {
-      console.error("Delete failed:", err);
-      message.error("Failed to delete report");
-    } finally {
-      setDeletingVersionId(null);
-    }
+      },
+    });
   };
 
   const selectedEntry = riskSummaries.find((e) => e.version_id === selectedVersionId);
