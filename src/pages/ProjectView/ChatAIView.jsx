@@ -58,7 +58,17 @@ const AIBubble = ({ text, isThinking = false, timestamp }) => (
       }}
     >
       {isThinking ? (
-        <Typography sx={{ fontStyle: "italic", color: "#888", fontSize: "14px" }}>Thinking...</Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, py: 0.5 }}>
+          <motion.div
+            animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+            transition={{ repeat: Infinity, duration: 1.5, times: [0, 0.5, 1] }}
+          >
+            <CircularProgress size={16} sx={{ color: "#5B0429" }} />
+          </motion.div>
+          <Typography sx={{ fontStyle: "italic", color: "#888", fontSize: "14px", fontWeight: 500 }}>
+            Thinking...
+          </Typography>
+        </Box>
       ) : (
         text
       )}
@@ -143,8 +153,12 @@ const ChatAIView = ({ data, projectId, isQuestionActive, setIsQuestionActive }) 
   }, [chatHistoryData]);
 
   // Auto-scroll to top when a new question is asked
+  const scrollContainerRef = useRef(null);
+  
   const scrollToTop = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
 
   useEffect(() => {
@@ -178,7 +192,9 @@ const ChatAIView = ({ data, projectId, isQuestionActive, setIsQuestionActive }) 
         setIsQuestionActive(false);
         setCurrentQuestion("");
         setResponse("");
-      }, 300);
+        // Refetch one last time to ensure history is updated
+        queryClient.invalidateQueries({ queryKey: PROJECT_QUERY_KEYS.chatHistory(projectId) });
+      }, 800);
     } catch (errResponse) {
       setIsQuestionActive(false);
       setSnackData({
@@ -274,20 +290,22 @@ const ChatAIView = ({ data, projectId, isQuestionActive, setIsQuestionActive }) 
 
       {/* ── Chat area ── */}
       <Box
+        ref={scrollContainerRef}
         sx={{
           flex: 1,
           overflowY: "auto",
           px: 2,
-          pt: 2,
+          pt: 3, // Increased padding
           pb: 2,
           display: "flex",
           flexDirection: "column",
+          gap: 1, // Add vertical gap between elements
           "&::-webkit-scrollbar": { width: "6px" },
           "&::-webkit-scrollbar-thumb": { background: "#ddd", borderRadius: "6px" },
         }}
       >
-        {/* Scroll anchor at the very top */}
-        <div ref={messagesEndRef} />
+        {/* Scroll anchor at the very top (optional with scrollContainerRef) */}
+        <div ref={messagesEndRef} style={{ height: 0 }} />
 
         {/* Current live question + response — now at the top */}
         <motion.div
@@ -296,12 +314,9 @@ const ChatAIView = ({ data, projectId, isQuestionActive, setIsQuestionActive }) 
         >
           {currentQuestion && (
             <Box>
+              {isQuestionActive && <AIBubble isThinking />}
               <UserBubble text={currentQuestion} />
-              {isQuestionActive ? (
-                <AIBubble isThinking />
-              ) : (
-                response && <AIBubble text={response} />
-              )}
+              {!isQuestionActive && response && <AIBubble text={response} />}
             </Box>
           )}
         </motion.div>

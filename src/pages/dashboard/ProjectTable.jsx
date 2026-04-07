@@ -11,7 +11,9 @@ import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
-import { Empty, Spin } from "antd";
+import TableSortLabel from '@mui/material/TableSortLabel';
+import { visuallyHidden } from '@mui/utils';
+import { Empty, Spin, Modal } from "antd";
 
 // project import
 import { useEffect, useState } from "react";
@@ -49,33 +51,64 @@ const FileTextLucideIcon = ({ size = 18, color = "currentColor", strokeWidth = 1
 
 // ==============================|| PROJECT TABLE - HEADER ||============================== //
 
-function ProjectTableHead() {
+function ProjectTableHead({ order, orderBy, onRequestSort }) {
   const headCells = [
-    { id: "project_name", label: "Project Name", align: "left" },
-    { id: "project_no", label: "Project No", align: "left" },
-    { id: "runs", label: "No of Runs", align: "left" },
-    { id: "last_run", label: "Last Run", align: "left" },
-    { id: "start_date", label: "Created Date", align: "left" },
-    { id: "modified_date", label: "Modified Date", align: "left" },
+    { id: "project_name", label: "Project Name", align: "left", sortable: true },
+    { id: "index", label: "Project No", align: "left", sortable: true },
+    { id: "runs", label: "No of Iteration", align: "left", sortable: true },
+    { id: "last_run", label: "Last Run", align: "left", sortable: true },
+    { id: "start_date", label: "Created Date", align: "left", sortable: true },
+    { id: "modified_date", label: "Modified Date", align: "left", sortable: true },
     { id: "actions", label: "Actions", align: "center" },
   ];
+
+  const createSortHandler = (property) => (event) => {
+    onRequestSort(event, property);
+  };
 
   return (
     <TableHead>
       <TableRow>
         {headCells.map((headCell) => (
-          <TableCell 
-            key={headCell.id} 
+          <TableCell
+            key={headCell.id}
             align={headCell.align}
+            sortDirection={orderBy === headCell.id ? order : false}
             sx={{ textTransform: 'none', fontWeight: 600, fontSize: '14px' }}
           >
-            {headCell.label}
+            {headCell.sortable ? (
+              <TableSortLabel
+                active={orderBy === headCell.id}
+                direction={orderBy === headCell.id ? order : 'asc'}
+                onClick={createSortHandler(headCell.id)}
+                sx={{
+                  '& .MuiTableSortLabel-icon': {
+                    opacity: 1,
+                  },
+                }}
+              >
+                {headCell.label}
+                {orderBy === headCell.id ? (
+                  <Box component="span" sx={visuallyHidden}>
+                    {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
+                  </Box>
+                ) : null}
+              </TableSortLabel>
+            ) : (
+              headCell.label
+            )}
           </TableCell>
         ))}
       </TableRow>
     </TableHead>
   );
 }
+
+ProjectTableHead.propTypes = {
+  order: PropTypes.string.isRequired,
+  orderBy: PropTypes.string.isRequired,
+  onRequestSort: PropTypes.func.isRequired,
+};
 
 // ==============================|| PROJECT TABLE ||============================== //
 
@@ -88,12 +121,60 @@ export default function ProjectTable() {
   const [data, setData] = useState([]);
   const [viewMode, setViewMode] = useState("list");
   const [isLoading, setIsLoading] = useState(true);
+  const [order, setOrder] = useState('asc');
+  const [orderBy, setOrderBy] = useState('project_name');
 
   const [snackData, setSnackData] = useState({
     show: false,
     message: "",
     type: "error",
   });
+
+  const handleRequestSort = (event, property) => {
+    const isAsc = orderBy === property && order === 'asc';
+    setOrder(isAsc ? 'desc' : 'asc');
+    setOrderBy(property);
+  };
+
+  const descendingComparator = (a, b, orderBy) => {
+    let aValue = a[orderBy];
+    let bValue = b[orderBy];
+
+    if (orderBy === 'start_date') {
+      aValue = a.raw_start_date;
+      bValue = b.raw_start_date;
+    } else if (orderBy === 'modified_date') {
+      aValue = a.raw_modified_date;
+      bValue = b.raw_modified_date;
+    } else if (orderBy === 'last_run') {
+      aValue = a.raw_last_run;
+      bValue = b.raw_last_run;
+    }
+
+    if (bValue < aValue) {
+      return -1;
+    }
+    if (bValue > aValue) {
+      return 1;
+    }
+    return 0;
+  };
+
+  const getComparator = (order, orderBy) => {
+    return order === 'desc'
+      ? (a, b) => descendingComparator(a, b, orderBy)
+      : (a, b) => -descendingComparator(a, b, orderBy);
+  };
+
+  const stableSort = (array, comparator) => {
+    const stabilizedThis = array.map((el, index) => [el, index]);
+    stabilizedThis.sort((a, b) => {
+      const order = comparator(a[0], b[0]);
+      if (order !== 0) return order;
+      return a[1] - b[1];
+    });
+    return stabilizedThis.map((el) => el[0]);
+  };
 
   useEffect(() => {
     fetchData();
@@ -107,8 +188,11 @@ export default function ProjectTable() {
     runs,
     last_run,
     modified_date,
+    raw_start_date,
+    raw_modified_date,
+    raw_last_run
   ) => {
-    return { index, project_no, project_name, start_date, runs, last_run, modified_date };
+    return { index, project_no, project_name, start_date, runs, last_run, modified_date, raw_start_date, raw_modified_date, raw_last_run };
   };
 
   const fetchData = () => {
@@ -127,6 +211,9 @@ export default function ProjectTable() {
               project.no_of_runs ?? 0,
               project.last_run==="null"||!project.last_run ? "--":project.last_run,
               project.updated_at ? formatDate(project.updated_at) : (project.created_at ? formatDate(project.created_at) : ""),
+              project.created_at || "",
+              project.updated_at || project.created_at || "",
+              project.last_run || ""
             ),
           );
         } else {
@@ -139,6 +226,9 @@ export default function ProjectTable() {
               project.no_of_runs ?? 0,
               project.last_run==="null"||!project.last_run ? "--":project.last_run,
               project.updated_at ? formatDate(project.updated_at) : (project.created_at ? formatDate(project.created_at) : ""),
+              project.created_at || "",
+              project.updated_at || project.created_at || "",
+              project.last_run || ""
             ),
           );
         }
@@ -160,6 +250,37 @@ export default function ProjectTable() {
 
   const handleViewModeChange = (newViewMode) => {
     setViewMode(newViewMode);
+  };
+
+  const handleDelete = (projectId) => {
+    Modal.confirm({
+      title: 'Are you sure you want to delete this project?',
+      content: 'This action cannot be undone.',
+      okText: 'Yes, Delete',
+      okType: 'danger',
+      cancelText: 'No',
+      onOk: async () => {
+        try {
+          await ProjectApiService.projectDelete(projectId);
+          setSnackData({
+            show: true,
+            message: "Project deleted successfully!",
+            type: "success",
+          });
+          fetchData();
+        } catch (error) {
+          setSnackData({
+            show: true,
+            message: error?.message || "Failed to delete project",
+            type: "error",
+          });
+        }
+      },
+    });
+  };
+
+  const handleEdit = (projectId) => {
+    navigate(`/projectView/${projectId}`, { state: { project_id: projectId } });
   };
 
   const handleClick = (project_id) => {
@@ -200,9 +321,13 @@ export default function ProjectTable() {
           viewMode === "list" ? (
             <TableContainer sx={{ overflowX: "auto", bgcolor: 'white', borderRadius: '0', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
             <Table>
-              <ProjectTableHead />
+              <ProjectTableHead
+                order={order}
+                orderBy={orderBy}
+                onRequestSort={handleRequestSort}
+              />
               <TableBody>
-                {data.map((row, index) => (
+                {stableSort(data, getComparator(order, orderBy)).map((row, index) => (
                   <TableRow key={index} hover sx={{ '& td, & th': { borderBottom: '1px solid #f0f0f0' } }}>
                     <TableCell>
                       <Link
@@ -221,13 +346,13 @@ export default function ProjectTable() {
                     <TableCell sx={{ fontSize: '13px', color: '#555' }}>{row.modified_date}</TableCell>
                     <TableCell align="center">
                       <Stack direction="row" spacing={1} justifyContent="center" alignItems="center">
-                        <IconButton size="small">
+                        <IconButton size="small" onClick={() => handleDelete(row.index)}>
                            <TrashLucideIcon color="#D32F2F" size={17} />
                         </IconButton>
-                        <IconButton size="small">
+                        <IconButton size="small" onClick={() => handleEdit(row.index)}>
                            <PenLucideIcon color="#757575" size={17} />
                         </IconButton>
-                        <IconButton size="small">
+                        <IconButton size="small" onClick={() => handleClick(row.index)}>
                            <FileTextLucideIcon color="#5B0428" size={17} />
                         </IconButton>
                       </Stack>

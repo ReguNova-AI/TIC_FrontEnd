@@ -102,6 +102,10 @@ const _projectListing = (page, limit, sortBy, sortOrder, searchText, statusFilte
   }
 };
 
+const _projectDelete = (id) => {
+  return BaseApiService.delete(`/api/v1/projects/${id}`, null, null);
+};
+
 const _projectDetails = (id) => {
   return BaseApiService.get(`/api/v1/projects/${id}`, null, null);
 };
@@ -256,4 +260,5 @@ export const ProjectApiService = {
   getExtractedInfo: _getExtractedInfo,
   uploadFilesToAIserver: _uploadFilesToAIserver,
   deleteRiskSummary: _deleteRiskSummary,
+  projectDelete: _projectDelete,
 };

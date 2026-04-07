@@ -70,8 +70,11 @@ const ReportAccordionItem = ({
           border: "1px solid #eaeaea",
           borderRadius: isOpen ? "6px 6px 0 0" : "6px",
           bgcolor: "#fff",
-          zIndex: 1,
-          boxShadow: isOpen ? "0 2px 8px rgba(0,0,0,0.04)" : "none",
+          position: "sticky",
+          top: -16, // Accounts for the p: 2 (16px) padding in the parent container to stick at the very top
+          zIndex: 10,
+          boxShadow: isOpen ? "0 4px 12px rgba(0,0,0,0.08)" : "none",
+          transition: "box-shadow 0.2s ease-in-out",
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
