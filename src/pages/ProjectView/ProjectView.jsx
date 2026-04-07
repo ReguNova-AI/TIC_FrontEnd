@@ -44,6 +44,7 @@ import AIAssessmentStatusIndicator, {
 } from "../../components/AIAssessmentStatusIndicator";
 import { getStatusChipProps } from "shared/utility";
 import { brand } from "themes/theme/brand";
+import { ProjectApiService } from "services/api/ProjectAPIService";
 
 // Helper function to create a history object based on changes
 export { createHistoryObject };
@@ -176,9 +177,7 @@ const ProjectView = () => {
   const runAIAssessmentAndGenerateSummary = async () => {
     try {
       markAssessmentStart(projectData?.project_id);
-      const res=handleRunAIAssessment();
-      console.log(res,"res");
-        
+      const res = handleRunAIAssessment();
     } catch (error) {
       console.log(error, "error");
     }
@@ -364,6 +363,16 @@ const ProjectView = () => {
     );
   }
 
+  const handleDeleteProject = async () => {
+    try {
+      const response = await ProjectApiService.deleteProject(id);
+      if (response.status) navigate("/projects");
+      console.log(response, "response");
+    } catch (error) {
+      console.log(error, "error");
+    }
+  };
+
   return (
     <>
       <div role="presentation" style={{ margin: "0px 0px 20px 0px" }}>
@@ -455,20 +464,27 @@ const ProjectView = () => {
                       </Typography>
                     )}
                   </Box>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    {/* <Box sx={{ marginRight: 3 }}>
+
+                  {isAIAssessmentLoading ? (
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      {/* <Box sx={{ marginRight: 3 }}>
                       {!isAIAssessmentLoading&&statusChip(projectData?.AIAssesmentStatus)}
                     </Box> */}
-                    <Box>
-                      <AIAssessmentStatusIndicator
-                        projectId={projectData?.project_id}
-                        isLoading={isAIAssessmentLoading}
-                        backendStatus={projectData?.AIAssesmentStatus}
-                        variant="progress"
-                        size="small"
-                      />
+                      <Box>
+                        <AIAssessmentStatusIndicator
+                          projectId={projectData?.project_id}
+                          isLoading={isAIAssessmentLoading}
+                          backendStatus={projectData?.AIAssesmentStatus}
+                          variant="progress"
+                          size="small"
+                        />
+                      </Box>
                     </Box>
-                  </Box>
+                  ) : (
+                    <Button variant="contained" onClick={handleDeleteProject}>
+                      Delete
+                    </Button>
+                  )}
                 </Box>
                 <LinearProgress
                   variant="determinate"

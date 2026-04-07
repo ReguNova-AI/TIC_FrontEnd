@@ -113,6 +113,10 @@ const _projectDetails = (id) => {
   return BaseApiService.get(`/api/v1/projects/${id}`, null, null);
 };
 
+const _deleteProject = (id) => {
+  return BaseApiService.delete(`/api/v1/projects/${id}`, null, null);
+};
+
 const _projectCounts = (id) => {
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
   const user_id = userdetails?.[0]?.user_id;
@@ -234,6 +238,7 @@ export const ProjectApiService = {
   projectCreate: _projectCreate,
   projectListing: _projectListing,
   projectDetails: _projectDetails,
+  deleteProject: _deleteProject,
   projectCounts: _projectCounts,
   projectUpdate: _projectUpdate,
   projectChatUpdate: _projectChatUpdate,
