@@ -18,20 +18,20 @@ export const createHistoryObject = (data, previousData, heading, userName) => {
     changes: {
       projectName:
         heading === "projectDetails"
-          ? data?.projectName !== previousData.project_name
-            ? data.projectName
+          ? (data?.projectName || data?.project_name) !== previousData.project_name
+            ? (data?.projectName || data?.project_name)
             : ""
           : "",
       projectNo:
         heading === "projectDetails"
-          ? data?.projectNo !== previousData.project_no
-            ? data.projectNo
+          ? (data?.projectNo || data?.project_no) !== previousData.project_no
+            ? (data?.projectNo || data?.project_no)
             : ""
           : "",
       description:
         heading === "projectDetails"
-          ? data?.projectDesc !== previousData.project_description
-            ? data.projectDesc
+          ? (data?.projectDesc || data?.project_description) !== previousData.project_description
+            ? (data?.projectDesc || data?.project_description)
             : ""
           : "",
       invite: "",
@@ -95,10 +95,10 @@ export const useProjectOperations = (projectData, userName) => {
       const previousData = { ...projectData };
 
       if (heading === "projectDetails") {
-        updatedResponse.project_name = data.projectName;
-        updatedResponse.project_description = data.projectDesc;
-        updatedResponse.project_no = data.projectNo;
-        updatedResponse.invite_members = data.invite_Users;
+        updatedResponse.project_name = data.projectName || data.project_name;
+        updatedResponse.project_description = data.projectDesc || data.project_description;
+        updatedResponse.project_no = data.projectNo || data.project_no;
+        updatedResponse.invite_members = data.invite_Users || data.invite_members;
         updatedResponse.invited_user_list = data.invited_user_list;
       }
 

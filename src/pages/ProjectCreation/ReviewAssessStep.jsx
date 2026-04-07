@@ -11,6 +11,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import FolderOutlinedIcon from "@mui/icons-material/FolderOutlined";
 import InsertDriveFileOutlinedIcon from "@mui/icons-material/InsertDriveFileOutlined";
 import GridOnOutlinedIcon from "@mui/icons-material/GridOnOutlined";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { useProjectCreation } from "./ProjectCreationContext";
 
@@ -24,34 +25,56 @@ const formatFileSize = (bytes) => {
 };
 
 // ---- Section wrapper with left accent (matches reviewscreen.jpg) ----
-const ReviewSection = ({ title, children }) => (
+const ReviewSection = ({ title, onEdit, children }) => (
   <Box sx={{ mb: 4 }}>
-    {/* Section title with left maroon accent bar */}
-    <Typography
-      variant="subtitle1"
+    <Box
       sx={{
-        fontWeight: 700,
-        color: "#262626",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
         mb: 2,
-        pl: 1.5,
-        borderLeft: `2px solid ${brand.primary}`,
       }}
     >
-      {title}
-    </Typography>
+      <Typography
+        variant="subtitle1"
+        sx={{
+          fontWeight: 700,
+          color: "#262626",
+          pl: 1.5,
+          borderLeft: `2px solid ${brand.primary}`,
+        }}
+      >
+        {title}
+      </Typography>
+      {onEdit && (
+        <IconButton
+          size="small"
+          onClick={onEdit}
+          sx={{
+            color: brand.primary,
+            "&:hover": { backgroundColor: "rgba(91,4,41,0.04)" },
+          }}
+        >
+          <EditOutlinedIcon fontSize="small" />
+          <Typography variant="caption" sx={{ ml: 0.5, fontWeight: 500 }}>
+            Edit
+          </Typography>
+        </IconButton>
+      )}
+    </Box>
     {children}
     <Divider sx={{ mt: 3, borderColor: "rgba(91,4,41,0.1)" }} />
   </Box>
 );
 
 const ReviewAssessStep = () => {
-  const { projectName, projectDesc, folders, configFiles, removeFileFromFolder } =
+  const { projectName, projectDesc, folders, configFiles, setActiveStep } =
     useProjectCreation();
 
   return (
     <Box>
       {/* ---- 1. Project Details ---- */}
-      <ReviewSection title="Project Details">
+      <ReviewSection title="Project Details" onEdit={() => setActiveStep(0)}>
         <Box sx={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           <Box sx={{ minWidth: 160 }}>
             <Typography
@@ -82,7 +105,7 @@ const ReviewAssessStep = () => {
       </ReviewSection>
 
       {/* ---- 2. Documents Uploads ---- */}
-      <ReviewSection title="Documents Uploads">
+      <ReviewSection title="Documents Uploads" onEdit={() => setActiveStep(1)}>
         {folders.length === 0 ? (
           <Typography variant="body2" sx={{ color: "#8c8c8c" }}>
             No documents uploaded.
@@ -91,7 +114,7 @@ const ReviewAssessStep = () => {
           folders.map((folder) => (
             <Accordion
               key={folder.id}
-              defaultExpanded={false}
+              defaultExpanded={true}
               disableGutters
               sx={{
                 mb: 1,
@@ -154,15 +177,6 @@ const ReviewAssessStep = () => {
                     <Typography variant="caption" sx={{ color: "#8c8c8c" }}>
                       {formatFileSize(f.size)}
                     </Typography>
-                    <IconButton
-                      size="small"
-                      onClick={() => removeFileFromFolder(folder.id, f.id)}
-                    >
-                      <DeleteOutlineIcon
-                        fontSize="small"
-                        sx={{ color: "#ff4d4f" }}
-                      />
-                    </IconButton>
                   </Box>
                 ))}
                 {folder.files.length === 0 && (
@@ -177,7 +191,7 @@ const ReviewAssessStep = () => {
       </ReviewSection>
 
       {/* ---- 3. Project Configuration ---- */}
-      <ReviewSection title="Project Configuration">
+      <ReviewSection title="Project Configuration" onEdit={() => setActiveStep(2)}>
         {folders.length === 0 ? (
           <Typography variant="body2" sx={{ color: "#8c8c8c" }}>
             No configuration files uploaded.
@@ -191,7 +205,7 @@ const ReviewAssessStep = () => {
               return (
                 <Accordion
                   key={folder.id}
-                  defaultExpanded={false}
+                  defaultExpanded={true}
                   disableGutters
                   sx={{
                     mb: 1,

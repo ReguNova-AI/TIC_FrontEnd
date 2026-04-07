@@ -15,13 +15,12 @@ import InsertDriveFileOutlinedIcon from "@mui/icons-material/InsertDriveFileOutl
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import CloudUploadOutlinedIcon from "@mui/icons-material/CloudUploadOutlined";
-import CheckIcon from "@mui/icons-material/Check";
-import CloseIcon from "@mui/icons-material/Close";
 import GridOnOutlinedIcon from "@mui/icons-material/GridOnOutlined";
 import { useDropzone } from "react-dropzone";
 import { Modal, message } from "antd";
 import { brand } from "themes/theme/brand";
 import { useProjectCreation } from "./ProjectCreationContext";
+import { useSearchParams } from "react-router-dom";
 
 // ---- Format bytes ----
 const formatFileSize = (bytes) => {
@@ -144,8 +143,9 @@ const UploadDocumentsStep = () => {
   const {
     folders,
     addFolder,
-    renameFolder,
     removeFolder,
+    renameFolder,
+    renameFolderInDb,
     addFilesToFolder,
     removeFileFromFolder,
   } = useProjectCreation();
@@ -156,16 +156,32 @@ const UploadDocumentsStep = () => {
   const [renameValue, setRenameValue] = useState("");
   const [expandedFolders, setExpandedFolders] = useState({});
   const nameInputRef = useRef(null);
+  const [searchParams] = useSearchParams();
 
-  // Auto-create "Folder 1" by default when component mounts (only for new projects)
+  // Auto-expand all folders by default or when new ones are added
   useEffect(() => {
-    // Only auto-create folder if this is a brand new project (no projectId in URL)
-    const urlParams = new URLSearchParams(window.location.search);
-    const projectIdFromUrl = urlParams.get("projectId");
+    if (folders.length > 0) {
+      setExpandedFolders((prev) => {
+        const newExpanded = { ...prev };
+        folders.forEach((f) => {
+          if (newExpanded[f.id] === undefined) {
+            newExpanded[f.id] = true;
+          }
+        });
+        return newExpanded;
+      });
+    }
+  }, [folders]);
 
-    if (!projectIdFromUrl && folders.length === 0) {
-      addFolder("Folder 1").then((folder) => {
-        setExpandedFolders({ [folder.id]: true });
+  // Auto-create "Folder 1" by default when component initially mounts
+  useEffect(() => {
+    // Only auto-create if there's no project ID in the URL and no folders exist
+    const projectIdInUrl = searchParams.get("projectId");
+    if (!projectIdInUrl && folders.length === 0) {
+      addFolder("Folder 1", false).then((folder) => {
+        if (folder) {
+          setExpandedFolders({ [folder.id]: true });
+        }
       });
     }
   }, []); // Only run once on mount
@@ -212,6 +228,25 @@ const UploadDocumentsStep = () => {
     });
   };
 
+  const handleDeleteFolder = (folder) => {
+    Modal.confirm({
+      title: "Delete Folder",
+      content: `Are you sure you want to delete "${folder.name}" and all its contents? This action cannot be undone.`,
+      okText: "Delete",
+      okType: "danger",
+      cancelText: "Cancel",
+      onOk: async () => {
+        try {
+          await removeFolder(folder.id);
+          message.success("Folder deleted successfully!");
+        } catch (error) {
+          console.error("Folder delete failed:", error);
+          message.error("Failed to delete folder!");
+        }
+      },
+    });
+  };
+
   // ---- Rename ----
   const startRename = (folder) => {
     setRenamingFolderId(folder.id);
@@ -221,6 +256,8 @@ const UploadDocumentsStep = () => {
   const applyRename = () => {
     if (renameValue.trim()) {
       renameFolder(renamingFolderId, renameValue.trim());
+      // Sync rename to database
+      renameFolderInDb(renamingFolderId, renameValue.trim());
     }
     setRenamingFolderId(null);
     setRenameValue("");
@@ -434,6 +471,15 @@ const UploadDocumentsStep = () => {
                   }}
                 >
                   <EditOutlinedIcon fontSize="small" sx={{ color: "#8c8c8c" }} />
+                </IconButton>
+                <IconButton
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteFolder(folder);
+                  }}
+                >
+                  <DeleteOutlineIcon fontSize="small" sx={{ color: "#ff4d4f" }} />
                 </IconButton>
               </>
             )}

@@ -24,6 +24,21 @@ const ProjectConfigurationStep = () => {
   const [expandedFolders, setExpandedFolders] = useState({});
   const [replacingFolderId, setReplacingFolderId] = useState(null);
 
+  // Auto-expand all folders by default or when new ones are added
+  React.useEffect(() => {
+    if (folders.length > 0) {
+      setExpandedFolders((prev) => {
+        const newExpanded = { ...prev };
+        folders.forEach((f) => {
+          if (newExpanded[f.id] === undefined) {
+            newExpanded[f.id] = true;
+          }
+        });
+        return newExpanded;
+      });
+    }
+  }, [folders]);
+
   // Handle global config upload (applies to all folders)
   const handleGlobalUpload = () => {
     globalFileInputRef.current?.click();

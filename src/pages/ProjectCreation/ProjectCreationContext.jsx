@@ -141,34 +141,51 @@ export const ProjectCreationProvider = ({ children }) => {
     }));
 
     const projectDocs = projectData.project_documents || [];
-    if (projectDocs.length > 0) {
-      const folderMap = new Map();
-      const configDocs = [];
+    const configDocs = [];
+    const tempFolderMap = new Map(); // key: lowercase name, value: { id, name, files }
 
-      projectDocs.forEach((doc) => {
-        const isConfig = !doc.folder_name || doc.folder_name?.trim() === "";
+    projectDocs.forEach((doc) => {
+      const docName = doc.document_name || "";
+      const lowerDocName = docName.toLowerCase();
+      
+      // Resilient config detection:
+      // 1. Files with no folder_name (legacy global configs)
+      // 2. Files explicitly marked as config via flags
+      // 3. Fallback: Excel/CSV files with 'config' or 'template' in their name
+      const isConfig = !doc.folder_name || 
+                       doc.folder_name?.trim() === "" || 
+                       doc.isConfig === true || 
+                       doc.is_config === true ||
+                       doc.document_type === "Configuration Document" ||
+                       doc.document_type === "Config File" ||
+                       (isExcelFile(docName) && (lowerDocName.includes("config") || lowerDocName.includes("template")));
 
-        if (isConfig) {
-          configDocs.push(doc);
-        } else {
-          const folderName = doc.folder_name?.trim();
-          if (!folderName) {
-            console.warn(`Document ${doc.document_name} has no folder_name, skipping`);
-            return;
-          }
-          if (!folderMap.has(folderName)) {
-            folderMap.set(folderName, {
-              id: generateId(),
-              name: folderName,
-              files: [],
-            });
-          }
-          const folder = folderMap.get(folderName);
-          const docPath = doc.path || doc.file_path;
-          
-          if (docPath) {
+      if (isConfig) {
+        configDocs.push(doc);
+      } else {
+        const originalName = doc.folder_name?.trim();
+        const lowerName = originalName.toLowerCase();
+        
+        if (!tempFolderMap.has(lowerName)) {
+          tempFolderMap.set(lowerName, {
+            id: null, // Will try to stabilize below
+            name: originalName,
+            files: [],
+            folder_document_id: null,
+            folder_version_id: null,
+          });
+        }
+        
+        const folder = tempFolderMap.get(lowerName);
+        const docPath = doc.path || doc.file_path;
+        
+        // Strictly filter out folder skeleton records (file_path is null/empty)
+        // AND ensure each file is unique by document_id to prevent duplicates
+        if (docPath && docPath.trim() !== "") {
+          const isDuplicate = folder.files.some(f => f.document_id === doc.document_id);
+          if (!isDuplicate) {
             folder.files.push({
-              id: generateId(),
+              id: doc.document_id || generateId(),
               name: doc.document_name,
               size: doc.size || 0,
               sizeFormatted: formatFileSize(doc.size || 0),
@@ -179,38 +196,63 @@ export const ProjectCreationProvider = ({ children }) => {
               file: null,
             });
           }
-        }
-      });
-
-      const restoredFolders = Array.from(folderMap.values());
-      if (restoredFolders.length > 0) {
-        setFolders(restoredFolders);
-
-        const configFilesMap = {};
-        const sortedConfigDocs = [...configDocs].sort((a, b) => {
-          const idA = a.document_id || 0;
-          const idB = b.document_id || 0;
-          return idA - idB;
-        });
-
-        if (sortedConfigDocs.length > 0) {
-          const firstConfigDoc = sortedConfigDocs[0];
-          restoredFolders.forEach((folder) => {
-            configFilesMap[folder.id] = {
-              file: null,
-              name: firstConfigDoc.document_name,
-              path: firstConfigDoc.path || firstConfigDoc.file_path,
-              document_id: firstConfigDoc.document_id,
-              version_id: firstConfigDoc.version_id,
-            };
-          });
-        }
-
-        if (Object.keys(configFilesMap).length > 0) {
-          setConfigFiles(configFilesMap);
+        } else {
+          // It's a folder-level document record (file_path is null or empty)
+          // Store it as the folder's skeleton ID
+          folder.folder_document_id = doc.document_id;
+          folder.folder_version_id = doc.version_id;
         }
       }
+    });
+
+    const restoredFoldersRaw = Array.from(tempFolderMap.values());
+    
+    // If no folders found on backend, provide a local-only "Folder 1" as a default starting point
+    if (restoredFoldersRaw.length === 0) {
+      restoredFoldersRaw.push({
+        id: generateId(),
+        name: "Folder 1",
+        files: [],
+      });
     }
+
+    setFolders((prevFolders) => {
+      // 1. Stabilize IDs and Names from previous state
+      const stabilizedFolders = restoredFoldersRaw.map((newFolder) => {
+        const existing = prevFolders.find(
+          (f) => f.name.toLowerCase() === newFolder.name.toLowerCase()
+        );
+        return {
+          ...newFolder,
+          id: existing ? existing.id : (newFolder.id || generateId()),
+          name: existing ? existing.name : newFolder.name, // Keep existing casing
+        };
+      });
+
+      // 2. Synchronize config files based on stabilized IDs and folder names
+      if (configDocs.length > 0) {
+        const newConfigFiles = {};
+        
+        // Find the best config for each folder. Since folder_name is now empty for all configs,
+        // we'll apply the first available config as a project-level default for all the folders.
+        const defaultDoc = configDocs[0];
+        
+        stabilizedFolders.forEach((folder) => {
+          if (defaultDoc) {
+            newConfigFiles[folder.id] = {
+              file: null,
+              name: defaultDoc.document_name,
+              path: defaultDoc.path || defaultDoc.file_path,
+              document_id: defaultDoc.document_id,
+              version_id: defaultDoc.version_id,
+            };
+          }
+        });
+        setConfigFiles(newConfigFiles);
+      }
+
+      return stabilizedFolders;
+    });
   }, []);
 
   // ---- Refresh project state from server ----
@@ -229,8 +271,19 @@ export const ProjectCreationProvider = ({ children }) => {
 
   // ---- Load project from URL if exists ----
   useEffect(() => {
+    // Auto-create "Folder 1" locally if no folders exist
+    if (folders.length === 0) {
+      addFolder("Folder 1", false).then((folder) => {
+        if (folder) {
+          setExpandedFolders({ [folder.id]: true });
+        }
+      });
+    }
+  }, []); // Only run once on mount
+
+  useEffect(() => {
     const projectIdFromUrl = searchParams.get("projectId");
-    if (projectIdFromUrl && !createdProjectId) {
+    if (projectIdFromUrl) {
       ProjectApiService.projectDetails(projectIdFromUrl)
         .then((response) => {
           const projectData = response?.data?.details?.[0];
@@ -437,6 +490,77 @@ export const ProjectCreationProvider = ({ children }) => {
     navigate,
   ]);
 
+  // ---- Step 1: Update project details ----
+  const updateProjectStep1 = useCallback(async () => {
+    if (!createdProjectId) return null;
+    
+    setIsCreatingProject(true);
+
+    const historyItem = {
+      changedby:
+        userdetails?.[0]?.user_first_name +
+        " " +
+        userdetails?.[0]?.user_last_name,
+      date: new Date().toISOString(),
+      changes: {
+        projectName: projectName || "",
+        projectNo: formData.projectNo || "",
+        description: projectDesc || "",
+      },
+    };
+
+    // Build full payload to match creation logic precisely
+    const payload = {
+      project_id: createdProjectId,
+      project_name: projectName,
+      project_no: formData.projectNo || "",
+      project_description: projectDesc || "",
+      regulatory_standard: formData.regulatory || "",
+      invite_members: formData.invite_Users || "",
+      invited_user_list: formData.invited_user_list || [],
+      documents: [], 
+      org_id: userdetails?.[0]?.org_id || createdProject?.org_id,
+      org_name: userdetails?.[0]?.org_name || createdProject?.org_name,
+      created_by_id: userdetails?.[0]?.user_id || createdProject?.created_by_id,
+      created_by_name: (userdetails?.[0]?.user_first_name + " " + userdetails?.[0]?.user_last_name) || createdProject?.created_by_name,
+      sector_id: userdetails?.[0]?.sector_id || createdProject?.sector_id,
+      sector_name: userdetails?.[0]?.sector_name || createdProject?.sector_name,
+      industry_id:
+        formData.industry_id ||
+        createdProject?.industry_id ||
+        userdetails?.[0]?.industry_id ||
+        userdetails?.[0]?.industries?.[0],
+      industry_name:
+        formData.industry_name ||
+        createdProject?.industry_name ||
+        userdetails?.[0]?.industry_names ||
+        userdetails?.[0]?.industries?.[0],
+      status: createdProject?.status || "Draft",
+      no_of_runs: createdProject?.no_of_runs || 0,
+      success_count: createdProject?.success_count || 0,
+      fail_count: createdProject?.fail_count || 0,
+      mapping_standards: formData.mapping_standards || createdProject?.mapping_standards || "",
+      summary_report: createdProject?.summary_report || {},
+      history: [...(createdProject?.history || []), historyItem],
+      checkListResponse: formData?.checkListResponse || createdProject?.checkListResponse || {},
+    };
+
+    try {
+      await ProjectApiService.projectUpdate(payload);
+      setIsCreatingProject(false);
+      return true;
+    } catch (errResponse) {
+      console.error("Project Update Error:", errResponse);
+      setSnackData({
+        show: true,
+        message: extractApiError(errResponse) || "Failed to update project",
+        type: "error",
+      });
+      setIsCreatingProject(false);
+      return false;
+    }
+  }, [createdProjectId, projectName, projectDesc, formData, userdetails, createdProject]);
+
   // ---- Helper: Create project document ----
   const createProjectDocumentEntry = useCallback(async (fileEntry, folderName) => {
     if (!createdProjectId) {
@@ -488,10 +612,10 @@ export const ProjectCreationProvider = ({ children }) => {
   }, [createdProjectId, userdetails]);
 
   // ---- Step 2: Folder / File helpers ----
-  const addFolder = useCallback(async (name) => {
+  const addFolder = useCallback(async (name, syncToDb = true) => {
     let newFolder = { id: generateId(), name, files: [] };
 
-    if (createdProjectId) {
+    if (createdProjectId && syncToDb) {
       const payload = {
         project_id: createdProjectId,
         document_name: name,
@@ -512,14 +636,19 @@ export const ProjectCreationProvider = ({ children }) => {
       };
 
       try {
-        await ProjectApiService.createProjectDocument(payload);
+        const response = await ProjectApiService.createProjectDocument(payload);
+        const docData = response?.data?.details?.[0];
+        if (docData) {
+          newFolder.folder_document_id = docData.document_id;
+          newFolder.folder_version_id = docData.version_id;
+        }
       } catch (error) {
         console.error("Failed to sync folder to DB:", error);
         throw error;
       }
     }
 
-    setFolders((prev) => [...prev, newFolder]);
+    setFolders((prev) => [newFolder, ...prev]);
     return newFolder;
   }, [createdProjectId, userdetails]);
 
@@ -529,7 +658,37 @@ export const ProjectCreationProvider = ({ children }) => {
     );
   }, []);
 
-  const removeFolder = useCallback((folderId) => {
+  const removeFolder = useCallback(async (folderId) => {
+    // 1. Find folder in local state to get all file and folder IDs
+    let folderToDelete = null;
+    setFolders(prev => {
+      folderToDelete = prev.find(f => f.id === folderId);
+      return prev;
+    });
+
+    if (folderToDelete) {
+      try {
+        // 2. Delete all files in the folder via API concurrently
+        const fileDeletions = folderToDelete.files
+          .filter(file => file.document_id)
+          .map(file => ProjectApiService.deleteProjectDocument(file.document_id, file.version_id));
+        
+        await Promise.all(fileDeletions);
+
+        // 3. Delete the folder's own DB record (the skeleton entry)
+        if (folderToDelete.folder_document_id) {
+          await ProjectApiService.deleteProjectDocument(
+            folderToDelete.folder_document_id, 
+            folderToDelete.folder_version_id
+          );
+        }
+      } catch (error) {
+        console.error("Failed to delete folder contents from DB:", error);
+        // We still remove from UI, but log the error
+      }
+    }
+
+    // 4. Update local state to remove folder from UI
     setFolders((prev) => prev.filter((f) => f.id !== folderId));
     // Also remove config for this folder
     setConfigFiles((prev) => {
@@ -537,7 +696,72 @@ export const ProjectCreationProvider = ({ children }) => {
       delete copy[folderId];
       return copy;
     });
-  }, []);
+  }, [folders]);
+
+  const renameFolderInDb = useCallback(async (folderId, newName) => {
+    const folder = folders.find(f => f.id === folderId);
+    if (!folder || !folder.folder_document_id) return;
+
+    // 1. Prepare base payload for updates
+    const basePayload = {
+      project_id: createdProjectId,
+      folder_name: newName,
+      uploaded_by_id: userdetails?.[0]?.user_id,
+      uploaded_by_name:
+        userdetails?.[0]?.user_first_name +
+        " " +
+        userdetails?.[0]?.user_last_name,
+      risk_information: {
+        risk_level: " ",
+        mitigation: " ",
+      },
+      information_extract: {
+        summary: " ",
+      },
+    };
+
+    try {
+      // 2. Update the folder skeleton record itself
+      const folderUpdateTask = ProjectApiService.uploadProjectDocument(
+        { 
+          ...basePayload, 
+          document_id: folder.folder_document_id,
+          document_name: newName,
+          file_path: null, 
+        }, 
+        folder.folder_version_id
+      );
+
+      // 3. Update all files within this folder to synchronize their folder_name
+      const fileUpdateTasks = folder.files
+        .filter(f => f.document_id && f.version_id)
+        .map(f => ProjectApiService.uploadProjectDocument(
+          {
+            ...basePayload,
+            document_id: f.document_id,
+            document_name: f.name,
+            file_path: f.path,
+          },
+          f.version_id
+        ));
+
+      // Execute all updates concurrently
+      await Promise.all([folderUpdateTask, ...fileUpdateTasks]);
+      
+      setSnackData({
+        show: true,
+        message: "Folder and its files renamed on backend successfully!",
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Failed to fully rename folder on backend:", error);
+      setSnackData({
+        show: true,
+        message: "Failed to sync folder rename with backend.",
+        type: "error",
+      });
+    }
+  }, [folders, createdProjectId, userdetails]);
 
   // Helper to check if file is Excel (config file)
   const isExcelFile = (filename) => {
@@ -547,7 +771,7 @@ export const ProjectCreationProvider = ({ children }) => {
   };
 
   // Helper to upload a single config file
-  const uploadSingleConfigFile = async (file, folderId, isGlobal = false, forceCreateNew = false) => {
+  const uploadSingleConfigFile = async (file, folderId, folderName = "", isGlobal = false, forceCreateNew = false) => {
     const reader = new FileReader();
     const fileDataUrl = await new Promise((resolve, reject) => {
       reader.onloadend = () => resolve(reader.result);
@@ -559,8 +783,9 @@ export const ProjectCreationProvider = ({ children }) => {
     const payload = {
       documents: [fileDataUrl],
       type: ext,
-      folder_name: "",  // Always empty for config files
+      folder_name: "", // Back to empty as per requirement
       isConfig: true,
+      document_type: "Configuration Document",
       project_id: createdProjectId,
     };
     const response = await FileUploadApiService.fileUploadWithMetadata(payload);
@@ -572,6 +797,7 @@ export const ProjectCreationProvider = ({ children }) => {
       path: s3Path,
       document_id: null,
       version_id: null,
+      document_type: "Configuration Document",
     };
 
     // If project is already created, create or update the document entry
@@ -607,7 +833,7 @@ export const ProjectCreationProvider = ({ children }) => {
       } else {
         const docResult = await createProjectDocumentEntry(
           { ...configEntry, file },
-          ""
+          "" // Back to empty as per requirement
         );
         if (docResult) {
           configEntry.document_id = docResult.document_id;
@@ -726,7 +952,10 @@ export const ProjectCreationProvider = ({ children }) => {
 
         try {
           // Pass shouldDeleteExisting as forceCreateNew to ensure new document is created after delete
-          const configEntry = await uploadSingleConfigFile(currentFile, folderId, isGlobal, shouldDeleteExisting);
+          const targetFolder = folders.find(f => f.id === folderId);
+          const folderName = targetFolder?.name || "";
+          
+          const configEntry = await uploadSingleConfigFile(currentFile, folderId, folderName, isGlobal, shouldDeleteExisting);
           uploadedConfigs.push(configEntry);
 
           if (isMultiple) {
@@ -1156,81 +1385,26 @@ export const ProjectCreationProvider = ({ children }) => {
     });
   }, []);
 
-  // ---- Register unregistered files when projectId becomes available ----
-  useEffect(() => {
-    const registerUnregisteredFiles = async () => {
-      if (!createdProjectId) return;
-
-      // Register files in folders that don't have document_id
-      for (const folder of folders) {
-        for (const file of folder.files) {
-          if (file.path && !file.document_id) {
-            const fileEntry = {
-              id: file.id,
-              name: file.name,
-              file: file.file,
-              path: file.path,
-            };
-            const docResult = await createProjectDocumentEntry(fileEntry, folder.name);
-            if (docResult) {
-              // Update the file with document_id and version_id
-              setFolders((prev) =>
-                prev.map((f) =>
-                  f.id === folder.id
-                    ? {
-                        ...f,
-                        files: f.files.map((fi) =>
-                          fi.id === file.id
-                            ? { ...fi, document_id: docResult.document_id, version_id: docResult.version_id }
-                            : fi
-                        ),
-                      }
-                    : f
-                )
-              );
-            }
-          }
-        }
-      }
-
-      // Register config files that don't have document_id
-      // Use ref to get latest state and avoid stale closure issues
-      const currentConfigFiles = configFilesRef.current;
-      for (const [folderId, config] of Object.entries(currentConfigFiles)) {
-        if (config?.path && !config.document_id) {
-          const docResult = await createProjectDocumentEntry(
-            { ...config, file: config.file },
-            "" // Empty folder name for config
-          );
-          if (docResult) {
-            setConfigFiles((prev) => ({
-              ...prev,
-              [folderId]: {
-                ...prev[folderId],
-                document_id: docResult.document_id,
-                version_id: docResult.version_id,
-              },
-            }));
-          }
-        }
-      }
-    };
-
-    registerUnregisteredFiles();
-  }, [createdProjectId]); // Only run when createdProjectId changes
-
   // ---- Navigation ----
   const handleNext = useCallback(async () => {
-    // If moving from Step 0 to Step 1 and project not yet created, create it first
-    if (activeStep === 0 && !createdProjectId) {
-      const projectData = await createProjectStep1();
-      if (projectData) {
-        setActiveStep((prev) => Math.min(prev + 1, 3));
+    // If moving from Step 0 to Step 1
+    if (activeStep === 0) {
+      if (!createdProjectId) {
+        const projectData = await createProjectStep1();
+        if (projectData) {
+          setActiveStep((prev) => Math.min(prev + 1, 3));
+        }
+      } else {
+        // If editing existing project, update its metadata
+        const success = await updateProjectStep1();
+        if (success) {
+          setActiveStep((prev) => Math.min(prev + 1, 3));
+        }
       }
       return;
     }
     setActiveStep((prev) => Math.min(prev + 1, 3));
-  }, [activeStep, createdProjectId, createProjectStep1]);
+  }, [activeStep, createdProjectId, createProjectStep1, updateProjectStep1]);
 
   const handleBack = useCallback(() => {
     setActiveStep((prev) => Math.max(prev - 1, 0));
@@ -1342,9 +1516,10 @@ export const ProjectCreationProvider = ({ children }) => {
       return true;
     } catch (error) {
       console.error("Failed to upload files for AI assessment:", error);
+      const errorMessage = extractApiError(error);
       setSnackData({
         show: true,
-        message: "Failed to upload files for AI assessment. Please try again.",
+        message: errorMessage || "Failed to upload files for AI assessment. Please try again.",
         type: "error",
       });
       return false;
@@ -1451,6 +1626,7 @@ export const ProjectCreationProvider = ({ children }) => {
     folders,
     addFolder,
     renameFolder,
+    renameFolderInDb,
     removeFolder,
     addFilesToFolder,
     removeFileFromFolder,
