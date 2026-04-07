@@ -233,34 +233,19 @@ export const ProjectCreationProvider = ({ children }) => {
       if (configDocs.length > 0) {
         const newConfigFiles = {};
         
-        // Find the best config for each folder
+        // Find the best config for each folder. Since folder_name is now empty for all configs,
+        // we'll apply the first available config as a project-level default for all the folders.
+        const defaultDoc = configDocs[0];
+        
         stabilizedFolders.forEach((folder) => {
-          // Look for a config file explicitly assigned to this folder name
-          const folderConfig = configDocs.find(
-            (doc) => (doc.folder_name || "").toLowerCase() === folder.name.toLowerCase()
-          );
-
-          if (folderConfig) {
+          if (defaultDoc) {
             newConfigFiles[folder.id] = {
               file: null,
-              name: folderConfig.document_name,
-              path: folderConfig.path || folderConfig.file_path,
-              document_id: folderConfig.document_id,
-              version_id: folderConfig.version_id,
+              name: defaultDoc.document_name,
+              path: defaultDoc.path || defaultDoc.file_path,
+              document_id: defaultDoc.document_id,
+              version_id: defaultDoc.version_id,
             };
-          } else {
-            // Fallback: If no folder-specific config, check for a "global" config (empty folder name)
-            // but only if it's the only one or specifically intended as such
-            const globalConfig = configDocs.find((doc) => !(doc.folder_name || "").trim());
-            if (globalConfig) {
-              newConfigFiles[folder.id] = {
-                file: null,
-                name: globalConfig.document_name,
-                path: globalConfig.path || globalConfig.file_path,
-                document_id: globalConfig.document_id,
-                version_id: globalConfig.version_id,
-              };
-            }
           }
         });
         setConfigFiles(newConfigFiles);
@@ -798,7 +783,7 @@ export const ProjectCreationProvider = ({ children }) => {
     const payload = {
       documents: [fileDataUrl],
       type: ext,
-      folder_name: folderName, // Use actual folder name
+      folder_name: "", // Back to empty as per requirement
       isConfig: true,
       document_type: "Configuration Document",
       project_id: createdProjectId,
@@ -848,7 +833,7 @@ export const ProjectCreationProvider = ({ children }) => {
       } else {
         const docResult = await createProjectDocumentEntry(
           { ...configEntry, file },
-          folderName // Associate with folder
+          "" // Back to empty as per requirement
         );
         if (docResult) {
           configEntry.document_id = docResult.document_id;
