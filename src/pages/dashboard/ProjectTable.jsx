@@ -121,8 +121,8 @@ export default function ProjectTable() {
   const [data, setData] = useState([]);
   const [viewMode, setViewMode] = useState("list");
   const [isLoading, setIsLoading] = useState(true);
-  const [order, setOrder] = useState('asc');
-  const [orderBy, setOrderBy] = useState('project_name');
+  const [order, setOrder] = useState('desc');
+  const [orderBy, setOrderBy] = useState('start_date');
 
   const [snackData, setSnackData] = useState({
     show: false,

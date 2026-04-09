@@ -148,17 +148,11 @@ export const ProjectCreationProvider = ({ children }) => {
       const docName = doc.document_name || "";
       const lowerDocName = docName.toLowerCase();
       
-      // Resilient config detection:
-      // 1. Files with no folder_name (legacy global configs)
-      // 2. Files explicitly marked as config via flags
-      // 3. Fallback: Excel/CSV files with 'config' or 'template' in their name
+      // Detect configuration documents based on type or empty folder_name
       const isConfig = !doc.folder_name || 
-                       doc.folder_name?.trim() === "" || 
-                       doc.isConfig === true || 
-                       doc.is_config === true ||
+                       doc.folder_name?.trim() === "" ||
                        doc.document_type === "Configuration Document" ||
-                       doc.document_type === "Config File" ||
-                       (isExcelFile(docName) && (lowerDocName.includes("config") || lowerDocName.includes("template")));
+                       doc.document_type === "Config File";
 
       if (isConfig) {
         configDocs.push(doc);
@@ -179,9 +173,10 @@ export const ProjectCreationProvider = ({ children }) => {
         const folder = tempFolderMap.get(lowerName);
         const docPath = doc.path || doc.file_path;
         
-        // Strictly filter out folder skeleton records (file_path is null/empty)
-        // AND ensure each file is unique by document_id to prevent duplicates
-        if (docPath && docPath.trim() !== "") {
+        // Strictly filter out folder skeleton records:
+        // 1. file_path is null, empty, or the literal string "null"
+        // 2. document_type is exactly "Folder"
+        if (docPath && docPath.trim() !== "" && docPath !== "null" && doc.document_type !== "Folder") {
           const isDuplicate = folder.files.some(f => f.document_id === doc.document_id);
           if (!isDuplicate) {
             folder.files.push({
@@ -660,31 +655,44 @@ export const ProjectCreationProvider = ({ children }) => {
 
   const removeFolder = useCallback(async (folderId) => {
     // 1. Find folder in local state to get all file and folder IDs
-    let folderToDelete = null;
-    setFolders(prev => {
-      folderToDelete = prev.find(f => f.id === folderId);
-      return prev;
-    });
+    const folderToDelete = folders.find(f => f.id === folderId);
 
     if (folderToDelete) {
       try {
-        // 2. Delete all files in the folder via API concurrently
+        // 2. Collect all deletion tasks
+        const deletionTasks = [];
+
+        // 2a. Delete all files in the folder via API
         const fileDeletions = folderToDelete.files
           .filter(file => file.document_id)
           .map(file => ProjectApiService.deleteProjectDocument(file.document_id, file.version_id));
-        
-        await Promise.all(fileDeletions);
+        deletionTasks.push(...fileDeletions);
 
-        // 3. Delete the folder's own DB record (the skeleton entry)
-        if (folderToDelete.folder_document_id) {
-          await ProjectApiService.deleteProjectDocument(
-            folderToDelete.folder_document_id, 
-            folderToDelete.folder_version_id
+        // 2b. Delete associated configuration file if it exists
+        const associatedConfig = configFilesRef.current[folderId];
+        if (associatedConfig?.document_id && associatedConfig?.version_id) {
+          deletionTasks.push(
+            ProjectApiService.deleteProjectDocument(
+              associatedConfig.document_id,
+              associatedConfig.version_id
+            )
           );
         }
+
+        // 2c. Delete the folder's own DB record (the skeleton entry)
+        if (folderToDelete.folder_document_id) {
+          deletionTasks.push(
+            ProjectApiService.deleteProjectDocument(
+              folderToDelete.folder_document_id, 
+              folderToDelete.folder_version_id
+            )
+          );
+        }
+
+        // Execute all deletions concurrently
+        await Promise.all(deletionTasks);
       } catch (error) {
-        console.error("Failed to delete folder contents from DB:", error);
-        // We still remove from UI, but log the error
+        console.error("Failed to perform complete backend cleanup during folder removal:", error);
       }
     }
 
@@ -700,7 +708,7 @@ export const ProjectCreationProvider = ({ children }) => {
 
   const renameFolderInDb = useCallback(async (folderId, newName) => {
     const folder = folders.find(f => f.id === folderId);
-    if (!folder || !folder.folder_document_id) return;
+    if (!folder) return;
 
     // 1. Prepare base payload for updates
     const basePayload = {
@@ -721,16 +729,27 @@ export const ProjectCreationProvider = ({ children }) => {
     };
 
     try {
-      // 2. Update the folder skeleton record itself
-      const folderUpdateTask = ProjectApiService.uploadProjectDocument(
-        { 
-          ...basePayload, 
-          document_id: folder.folder_document_id,
+      // 2. Conditionally update or CREATE the folder skeleton record
+      if (folder.folder_document_id && folder.folder_version_id) {
+        // Update existing
+        await ProjectApiService.uploadProjectDocument(
+          { 
+            ...basePayload, 
+            document_id: folder.folder_document_id,
+            document_name: newName,
+            file_path: null, 
+          }, 
+          folder.folder_version_id
+        );
+      } else {
+        // Create NEW skeleton in DB
+        await ProjectApiService.createProjectDocument({
+          ...basePayload,
           document_name: newName,
-          file_path: null, 
-        }, 
-        folder.folder_version_id
-      );
+          file_path: null,
+          document_type: "Folder",
+        });
+      }
 
       // 3. Update all files within this folder to synchronize their folder_name
       const fileUpdateTasks = folder.files
@@ -745,12 +764,15 @@ export const ProjectCreationProvider = ({ children }) => {
           f.version_id
         ));
 
-      // Execute all updates concurrently
-      await Promise.all([folderUpdateTask, ...fileUpdateTasks]);
+      // 4. Finally change this to only await file updates
+      await Promise.all([...fileUpdateTasks]);
+      
+      // Refresh state to ensure we are in sync
+      await refreshProjectState();
       
       setSnackData({
         show: true,
-        message: "Folder and its files renamed on backend successfully!",
+        message: "Rename synchronized with backend successfully!",
         type: "success",
       });
     } catch (error) {
@@ -761,7 +783,7 @@ export const ProjectCreationProvider = ({ children }) => {
         type: "error",
       });
     }
-  }, [folders, createdProjectId, userdetails]);
+  }, [folders, createdProjectId, userdetails, refreshProjectState]);
 
   // Helper to check if file is Excel (config file)
   const isExcelFile = (filename) => {
@@ -1001,7 +1023,8 @@ export const ProjectCreationProvider = ({ children }) => {
         }
       }
 
-      // Refresh project state to get latest document IDs from server
+      // 4. Update all folders with their specific files
+      // Refresh project state once after the entire batch is completed
       if (createdProjectId) {
         await refreshProjectState();
       }
@@ -1053,100 +1076,8 @@ export const ProjectCreationProvider = ({ children }) => {
       const folder = folders.find((f) => f.id === folderId);
       const folderName = folder?.name || "";
 
-      // Separate Excel files from regular files
-      const excelFiles = filesArray.filter((f) => isExcelFile(f.name));
-      const regularFiles = filesArray.filter((f) => !isExcelFile(f.name));
-
-      // Handle Excel files - create separate folders for each Excel file
-      if (excelFiles.length > 0) {
-        // Upload Excel files as config for this folder
-        await setConfigFileForFolder(folderId, excelFiles, false);
-
-        // Also add Excel files to the folder's files list so they show in uploaded files section
-        for (const excelFile of excelFiles) {
-          const fileId = generateId();
-          const fileEntry = {
-            id: fileId,
-            file: excelFile,
-            name: excelFile.name,
-            size: excelFile.size,
-            sizeFormatted: formatFileSize(excelFile.size),
-            path: "",
-            progress: 0,
-            document_id: null,
-            version_id: null,
-            isExcel: true, // Mark as Excel file
-          };
-
-          // Add to current folder's files
-          setFolders((prev) =>
-            prev.map((f) =>
-              f.id === folderId ? { ...f, files: [...f.files, fileEntry] } : f
-            )
-          );
-
-          // Upload Excel file to get S3 path
-          try {
-            const reader = new FileReader();
-            const fileDataUrl = await new Promise((resolve, reject) => {
-              reader.onloadend = () => resolve(reader.result);
-              reader.onerror = reject;
-              reader.readAsDataURL(excelFile);
-            });
-
-            const ext = excelFile.name.split(".").pop();
-            const payload = {
-              documents: [fileDataUrl],
-              type: ext,
-              folder_name: folderName,
-              isConfig: false,
-              project_id: createdProjectId,
-            };
-
-            const response = await FileUploadApiService.fileUploadWithMetadata(payload);
-            const s3Path = response.data.details[0];
-
-            // Update file entry with S3 path
-            const updatedFileEntry = {
-              ...fileEntry,
-              path: s3Path,
-              progress: 100,
-            };
-
-            // If project is already created, create the document entry
-            if (createdProjectId) {
-              const docResult = await createProjectDocumentEntry(updatedFileEntry, folderName);
-              if (docResult) {
-                updatedFileEntry.document_id = docResult.document_id;
-                updatedFileEntry.version_id = docResult.version_id;
-              }
-            }
-
-            setFolders((prev) =>
-              prev.map((f) =>
-                f.id === folderId
-                  ? {
-                      ...f,
-                      files: f.files.map((fi) =>
-                        fi.id === fileId ? updatedFileEntry : fi
-                      ),
-                    }
-                  : f
-              )
-            );
-          } catch (err) {
-            console.error("Excel file upload failed:", err);
-          }
-        }
-      }
-
-      // Only process regular files here
-      if (regularFiles.length === 0) {
-        return; // All files were Excel, handled above
-      }
-
-      // Continue with regular files only
-      const filesToProcess = regularFiles;
+      // Treat all files as regular documents in Step 2
+      const filesToProcess = filesArray;
 
       // If multiple files, use multiple upload mode
       const isMultiple = filesToProcess.length > 1;

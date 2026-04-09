@@ -315,8 +315,8 @@ const ChatAIView = ({ data, projectId, isQuestionActive, setIsQuestionActive }) 
           {currentQuestion && (
             <Box>
               {isQuestionActive && <AIBubble isThinking />}
-              <UserBubble text={currentQuestion} />
               {!isQuestionActive && response && <AIBubble text={response} />}
+              <UserBubble text={currentQuestion} />
             </Box>
           )}
         </motion.div>
@@ -336,8 +336,8 @@ const ChatAIView = ({ data, projectId, isQuestionActive, setIsQuestionActive }) 
 
             return (
               <Box key={`history-${index}`}>
-                <UserBubble text={entry.question} />
                 <AIBubble text={entry.answer} timestamp={timeLabel} />
+                <UserBubble text={entry.question} />
               </Box>
             );
           })
