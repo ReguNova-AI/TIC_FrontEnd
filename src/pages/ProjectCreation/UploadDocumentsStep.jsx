@@ -526,24 +526,7 @@ const UploadDocumentsStep = () => {
                       >
                         {f.name}
                       </Typography>
-                      {isExcelFile(f.name) && (
-                        <Chip
-                          icon={<GridOnOutlinedIcon sx={{ fontSize: 14 }} />}
-                          label="Config"
-                          size="small"
-                          sx={{
-                            height: 20,
-                            fontSize: 11,
-                            backgroundColor: "rgba(91,4,41,0.08)",
-                            color: brand.primary,
-                            fontWeight: 500,
-                            mr: 1,
-                            "& .MuiChip-icon": {
-                              color: brand.primary,
-                            },
-                          }}
-                        />
-                      )}
+                      {/* Removed hardcoded Config tag for Excel files in Step 2 */}
                       <Typography
                         variant="caption"
                         sx={{ color: "#8c8c8c", minWidth: 70, textAlign: "right" }}

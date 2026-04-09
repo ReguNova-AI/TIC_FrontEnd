@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef,useMemo } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
@@ -57,40 +57,67 @@ const OverviewTab = ({
         });
 
         const ext = file.name.split(".").pop();
-        const payload = {
-          documents: [fileDataUrl],
-          folder_name: "", // Empty for configuration files as requested
-          isConfig: true,
-          project_id: projectData?.project_id,
-          type: ext,
-        };
-
-        // 1. Upload to storage
-        const uploadResponse = await FileUploadApiService.fileUpload(payload, {
-          onUploadProgress: (evt) => {
-            // Percent within the single file
-          },
-        });
-
-        const filePath = uploadResponse.data.details?.[0];
-
-        if (filePath) {
-          // 2. Create actual document record
-          const docPayload = {
+        
+        // Track which existing docs have been "claimed" (replaced) during this batch
+        const claimedDocIds = new Set();
+        
+        // Create actual document record for EACH folder (or root if no folders)
+        const targetFolders = uniqueFolders.length > 0 ? uniqueFolders : [""];
+        
+        for (const folderName of targetFolders) {
+          // 1. Upload to storage specifically for this folder to ensure independence
+          const uploadPayload = {
+            documents: [fileDataUrl],
+            folder_name: folderName,
+            isConfig: true,
             project_id: projectData?.project_id,
-            document_name: file.name,
-            document_type: "Configuration Document",
-            uploaded_by_id: userdetails?.[0]?.user_id,
-            uploaded_by_name: userdetails?.[0]?.user_first_name + " " + userdetails?.[0]?.user_last_name,
-            folder_name: "",
-            document_desc: "",
-            file_path: filePath,
-            risk_information: { risk_level: " ", mitigation: " " },
-            information_extract: { summary: " " },
+            type: ext,
           };
 
-          await ProjectApiService.createProjectDocument(docPayload);
-          successCount++;
+          const uploadResponse = await FileUploadApiService.fileUpload(uploadPayload);
+          const filePath = uploadResponse.data.details?.[0];
+
+          if (filePath) {
+            // 2. Identify existing record for this folder/root to perform a Robust "Upsert"
+            // Priority 1: Exact folder name match
+            let existingDoc = configDocs.find(d => 
+              d.folder_name === folderName && !claimedDocIds.has(d.document_id)
+            );
+
+            // Priority 2: Fallback to any root/null configuration if no exact match found
+            if (!existingDoc) {
+              existingDoc = configDocs.find(d => 
+                (!d.folder_name || d.folder_name === "null" || d.folder_name === "") && 
+                !claimedDocIds.has(d.document_id)
+              );
+            }
+
+            if (existingDoc) {
+              claimedDocIds.add(existingDoc.document_id);
+            }
+
+            const docPayload = {
+              project_id: projectData?.project_id,
+              document_name: file.name,
+              document_type: "Configuration Document",
+              uploaded_by_id: userdetails?.[0]?.user_id,
+              uploaded_by_name: userdetails?.[0]?.user_first_name + " " + userdetails?.[0]?.user_last_name,
+              folder_name: folderName || "",
+              document_desc: "",
+              file_path: filePath,
+              risk_information: { risk_level: " ", mitigation: " " },
+              information_extract: { summary: " " },
+            };
+
+            if (existingDoc) {
+              // Update existing record (Replace)
+              await ProjectApiService.uploadProjectDocument(docPayload, existingDoc.version_id);
+            } else {
+              // Create new record
+              await ProjectApiService.createProjectDocument(docPayload);
+            }
+            successCount++;
+          }
         }
 
         // Update overall progress
@@ -177,7 +204,7 @@ const OverviewTab = ({
           document_type: "Configuration Document",
           uploaded_by_id: userdetails?.[0]?.user_id,
           uploaded_by_name: userdetails?.[0]?.user_first_name + " " + userdetails?.[0]?.user_last_name,
-          folder_name: "",
+          folder_name: docToReplace.folder_name || "",
           document_desc: "",
           file_path: filePath,
           risk_information: { risk_level: " ", mitigation: " " },
@@ -199,7 +226,20 @@ const OverviewTab = ({
     }
   };
 
-  // Filter configuration documents (where document_type is "Configuration Document" OR folder_name is null/empty)
+  // NEW: Identify unique folders from existing source documents
+  const uniqueFolders = useMemo(() => {
+    const folders = (projectData?.project_documents || [])
+      .filter((doc) => 
+        doc.document_type !== "Configuration Document" && 
+        doc.folder_name && 
+        doc.folder_name !== "null" && 
+        doc.folder_name !== ""
+      )
+      .map((doc) => doc.folder_name);
+    return [...new Set(folders)];
+  }, [projectData]);
+
+  // Filter configuration documents (only those with document_type "Configuration Document" OR no folder association)
   const configDocs = (projectData?.project_documents || []).filter(
     (doc) => 
       doc.document_type === "Configuration Document" || 
@@ -377,7 +417,7 @@ const OverviewTab = ({
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <FolderClosed color="#5B0429" size={18} />
                 <Typography sx={{ fontWeight: 500, fontSize: '14px', color: '#222' }}>
-                  {`Folder ${index + 1}`}
+                  {`File ${index + 1}`}
                 </Typography>
               </Box>
               {isActionEnabled && (

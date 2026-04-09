@@ -437,6 +437,104 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading, disable
       message.error("Failed to initiate delete operation!");
     }
   };
+  
+  const handleDeleteFolder = async (folderName) => {
+    try {
+      // 1. Find all documents associated with this folder (including the skeleton)
+      const folderDocs = (data?.project_documents || []).filter(
+        (doc) => doc.folder_name === folderName
+      );
+
+      if (folderDocs.length === 0) {
+        message.warning("No documents found in this folder.");
+        return;
+      }
+
+      // 2. Show confirmation dialog
+      Modal.confirm({
+        title: "Delete Folder",
+        content: `Are you sure you want to delete the folder "${folderName}" and all its ${folderDocs.length} document(s)? This action cannot be undone.`,
+        okText: "Delete",
+        okButtonProps: {
+          disabled: aiButtonLoading,
+        },
+        okType: "danger",
+        cancelText: "Cancel",
+        onOk: async () => {
+          try {
+            if (aiButtonLoading) return;
+            
+            // 3. Delete all documents in parallel
+            const deletePromises = folderDocs.map((doc) =>
+              ProjectApiService.deleteProjectDocument(doc.document_id, doc.version_id)
+            );
+            
+            await Promise.all(deletePromises);
+
+            message.success(`Folder "${folderName}" deleted successfully!`);
+
+            // 4. Refresh the project state
+            if (onFileUploadSuccess) {
+              await onFileUploadSuccess();
+            }
+          } catch (error) {
+            console.error("Folder delete failed:", error);
+            message.error("Failed to delete folder documents!");
+          }
+        },
+      });
+    } catch (error) {
+      console.error("Delete setup failed:", error);
+      message.error("Failed to initiate folder deletion!");
+    }
+  };
+
+  const handleRenameFolder = async (oldName, newName) => {
+    try {
+      if (oldName === newName) return;
+
+      // 1. Find all documents associated with this folder (including the skeleton)
+      const folderDocs = (data?.project_documents || []).filter(
+        (doc) => doc.folder_name === oldName
+      );
+
+      if (folderDocs.length === 0) {
+        message.warning("No documents found in this folder to rename.");
+        return;
+      }
+
+      // 2. Perform updates for all documents in parallel
+      // We update the folder_name in the payload and call uploadProjectDocument(payload, version_id)
+      const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
+      const renamePromises = folderDocs.map((doc) => {
+        const payload = {
+          project_id: data?.project_id,
+          document_name: doc.document_name,
+          document_type: doc.document_type,
+          uploaded_by_id: userdetails?.[0]?.user_id,
+          uploaded_by_name: userdetails?.[0]?.user_first_name + " " + userdetails?.[0]?.user_last_name,
+          folder_name: newName,
+          document_desc: doc.document_desc || "",
+          file_path: doc.file_path,
+          risk_information: doc.risk_information || { risk_level: " ", mitigation: " " },
+          information_extract: doc.information_extract || { summary: " " },
+        };
+        return ProjectApiService.uploadProjectDocument(payload, doc.version_id);
+      });
+
+      await Promise.all(renamePromises);
+
+      message.success(`Folder renamed to "${newName}" successfully!`);
+
+      // 3. Refresh project state
+      if (onFileUploadSuccess) {
+        await onFileUploadSuccess();
+      }
+    } catch (error) {
+      console.error("Folder rename failed:", error);
+      message.error("Failed to rename folder. Please try again.");
+    }
+  };
 
   const handleFileChange = async (e, document) => {
     const file = e.target.files[0];
@@ -501,22 +599,40 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading, disable
       throw new Error("Folder exists");
     }
 
-    // Add optimistic folder
-    setLocalFolders((prev) => [
-      ...prev,
-      {
+    try {
+      const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
+      
+      // Immediately register the folder on the backend
+      await ProjectApiService.createProjectDocument({
+        project_id: data?.project_id,
+        document_name: folderName,
+        document_type: "Folder",
         folder_name: folderName,
-        document_name: null, // Placeholder
-        document_id: `temp-${Date.now()}`,
-        version: "V1",
-      },
-    ]);
+        file_path: null,
+        uploaded_by_id: userdetails?.[0]?.user_id,
+        uploaded_by_name:
+          userdetails?.[0]?.user_first_name +
+          " " +
+          userdetails?.[0]?.user_last_name,
+        risk_information: { risk_level: " ", mitigation: " " },
+        information_extract: { summary: " " },
+      });
 
-    // Expand new folder
-    const folderKey = folderName.replace(/\s+/g, "-");
-    setExpandedKeys((prev) => [...prev, folderKey]);
+      // Refresh the file structure from the backend
+      if (onFileUploadSuccess) {
+        await onFileUploadSuccess();
+      }
 
-    message.success("Folder created successfully!");
+      // Expand new folder
+      const folderKey = folderName.replace(/\s+/g, "-");
+      setExpandedKeys((prev) => [...prev, folderKey]);
+
+      message.success("Folder created successfully!");
+    } catch (error) {
+      console.error("Folder creation failed:", error);
+      message.error("Failed to create folder. Please try again.");
+      throw error;
+    }
   };
 
   const handleUnifiedAddFile = async (fileData) => {
@@ -717,7 +833,8 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading, disable
           }
         }}
         onDeleteFile={(doc) => handleDeleteDocument(doc)}
-        onDeleteFolder={null}
+        onDeleteFolder={(name) => handleDeleteFolder(name)}
+        onRenameFolder={(oldName, newName) => handleRenameFolder(oldName, newName)}
         onUploadFile={handleFileChange}
         aiButtonLoading={aiButtonLoading}
       />

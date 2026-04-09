@@ -13,7 +13,8 @@ import {
     Upload,
     Trash2,
     FileText,
-    FileArchive
+    FileArchive,
+    Pencil
 } from 'lucide-react';
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
@@ -164,9 +165,20 @@ function FileRow({ doc, onDeleteFile, readOnly, onUploadFile, onPreview, aiButto
 }
 
 // ── Folder accordion ──────────────────────────────────────────────────────────
-function FolderRow({ folder, expanded, onToggle, onAddFolderFile, onDeleteFolder, onDeleteFile, readOnly, onUploadFile, onPreview, aiButtonLoading }) {
+function FolderRow({ folder, expanded, onToggle, onAddFolderFile, onDeleteFolder, onRenameFolder, onDeleteFile, readOnly, onUploadFile, onPreview, aiButtonLoading }) {
     const { folderName, children } = folder;
     const count = children.length;
+
+    const [isEditing, setIsEditing] = useState(false);
+    const [editValue, setEditValue] = useState(folderName);
+
+    const handleRename = (e) => {
+        e.stopPropagation();
+        if (editValue.trim() && editValue !== folderName && onRenameFolder) {
+            onRenameFolder(folderName, editValue.trim());
+        }
+        setIsEditing(false);
+    };
 
     return (
         <Box
@@ -199,31 +211,97 @@ function FolderRow({ folder, expanded, onToggle, onAddFolderFile, onDeleteFolder
                         ? <FolderOpen size={18} color="#5B0429" style={{ flexShrink: 0 }} />
                         : <Folder size={18} color="#5B0429" style={{ flexShrink: 0 }} />
                     }
-                    <Typography sx={{ fontWeight: 600, color: '#222', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {folderName}
-                    </Typography>
-                    <Typography sx={{ color: '#aaa', fontSize: '13px', flexShrink: 0, ml: 0.5 }}>
-                        {count} {count === 1 ? 'file' : 'files'}
-                    </Typography>
+                    {isEditing ? (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }} onClick={(e) => e.stopPropagation()}>
+                            <input
+                                autoFocus
+                                value={editValue}
+                                onChange={(e) => setEditValue(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') handleRename(e);
+                                    if (e.key === 'Escape') setIsEditing(false);
+                                }}
+                                style={{
+                                    flex: 1,
+                                    fontSize: '14px',
+                                    padding: '2px 8px',
+                                    border: '1px solid #5B0429',
+                                    borderRadius: '4px',
+                                    outline: 'none'
+                                }}
+                            />
+                            <Button size="small" type="primary" onClick={handleRename} sx={{ height: 24, fontSize: '12px' }}>Save</Button>
+                            <Button size="small" onClick={() => setIsEditing(false)} sx={{ height: 24, fontSize: '12px' }}>Cancel</Button>
+                        </Box>
+                    ) : (
+                        <>
+                            <Typography sx={{ fontWeight: 600, color: '#222', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {folderName}
+                            </Typography>
+                            <Typography sx={{ color: '#aaa', fontSize: '13px', flexShrink: 0, ml: 0.5 }}>
+                                {children.length} {children.length === 1 ? 'file' : 'files'}
+                            </Typography>
+                        </>
+                    )}
                 </Box>
 
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    {!readOnly && onAddFolderFile && expanded && !aiButtonLoading && (
-                        <Tooltip title="Add file to this folder">
-                            <Box 
-                                onClick={(e) => { e.stopPropagation(); onAddFolderFile(folderName); }}
-                                sx={{ 
-                                    p: 0.5, 
-                                    cursor: 'pointer',
-                                    borderRadius: '4px', 
-                                    '&:hover': { bgcolor: 'rgba(91,4,41,0.05)' },
-                                    display: 'flex',
-                                    alignItems: 'center'
-                                }}
-                            >
-                                <FilePlus size={16} color="#5B0429" />
-                            </Box>
-                        </Tooltip>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    {!readOnly && !aiButtonLoading && !isEditing && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            {onRenameFolder && (
+                                <Tooltip title="Rename folder">
+                                    <Box 
+                                        onClick={(e) => { e.stopPropagation(); setIsEditing(true); setEditValue(folderName); }}
+                                        sx={{ 
+                                            p: 0.5, 
+                                            cursor: 'pointer', 
+                                            borderRadius: '4px', 
+                                            '&:hover': { bgcolor: 'rgba(91,4,41,0.05)' },
+                                            display: 'flex',
+                                            alignItems: 'center'
+                                        }}
+                                    >
+                                        <Pencil size={14} color="#5B0429" />
+                                    </Box>
+                                </Tooltip>
+                            )}
+
+                            {onAddFolderFile && expanded && (
+                                <Tooltip title="Add file to this folder">
+                                    <Box 
+                                        onClick={(e) => { e.stopPropagation(); onAddFolderFile(folderName); }}
+                                        sx={{ 
+                                            p: 0.5, 
+                                            cursor: 'pointer',
+                                            borderRadius: '4px', 
+                                            '&:hover': { bgcolor: 'rgba(91,4,41,0.05)' },
+                                            display: 'flex',
+                                            alignItems: 'center'
+                                        }}
+                                    >
+                                        <FilePlus size={16} color="#5B0429" />
+                                    </Box>
+                                </Tooltip>
+                            )}
+                            
+                            {onDeleteFolder && (
+                                <Tooltip title="Delete folder and its contents">
+                                    <Box
+                                        onClick={(e) => { e.stopPropagation(); onDeleteFolder(folderName); }}
+                                        sx={{ 
+                                            p: 0.5, 
+                                            cursor: 'pointer',
+                                            borderRadius: '4px', 
+                                            '&:hover': { bgcolor: 'rgba(229,57,53,0.05)' },
+                                            display: 'flex',
+                                            alignItems: 'center'
+                                        }}
+                                    >
+                                        <Trash2 size={15} color="#ef4444" />
+                                    </Box>
+                                </Tooltip>
+                            )}
+                        </Box>
                     )}
                     {expanded
                         ? <ChevronUp size={16} color="#aaa" />
@@ -238,42 +316,54 @@ function FolderRow({ folder, expanded, onToggle, onAddFolderFile, onDeleteFolder
                     {children.length === 0 ? (
                         <Box 
                             sx={{ 
-                                px: 2, 
-                                py: 2.5, 
-                                textAlign: 'center', 
+                                p: 3, 
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 3,
                                 border: '1px dashed #e4e4e4', 
-                                borderRadius: '4px', 
-                                bgcolor: '#fafafa',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                gap: 1.5
+                                borderRadius: '8px', 
+                                bgcolor: '#fff',
+                                transition: "all 0.2s ease",
+                                "&:hover": { bgcolor: "rgba(91,4,41,0.02)" },
                             }}
                         >
-                            <Typography sx={{ fontSize: '13px', color: '#888', fontStyle: 'italic' }}>
-                                This folder is empty.
-                            </Typography>
-                            {!readOnly && onAddFolderFile && !aiButtonLoading && (
-                                <Button
-                                    variant="outlined"
-                                    size="small"
-                                    startIcon={<Upload size={14} />}
-                                    onClick={() => onAddFolderFile(folderName)}
-                                    sx={{
-                                        textTransform: 'none',
-                                        fontSize: '12px',
-                                        borderRadius: '20px',
-                                        color: '#5B0429',
-                                        borderColor: '#5B0429',
-                                        '&:hover': {
-                                            bgcolor: 'rgba(91,4,41,0.05)',
-                                            borderColor: '#4a0322'
-                                        }
-                                    }}
-                                >
-                                    Add file to this folder
-                                </Button>
-                            )}
+                            <Box sx={{ flexShrink: 0, width: 80, height: 80, display: "flex", alignItems: "center", justifyContent: "center", bgcolor: '#fafafa', borderRadius: '8px' }}>
+                                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#bdbdbd" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M17.5 19L9 19C6.23858 19 4 16.7614 4 14C4 11.2386 6.23858 9 9 9L9.75 9C10.6628 5.48583 13.8344 3 17.5 3C20.5376 3 23 5.46243 23 8.5C23 11.5376 20.5376 14 17.5 14L17.5 14" />
+                                    <polyline points="13 13 10 10 7 13" />
+                                    <line x1="10" y1="10" x2="10" y2="16" />
+                                </svg>
+                            </Box>
+                            <Box sx={{ textAlign: 'left' }}>
+                                <Typography sx={{ fontWeight: 600, color: "#262626", mb: 0.5, fontSize: '14px' }}>
+                                    Click to upload or drag and drop files here
+                                </Typography>
+                                <Typography sx={{ color: "#8c8c8c", mb: 1.5, fontSize: '12px' }}>
+                                    Supported file formats: PDF, DOCX, DOC, TXT, XLSX, XLS, CSV
+                                </Typography>
+                                {!readOnly && onAddFolderFile && !aiButtonLoading && (
+                                    <Button
+                                        variant="outlined"
+                                        size="small"
+                                        onClick={() => onAddFolderFile(folderName)}
+                                        sx={{
+                                            textTransform: 'none',
+                                            fontSize: '13px',
+                                            borderRadius: '20px',
+                                            color: '#5B0429',
+                                            borderColor: '#5B0429',
+                                            px: 3,
+                                            fontWeight: 500,
+                                            '&:hover': {
+                                                bgcolor: 'rgba(91,4,41,0.05)',
+                                                borderColor: '#4a0322'
+                                            }
+                                        }}
+                                    >
+                                        Browse
+                                    </Button>
+                                )}
+                            </Box>
                         </Box>
                     ) : (
                         children.map((child) => (
@@ -299,6 +389,7 @@ const UnifiedFileTree = ({
     documents,
     onAddFolderFile,
     onDeleteFolder,
+    onRenameFolder,
     onDeleteFile,
     expandedKeys,
     onExpand,
@@ -329,8 +420,8 @@ const UnifiedFileTree = ({
 
         normalized.forEach((doc) => {
             const { folder, name, id, version } = doc;
-            // A placeholder is either an entry without a name or a database entry representing a folder (no file_path)
-            const isPlaceholder = !name || !doc.path;
+            // A placeholder is a database entry representing a folder skeleton (no real file path or type is "Folder")
+            const isPlaceholder = !name || !doc.path || doc.path === "null" || doc.type === "Folder";
 
             if (folder && folder !== "null") {
                 if (!folderMap[folder]) {
