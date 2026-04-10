@@ -7,7 +7,7 @@ import FileStructureView from "./FileStructureView";
 import { Pencil, FolderClosed, FileText, RefreshCw, X } from "lucide-react";
 import { FileUploadApiService } from "services/api/FileUploadAPIService";
 import { ProjectApiService } from "services/api/ProjectAPIService";
-import { message, Modal, Progress } from "antd";
+import { message, Modal, Progress, Popconfirm } from "antd";
 import { brand } from "themes/theme/brand";
 
 const OverviewTab = ({
@@ -147,15 +147,13 @@ const OverviewTab = ({
       return;
     }
 
-    if (window.confirm(`Are you sure you want to delete "${doc.document_name}"?`)) {
-      try {
-        await ProjectApiService.deleteProjectDocument(doc.document_id, doc.version_id);
-        message.success("Configuration deleted successfully!");
-        if (onFileUploadSuccess) onFileUploadSuccess();
-      } catch (error) {
-        console.error("Delete failed:", error);
-        message.error("Failed to delete configuration.");
-      }
+    try {
+      await ProjectApiService.deleteProjectDocument(doc.document_id, doc.version_id);
+      message.success("Configuration deleted successfully!");
+      if (onFileUploadSuccess) onFileUploadSuccess();
+    } catch (error) {
+      console.error("Delete failed:", error);
+      message.error("Failed to delete configuration.");
     }
   };
 
@@ -433,12 +431,21 @@ const OverviewTab = ({
                     <RefreshCw size={13} />
                     <Typography sx={{ fontSize: '13px' }}>Replace</Typography>
                   </Box>
-                  <X 
-                    size={15} 
-                    color="#e53935" 
-                    style={{ cursor: 'pointer' }} 
-                    onClick={() => handleDeleteConfig(doc)}
-                  />
+                  <Popconfirm
+                    title="Delete Configuration"
+                    description={`Are you sure you want to delete "${doc.document_name}"?`}
+                    onConfirm={() => handleDeleteConfig(doc)}
+                    okText="Delete"
+                    cancelText="Cancel"
+                    okType="danger"
+                    disabled={shouldDisable}
+                  >
+                    <X 
+                      size={15} 
+                      color={shouldDisable ? "#ccc" : "#e53935"} 
+                      style={{ cursor: shouldDisable ? "default" : 'pointer' }} 
+                    />
+                  </Popconfirm>
                 </Box>
               )}
             </Box>

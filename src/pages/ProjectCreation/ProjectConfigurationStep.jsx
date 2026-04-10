@@ -91,7 +91,6 @@ const ProjectConfigurationStep = () => {
       onOk: async () => {
         try {
           await removeConfigFileForFolder(folderId);
-          message.success("Configuration deleted successfully!");
         } catch (error) {
           console.error("Delete failed:", error);
           message.error("Failed to delete configuration!");

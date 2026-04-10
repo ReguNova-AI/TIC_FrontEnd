@@ -396,45 +396,28 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading, disable
         return;
       }
 
-      // Show Antd Modal confirmation dialog
-      Modal.confirm({
-        title: "Delete Document",
-        content: `Are you sure you want to delete "${document.document_name}"? This action cannot be undone.`,
-        okText: "Delete",
-        okButtonProps: {
-          disabled: aiButtonLoading,
-        },
-        okType: "danger",
-        cancelText: "Cancel",
-        onOk: async () => {
-          try {
-            if (aiButtonLoading) return;
-            const response = await ProjectApiService.deleteProjectDocument(
-              document.document_id,
-              document.version_id,
-            );
+      if (aiButtonLoading) return;
 
-            message.success(
-              response.message || "Document deleted successfully!",
-            );
+      const response = await ProjectApiService.deleteProjectDocument(
+        document.document_id,
+        document.version_id,
+      );
 
-            // Call the callback to refresh project data in parent component
-            if (onFileUploadSuccess) {
-              onFileUploadSuccess();
-            }
-          } catch (error) {
-            console.error("Delete failed:", error);
-            message.error(
-              error?.error?.message ||
-                API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR ||
-                "Failed to delete document!",
-            );
-          }
-        },
-      });
+      message.success(
+        response.message || "Document deleted successfully!",
+      );
+
+      // Call the callback to refresh project data in parent component
+      if (onFileUploadSuccess) {
+        onFileUploadSuccess();
+      }
     } catch (error) {
-      console.error("Delete setup failed:", error);
-      message.error("Failed to initiate delete operation!");
+      console.error("Delete failed:", error);
+      message.error(
+        error?.error?.message ||
+          API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR ||
+          "Failed to delete document!",
+      );
     }
   };
   
@@ -450,42 +433,24 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading, disable
         return;
       }
 
-      // 2. Show confirmation dialog
-      Modal.confirm({
-        title: "Delete Folder",
-        content: `Are you sure you want to delete the folder "${folderName}" and all its ${folderDocs.length} document(s)? This action cannot be undone.`,
-        okText: "Delete",
-        okButtonProps: {
-          disabled: aiButtonLoading,
-        },
-        okType: "danger",
-        cancelText: "Cancel",
-        onOk: async () => {
-          try {
-            if (aiButtonLoading) return;
-            
-            // 3. Delete all documents in parallel
-            const deletePromises = folderDocs.map((doc) =>
-              ProjectApiService.deleteProjectDocument(doc.document_id, doc.version_id)
-            );
-            
-            await Promise.all(deletePromises);
+      if (aiButtonLoading) return;
+      
+      // 3. Delete all documents in parallel
+      const deletePromises = folderDocs.map((doc) =>
+        ProjectApiService.deleteProjectDocument(doc.document_id, doc.version_id)
+      );
+      
+      await Promise.all(deletePromises);
 
-            message.success(`Folder "${folderName}" deleted successfully!`);
+      message.success(`Folder "${folderName}" deleted successfully!`);
 
-            // 4. Refresh the project state
-            if (onFileUploadSuccess) {
-              await onFileUploadSuccess();
-            }
-          } catch (error) {
-            console.error("Folder delete failed:", error);
-            message.error("Failed to delete folder documents!");
-          }
-        },
-      });
+      // 4. Refresh the project state
+      if (onFileUploadSuccess) {
+        await onFileUploadSuccess();
+      }
     } catch (error) {
-      console.error("Delete setup failed:", error);
-      message.error("Failed to initiate folder deletion!");
+      console.error("Folder delete failed:", error);
+      message.error("Failed to delete folder documents!");
     }
   };
 

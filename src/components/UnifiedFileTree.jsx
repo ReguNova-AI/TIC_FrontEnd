@@ -285,9 +285,18 @@ function FolderRow({ folder, expanded, onToggle, onAddFolderFile, onDeleteFolder
                             )}
                             
                             {onDeleteFolder && (
-                                <Tooltip title="Delete folder and its contents">
+                                <Popconfirm
+                                    title="Delete Folder"
+                                    description={`Are you sure you want to delete "${folderName}" and all its contents?`}
+                                    onConfirm={(e) => { e?.stopPropagation(); onDeleteFolder(folderName); }}
+                                    onCancel={(e) => e?.stopPropagation()}
+                                    okText="Delete"
+                                    cancelText="Cancel"
+                                    okType="danger"
+                                    disabled={aiButtonLoading}
+                                >
                                     <Box
-                                        onClick={(e) => { e.stopPropagation(); onDeleteFolder(folderName); }}
+                                        onClick={(e) => { e.stopPropagation(); }}
                                         sx={{ 
                                             p: 0.5, 
                                             cursor: 'pointer',
@@ -299,7 +308,7 @@ function FolderRow({ folder, expanded, onToggle, onAddFolderFile, onDeleteFolder
                                     >
                                         <Trash2 size={15} color="#ef4444" />
                                     </Box>
-                                </Tooltip>
+                                </Popconfirm>
                             )}
                         </Box>
                     )}

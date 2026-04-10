@@ -224,14 +224,14 @@ export const ProjectCreationProvider = ({ children }) => {
         };
       });
 
-      // 2. Synchronize config files based on stabilized IDs and folder names
+      // 2. Synchronize config files based on stabilized IDs and folder names.
+      // Always rebuild and apply — even when configDocs is empty (after deletion)
+      // so stale entries in local state are cleared immediately.
+      const newConfigFiles = {};
       if (configDocs.length > 0) {
-        const newConfigFiles = {};
-        
         // Find the best config for each folder. Since folder_name is now empty for all configs,
         // we'll apply the first available config as a project-level default for all the folders.
         const defaultDoc = configDocs[0];
-        
         stabilizedFolders.forEach((folder) => {
           if (defaultDoc) {
             newConfigFiles[folder.id] = {
@@ -243,8 +243,8 @@ export const ProjectCreationProvider = ({ children }) => {
             };
           }
         });
-        setConfigFiles(newConfigFiles);
       }
+      setConfigFiles(newConfigFiles);
 
       return stabilizedFolders;
     });
@@ -1302,19 +1302,23 @@ export const ProjectCreationProvider = ({ children }) => {
       }
     }
 
-    // Remove from state
+    // Optimistically remove just this folder's entry from local state first
     setConfigFiles((prev) => {
       const newConfig = { ...prev };
       delete newConfig[folderId];
       return newConfig;
     });
 
+    // Sync from server — this clears any other folders that shared the same
+    // backend document (global upload stores a single record shared by all folders)
+    await refreshProjectState();
+
     setSnackData({
       show: true,
       message: "Configuration file removed successfully!",
       type: "success",
     });
-  }, []);
+  }, [refreshProjectState]);
 
   // ---- Navigation ----
   const handleNext = useCallback(async () => {
