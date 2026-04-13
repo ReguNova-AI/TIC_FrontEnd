@@ -40,13 +40,11 @@ export const rehydrateAuth = () => async (dispatch) => {
   dispatch(authStart());
   try {
     const response = await UserApiService.getMe(); // GET /api/v1/me
-    console.log(response,"response");
-    
     dispatch(authSuccess(response.data));
   } catch {
     dispatch(authFail()); // 401 → stays logged out
   }
-};  
+};
 
 // Called after login form success
 export const setAuthentication = (authResponse) => (dispatch) => {
@@ -59,10 +57,12 @@ export const setAuthentication = (authResponse) => (dispatch) => {
 };
 
 // Called on logout button
-export const logout = () => (dispatch) => {
-  AuthApiService.logout().then(() => {
-    // clears cookie server-side
-    dispatch(logoutSuccess());
-    window.location.href = "/login";
-  });
+export const logout = (payload) => (dispatch) => {
+  return AuthApiService.logout(payload)
+    .then(() => {
+      dispatch(logoutSuccess());
+    })
+    .catch(() => {
+      dispatch(logoutSuccess()); // always clear client state
+    });
 };

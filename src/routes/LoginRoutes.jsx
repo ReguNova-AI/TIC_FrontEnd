@@ -4,6 +4,7 @@ import { lazy } from "react";
 import Loadable from "components/Loadable";
 import MinimalLayout from "layout/MinimalLayout";
 import { Navigate, useLocation } from "react-router";
+import { useSelector } from "react-redux";
 
 // render - login
 const AuthLogin = Loadable(lazy(() => import("pages/authentication/login")));
@@ -18,6 +19,20 @@ const AuthOTP = Loadable(lazy(() => import("pages/authentication/OTP")));
 const AuthPasswordReset = Loadable(
   lazy(() => import("pages/authentication/PasswordReset")),
 );
+
+const PublicRoute = ({ children }) => {
+  const { authInfo, loading } = useSelector((state) => state.auth);
+
+  if (loading) return null; // wait for rehydrateAuth to finish
+
+  if (authInfo) {
+    console.log(authInfo, "authInfo");
+
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return children;
+};
 
 const ResetFlowRoute = ({ children }) => {
   const location = useLocation();
@@ -39,15 +54,27 @@ const LoginRoutes = {
   children: [
     {
       path: "/login",
-      element: <AuthLogin />,
+      element: (
+        <PublicRoute>
+          <AuthLogin />
+        </PublicRoute>
+      ),
     },
     {
       path: "/register",
-      element: <AuthRegister />,
+      element: (
+        <PublicRoute>
+          <AuthRegister />
+        </PublicRoute>
+      ),
     },
     {
       path: "/forgotPassword",
-      element: <AuthForgotPassword />,
+      element: (
+        <PublicRoute>
+          <AuthForgotPassword />
+        </PublicRoute>
+      ),
     },
     {
       path: "/otp",

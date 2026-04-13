@@ -108,13 +108,6 @@ export default function DashboardDefault() {
         setInactiveUserCount(response?.data?.inactiveUserCount?.[0]?.count);
       })
       .catch((errResponse) => {
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
         setUpdatedCardsValue([...content.cards1]);
       });
 

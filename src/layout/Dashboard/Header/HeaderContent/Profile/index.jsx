@@ -34,10 +34,12 @@ import ListItemText from "@mui/material/ListItemText";
 import { AuthApiService } from "services/api/AuthApiService";
 import { useNavigate } from "react-router";
 import { API_SUCCESS_MESSAGE } from "shared/constants";
-import userIcon from  "../../../../../assets/images/icons/users2.svg";
-import informationIcon from  "../../../../../assets/images/icons/information.svg";
-import logoutIcon from  "../../../../../assets/images/icons/logout.svg";
+import userIcon from "../../../../../assets/images/icons/users2.svg";
+import informationIcon from "../../../../../assets/images/icons/information.svg";
+import logoutIcon from "../../../../../assets/images/icons/logout.svg";
 import { useQueryClient } from "@tanstack/react-query";
+import { useDispatch } from "react-redux";
+import { logout } from "store/actions";
 
 // ==============================|| HEADER CONTENT - PROFILE ||============================== //
 
@@ -57,8 +59,7 @@ export default function Profile() {
     if (url === "logout") {
       handleLogout();
     }
-    if(url === "profileDetails")
-    {
+    if (url === "profileDetails") {
       navigate("/profileDetails");
     }
   };
@@ -86,25 +87,19 @@ export default function Profile() {
 
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
   const queryClient = useQueryClient();
+  const dispatch = useDispatch();
+
   const handleLogout = () => {
-    let payload = {
+    const payload = {
       user_id: userdetails?.[0]?.user_id,
     };
-    AuthApiService.logout(payload)
-      .then((response) => {
-        // On success, you can add any additional logic here
 
-        setSnackData({
-          show: true,
-          message: API_SUCCESS_MESSAGE.LOGGED_OUT,
-          type: "success",
-        });
-
+    dispatch(logout(payload))
+      .then(() => {
         sessionStorage.clear();
         localStorage.clear();
-       
-        navigate("/login");
         queryClient.clear();
+        navigate("/login", { replace: true });
       })
       .catch((errResponse) => {
         setSnackData({
@@ -140,7 +135,8 @@ export default function Profile() {
           alignItems="center"
           sx={{ p: 0.5 }}
         >
-          {userdetails?.[0]?.user_profile && userdetails?.[0]?.user_profile !== "null" ? (
+          {userdetails?.[0]?.user_profile &&
+          userdetails?.[0]?.user_profile !== "null" ? (
             <img
               src={userdetails?.[0]?.user_profile}
               alt={value.user_first_name}
@@ -151,7 +147,8 @@ export default function Profile() {
           )}
 
           <Typography variant="subtitle1" sx={{ textTransform: "capitalize" }}>
-            {userdetails?.[0]?.user_first_name} {userdetails?.[0]?.user_last_name}
+            {userdetails?.[0]?.user_first_name}{" "}
+            {userdetails?.[0]?.user_last_name}
           </Typography>
         </Stack>
       </ButtonBase>
@@ -196,7 +193,7 @@ export default function Profile() {
                       justifyContent="space-between"
                       alignItems="center"
                     >
-                      <Grid item style={{width:"80%"}}>
+                      <Grid item style={{ width: "80%" }}>
                         <Stack
                           direction="row"
                           spacing={1.25}
@@ -219,13 +216,20 @@ export default function Profile() {
                               sx={{ width: 32, height: 32 }}
                             />
                           )}
-                          <Stack style={{width:"80%"}}>
-                            <Typography variant="h6" style={{wordBreak:"break-word"}}>
+                          <Stack style={{ width: "80%" }}>
+                            <Typography
+                              variant="h6"
+                              style={{ wordBreak: "break-word" }}
+                            >
                               {" "}
                               {userdetails?.[0]?.user_first_name}{" "}
                               {userdetails?.[0]?.user_last_name}
                             </Typography>
-                            <Typography variant="body2" color="text.secondary" style={{wordBreak:"break-word"}}>
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              style={{ wordBreak: "break-word" }}
+                            >
                               {userdetails?.[0]?.user_email}
                             </Typography>
                           </Stack>
@@ -241,7 +245,7 @@ export default function Profile() {
                             }
                           >
                             {/* <LogoutOutlined /> */}
-                            <img src={logoutIcon} width="20px"/>
+                            <img src={logoutIcon} width="20px" />
                           </IconButton>
                         </Tooltip>
                       </Grid>
@@ -260,7 +264,7 @@ export default function Profile() {
                     >
                       <ListItemIcon>
                         {/* <UserOutlined /> */}
-                        <img src={userIcon} width="20px"/>
+                        <img src={userIcon} width="20px" />
                       </ListItemIcon>
                       <ListItemText primary="View Profile" />
                     </ListItemButton>
@@ -271,7 +275,7 @@ export default function Profile() {
                     >
                       <ListItemIcon>
                         {/* <QuestionCircleOutlined /> */}
-                        <img src={informationIcon} width="20px"/>
+                        <img src={informationIcon} width="20px" />
                       </ListItemIcon>
                       <ListItemText primary="Support" />
                     </ListItemButton>
@@ -281,7 +285,7 @@ export default function Profile() {
                     >
                       <ListItemIcon>
                         {/* <LogoutOutlined /> */}
-                        <img src={logoutIcon} width="20px"/>
+                        <img src={logoutIcon} width="20px" />
                       </ListItemIcon>
                       <ListItemText primary="Logout" />
                     </ListItemButton>
@@ -293,7 +297,7 @@ export default function Profile() {
         )}
       </Popper>
       <Snackbar
-      style={{top:"80px"}}
+        style={{ top: "80px" }}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
         open={snackData.show}
         autoHideDuration={3000}
