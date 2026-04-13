@@ -1,5 +1,9 @@
 import BaseApiService from "./BaseApiService";
 
+const _getMe = () => {
+  return BaseApiService.get(`/api/v1/me`, null, null);
+};
+
 const _userCreate = (payload) => {
   return BaseApiService.post(`/api/v1/user/create`, null, payload);
 };
@@ -105,6 +109,7 @@ const _userSelfRegister = (payload) => {
 };
 
 export const UserApiService = {
+  getMe: _getMe,
   userCreate: _userCreate,
   userUpdate: _userUpdate,
   userListing: _userListing,

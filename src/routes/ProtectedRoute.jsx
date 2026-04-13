@@ -1,14 +1,14 @@
-import { Navigate, useLocation } from 'react-router-dom';
-
-// ==============================|| PROTECTED ROUTE ||============================== //
+import { useSelector } from "react-redux";
+import { Navigate, useLocation } from "react-router-dom";
 
 const ProtectedRoute = ({ children }) => {
   const location = useLocation();
-  const token = sessionStorage.getItem('token');
-  const resetFlow = sessionStorage.getItem('resetFlow');
+  const { authInfo, loading } = useSelector((state) => state.auth);
 
-  // Allow reset flow pages (OTP, PasswordReset) without a token
-  if (!token && !resetFlow) {
+  // Wait for rehydrateAuth to finish before making a redirect decision
+  if (loading) return null; // or <PageLoader /> if you have one
+
+  if (!authInfo) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 

@@ -45,7 +45,6 @@ export default function AuthLogin() {
   // Clear session once on mount, not on every render
   useEffect(() => {
     sessionStorage.clear();
-    localStorage.removeItem("userDetails");
     document.cookie =
       "session_cookie=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
   }, []);
@@ -63,31 +62,16 @@ export default function AuthLogin() {
     AuthApiService.login(payload)
       .then((response) => {
         // On success, you can add any additional logic here
-
-        if (response.message === API_ERROR_MESSAGE.INVALID_PASSWORD) {
-          setSnackData({
-            show: true,
-            message: response?.message,
-            type: "error",
-          });
+        if (response?.data?.userDetails?.[0].password_updated_date === null) {
+          sessionStorage.setItem(
+            "email",
+            response?.data?.userDetails?.[0]?.user_email,
+          );
+          sessionStorage.setItem("resetFlow", true);
+          navigate("/passwordReset", { state: { showPage: true } });
         } else {
-          setSnackData({
-            show: true,
-            message: response.message,
-            type: "success",
-          });
-
-          if (response?.data?.userDetails?.[0].password_updated_date === null) {
-            sessionStorage.setItem(
-              "email",
-              response?.data?.userDetails?.[0]?.user_email
-            );
-            sessionStorage.setItem("resetFlow", true);
-            navigate("/passwordReset", { state: { showPage: true } });
-          } else {
-            dispatch(actions.setAuthentication(response));
-            navigate("/dashboard");
-          }
+          dispatch(actions.setAuthentication(response));
+          navigate("/dashboard");
         }
       })
       .catch((errResponse) => {
@@ -102,10 +86,8 @@ export default function AuthLogin() {
                 API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
-
-        // Enable the button again after failure
-        setSubmitting(false); // This will reset isSubmitting in Formik
-      });
+      })
+      .finally(() => setSubmitting(false));
   };
 
   const handleRedirection = (link) => {
@@ -238,13 +220,17 @@ export default function AuthLogin() {
                 </Grid>
               )}
 
-              <Grid item xs={12} sx={{ display: "flex", justifyContent: "center"}}>
+              <Grid
+                item
+                xs={12}
+                sx={{ display: "flex", justifyContent: "center" }}
+              >
                 <AnimateButton>
                   <Button
                     disableElevation
                     disabled={isSubmitting} // Button is disabled if form is submitting
                     // fullWidth
-                    sx={{width:"250px"}}
+                    sx={{ width: "250px" }}
                     size="large"
                     type="submit"
                     variant="contained"
@@ -255,18 +241,22 @@ export default function AuthLogin() {
                 </AnimateButton>
               </Grid>
 
-              <Grid item xs={12} >
+              <Grid item xs={12}>
                 <Divider>
                   <Typography variant="caption">OR</Typography>
                 </Divider>
               </Grid>
 
-              <Grid item xs={12} sx={{ display: "flex", justifyContent: "center"}}>
+              <Grid
+                item
+                xs={12}
+                sx={{ display: "flex", justifyContent: "center" }}
+              >
                 <Button
                   disableElevation
                   onClick={(e) => handleRedirection("/register")}
                   // fullWidth
-                  sx={{width:"250px"}}
+                  sx={{ width: "250px" }}
                   size="large"
                   type="button" // Change to "button" to avoid form submission
                   variant="outlined"

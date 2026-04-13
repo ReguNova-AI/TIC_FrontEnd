@@ -121,7 +121,6 @@ function _clearAll() {
 
 function _sessionTimedOut() {
   _clear();
-  // DispatcherService.dispatchAction(actions.invalidateSession());
 }
 
 const SessionService = {

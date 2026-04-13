@@ -1,56 +1,40 @@
-import axios from 'axios';
-import { apiHost } from '../../config';
-import { useEffect } from 'react';
-import { useSnackbar } from 'notistack';
-
-// const server = process.env.NODE_ENV === 'production' ? apiProxyHost : apiHost;
-
-// const apiRoot = apiHost + apiPath;
-
-const postHeaders = {
-  Accept: 'application/json',
-  'Content-Type': 'application/json',
-};
+import axios from "axios";
+import { apiHost } from "../../config";
+import { _signOutUser } from "./BaseApiService";
 
 const instance = axios.create({
-  // Use baseURL as apiHost for development
   baseURL: apiHost,
-  // baseURL: window.location?.hostname?.includes('localhost') ? apiHost : '/',
-  headers: { ...postHeaders },
+  headers: {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+  },
+  withCredentials: true,
 });
 
-// Ensure browser will send cookies (session) with requests when CORS allows credentials
-instance.defaults.withCredentials = true;
+instance.interceptors.response.use(
+  (response) => response,
+  async (err) => {
+    const originalRequest = err.config;
 
-instance.CancelToken = axios.CancelToken;
-instance.isCancel = axios.isCancel;
+    if (err?.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
 
+      try {
+        await axios.post(
+          `${apiHost}/api/v1/refreshToken`,
+          {},
+          { withCredentials: true },
+        );
 
-const AxiosInterceptor = ({ children }) => {
-  const { enqueueSnackbar } = useSnackbar();
-  useEffect(() => {
+        return instance(originalRequest);
+      } catch (refreshError) {
+        _signOutUser();
+        return Promise.reject(refreshError);
+      }
+    }
 
-      const interceptor =  instance.interceptors.response.use(null, async err => {
-         if (err?.response?.status === 403) {
-          enqueueSnackbar("You don't have access. Please check with admin to get the access", {
-            variant: 'error',
-            preventDuplicate: true,
-            autoHideDuration: 1500,
-          });
-          // Add condition for that specific error code
-          //API call to refetch the permissions and return that data in response while rejecting the Promise itself. Ex: Promise.reject(data) and set the data in component
-        } 
-        return Promise.reject(err);
-      });
-     
-
-      return () => instance.interceptors.response.eject(interceptor);
-
-  }, [])
-  return children;
-}
-
-
+    return Promise.reject(err);
+  },
+);
 
 export default instance;
-export { AxiosInterceptor }

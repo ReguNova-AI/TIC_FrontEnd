@@ -1,10 +1,9 @@
 import axiosInstance from './axiosInstance';
 import SessionService from '../SessionService';
-import { STORAGE_KEYS } from '../../shared/constants.login';
 import { apiPath } from '../../config';
 
 const get = async (url, params, useBaseApiPath, otherConfig, noToken) => {
-  return _makeRequest('GET', url, params, null, useBaseApiPath, otherConfig, {}, noToken);
+  return _makeRequest('GET', url, params, null, useBaseApiPath, otherConfig, {});
 };
 const post = async (
   url,
@@ -23,7 +22,6 @@ const post = async (
     useBaseApiPath,
     otherConfig,
     otherHeaders,
-    noToken
   );
 };
 
@@ -34,7 +32,7 @@ const put = async (url, params, data, useBaseApiPath, otherConfig) => {
 const remove = async (url, params, data, useBaseApiPath, noToken) => {
   // For DELETE requests, don't send data if it's null to avoid JSON parsing issues
   const requestData = data === null ? undefined : data;
-  return _makeRequest('DELETE', url, params, requestData, useBaseApiPath, {}, {}, noToken);
+  return _makeRequest('DELETE', url, params, requestData, useBaseApiPath, {}, {});
 };
 
 const _makeRequest = async (
@@ -45,7 +43,6 @@ const _makeRequest = async (
   useBaseApiPath = true,
   otherConfig = {},
   otherHeaders = {},
-  noToken = false,
 ) => {
   const requestType = type ? type.toUpperCase() : 'GET';
 
@@ -66,12 +63,7 @@ const _makeRequest = async (
 
   let requestHeaders = {};
 
-  const token = SessionService.getItem(STORAGE_KEYS.AUTH_TOKEN);
   const solutionId = localStorage.getItem('manageOrgId') || localStorage.getItem('selectedSolutionId');  
-
-  if (token && !noToken) {
-    requestHeaders.authorization = `Bearer ${token}`;
-  }
 
   if(solutionId) {
     requestHeaders.solutionId = solutionId;
@@ -96,10 +88,6 @@ const _makeRequest = async (
             error.response.data && error.response.data.error
               ? error.response.data.error.code
               : '';
-          if(status === 401)
-          {
-            _signOutUser();
-          }
           if (status === 404 && errCode === 'BE-304') {
             // const navigation = SessionService.getNavigationInstance();
             // if (navigation && navigation.navigate) {
@@ -119,11 +107,11 @@ const _makeRequest = async (
   });
 };
 
-const _signOutUser = () => {
+export const _signOutUser = () => {
     SessionService.clear();
     sessionStorage.clear();
     localStorage.clear();
- 
+    window.location.href = '/login'
 };
 
 

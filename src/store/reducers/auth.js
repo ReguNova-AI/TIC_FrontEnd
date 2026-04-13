@@ -4,7 +4,7 @@ import { updateObject } from '../../shared/utility';
 const initialState = {
   authInfo: null,
   error: null,
-  loading: false,
+  loading: true,
   authRedirectPath: '/',
   invalidSession: false
 };
@@ -37,6 +37,7 @@ const authFail = (state, action) => {
 const authLogout = (state, action) => {
   return updateObject(state, {
     authInfo: null,
+    loading: false,
     authRedirectPath: '/'
   });
 };
