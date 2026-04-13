@@ -59,10 +59,6 @@ const FolderDropZone = ({ folderId, onFilesAdded }) => {
       'application/pdf': ['.pdf'],
       'application/msword': ['.doc'],
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
-      'text/plain': ['.txt'],
-      'application/vnd.ms-excel': ['.xls'],
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
-      'text/csv': ['.csv'],
     },
   });
 
@@ -110,7 +106,7 @@ const FolderDropZone = ({ folderId, onFilesAdded }) => {
           Click to upload or drag and drop files here
         </Typography>
         <Typography variant="body2" sx={{ color: "#8c8c8c", mb: 1.5 }}>
-          Supported file formats: PDF, DOCX, DOC, TXT, XLSX, XLS, CSV
+          Supported file formats: PDF, DOCX, DOC
         </Typography>
         <Button
           variant="outlined"

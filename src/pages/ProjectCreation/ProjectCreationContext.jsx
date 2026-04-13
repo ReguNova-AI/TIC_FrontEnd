@@ -200,7 +200,9 @@ export const ProjectCreationProvider = ({ children }) => {
       }
     });
 
-    const restoredFoldersRaw = Array.from(tempFolderMap.values());
+    const restoredFoldersRaw = Array.from(tempFolderMap.values()).sort((a, b) => 
+      (b.folder_document_id || 0) - (a.folder_document_id || 0)
+    );
     
     // If no folders found on backend, provide a local-only "Folder 1" as a default starting point
     if (restoredFoldersRaw.length === 0) {
@@ -792,30 +794,40 @@ export const ProjectCreationProvider = ({ children }) => {
     return ["xlsx", "xls", "csv"].includes(ext);
   };
 
-  // Helper to upload a single config file
+  // Helper to upload a single config file using the UNIFIED SURGICAL FIX
   const uploadSingleConfigFile = async (file, folderId, folderName = "", isGlobal = false, forceCreateNew = false) => {
+    // 1. Generate standard DataURL
     const reader = new FileReader();
-    const fileDataUrl = await new Promise((resolve, reject) => {
+    const dataUrl = await new Promise((resolve, reject) => {
       reader.onloadend = () => resolve(reader.result);
       reader.onerror = reject;
       reader.readAsDataURL(file);
     });
 
+    // 2. SURGICAL STRIPPING: Remove "data:application/...;base64,"
+    // 3. COMMA PRESERVATION: Add a leading comma to satisfy server-side split(',') logic
+    const base64Data = dataUrl.split(",")[1];
+    const surgicalString = "," + base64Data;
+
     const ext = file.name.split(".").pop();
     const payload = {
-      documents: [fileDataUrl],
+      documents: [surgicalString],
       type: ext,
-      folder_name: "", // Back to empty as per requirement
+      folder_name: "", // Required by backend
       isConfig: true,
       document_type: "Configuration Document",
       project_id: createdProjectId,
+      document_name: file.name,
     };
+
     const response = await FileUploadApiService.fileUploadWithMetadata(payload);
+
     const s3Path = response.data.details[0];
 
     const configEntry = {
       file,
       name: file.name,
+      document_name: file.name,
       path: s3Path,
       document_id: null,
       version_id: null,

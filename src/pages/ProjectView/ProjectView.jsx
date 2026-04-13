@@ -738,6 +738,11 @@ const ProjectView = () => {
                   typeSelect={false}
                   handleSubmitDocument={handleFileChange}
                   maxFile={0}
+                  accept={{
+                    'application/pdf': ['.pdf'],
+                    'application/msword': ['.doc'],
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+                  }}
                 />
               </Suspense>
             )}

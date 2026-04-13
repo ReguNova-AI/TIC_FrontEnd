@@ -242,7 +242,7 @@ export default function DashboardDefault() {
       </Grid> */}
 
           <Grid item xs={12} md={12} lg={12}>
-              <ProjectTable />
+              <ProjectTable onDataChange={fetchData} />
           </Grid>
           <Grid item xs={12} md={5} lg={4}>
             {userRole === "Org Super Admin" || userRole === "Admin" ? (

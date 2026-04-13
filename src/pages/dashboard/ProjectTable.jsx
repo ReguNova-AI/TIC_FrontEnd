@@ -6,7 +6,9 @@ import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
+import TableFooter from "@mui/material/TableFooter";
 import TableHead from "@mui/material/TableHead";
+import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
@@ -38,15 +40,7 @@ const PenLucideIcon = ({ size = 18, color = "currentColor", strokeWidth = 1.6 })
   </svg>
 );
 
-const FileTextLucideIcon = ({ size = 18, color = "currentColor", strokeWidth = 1.6 }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
-    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
-    <polyline points="14 2 14 8 20 8"/>
-    <line x1="16" x2="8" y1="13" y2="13"/>
-    <line x1="16" x2="8" y1="17" y2="17"/>
-    <line x1="10" x2="8" y1="9" y2="9"/>
-  </svg>
-);
+
 
 
 // ==============================|| PROJECT TABLE - HEADER ||============================== //
@@ -112,7 +106,7 @@ ProjectTableHead.propTypes = {
 
 // ==============================|| PROJECT TABLE ||============================== //
 
-export default function ProjectTable() {
+export default function ProjectTable({ onDataChange }) {
   const navigate = useNavigate();
 
   const info = JSON.parse(sessionStorage.getItem("userDetails"));
@@ -123,6 +117,8 @@ export default function ProjectTable() {
   const [isLoading, setIsLoading] = useState(true);
   const [order, setOrder] = useState('desc');
   const [orderBy, setOrderBy] = useState('start_date');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const [snackData, setSnackData] = useState({
     show: false,
@@ -134,6 +130,16 @@ export default function ProjectTable() {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);
+    setPage(0); // reset to first page on sort change
+  };
+
+  const handleChangePage = (_event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
   };
 
   const descendingComparator = (a, b, orderBy) => {
@@ -233,7 +239,7 @@ export default function ProjectTable() {
           );
         }
 
-        setData(newData.slice(0, 6));
+        setData(newData); // store all rows; pagination handles slicing
         setIsLoading(false);
       })
       .catch((errResponse) => {
@@ -268,6 +274,7 @@ export default function ProjectTable() {
             type: "success",
           });
           fetchData();
+          if (onDataChange) onDataChange();
         } catch (error) {
           setSnackData({
             show: true,
@@ -296,13 +303,6 @@ export default function ProjectTable() {
     >
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, px: 0 }}>
         <Typography variant="h6" sx={{ fontWeight: 600 }}>Recent Projects</Typography>
-        <Link 
-          color="secondary" 
-          onClick={() => navigate('/projects')} 
-          sx={{ cursor: "pointer", display: 'flex', alignItems: 'center', textDecoration: 'none', color: '#5B0428', fontWeight: 600, fontSize: '14px' }}
-        >
-          View all {'>'}
-        </Link>
       </Box>
 
       {data.length > 0 &&
@@ -327,7 +327,9 @@ export default function ProjectTable() {
                 onRequestSort={handleRequestSort}
               />
               <TableBody>
-                {stableSort(data, getComparator(order, orderBy)).map((row, index) => (
+                {stableSort(data, getComparator(order, orderBy))
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((row, index) => (
                   <TableRow key={index} hover sx={{ '& td, & th': { borderBottom: '1px solid #f0f0f0' } }}>
                     <TableCell>
                       <Link
@@ -342,8 +344,8 @@ export default function ProjectTable() {
                     <TableCell>
                       {row.last_run}
                     </TableCell>
-                    <TableCell sx={{ fontSize: '13px', color: '#555' }}>{row.start_date}</TableCell>
-                    <TableCell sx={{ fontSize: '13px', color: '#555' }}>{row.modified_date}</TableCell>
+                    <TableCell sx={{ fontSize: '14px', color: '#222' }}>{row.start_date}</TableCell>
+                    <TableCell sx={{ fontSize: '14px', color: '#222' }}>{row.modified_date}</TableCell>
                     <TableCell align="center">
                       <Stack direction="row" spacing={1} justifyContent="center" alignItems="center">
                         <IconButton size="small" onClick={() => handleDelete(row.index)}>
@@ -352,14 +354,31 @@ export default function ProjectTable() {
                         <IconButton size="small" onClick={() => handleEdit(row.index)}>
                            <PenLucideIcon color="#757575" size={17} />
                         </IconButton>
-                        <IconButton size="small" onClick={() => handleClick(row.index)}>
-                           <FileTextLucideIcon color="#5B0428" size={17} />
-                        </IconButton>
                       </Stack>
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
+              <TableFooter>
+                <TableRow>
+                  <TablePagination
+                    rowsPerPageOptions={[10, 25, 50]}
+                    count={data.length}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                    sx={{
+                      borderTop: '1px solid #f0f0f0',
+                      '& .MuiTablePagination-toolbar': { minHeight: '48px' },
+                      '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                        fontSize: '13px',
+                        color: '#555',
+                      },
+                    }}
+                  />
+                </TableRow>
+              </TableFooter>
             </Table>
           </TableContainer>
         ) : (
