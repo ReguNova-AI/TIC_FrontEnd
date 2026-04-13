@@ -13,7 +13,7 @@ export const formatDate = (value) => {
   let formattedDate = date.toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
-    day: "numeric",
+    day: "2-digit",
   });
   if (!value) {
     const day = String(date.getDate()).padStart(2, "0");

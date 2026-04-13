@@ -4,7 +4,7 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import PropTypes from "prop-types";
 import FileStructureView from "./FileStructureView";
-import { Pencil, FolderClosed, FileText, RefreshCw, X } from "lucide-react";
+import { Pencil, FolderClosed, FileText, RefreshCw, X, Download } from "lucide-react";
 import { FileUploadApiService } from "services/api/FileUploadAPIService";
 import { ProjectApiService } from "services/api/ProjectAPIService";
 import { message, Modal, Progress, Popconfirm } from "antd";
@@ -31,6 +31,109 @@ const OverviewTab = ({
   const [currentConfigFileName, setCurrentConfigFileName] = useState("");
   const [docToReplace, setDocToReplace] = useState(null);
   const replaceInputRef = useRef(null);
+  
+  // --- Scavenger & Proxy Download Logic (Match Creation Step) ---
+  
+  const findBase64Recursive = (obj, path = "root") => {
+    if (!obj) return null;
+    if (typeof obj === "string") {
+      if (obj.length > 100 && (obj.includes("base64,") || !/\s/.test(obj.substring(0, 50)))) {
+        return obj;
+      }
+      return null;
+    }
+    if (Array.isArray(obj)) {
+      for (let i = 0; i < obj.length; i++) {
+        const found = findBase64Recursive(obj[i], `${path}[${i}]`);
+        if (found) return found;
+      }
+      return null;
+    }
+    if (typeof obj === "object") {
+      for (let key of Object.keys(obj)) {
+        const found = findBase64Recursive(obj[key], `${path}.${key}`);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
+  const proxyDownload = async (doc) => {
+    if (!doc?.file_path) {
+      message.error("File path not found!");
+      return;
+    }
+
+    try {
+      let key = doc.file_path;
+      if (key.startsWith("http")) {
+        const parts = key.split("/");
+        if (parts.length > 3) key = parts.slice(3).join("/");
+      }
+
+      console.info(`[PROXY-VIEW] Requesting key: "${key}"`);
+      const res = await FileUploadApiService.fileget({ imageKeys: [key] });
+      
+      const b64 = findBase64Recursive(res);
+      let binaryBlob;
+
+      if (b64) {
+        let cleanB64 = b64;
+        if (cleanB64.includes(",")) {
+          const parts = cleanB64.split(",");
+          cleanB64 = parts[parts.length - 1];
+        }
+        cleanB64 = cleanB64.replace(/\s/g, "");
+
+        const ext = doc.document_name?.split(".").pop().toLowerCase() || "xlsx";
+        const mimeTypes = {
+          xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          xls: "application/vnd.ms-excel",
+          csv: "text/csv",
+        };
+        const mimeType = mimeTypes[ext] || "application/octet-stream";
+
+        const dataUri = `data:${mimeType};base64,${cleanB64}`;
+        binaryBlob = await (await fetch(dataUri)).blob();
+      } else if (res instanceof Blob || res instanceof ArrayBuffer) {
+        binaryBlob = res instanceof Blob ? res : new Blob([res]);
+      } else {
+        throw new Error("Could not find file data in response.");
+      }
+
+      const url = window.URL.createObjectURL(binaryBlob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = doc.document_name || "download.xlsx";
+      document.body.appendChild(link);
+      link.click();
+
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+        link.remove();
+      }, 500);
+    } catch (error) {
+      console.error("[PROXY-VIEW] Download failed:", error);
+      // Fallback
+      const link = document.createElement("a");
+      link.href = doc.file_path;
+      link.setAttribute("download", doc.document_name);
+      link.setAttribute("target", "_blank");
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => link.remove(), 200);
+      message.warning("Attempted direct download fallback.");
+    }
+  };
+
+  const handleDownloadTemplate = () => {
+    const link = document.createElement("a");
+    link.href = "/template/config_sample_template.xlsx";
+    link.download = "config_sample_template.xlsx";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const handleConfigUpload = async (e) => {
     const files = Array.from(e.target.files);
@@ -372,6 +475,7 @@ const OverviewTab = ({
           </Button>
           <Button
             variant="outlined"
+            onClick={handleDownloadTemplate}
             startIcon={
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -424,6 +528,7 @@ const OverviewTab = ({
                     <FileText size={15} color="#5B0429" />
                     <Typography sx={{ fontSize: '13px', fontWeight: 600 }}>{doc.document_name}</Typography>
                   </Box>
+                 
                   <Box 
                     onClick={() => handleReplaceConfig(doc)}
                     sx={{ display: 'flex', alignItems: 'center', gap: 0.5, cursor: 'pointer', color: '#666', '&:hover': { color: '#444' } }}

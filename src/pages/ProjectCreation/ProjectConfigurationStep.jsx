@@ -16,6 +16,7 @@ import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import { Modal, message } from "antd";
 import { useProjectCreation } from "./ProjectCreationContext";
+import { FileUploadApiService } from "services/api/FileUploadAPIService";
 
 const ProjectConfigurationStep = () => {
   const { folders, configFiles, setConfigFileForFolder, removeConfigFileForFolder } = useProjectCreation();
@@ -23,6 +24,114 @@ const ProjectConfigurationStep = () => {
   const globalFileInputRef = useRef(null);
   const [expandedFolders, setExpandedFolders] = useState({});
   const [replacingFolderId, setReplacingFolderId] = useState(null);
+
+  // --- Scavenger & Proxy Download Logic (High Fidelity) ---
+  
+  // Helper to find base64 string deeply nested in an object
+  const findBase64Recursive = (obj, path = "root") => {
+    if (!obj) return null;
+    if (typeof obj === "string") {
+      if (obj.length > 100 && (obj.includes("base64,") || !/\s/.test(obj.substring(0, 50)))) {
+        console.info(`[SCAVENGER] Found potential file data at path: "${path}"`);
+        return obj;
+      }
+      return null;
+    }
+    if (Array.isArray(obj)) {
+      for (let i = 0; i < obj.length; i++) {
+        const found = findBase64Recursive(obj[i], `${path}[${i}]`);
+        if (found) return found;
+      }
+      return null;
+    }
+    if (typeof obj === "object") {
+      for (let key of Object.keys(obj)) {
+        const found = findBase64Recursive(obj[key], `${path}.${key}`);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
+  // Proxy-based download logic to bypass CORS and fix corruption
+  const proxyDownload = async (config) => {
+    if (!config?.path) return;
+
+    try {
+      // Key extraction (relative path for storage proxy)
+      let key = config.path;
+      if (key.startsWith("http")) {
+        const parts = key.split("/");
+        if (parts.length > 3) key = parts.slice(3).join("/");
+      }
+
+      console.info(`[PROXY] Requesting key: "${key}"`);
+      const res = await FileUploadApiService.fileget({ imageKeys: [key] });
+      
+      // HIGH-FIDELITY PATH: Check if response is already clean binary (or a Blob)
+      // Otherwise, use the scavenger to extract data from JSON
+      let binaryBlob;
+      const b64 = findBase64Recursive(res);
+
+      if (b64) {
+        // Handle Base64 (Legacy or JSON Wrapped)
+        // 1. Remove ANY leading metadata like "data:...", "base64," etc.
+        // 2. Remove whitespace and the surgical comma if present.
+        let cleanB64 = b64;
+        if (cleanB64.includes(",")) {
+          const parts = cleanB64.split(",");
+          cleanB64 = parts[parts.length - 1];
+        }
+        cleanB64 = cleanB64.replace(/\s/g, "");
+
+        // Determine MIME type
+        const ext = config.name.split(".").pop().toLowerCase();
+        const mimeTypes = {
+          xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          xls: "application/vnd.ms-excel",
+          csv: "text/csv",
+        };
+        const mimeType = mimeTypes[ext] || "application/octet-stream";
+
+        // Native High-Fidelity Reconstruction
+        const dataUri = `data:${mimeType};base64,${cleanB64}`;
+        binaryBlob = await (await fetch(dataUri)).blob();
+      } else if (res instanceof Blob || res instanceof ArrayBuffer) {
+        // Handle Direct Binary (The New Best Practice)
+        binaryBlob = res instanceof Blob ? res : new Blob([res]);
+      } else {
+        throw new Error("Could not find file data in response.");
+      }
+
+      const url = window.URL.createObjectURL(binaryBlob);
+      const link = document.createElement("a");
+      link.href = url;
+      // Prioritize document_name (server-side stable) then name (client-side session)
+      const downloadName = config.document_name || config.name;
+      link.download = downloadName;
+      document.body.appendChild(link);
+      link.click();
+
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+        link.remove();
+        console.info(`[PROXY] Download successful: ${config.name}`);
+      }, 500);
+    } catch (error) {
+      console.error("[PROXY] Download failed:", error);
+      // Fallback
+      const link = document.createElement("a");
+      link.href = config.path;
+      link.setAttribute("download", config.name);
+      link.setAttribute("target", "_blank");
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => link.remove(), 200);
+      message.warning(`Proxy download failed. Attempted direct link for ${config.name}.`);
+    }
+  };
+
+  // --- UI Handlers ---
 
   // Auto-expand all folders by default or when new ones are added
   React.useEffect(() => {
@@ -107,7 +216,7 @@ const ProjectConfigurationStep = () => {
     }));
   };
 
-  // Download template
+  // Download template (strictly from local /public)
   const handleDownloadTemplate = () => {
     const link = document.createElement("a");
     link.href = "/template/config_sample_template.xlsx";
@@ -276,9 +385,12 @@ const ProjectConfigurationStep = () => {
                             variant="body2"
                             sx={{ color: "#262626", fontWeight: 500 }}
                           >
-                            {config.name}
+                            {config.document_name || config.name}
                           </Typography>
                         </Box>
+
+                      
+                      
 
                         <Button
                           size="small"
@@ -289,7 +401,7 @@ const ProjectConfigurationStep = () => {
                             textTransform: "none",
                             color: brand.primary,
                             fontWeight: 500,
-                            ml: 2,
+                            ml: 1,
                             "&:hover": { backgroundColor: "rgba(91,4,41,0.04)" },
                           }}
                         >

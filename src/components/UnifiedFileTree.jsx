@@ -154,7 +154,7 @@ function FileRow({ doc, onDeleteFile, readOnly, onUploadFile, onPreview, aiButto
                         <Tooltip title="Upload file">
                             <label htmlFor={`file-up-${doc.id}`} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', marginBottom: 0 }} onClick={(e) => e.stopPropagation()}>
                                 <Upload size={15} color="#5B0429" />
-                                <input id={`file-up-${doc.id}`} type="file" style={{ display: 'none' }} onChange={(e) => onUploadFile(e, doc)} />
+                                <input id={`file-up-${doc.id}`} type="file" accept=".pdf,.doc,.docx" style={{ display: 'none' }} onChange={(e) => onUploadFile(e, doc)} />
                             </label>
                         </Tooltip>
                     )
@@ -348,7 +348,7 @@ function FolderRow({ folder, expanded, onToggle, onAddFolderFile, onDeleteFolder
                                     Click to upload or drag and drop files here
                                 </Typography>
                                 <Typography sx={{ color: "#8c8c8c", mb: 1.5, fontSize: '12px' }}>
-                                    Supported file formats: PDF, DOCX, DOC, TXT, XLSX, XLS, CSV
+                                    Supported file formats: PDF, DOCX, DOC
                                 </Typography>
                                 {!readOnly && onAddFolderFile && !aiButtonLoading && (
                                     <Button

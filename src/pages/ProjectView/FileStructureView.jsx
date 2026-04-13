@@ -808,7 +808,7 @@ const FileStructureView = ({ data, onFileUploadSuccess, aiButtonLoading, disable
         ref={fileInputRef}
         type="file"
         multiple
-        accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.jpg,.jpeg,.png"
+        accept=".pdf,.doc,.docx"
         style={{ display: "none" }}
         onChange={(e) => {
           console.log("File input changed, files:", e.target.files);

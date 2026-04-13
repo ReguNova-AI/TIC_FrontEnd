@@ -302,6 +302,7 @@ const DropZoneFileUpload = (props) => {
   };
 
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
+    accept: props.accept || null,
     onDrop: (newFiles) => {
       const allFiles = [...uploadedFiles, ...newFiles];
       const totalSize = getTotalSize(allFiles);

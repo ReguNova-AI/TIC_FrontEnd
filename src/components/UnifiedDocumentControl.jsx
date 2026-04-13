@@ -33,7 +33,7 @@ const UnifiedDocumentControl = ({
     onAddFolder,
     onAddFile,
     folderList = [],
-    acceptedFileTypes = ".pdf,.doc,.docx,.xls,.xlsx,.txt,.jpg,.jpeg,.png",
+    acceptedFileTypes = ".pdf,.doc,.docx",
     addingToFolder = null,
     onCancelAddingToFolder = () => { },
     showUploadMultiple = false,
@@ -260,6 +260,7 @@ const UnifiedDocumentControl = ({
                                     <input
                                         type="file"
                                         hidden
+                                        accept={acceptedFileTypes}
                                         onChange={(e) => setNewDoc({ ...newDoc, file: e.target.files[0] })}
                                     />
                                 </Button>
