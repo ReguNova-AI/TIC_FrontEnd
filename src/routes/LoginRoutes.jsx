@@ -3,7 +3,7 @@ import { lazy } from "react";
 // project import
 import Loadable from "components/Loadable";
 import MinimalLayout from "layout/MinimalLayout";
-import ProtectedRoute from "./ProtectedRoute";
+import { Navigate, useLocation } from "react-router";
 
 // render - login
 const AuthLogin = Loadable(lazy(() => import("pages/authentication/login")));
@@ -18,6 +18,18 @@ const AuthOTP = Loadable(lazy(() => import("pages/authentication/OTP")));
 const AuthPasswordReset = Loadable(
   lazy(() => import("pages/authentication/PasswordReset")),
 );
+
+const ResetFlowRoute = ({ children }) => {
+  const location = useLocation();
+  const resetFlow = sessionStorage.getItem("resetFlow");
+  const email = sessionStorage.getItem("email");
+
+  if (!resetFlow || !email) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return children;
+};
 
 // ==============================|| AUTH ROUTING ||============================== //
 
@@ -40,17 +52,17 @@ const LoginRoutes = {
     {
       path: "/otp",
       element: (
-        <ProtectedRoute>
+        <ResetFlowRoute>
           <AuthOTP />
-        </ProtectedRoute>
+        </ResetFlowRoute>
       ),
     },
     {
       path: "/passwordReset",
       element: (
-        <ProtectedRoute>
+        <ResetFlowRoute>
           <AuthPasswordReset />
-        </ProtectedRoute>
+        </ResetFlowRoute>
       ),
     },
     {
