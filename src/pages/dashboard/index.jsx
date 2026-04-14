@@ -237,49 +237,6 @@ export default function DashboardDefault() {
           <Grid item xs={12} md={12} lg={12}>
               <ProjectTable onDataChange={fetchData} />
           </Grid>
-          <Grid item xs={12} md={5} lg={4}>
-            {userRole === "Org Super Admin" || userRole === "Admin" ? (
-              <>
-              {/* <AnalyticEcommerce
-                title="Total Active Users"
-                count={userCount || 0}
-                graphic={false}
-                iconRender={true}
-                icon={UserIcon}
-              />
-              <br />
-            <AnalyticEcommerce
-              title="Total Inactive Users"
-              count={inactiveUserCount || 0}
-              graphic={false}
-              iconRender={true}
-              icon={UserIcon2}
-            /> */}
-            </>
-            ) : (
-              <>
-                
-                <MainCard
-                 
-                  content={false}
-                  style={{ boxShadow: "6px 12px 20px #e4e4e4" }}
-                >
-                  <Box sx={{ p: 3, pb: 0 }}>
-                    <Stack spacing={2}>
-                      <Typography variant="h6" color="text.secondary">
-                        Last 10 days Statistics
-                      </Typography>
-                      {/* <Typography variant="h3">$7,650</Typography> */}
-                    </Stack>
-                  </Box>
-                {/* echarts loads here deferred — non-blocking */}
-                <Suspense fallback={<Box sx={{ height: 400 }} />}>
-                  <UserWeeklyBarChart />
-                </Suspense>
-                </MainCard>
-              </>
-            )}
-          </Grid>
           {/* <Grid item xs={12} md={8} lg={8}>
           <MainCard
                  
