@@ -108,7 +108,9 @@ const UnifiedDocumentControl = ({
                     px: 2.5,
                     border: !disabled ? 'none' : '1px solid rgba(91, 4, 41, 0.1)',
                     '&:hover': { 
-                        bgcolor: !disabled ? '#4a0322' : 'rgba(91, 4, 41, 0.1)', 
+                        bgcolor: !disabled ? '#5B0429' : 'rgba(91, 4, 41, 0.05)',
+                        color:"#fff",
+                        boxShadow: 'none' 
                     },
                     '&.Mui-disabled': { 
                         bgcolor: 'rgba(91, 4, 41, 0.05)', 
@@ -116,9 +118,9 @@ const UnifiedDocumentControl = ({
                     }
                 }}
             >
-                Create folder
+                Create Folder
             </Button>
-            {showUploadMultiple && (
+            {/* {showUploadMultiple && (
                 <Button
                     variant="outlined"
                     startIcon={<Upload size={16} />}
@@ -145,7 +147,7 @@ const UnifiedDocumentControl = ({
                 >
                     Upload Multiple
                 </Button>
-            )}
+            )} */}
         </Box>
     );
 

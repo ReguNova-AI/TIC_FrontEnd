@@ -241,7 +241,7 @@ const ProjectConfigurationStep = () => {
             "&:hover": { backgroundColor: brand.primaryHover },
           }}
         >
-          Upload project configuration
+          Upload Project Configuration
         </Button>
         <input
           ref={globalFileInputRef}
