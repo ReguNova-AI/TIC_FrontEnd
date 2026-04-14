@@ -463,7 +463,7 @@ const OverviewTab = ({
               '&.Mui-disabled': { bgcolor: '#f5f5f5', color: '#ccc', borderColor: '#e0e0e0' },
             }}
           >
-            Upload project configuration
+            Upload Project Configuration
             <input 
               type="file" 
               hidden 
@@ -497,7 +497,7 @@ const OverviewTab = ({
               '&.Mui-disabled': { borderColor: '#e0e0e0', color: '#ccc' },
             }}
           >
-            Download template
+            Download Template
           </Button>
         </Box>
 

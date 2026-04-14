@@ -365,6 +365,14 @@ export const ProjectCreationProvider = ({ children }) => {
       });
       return null;
     }
+    if (projectName.length > 50) {
+      setSnackData({
+        show: true,
+        message: "Project Name must be 50 characters or less.",
+        type: "error",
+      });
+      return null;
+    }
     if (!projectDesc.trim()) {
       setSnackData({
         show: true,
@@ -490,6 +498,15 @@ export const ProjectCreationProvider = ({ children }) => {
   // ---- Step 1: Update project details ----
   const updateProjectStep1 = useCallback(async () => {
     if (!createdProjectId) return null;
+    
+    if (projectName.length > 50) {
+      setSnackData({
+        show: true,
+        message: "Project Name must be 50 characters or less.",
+        type: "error",
+      });
+      return false;
+    }
     
     setIsCreatingProject(true);
 

@@ -134,6 +134,14 @@ const ProjectCreationWizard = () => {
           });
           return false;
         }
+        if (projectName.length > 50) {
+          setSnackData({
+            show: true,
+            message: "Project Name must be 50 characters or less.",
+            type: "error",
+          });
+          return false;
+        }
         if (!projectDesc.trim()) {
           setSnackData({
             show: true,

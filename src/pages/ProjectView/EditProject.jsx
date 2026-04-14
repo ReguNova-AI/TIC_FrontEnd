@@ -5,9 +5,11 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
+import { message } from "antd";
 import CloseIcon from "@mui/icons-material/Close";
 
-const MAX_DESC = 256;
+const MAX_NAME = 50;
+const MAX_DESC = 250;
 
 const EditProject = ({ data, onHandleClose, editDetails, type }) => {
   const [formData, setFormData] = useState({
@@ -16,8 +18,14 @@ const EditProject = ({ data, onHandleClose, editDetails, type }) => {
   });
 
   const handleInputChange = (field, value) => {
-    if (field === "projectDesc" && value.length > MAX_DESC) return;
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    const limit = field === "projectName" ? MAX_NAME : MAX_DESC;
+    const label = field === "projectName" ? "Project Name" : "Project Details";
+
+    if (value.length <= limit) {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+    } else {
+      message.warning(`${label} cannot exceed ${limit} characters.`);
+    }
   };
 
   const handleSubmit = () => {
@@ -95,6 +103,19 @@ const EditProject = ({ data, onHandleClose, editDetails, type }) => {
               },
             }}
           />
+          {/* Project Name character counter */}
+          <Typography
+            variant="caption"
+            sx={{
+              display: "block",
+              textAlign: "right",
+              mt: 0.5,
+              fontSize: "11px",
+              color: formData.projectName.length > MAX_NAME * 0.9 ? "#d32f2f" : "#aaa",
+            }}
+          >
+            {formData.projectName.length}/{MAX_NAME}
+          </Typography>
         </Box>
 
         {/* Project Details Field */}
@@ -129,9 +150,9 @@ const EditProject = ({ data, onHandleClose, editDetails, type }) => {
             <Typography
               variant="caption"
               sx={{
-                position: "absolute",
-                bottom: 8,
-                right: 12,
+                display: "block",
+                textAlign: "right",
+                mt: 0.5,
                 fontSize: "11px",
                 color: formData.projectDesc.length > MAX_DESC * 0.9 ? "#d32f2f" : "#aaa",
                 pointerEvents: "none",
