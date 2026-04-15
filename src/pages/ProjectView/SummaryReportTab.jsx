@@ -119,7 +119,7 @@ const ReportAccordionItem = ({
               },
             }}
           >
-            View
+            {isOpen ? "Hide" : "View"}
           </Button>
           <Button
             size="small"
@@ -202,13 +202,13 @@ const SummaryReportTab = ({ projectData, handleRunAIAssessment, aiButtonLoading,
   useEffect(() => {
     if (riskSummaries.length > 0) {
       const latestId = riskSummaries[0].version_id;
-      // Auto-select if nothing is selected yet, OR if a brand new version just arrived
-      if (selectedVersionId === null || latestId !== prevLatestRef.current) {
+      // Auto-select if it's the initial load OR if a brand new version just arrived
+      if (prevLatestRef.current === null || latestId !== prevLatestRef.current) {
         setSelectedVersionId(latestId);
       }
       prevLatestRef.current = latestId;
     }
-  }, [riskSummaries, selectedVersionId]);
+  }, [riskSummaries]);
 
   // Annotate each entry with a flag for the latest
   const annotatedList = riskSummaries.map((entry, idx) => ({

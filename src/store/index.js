@@ -11,7 +11,10 @@ let composeEnhancers =
 // Add middleware here (in this case, we only have redux-thunk)
 const middlewares = [thunk];
 
+// ... (existing code above)
 // Create the Redux store with the rootReducer and initialState (if provided)
+let storeInstance;
+
 export const getStore = (initialState = {}) => {
   const store = createStore(
     rootReducer,          // The root reducer (combineReducers)
@@ -21,5 +24,9 @@ export const getStore = (initialState = {}) => {
     )
   );
 
+  storeInstance = store;
   return store;
 };
+
+export const getStoreInstance = () => storeInstance;
+

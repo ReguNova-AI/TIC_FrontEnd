@@ -9,7 +9,7 @@ const authStart = () => {
   };
 };
 
-const authSuccess = (authInfo) => {
+export const authSuccess = (authInfo) => {
   return {
     type: actionTypes.AUTH_SUCCESS,
     authInfo: authInfo,

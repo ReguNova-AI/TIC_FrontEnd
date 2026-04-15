@@ -240,19 +240,37 @@ const Listing = () => {
   };
 
   const handleTableChange = (pagination, _, sorter) => {
+    // 1. Update pagination state for the active tab
+    if (value === 0) {
+      setCurrentPage(pagination.current);
+      setPageSize(pagination.pageSize);
+    } else {
+      setCurrentInvitedPage(pagination.current);
+      setPageInvitedSize(pagination.pageSize);
+    }
+
+    // 2. Handle Sorting
     if (sorter?.columnKey) {
       const dbColumn = sorter.columnKey;
+      const isSortChanged = sortBy !== dbColumn || sortOrder !== (sorter.order === "ascend" ? "asc" : "desc");
+      
       setSortBy(dbColumn);
       setSortOrder(sorter.order === "ascend" ? "asc" : "desc");
-    } else {
+
+      // Reset to page 1 ONLY if sort actually changed (optional, but good UX)
+      if (isSortChanged) {
+        setCurrentPage(1);
+        setCurrentInvitedPage(1);
+      }
+    } else if (sortBy !== null) {
       // Sorter cleared
       setSortBy(null);
       setSortOrder(null);
+      setCurrentPage(1);
+      setCurrentInvitedPage(1);
     }
-    // Reset to page 1 on sort change
-    setCurrentPage(1);
-    setCurrentInvitedPage(1);
   };
+
 
   const columns = [
     {
