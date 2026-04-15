@@ -56,6 +56,23 @@ export default defineConfig({
       "@emotion/cache",
     ],
   },
+  // server: {
+  //   // this ensures that the browser opens upon server start
+  //   open: false, // Don't auto-open browser on server
+  //   host: "0.0.0.0",
+  //   // this sets a default port to 3000
+  //   port: 3000,
+  //   // Allow requests from your domain
+  //   allowedHosts: [
+  //     "diligence2ai.com",
+  //     "www.diligence2ai.com",
+  //     "localhost",
+  //     "127.0.0.1",
+  //     ".diligence2ai.com", // This allows all subdomains
+  //   ],
+  // },
+  
+
   server: {
     // this ensures that the browser opens upon server start
     open: false, // Don't auto-open browser on server
@@ -70,7 +87,14 @@ export default defineConfig({
       "127.0.0.1",
       ".diligence2ai.com", // This allows all subdomains
     ],
+    proxy: {
+      "/api": {
+        target: "http://15.206.180.140:4422",
+        changeOrigin: true,
+      },
+    },
   },
+ 
   preview: {
     // this ensures that the browser opens upon preview start
     open: false, // Don't auto-open browser

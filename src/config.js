@@ -1,7 +1,11 @@
 // ========================== || API CONFIG || =============================//
 
-export const apiHost = import.meta.env.VITE_API_URL;
-export const apiPath = import.meta.env.VITE_API_URL;
+// export const apiHost = import.meta.env.VITE_API_URL;
+// export const apiPath = import.meta.env.VITE_API_URL;
+
+export const apiHost = import.meta.env.VITE_API_URL||"";
+export const apiPath = import.meta.env.VITE_API_URL||"";
+
 export const apiProxyHost = '/tic-api';
 
 // ==============================|| THEME CONFIG  ||============================== //
