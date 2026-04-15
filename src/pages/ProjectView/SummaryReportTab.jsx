@@ -59,8 +59,8 @@ const timeAgo = (ts) => {
 const ReportAccordionItem = ({
   entry,
   projectName,
-  isOpen,
-  onToggle,
+  isOpen: initialOpen, // Parent's intent
+  onToggle, // We can still call this if the parent needs to know
   onDownload,
   isDownloading,
   onDelete,
@@ -68,15 +68,31 @@ const ReportAccordionItem = ({
   projectData,
 }) => {
   const itemRef = useRef(null);
+  const [isExpanded, setIsExpanded] = useState(initialOpen);
+
+  // We only want to auto-expand when initialOpen changes to true (e.g. on first load or new version)
+  // but we don't want the parent's 'false' to force-close if we are doing independent state.
+  useEffect(() => {
+    if (initialOpen) {
+      setIsExpanded(true);
+    }
+  }, [initialOpen]);
+
+
+  const handleToggle = () => {
+    const nextState = !isExpanded;
+    setIsExpanded(nextState);
+    if (onToggle) onToggle(nextState);
+  };
 
   // Auto-scroll when this specific item is opened
   useEffect(() => {
-    if (isOpen) {
+    if (isExpanded) {
       setTimeout(() => {
         itemRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 100);
     }
-  }, [isOpen]);
+  }, [isExpanded]);
 
   return (
     <Box ref={itemRef} sx={{ display: "flex", flexDirection: "column", mb: 2 }}>
@@ -89,12 +105,12 @@ const ReportAccordionItem = ({
           px: 2,
           py: 1.5,
           border: "1px solid #eaeaea",
-          borderRadius: isOpen ? "6px 6px 0 0" : "6px",
+          borderRadius: isExpanded ? "6px 6px 0 0" : "6px",
           bgcolor: "#fff",
           position: "sticky",
           top: -16, // Accounts for the p: 2 (16px) padding in the parent container to stick at the very top
           zIndex: 10,
-          boxShadow: isOpen ? "0 4px 12px rgba(0,0,0,0.08)" : "none",
+          boxShadow: isExpanded ? "0 4px 12px rgba(0,0,0,0.08)" : "none",
           transition: "box-shadow 0.2s ease-in-out",
         }}
       >
@@ -135,8 +151,8 @@ const ReportAccordionItem = ({
         <Box sx={{ display: "flex", gap: 1 }}>
           <Button
             size="small"
-            variant={isOpen ? "contained" : "outlined"}
-            onClick={onToggle}
+            variant={isExpanded ? "contained" : "outlined"}
+            onClick={handleToggle}
             sx={{
               textTransform: "none",
               fontSize: "13px",
@@ -144,19 +160,20 @@ const ReportAccordionItem = ({
               fontWeight: 600,
               px: 3,
               height: "32px",
-              bgcolor: isOpen ? "#5B0429" : "transparent",
+              bgcolor: isExpanded ? "#5B0429" : "transparent",
               borderColor: "#5B0429",
-              color: isOpen ? "#fff" : "#5B0429",
+              color: isExpanded ? "#fff" : "#5B0429",
               boxShadow: "none",
               "&:hover": {
                 borderColor: "#5B0429",
-                bgcolor: isOpen ? "#470119" : "rgba(91,4,41,0.04)",
+                bgcolor: isExpanded ? "#470119" : "rgba(91,4,41,0.04)",
                 boxShadow: "none",
               },
             }}
           >
-            View
+            {isExpanded ? "Hide" : "View"}
           </Button>
+
           <Button
             size="small"
             variant="outlined"
@@ -205,7 +222,7 @@ const ReportAccordionItem = ({
       </Box>
 
       {/* Accordion Content */}
-      <Collapse in={isOpen} timeout="auto">
+      <Collapse in={isExpanded} timeout="auto">
         <Box
           sx={{
             border: "1px solid #eaeaea",
@@ -224,6 +241,7 @@ const ReportAccordionItem = ({
           />
         </Box>
       </Collapse>
+
     </Box>
   );
 };
@@ -418,19 +436,14 @@ const SummaryReportTab = ({
               entry={entry}
               projectName={projectData?.project_name}
               isOpen={entry.version_id === selectedVersionId}
-              onToggle={() =>
-                setSelectedVersionId(
-                  entry.version_id === selectedVersionId
-                    ? null
-                    : entry.version_id,
-                )
-              }
               onDownload={handleDownloadVersion}
               isDownloading={downloadingVersionId === entry.version_id}
               onDelete={handleDeleteVersion}
               isDeleting={deletingVersionId === entry.version_id}
               projectData={projectData}
             />
+
+
           ))}
         </Box>
       </Box>
