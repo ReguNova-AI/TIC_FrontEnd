@@ -40,7 +40,7 @@ export const rehydrateAuth = () => async (dispatch) => {
   dispatch(authStart());
   try {
     const response = await UserApiService.getMe(); // GET /api/v1/me
-    dispatch(authSuccess(response.data));
+    dispatch(setAuthentication(response));
   } catch {
     dispatch(authFail()); // 401 → stays logged out
   }

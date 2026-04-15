@@ -114,3 +114,22 @@ export const extractApiError = (errResponse) => {
     API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR
   );
 };
+
+export function generateFileName(filePath, projectName) {
+  if (!filePath || !projectName) return "";
+
+  const fileName = filePath.split("/").pop();
+  if (!fileName) return "";
+
+  const extIndex = fileName.lastIndexOf(".");
+  const extension = extIndex !== -1 ? fileName.slice(extIndex) : "";
+  const nameWithoutExt =
+    extIndex !== -1 ? fileName.slice(0, extIndex) : fileName;
+
+  const parts = nameWithoutExt.split("_");
+  if (parts.length < 2) return fileName; // fallback safety
+
+  parts.pop();
+
+  return `${parts.join("_")}_${projectName}${extension}`;
+}

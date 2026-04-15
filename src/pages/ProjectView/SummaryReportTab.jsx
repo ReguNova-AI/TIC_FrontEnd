@@ -15,6 +15,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { message, Modal } from "antd";
 
 import Collapse from "@mui/material/Collapse";
+import { generateFileName } from "shared/utility";
 
 // ── Timestamp formatter ───────────────────────────────────────────────────────
 const timeAgo = (ts) => {
@@ -22,29 +23,49 @@ const timeAgo = (ts) => {
   const date = new Date(ts > 1e12 ? ts : ts * 1000);
   const seconds = Math.floor((new Date() - date) / 1000);
   let interval = seconds / 31536000;
-  if (interval >= 1) return Math.floor(interval) + (Math.floor(interval) === 1 ? " year ago" : " years ago");
+  if (interval >= 1)
+    return (
+      Math.floor(interval) +
+      (Math.floor(interval) === 1 ? " year ago" : " years ago")
+    );
   interval = seconds / 2592000;
-  if (interval >= 1) return Math.floor(interval) + (Math.floor(interval) === 1 ? " month ago" : " months ago");
+  if (interval >= 1)
+    return (
+      Math.floor(interval) +
+      (Math.floor(interval) === 1 ? " month ago" : " months ago")
+    );
   interval = seconds / 86400;
-  if (interval >= 1) return Math.floor(interval) + (Math.floor(interval) === 1 ? " day ago" : " days ago");
+  if (interval >= 1)
+    return (
+      Math.floor(interval) +
+      (Math.floor(interval) === 1 ? " day ago" : " days ago")
+    );
   interval = seconds / 3600;
-  if (interval >= 1) return Math.floor(interval) + (Math.floor(interval) === 1 ? " hour ago" : " hours ago");
+  if (interval >= 1)
+    return (
+      Math.floor(interval) +
+      (Math.floor(interval) === 1 ? " hour ago" : " hours ago")
+    );
   interval = seconds / 60;
-  if (interval >= 1) return Math.floor(interval) + (Math.floor(interval) === 1 ? " minute ago" : " minutes ago");
+  if (interval >= 1)
+    return (
+      Math.floor(interval) +
+      (Math.floor(interval) === 1 ? " minute ago" : " minutes ago")
+    );
   return "just now";
 };
 
 // ── Report Accordion Item ───────────────────────────────────────────────────
-const ReportAccordionItem = ({ 
-  entry, 
-  projectName, 
-  isOpen, 
-  onToggle, 
-  onDownload, 
-  isDownloading, 
-  onDelete, 
+const ReportAccordionItem = ({
+  entry,
+  projectName,
+  isOpen,
+  onToggle,
+  onDownload,
+  isDownloading,
+  onDelete,
   isDeleting,
-  projectData 
+  projectData,
 }) => {
   const itemRef = useRef(null);
 
@@ -78,19 +99,34 @@ const ReportAccordionItem = ({
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: "flex", flexDirection: "column" }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <FileBarChart2 size={18} color="#5B0429" strokeWidth={2} />
-              <Typography sx={{ fontSize: "14px", fontWeight: 700, color: "#333" }}>
+              <Typography
+                sx={{ fontSize: "14px", fontWeight: 700, color: "#333" }}
+              >
                 {projectName ? `${projectName}-report` : `project-report`}
               </Typography>
               {entry._isLatest && (
-                <Box sx={{ bgcolor: "rgba(91,4,41,0.08)", color: "#5B0429", px: 1, py: 0.2, borderRadius: "4px", fontSize: "11px", fontWeight: 700, ml: 1 }}>
+                <Box
+                  sx={{
+                    bgcolor: "rgba(91,4,41,0.08)",
+                    color: "#5B0429",
+                    px: 1,
+                    py: 0.2,
+                    borderRadius: "4px",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    ml: 1,
+                  }}
+                >
                   LATEST
                 </Box>
               )}
             </Box>
-            <Typography sx={{ fontSize: "12px", color: "#999", mt: 0.5, ml: 3.2 }}>
+            <Typography
+              sx={{ fontSize: "12px", color: "#999", mt: 0.5, ml: 3.2 }}
+            >
               v{entry.version_id} • {timeAgo(entry.timestamp)}
             </Typography>
           </Box>
@@ -112,10 +148,10 @@ const ReportAccordionItem = ({
               borderColor: "#5B0429",
               color: isOpen ? "#fff" : "#5B0429",
               boxShadow: "none",
-              "&:hover": { 
-                borderColor: "#5B0429", 
+              "&:hover": {
+                borderColor: "#5B0429",
                 bgcolor: isOpen ? "#470119" : "rgba(91,4,41,0.04)",
-                boxShadow: "none" 
+                boxShadow: "none",
               },
             }}
           >
@@ -138,7 +174,11 @@ const ReportAccordionItem = ({
               "&:hover": { borderColor: "#999", bgcolor: "#f9f9f9" },
             }}
           >
-            {isDownloading ? <CircularProgress size={14} color="inherit" /> : "Download"}
+            {isDownloading ? (
+              <CircularProgress size={14} color="inherit" />
+            ) : (
+              "Download"
+            )}
           </Button>
           <IconButton
             size="small"
@@ -155,7 +195,11 @@ const ReportAccordionItem = ({
               "&.Mui-disabled": { opacity: 0.5 },
             }}
           >
-            {isDeleting ? <CircularProgress size={14} color="inherit" /> : <Trash2 size={16} />}
+            {isDeleting ? (
+              <CircularProgress size={14} color="inherit" />
+            ) : (
+              <Trash2 size={16} />
+            )}
           </IconButton>
         </Box>
       </Box>
@@ -185,7 +229,13 @@ const ReportAccordionItem = ({
 };
 
 // ── Main Component ─────────────────────────────────────────────────────────────
-const SummaryReportTab = ({ projectData, handleRunAIAssessment, aiButtonLoading, isCompleted, currentProgress }) => {
+const SummaryReportTab = ({
+  projectData,
+  handleRunAIAssessment,
+  aiButtonLoading,
+  isCompleted,
+  currentProgress,
+}) => {
   const queryClient = useQueryClient();
   const [selectedVersionId, setSelectedVersionId] = useState(null);
   const [downloadingVersionId, setDownloadingVersionId] = useState(null);
@@ -196,7 +246,8 @@ const SummaryReportTab = ({ projectData, handleRunAIAssessment, aiButtonLoading,
 
   // Step 1: fetch list of all versions using project_id
   // API: GET /risk-summary/{projectId} → { data: { risk_summaries: [...] } }
-  const { data: riskSummaries = [], isLoading: isListLoading } = useRiskSummaryList(projectId);
+  const { data: riskSummaries = [], isLoading: isListLoading } =
+    useRiskSummaryList(projectId);
 
   // Step 2: once list loads, auto-select the latest version (first in sorted-desc list)
   useEffect(() => {
@@ -229,12 +280,16 @@ const SummaryReportTab = ({ projectData, handleRunAIAssessment, aiButtonLoading,
     if (downloadingVersionId) return;
     setDownloadingVersionId(entry.version_id);
     try {
-      const response = await ProjectApiService.downloadRiskSummary(entry.version_id);
+      const response = await ProjectApiService.downloadRiskSummary(
+        entry.version_id,
+      );
       const blob = response.data;
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      const filename = entry.doc_path_aws?.split("/").pop() || `risk_report_v${entry.version_id}.docx`;
+      const filename =
+        generateFileName(entry.doc_path_aws, projectData.project_name) ||
+        `risk_report_v${entry.version_id}.docx`;
       link.setAttribute("download", filename);
       document.body.appendChild(link);
       link.click();
@@ -262,19 +317,23 @@ const SummaryReportTab = ({ projectData, handleRunAIAssessment, aiButtonLoading,
         try {
           await ProjectApiService.deleteRiskSummary(entry.version_id);
           message.success("Report deleted successfully");
-          
+
           // If we just deleted the version currently being previewed, select the next available one
           if (selectedVersionId === entry.version_id) {
-            const remaining = riskSummaries.filter(e => e.version_id !== entry.version_id);
+            const remaining = riskSummaries.filter(
+              (e) => e.version_id !== entry.version_id,
+            );
             if (remaining.length > 0) {
               setSelectedVersionId(remaining[0].version_id);
             } else {
               setSelectedVersionId(null);
             }
           }
-          
+
           // Invalidate the cache to trigger a true refetch
-          queryClient.invalidateQueries(PROJECT_QUERY_KEYS.riskSummaryList(projectId));
+          queryClient.invalidateQueries(
+            PROJECT_QUERY_KEYS.riskSummaryList(projectId),
+          );
         } catch (err) {
           console.error("Delete failed:", err);
           message.error("Failed to delete report");
@@ -285,16 +344,29 @@ const SummaryReportTab = ({ projectData, handleRunAIAssessment, aiButtonLoading,
     });
   };
 
-  const selectedEntry = riskSummaries.find((e) => e.version_id === selectedVersionId);
-  const handleDownloadSelected = () => { if (selectedEntry) handleDownloadVersion(selectedEntry); };
+  const selectedEntry = riskSummaries.find(
+    (e) => e.version_id === selectedVersionId,
+  );
+  const handleDownloadSelected = () => {
+    if (selectedEntry) handleDownloadVersion(selectedEntry);
+  };
   const isLatestSelected = annotatedList[0]?.version_id === selectedVersionId;
 
   // ── Loading state ────────────────────────────────────────────────────────────
   if (isListLoading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", py: 10 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          py: 10,
+        }}
+      >
         <CircularProgress size={28} sx={{ color: "#5B0429" }} />
-        <Typography sx={{ ml: 2, color: "#666" }}>Loading reports...</Typography>
+        <Typography sx={{ ml: 2, color: "#666" }}>
+          Loading reports...
+        </Typography>
       </Box>
     );
   }
@@ -302,7 +374,15 @@ const SummaryReportTab = ({ projectData, handleRunAIAssessment, aiButtonLoading,
   // ── Empty state ──────────────────────────────────────────────────────────────
   if (riskSummaries.length === 0) {
     return (
-      <Box sx={{ py: 8, textAlign: "center", bgcolor: "#fafafa", border: "1px dashed #e0e0e0", borderRadius: "4px" }}>
+      <Box
+        sx={{
+          py: 8,
+          textAlign: "center",
+          bgcolor: "#fafafa",
+          border: "1px dashed #e0e0e0",
+          borderRadius: "4px",
+        }}
+      >
         <FileBarChart2 size={36} color="#d0d0d0" />
         <Typography sx={{ color: "#bfbfbf", fontSize: "14px", mt: 1.5 }}>
           No assessment reports found.
@@ -315,8 +395,18 @@ const SummaryReportTab = ({ projectData, handleRunAIAssessment, aiButtonLoading,
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
       <Box>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
-          <Box sx={{ width: 3, height: 20, bgcolor: "#5B0429", borderRadius: "2px", flexShrink: 0 }} />
-          <Typography sx={{ fontWeight: 700, fontSize: "16px", color: "#1a1a1a" }}>
+          <Box
+            sx={{
+              width: 3,
+              height: 20,
+              bgcolor: "#5B0429",
+              borderRadius: "2px",
+              flexShrink: 0,
+            }}
+          />
+          <Typography
+            sx={{ fontWeight: 700, fontSize: "16px", color: "#1a1a1a" }}
+          >
             Project Assessment Reports
           </Typography>
         </Box>
@@ -328,8 +418,12 @@ const SummaryReportTab = ({ projectData, handleRunAIAssessment, aiButtonLoading,
               entry={entry}
               projectName={projectData?.project_name}
               isOpen={entry.version_id === selectedVersionId}
-              onToggle={() => 
-                setSelectedVersionId(entry.version_id === selectedVersionId ? null : entry.version_id)
+              onToggle={() =>
+                setSelectedVersionId(
+                  entry.version_id === selectedVersionId
+                    ? null
+                    : entry.version_id,
+                )
               }
               onDownload={handleDownloadVersion}
               isDownloading={downloadingVersionId === entry.version_id}
