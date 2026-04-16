@@ -533,6 +533,7 @@ const UserListing = () => {
           onCancel={handleModalClose}
           footer={null}
           width={800}
+          destroyOnClose={true}
         >
           <UserCreation
             onHandleClose={handleModalClose}

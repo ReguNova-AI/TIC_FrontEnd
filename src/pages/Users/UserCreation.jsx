@@ -102,9 +102,9 @@ export default function UserCreation({ onHandleClose, type, selecteddata }) {
     }
     if (
       errorValue.emailError !== "" &&
-      errorValue.emailError !== NULL &&
+      errorValue.emailError !== null &&
       errorValue.phoneError !== "" &&
-      errorValue.phoneError !== NULL
+      errorValue.phoneError !== null
     ) {
       return;
     }
@@ -208,6 +208,7 @@ export default function UserCreation({ onHandleClose, type, selecteddata }) {
           });
           setValuetoNull();
           setActiveStep(0);
+          setUpoadedFileData("");
           setFormData({
             ...formData,
             role_id: "",
@@ -256,6 +257,7 @@ export default function UserCreation({ onHandleClose, type, selecteddata }) {
 
           setValuetoNull();
           setActiveStep(0);
+          setUpoadedFileData("");
           setFormData({
             ...formData,
             role_id: "",
@@ -349,7 +351,7 @@ export default function UserCreation({ onHandleClose, type, selecteddata }) {
         });
       } else {
         setErrorValue({
-          ...formData,
+          ...errorValue,
           emailError: "",
         });
 
