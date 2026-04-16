@@ -228,51 +228,26 @@ export default function ProjectTable({ onDataChange, countData }) {
       sortOrder: order,
     })
       .then((response) => {
-        let newData = [];
-
-        if (userRole === "Org Super Admin" || userRole === "Admin") {
-          newData = response?.data?.details?.map((project) =>
-            createData(
-              project.project_id,
-              project.project_no,
-              project.project_name,
-              project.created_at ? formatDate(project.created_at) : "",
-              project.no_of_runs ?? 0,
-              project.last_run === "null" || !project.last_run
-                ? "--"
-                : project.last_run,
-              project.updated_at
-                ? formatDate(project.updated_at)
-                : project.created_at
-                  ? formatDate(project.created_at)
-                  : "",
-              project.created_at || "",
-              project.updated_at || project.created_at || "",
-              project.last_run || "",
-            ),
-          );
-        } else {
-          newData = response?.data?.details.map((project) =>
-            createData(
-              project.project_id,
-              project.project_no,
-              project.project_name,
-              project.created_at ? formatDate(project.created_at) : "",
-              project.no_of_runs ?? 0,
-              project.last_run === "null" || !project.last_run
-                ? "--"
-                : project.last_run,
-              project.updated_at
-                ? formatDate(project.updated_at)
-                : project.created_at
-                  ? formatDate(project.created_at)
-                  : "",
-              project.created_at || "",
-              project.updated_at || project.created_at || "",
-              project.last_run || "",
-            ),
-          );
-        }
+        const newData = response?.data?.details.map((project) =>
+          createData(
+            project.project_id,
+            project.project_no,
+            project.project_name,
+            project.created_at ? formatDate(project.created_at) : "",
+            project.no_of_runs ?? 0,
+            project.last_run === "null" || !project.last_run
+              ? "--"
+              : project.last_run,
+            project.updated_at
+              ? formatDate(project.updated_at)
+              : project.created_at
+                ? formatDate(project.created_at)
+                : "",
+            project.created_at || "",
+            project.updated_at || project.created_at || "",
+            project.last_run || "",
+          ),
+        );
 
         setData(newData); // store all rows; pagination handles slicing
         setTotalData(response?.data?.total_project_count);
