@@ -271,9 +271,6 @@ export const ProjectCreationProvider = ({ children }) => {
     // Auto-create "Folder 1" locally if no folders exist
     if (folders.length === 0) {
       addFolder("Folder 1", false).then((folder) => {
-        if (folder) {
-          setExpandedFolders({ [folder.id]: true });
-        }
       });
     }
   }, []); // Only run once on mount
