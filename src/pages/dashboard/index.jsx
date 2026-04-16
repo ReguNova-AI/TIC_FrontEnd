@@ -39,7 +39,6 @@ import { UserApiService } from "services/api/UserAPIService";
 // import { useSelector } from 'react-redux';
 import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
 
-
 // import ChatBotView from 'components/chatbot/ChatbotView';
 
 // avatar style
@@ -73,31 +72,27 @@ export default function DashboardDefault() {
   const [orgCount, setOrgCount] = useState("");
   const [userCount, setUserCount] = useState("");
   const [inactiveUserCount, setInactiveUserCount] = useState("");
-  const [chartData,setChartData] = useState([]);
-  const [pieChartData,setPieChartData]= useState([]);
+  const [chartData, setChartData] = useState([]);
+  const [pieChartData, setPieChartData] = useState([]);
 
   useEffect(() => {
     fetchData();
-    if(userRole === "Super Admin")
-    {
+    if (userRole === "Super Admin") {
       fetchDataForCharts();
     }
   }, []);
 
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
-    const id = userdetails?.[0]?.user_id;
+  const id = userdetails?.[0]?.user_id;
 
-    const fetchDataForCharts = ()=>{
+  const fetchDataForCharts = () => {
     DashboardApiService.topprojectIndustryVise()
       .then((response) => {
         setChartData(response?.data?.industryCount);
-        setPieChartData(response?.data?.orgCount)
-       
+        setPieChartData(response?.data?.orgCount);
       })
-      .catch((errResponse) => {
-       
-      });
-    }
+      .catch((errResponse) => {});
+  };
 
   const fetchData = () => {
     ProjectApiService.projectCounts(userId)
@@ -111,20 +106,26 @@ export default function DashboardDefault() {
         setUpdatedCardsValue([...content.cards1]);
       });
 
-      UserApiService.roleDetails()
+    UserApiService.roleDetails()
       .then((response) => {
-        sessionStorage.setItem('roleDetails',JSON.stringify(response?.data?.details))
+        sessionStorage.setItem(
+          "roleDetails",
+          JSON.stringify(response?.data?.details),
+        );
       })
       .catch((errResponse) => {
-       console.log('errResponse',errResponse);
+        console.log("errResponse", errResponse);
       });
 
-      AdminConfigAPIService.permissionListing()
+    AdminConfigAPIService.permissionListing()
       .then((response) => {
-        sessionStorage.setItem('permissionDetails',JSON.stringify(response?.data?.details))
+        sessionStorage.setItem(
+          "permissionDetails",
+          JSON.stringify(response?.data?.details),
+        );
       })
       .catch((errResponse) => {
-       console.log('errResponse',errResponse);
+        console.log("errResponse", errResponse);
       });
   };
   // const roleDetails = useSelector(state => console.log("state",state));
@@ -199,11 +200,9 @@ export default function DashboardDefault() {
               iconRender={true}
               icon={UserIcon2}
             /> */}
-
-
           </Grid>
-          <Grid item xs={12} md={8} lg={8} >
-          <Box
+          <Grid item xs={12} md={8} lg={8}>
+            <Box
               sx={{
                 bgcolor: "white",
                 border: "1px solid #eeeeee",
@@ -218,7 +217,6 @@ export default function DashboardDefault() {
                 <PieChart data={pieChartData} />
               </Suspense>
             </Box>
-          
           </Grid>
         </>
       ) : (
@@ -235,7 +233,7 @@ export default function DashboardDefault() {
       </Grid> */}
 
           <Grid item xs={12} md={12} lg={12}>
-              <ProjectTable onDataChange={fetchData} />
+            <ProjectTable onDataChange={fetchData} countData={countData} />
           </Grid>
           {/* <Grid item xs={12} md={8} lg={8}>
           <MainCard

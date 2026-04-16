@@ -44,7 +44,6 @@ const _getRiskSummary = (projectId) => {
   );
 };
 
-
 const _getChatHistory = (projectId) => {
   return BaseApiService.get(
     `/api/v1/project_document/chat-history/${projectId}`,
@@ -61,13 +60,24 @@ const _getExtractedInfo = (projectId) => {
   );
 };
 
-const _projectListing = (page, limit, sortBy, sortOrder, searchText, statusFilter) => {
+const _projectListing = ({
+  page = 1,
+  limit = 10,
+  sortBy = "created_at",
+  sortOrder = "desc",
+  searchText = "",
+  statusFilter = [],
+  startDate,
+  endDate,
+}) => {
   const params = {
-    page: page,
-    limit: limit,
+    page,
+    limit,
+    sortBy,
+    sortOrder,
+    startDate,
+    endDate,
   };
-  if (sortBy) params.sortBy = sortBy;
-  if (sortOrder) params.sortOrder = sortOrder;
   if (searchText) params.search = searchText;
   if (statusFilter?.length) params.status = statusFilter.join(",");
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
@@ -91,8 +101,8 @@ const _projectListing = (page, limit, sortBy, sortOrder, searchText, statusFilte
       // return BaseApiService.get(`/api/v1/org/projects?industry_id=${industry_id}`, null, null);
       if (pathname === "/dashboard") {
         return BaseApiService.get(
-          `/api/v1/org/recent-projects?limit=10`,
-          null,
+          `/api/v1/org/recent-projects`,
+          params,
           null,
         );
       } else {
@@ -228,11 +238,7 @@ const _downloadRiskSummary = (projectId) => {
 };
 
 const _deleteRiskSummary = (versionId) => {
-  return BaseApiService.delete(
-    `/api/v1/risk_summary/${versionId}`,
-    null,
-    null,
-  );
+  return BaseApiService.delete(`/api/v1/risk_summary/${versionId}`, null, null);
 };
 
 export const ProjectApiService = {

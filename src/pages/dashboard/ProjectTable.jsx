@@ -13,8 +13,8 @@ import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
-import TableSortLabel from '@mui/material/TableSortLabel';
-import { visuallyHidden } from '@mui/utils';
+import TableSortLabel from "@mui/material/TableSortLabel";
+import { visuallyHidden } from "@mui/utils";
 import { Empty, Spin, Modal } from "antd";
 
 // project import
@@ -28,31 +28,75 @@ import CardView from "pages/ProjectListing/CardView";
 import ToggleButtons from "pages/ProjectListing/ToggleButton";
 import { useNavigate } from "react-router";
 
-const TrashLucideIcon = ({ size = 18, color = "currentColor", strokeWidth = 1.6 }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
-    <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>
+const TrashLucideIcon = ({
+  size = 18,
+  color = "currentColor",
+  strokeWidth = 1.6,
+}) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth={strokeWidth}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M3 6h18" />
+    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+    <line x1="10" x2="10" y1="11" y2="17" />
+    <line x1="14" x2="14" y1="11" y2="17" />
   </svg>
 );
 
-const PenLucideIcon = ({ size = 18, color = "currentColor", strokeWidth = 1.6 }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
-    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+const PenLucideIcon = ({
+  size = 18,
+  color = "currentColor",
+  strokeWidth = 1.6,
+}) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth={strokeWidth}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
   </svg>
 );
-
-
-
 
 // ==============================|| PROJECT TABLE - HEADER ||============================== //
 
 function ProjectTableHead({ order, orderBy, onRequestSort }) {
   const headCells = [
-    { id: "project_name", label: "Project Name", align: "left", sortable: true },
-    { id: "index", label: "Project No", align: "left", sortable: true },
-    { id: "runs", label: "No of Iteration", align: "left", sortable: true },
+    {
+      id: "project_name",
+      label: "Project Name",
+      align: "left",
+      sortable: true,
+    },
+    { id: "project_id", label: "Project No", align: "left", sortable: true },
+    {
+      id: "no_of_runs",
+      label: "No of Iteration",
+      align: "left",
+      sortable: true,
+    },
     { id: "last_run", label: "Last Run", align: "left", sortable: true },
-    { id: "start_date", label: "Created Date", align: "left", sortable: true },
-    { id: "modified_date", label: "Modified Date", align: "left", sortable: true },
+    { id: "created_at", label: "Created Date", align: "left", sortable: true },
+    {
+      id: "updated_at",
+      label: "Modified Date",
+      align: "left",
+      sortable: true,
+    },
     { id: "actions", label: "Actions", align: "center" },
   ];
 
@@ -68,15 +112,15 @@ function ProjectTableHead({ order, orderBy, onRequestSort }) {
             key={headCell.id}
             align={headCell.align}
             sortDirection={orderBy === headCell.id ? order : false}
-            sx={{ textTransform: 'none', fontWeight: 600, fontSize: '14px' }}
+            sx={{ textTransform: "none", fontWeight: 600, fontSize: "14px" }}
           >
             {headCell.sortable ? (
               <TableSortLabel
                 active={orderBy === headCell.id}
-                direction={orderBy === headCell.id ? order : 'asc'}
+                direction={orderBy === headCell.id ? order : "asc"}
                 onClick={createSortHandler(headCell.id)}
                 sx={{
-                  '& .MuiTableSortLabel-icon': {
+                  "& .MuiTableSortLabel-icon": {
                     opacity: 1,
                   },
                 }}
@@ -84,7 +128,9 @@ function ProjectTableHead({ order, orderBy, onRequestSort }) {
                 {headCell.label}
                 {orderBy === headCell.id ? (
                   <Box component="span" sx={visuallyHidden}>
-                    {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
+                    {order === "desc"
+                      ? "sorted descending"
+                      : "sorted ascending"}
                   </Box>
                 ) : null}
               </TableSortLabel>
@@ -106,7 +152,7 @@ ProjectTableHead.propTypes = {
 
 // ==============================|| PROJECT TABLE ||============================== //
 
-export default function ProjectTable({ onDataChange }) {
+export default function ProjectTable({ onDataChange, countData }) {
   const navigate = useNavigate();
 
   const info = JSON.parse(sessionStorage.getItem("userDetails"));
@@ -115,10 +161,11 @@ export default function ProjectTable({ onDataChange }) {
   const [data, setData] = useState([]);
   const [viewMode, setViewMode] = useState("list");
   const [isLoading, setIsLoading] = useState(true);
-  const [order, setOrder] = useState('desc');
-  const [orderBy, setOrderBy] = useState('start_date');
+  const [order, setOrder] = useState("desc");
+  const [orderBy, setOrderBy] = useState("created_at");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalData, setTotalData] = useState(null);
 
   const [snackData, setSnackData] = useState({
     show: false,
@@ -127,8 +174,8 @@ export default function ProjectTable({ onDataChange }) {
   });
 
   const handleRequestSort = (event, property) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
+    const isAsc = orderBy === property && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
     setPage(0); // reset to first page on sort change
   };
@@ -142,49 +189,9 @@ export default function ProjectTable({ onDataChange }) {
     setPage(0);
   };
 
-  const descendingComparator = (a, b, orderBy) => {
-    let aValue = a[orderBy];
-    let bValue = b[orderBy];
-
-    if (orderBy === 'start_date') {
-      aValue = a.raw_start_date;
-      bValue = b.raw_start_date;
-    } else if (orderBy === 'modified_date') {
-      aValue = a.raw_modified_date;
-      bValue = b.raw_modified_date;
-    } else if (orderBy === 'last_run') {
-      aValue = a.raw_last_run;
-      bValue = b.raw_last_run;
-    }
-
-    if (bValue < aValue) {
-      return -1;
-    }
-    if (bValue > aValue) {
-      return 1;
-    }
-    return 0;
-  };
-
-  const getComparator = (order, orderBy) => {
-    return order === 'desc'
-      ? (a, b) => descendingComparator(a, b, orderBy)
-      : (a, b) => -descendingComparator(a, b, orderBy);
-  };
-
-  const stableSort = (array, comparator) => {
-    const stabilizedThis = array.map((el, index) => [el, index]);
-    stabilizedThis.sort((a, b) => {
-      const order = comparator(a[0], b[0]);
-      if (order !== 0) return order;
-      return a[1] - b[1];
-    });
-    return stabilizedThis.map((el) => el[0]);
-  };
-
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [page, rowsPerPage, order, orderBy]);
 
   const createData = (
     index,
@@ -196,30 +203,52 @@ export default function ProjectTable({ onDataChange }) {
     modified_date,
     raw_start_date,
     raw_modified_date,
-    raw_last_run
+    raw_last_run,
   ) => {
-    return { index, project_no, project_name, start_date, runs, last_run, modified_date, raw_start_date, raw_modified_date, raw_last_run };
+    return {
+      index,
+      project_no,
+      project_name,
+      start_date,
+      runs,
+      last_run,
+      modified_date,
+      raw_start_date,
+      raw_modified_date,
+      raw_last_run,
+    };
   };
 
   const fetchData = () => {
     setIsLoading(true);
-    ProjectApiService.projectListing()
+    ProjectApiService.projectListing({
+      page: page + 1,
+      limit: rowsPerPage,
+      sortBy: orderBy,
+      sortOrder: order,
+    })
       .then((response) => {
         let newData = [];
 
         if (userRole === "Org Super Admin" || userRole === "Admin") {
-          newData = response?.data?.map((project) =>
+          newData = response?.data?.details?.map((project) =>
             createData(
               project.project_id,
               project.project_no,
               project.project_name,
               project.created_at ? formatDate(project.created_at) : "",
               project.no_of_runs ?? 0,
-              project.last_run==="null"||!project.last_run ? "--":project.last_run,
-              project.updated_at ? formatDate(project.updated_at) : (project.created_at ? formatDate(project.created_at) : ""),
+              project.last_run === "null" || !project.last_run
+                ? "--"
+                : project.last_run,
+              project.updated_at
+                ? formatDate(project.updated_at)
+                : project.created_at
+                  ? formatDate(project.created_at)
+                  : "",
               project.created_at || "",
               project.updated_at || project.created_at || "",
-              project.last_run || ""
+              project.last_run || "",
             ),
           );
         } else {
@@ -230,16 +259,23 @@ export default function ProjectTable({ onDataChange }) {
               project.project_name,
               project.created_at ? formatDate(project.created_at) : "",
               project.no_of_runs ?? 0,
-              project.last_run==="null"||!project.last_run ? "--":project.last_run,
-              project.updated_at ? formatDate(project.updated_at) : (project.created_at ? formatDate(project.created_at) : ""),
+              project.last_run === "null" || !project.last_run
+                ? "--"
+                : project.last_run,
+              project.updated_at
+                ? formatDate(project.updated_at)
+                : project.created_at
+                  ? formatDate(project.created_at)
+                  : "",
               project.created_at || "",
               project.updated_at || project.created_at || "",
-              project.last_run || ""
+              project.last_run || "",
             ),
           );
         }
 
         setData(newData); // store all rows; pagination handles slicing
+        setTotalData(response?.data?.total_project_count);
         setIsLoading(false);
       })
       .catch((errResponse) => {
@@ -251,6 +287,7 @@ export default function ProjectTable({ onDataChange }) {
             API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
+        console.error(errResponse, "errResponse");
       });
   };
 
@@ -260,11 +297,11 @@ export default function ProjectTable({ onDataChange }) {
 
   const handleDelete = (projectId) => {
     Modal.confirm({
-      title: 'Are you sure you want to delete this project?',
-      content: 'This action cannot be undone.',
-      okText: 'Yes, Delete',
-      okType: 'danger',
-      cancelText: 'No',
+      title: "Are you sure you want to delete this project?",
+      content: "This action cannot be undone.",
+      okText: "Yes, Delete",
+      okType: "danger",
+      cancelText: "No",
       onOk: async () => {
         try {
           await ProjectApiService.projectDelete(projectId);
@@ -301,8 +338,18 @@ export default function ProjectTable({ onDataChange }) {
         minHeight: "428px",
       }}
     >
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, px: 0 }}>
-        <Typography variant="h6" sx={{ fontWeight: 600 }}>Recent Projects</Typography>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 2,
+          px: 0,
+        }}
+      >
+        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+          Recent Projects
+        </Typography>
       </Box>
 
       {data.length > 0 &&
@@ -319,74 +366,107 @@ export default function ProjectTable({ onDataChange }) {
       <Spin spinning={isLoading} tip="Loading projects...">
         {data.length > 0 ? (
           viewMode === "list" ? (
-            <TableContainer sx={{ overflowX: "auto", bgcolor: 'white', borderRadius: '0', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-            <Table>
-              <ProjectTableHead
-                order={order}
-                orderBy={orderBy}
-                onRequestSort={handleRequestSort}
-              />
-              <TableBody>
-                {stableSort(data, getComparator(order, orderBy))
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((row, index) => (
-                  <TableRow key={index} hover sx={{ '& td, & th': { borderBottom: '1px solid #f0f0f0' } }}>
-                    <TableCell>
-                      <Link
-                        onClick={() => handleClick(row.index)}
-                        sx={{ cursor: "pointer", color: '#5B0428', fontWeight: 500, textDecoration: 'none', fontSize: '14px' }}
-                      >
-                        {row.project_name}
-                      </Link>
-                    </TableCell>
-                    <TableCell>{row.index}</TableCell>
-                    <TableCell>{row.runs}</TableCell>
-                    <TableCell>
-                      {row.last_run}
-                    </TableCell>
-                    <TableCell sx={{ fontSize: '14px', color: '#222' }}>{row.start_date}</TableCell>
-                    <TableCell sx={{ fontSize: '14px', color: '#222' }}>{row.modified_date}</TableCell>
-                    <TableCell align="center">
-                      <Stack direction="row" spacing={1} justifyContent="center" alignItems="center">
-                        <IconButton size="small" onClick={() => handleDelete(row.index)}>
-                           <TrashLucideIcon color="#D32F2F" size={17} />
-                        </IconButton>
-                        <IconButton size="small" onClick={() => handleEdit(row.index)}>
-                           <PenLucideIcon color="#757575" size={17} />
-                        </IconButton>
-                      </Stack>
-                    </TableCell>
+            <TableContainer
+              sx={{
+                overflowX: "auto",
+                bgcolor: "white",
+                borderRadius: "0",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+              }}
+            >
+              <Table>
+                <ProjectTableHead
+                  order={order}
+                  orderBy={orderBy}
+                  onRequestSort={handleRequestSort}
+                />
+                <TableBody>
+                  {data.map((row, index) => (
+                    <TableRow
+                      key={index}
+                      hover
+                      sx={{
+                        "& td, & th": { borderBottom: "1px solid #f0f0f0" },
+                      }}
+                    >
+                      <TableCell>
+                        <Link
+                          onClick={() => handleClick(row.index)}
+                          sx={{
+                            cursor: "pointer",
+                            color: "#5B0428",
+                            fontWeight: 500,
+                            textDecoration: "none",
+                            fontSize: "14px",
+                          }}
+                        >
+                          {row.project_name}
+                        </Link>
+                      </TableCell>
+                      <TableCell>{row.index}</TableCell>
+                      <TableCell>{row.runs}</TableCell>
+                      <TableCell>{row.last_run}</TableCell>
+                      <TableCell sx={{ fontSize: "14px", color: "#222" }}>
+                        {row.start_date}
+                      </TableCell>
+                      <TableCell sx={{ fontSize: "14px", color: "#222" }}>
+                        {row.modified_date}
+                      </TableCell>
+                      <TableCell align="center">
+                        <Stack
+                          direction="row"
+                          spacing={1}
+                          justifyContent="center"
+                          alignItems="center"
+                        >
+                          <IconButton
+                            size="small"
+                            onClick={() => handleDelete(row.index)}
+                          >
+                            <TrashLucideIcon color="#D32F2F" size={17} />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleEdit(row.index)}
+                          >
+                            <PenLucideIcon color="#757575" size={17} />
+                          </IconButton>
+                        </Stack>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+                <TableFooter>
+                  <TableRow>
+                    <TablePagination
+                      rowsPerPageOptions={[10, 25, 50]}
+                      count={totalData ?? countData?.total_projects_count}
+                      rowsPerPage={rowsPerPage}
+                      page={page}
+                      onPageChange={handleChangePage}
+                      onRowsPerPageChange={handleChangeRowsPerPage}
+                      sx={{
+                        borderTop: "1px solid #f0f0f0",
+                        "& .MuiTablePagination-toolbar": { minHeight: "48px" },
+                        "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows":
+                          {
+                            fontSize: "13px",
+                            color: "#555",
+                          },
+                      }}
+                    />
                   </TableRow>
-                ))}
-              </TableBody>
-              <TableFooter>
-                <TableRow>
-                  <TablePagination
-                    rowsPerPageOptions={[10, 25, 50]}
-                    count={data.length}
-                    rowsPerPage={rowsPerPage}
-                    page={page}
-                    onPageChange={handleChangePage}
-                    onRowsPerPageChange={handleChangeRowsPerPage}
-                    sx={{
-                      borderTop: '1px solid #f0f0f0',
-                      '& .MuiTablePagination-toolbar': { minHeight: '48px' },
-                      '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
-                        fontSize: '13px',
-                        color: '#555',
-                      },
-                    }}
-                  />
-                </TableRow>
-              </TableFooter>
-            </Table>
-          </TableContainer>
+                </TableFooter>
+              </Table>
+            </TableContainer>
+          ) : (
+            <CardView data={data} gridValue="2" />
+          )
+        ) : !isLoading ? (
+          <Empty />
         ) : (
-          <CardView data={data} gridValue="2" />
-        )
-      ) : !isLoading ? (
-        <Empty />
-      ) : <Box sx={{ minHeight: '300px' }} />}
+          <Box sx={{ minHeight: "300px" }} />
+        )}
       </Spin>
 
       <Snackbar
@@ -399,4 +479,3 @@ export default function ProjectTable({ onDataChange }) {
     </Box>
   );
 }
-
