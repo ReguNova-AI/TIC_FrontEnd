@@ -4,14 +4,14 @@ import { ProjectApiService } from "services/api/ProjectAPIService";
 const fetchProjects = async ({ queryKey }) => {
   const [_key, { page, limit, sortBy, sortOrder, searchText, statusFilter }] =
     queryKey;
-  const response = await ProjectApiService.projectListing(
+  const response = await ProjectApiService.projectListing({
     page,
     limit,
     sortBy,
     sortOrder,
     searchText,
     statusFilter,
-  );
+  });
   return response?.data;
 };
 
