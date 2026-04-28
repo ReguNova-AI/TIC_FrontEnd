@@ -31,6 +31,13 @@ const OverviewTab = ({
   const [currentConfigFileName, setCurrentConfigFileName] = useState("");
   const [docToReplace, setDocToReplace] = useState(null);
   const replaceInputRef = useRef(null);
+
+  // Master contract upload state
+  const [isMasterContractUploading, setIsMasterContractUploading] = useState(false);
+  const [masterContractUploadProgress, setMasterContractUploadProgress] = useState(0);
+  const [currentMasterContractFileName, setCurrentMasterContractFileName] = useState("");
+  const [masterContractToReplace, setMasterContractToReplace] = useState(null);
+  const replaceMasterContractInputRef = useRef(null);
   
   // --- Scavenger & Proxy Download Logic (Match Creation Step) ---
   
@@ -90,6 +97,9 @@ const OverviewTab = ({
           xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
           xls: "application/vnd.ms-excel",
           csv: "text/csv",
+          pdf: "application/pdf",
+          doc: "application/msword",
+          docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         };
         const mimeType = mimeTypes[ext] || "application/octet-stream";
 
@@ -133,6 +143,162 @@ const OverviewTab = ({
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleDownloadMasterContractTemplate = () => {
+    const link = document.createElement("a");
+    link.href = "https://tic-uat.s3.us-east-1.amazonaws.com/Onshore+TSA%2BBOP%2BO%26M+Updated.docx";
+    link.download = "Master_Contract_Sample_Template.docx";
+    link.setAttribute("target", "_blank");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleMasterContractUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsMasterContractUploading(true);
+    setMasterContractUploadProgress(0);
+    setCurrentMasterContractFileName(file.name);
+
+    const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
+
+    try {
+      const reader = new FileReader();
+      const fileDataUrl = await new Promise((resolve, reject) => {
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const ext = file.name.split(".").pop();
+      const uploadPayload = {
+        documents: [fileDataUrl],
+        folder_name: "",
+        isConfig: true,
+        project_id: projectData?.project_id,
+        type: ext,
+        document_type: "Master Contract",
+      };
+
+      const uploadResponse = await FileUploadApiService.fileUpload(uploadPayload);
+      const filePath = uploadResponse.data.details?.[0];
+
+      setMasterContractUploadProgress(50);
+
+      if (filePath) {
+        for (const doc of masterContractDocs) {
+          if (doc.document_id && doc.version_id) {
+            await ProjectApiService.deleteProjectDocument(doc.document_id, doc.version_id);
+          }
+        }
+
+        const docPayload = {
+          project_id: projectData?.project_id,
+          document_name: file.name,
+          document_type: "Master Contract",
+          uploaded_by_id: userdetails?.[0]?.user_id,
+          uploaded_by_name: userdetails?.[0]?.user_first_name + " " + userdetails?.[0]?.user_last_name,
+          folder_name: "",
+          document_desc: "",
+          file_path: filePath,
+          risk_information: { risk_level: " ", mitigation: " " },
+          information_extract: { summary: " " },
+        };
+
+        await ProjectApiService.createProjectDocument(docPayload);
+        setMasterContractUploadProgress(100);
+        if (onFileUploadSuccess) onFileUploadSuccess();
+        message.success("Master contract uploaded successfully.");
+      }
+    } catch (error) {
+      console.error("Master contract upload failed:", error);
+      message.error("Failed to upload master contract.");
+    } finally {
+      setTimeout(() => {
+        setIsMasterContractUploading(false);
+        setMasterContractUploadProgress(0);
+        setCurrentMasterContractFileName("");
+      }, 1500);
+      e.target.value = "";
+    }
+  };
+
+  const handleDeleteMasterContract = async (doc) => {
+    try {
+      await ProjectApiService.deleteProjectDocument(doc.document_id, doc.version_id);
+      message.success("Master contract deleted successfully.");
+      if (onFileUploadSuccess) onFileUploadSuccess();
+    } catch (error) {
+      console.error("Delete failed:", error);
+      message.error("Failed to delete master contract.");
+    }
+  };
+
+  const handleReplaceMasterContract = (doc) => {
+    setMasterContractToReplace(doc);
+    replaceMasterContractInputRef.current?.click();
+  };
+
+  const onReplaceMasterContractFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !masterContractToReplace) return;
+
+    setIsMasterContractUploading(true);
+    setCurrentMasterContractFileName(`Replacing with ${file.name}...`);
+
+    const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
+
+    try {
+      const reader = new FileReader();
+      const fileDataUrl = await new Promise((resolve, reject) => {
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const ext = file.name.split(".").pop();
+      const uploadPayload = {
+        documents: [fileDataUrl],
+        folder_name: "",
+        isConfig: true,
+        project_id: projectData?.project_id,
+        type: ext,
+        document_type: "Master Contract",
+      };
+
+      const uploadResponse = await FileUploadApiService.fileUpload(uploadPayload);
+      const filePath = uploadResponse.data.details?.[0];
+
+      if (filePath) {
+        const updatePayload = {
+          project_id: projectData?.project_id,
+          document_name: file.name,
+          document_type: "Master Contract",
+          uploaded_by_id: userdetails?.[0]?.user_id,
+          uploaded_by_name: userdetails?.[0]?.user_first_name + " " + userdetails?.[0]?.user_last_name,
+          folder_name: "",
+          document_desc: "",
+          file_path: filePath,
+          risk_information: { risk_level: " ", mitigation: " " },
+          information_extract: { summary: " " },
+        };
+
+        await ProjectApiService.uploadProjectDocument(updatePayload, masterContractToReplace.version_id);
+        message.success("Master contract replaced successfully.");
+        if (onFileUploadSuccess) onFileUploadSuccess();
+      }
+    } catch (error) {
+      console.error("Replace failed:", error);
+      message.error("Failed to replace master contract.");
+    } finally {
+      setIsMasterContractUploading(false);
+      setCurrentMasterContractFileName("");
+      setMasterContractToReplace(null);
+      e.target.value = "";
+    }
   };
 
   const handleConfigUpload = async (e) => {
@@ -340,13 +506,20 @@ const OverviewTab = ({
     return [...new Set(folders)];
   }, [projectData]);
 
-  // Filter configuration documents (only those with document_type "Configuration Document" OR no folder association)
+  // Master contract documents
+  const masterContractDocs = (projectData?.project_documents || []).filter(
+    (doc) => doc.document_type === "Master Contract"
+  );
+
+  // Filter configuration documents — exclude master contracts
   const configDocs = (projectData?.project_documents || []).filter(
-    (doc) => 
-      doc.document_type === "Configuration Document" || 
-      !doc.folder_name || 
-      doc.folder_name === "null" || 
-      doc.folder_name === ""
+    (doc) =>
+      doc.document_type !== "Master Contract" && (
+        doc.document_type === "Configuration Document" ||
+        !doc.folder_name ||
+        doc.folder_name === "null" ||
+        doc.folder_name === ""
+      )
   );
 
   return (
@@ -425,6 +598,149 @@ const OverviewTab = ({
           disabled={shouldDisable}
           isCompleted={isActionEnabled}
         />
+      </Box>
+
+      {/* ── Master Contract section ── */}
+      <Box sx={{ mb: 4 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5 }}>
+          <Box component="span" sx={{ width: 3, height: 20, bgcolor: '#5B0429', borderRadius: '2px', flexShrink: 0 }} />
+          <Typography sx={{ fontWeight: 700, fontSize: '15px', color: '#1a1a1a' }}>
+            Master Contract
+          </Typography>
+        </Box>
+
+        <Box sx={{ display: 'flex', gap: 1.5, mb: 3 }}>
+          <Button
+            variant="contained"
+            component="label"
+            startIcon={
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+            }
+            disabled={shouldDisable}
+            sx={{
+              bgcolor: isActionEnabled ? '#5B0429' : '#f5f5f5',
+              color: isActionEnabled ? '#fff' : '#aaa',
+              textTransform: 'none',
+              boxShadow: 'none',
+              borderRadius: '20px',
+              px: 2.5,
+              py: 0.75,
+              fontSize: '13px',
+              fontWeight: 500,
+              border: isActionEnabled ? 'none' : '1px solid #e0e0e0',
+              '&:hover': { bgcolor: isActionEnabled ? '#4a0322' : '#f0f0f0', boxShadow: 'none' },
+              '&.Mui-disabled': { bgcolor: '#f5f5f5', color: '#ccc', borderColor: '#e0e0e0' },
+            }}
+          >
+            Upload Master Contract
+            <input
+              type="file"
+              hidden
+              accept=".pdf,.doc,.docx"
+              onChange={handleMasterContractUpload}
+              disabled={shouldDisable}
+            />
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={handleDownloadMasterContractTemplate}
+            startIcon={
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+            }
+            disabled={shouldDisable}
+            sx={{
+              borderColor: isActionEnabled ? '#5B0429' : '#e0e0e0',
+              color: isActionEnabled ? '#5B0429' : '#aaa',
+              textTransform: 'none',
+              borderRadius: '20px',
+              px: 2.5,
+              py: 0.75,
+              fontSize: '13px',
+              fontWeight: 500,
+              '&:hover': { borderColor: isActionEnabled ? '#4a0322' : '#d0d0d0', color: isActionEnabled ? '#4a0322' : '#888', bgcolor: isActionEnabled ? 'rgba(91,4,41,0.05)' : 'transparent' },
+              '&.Mui-disabled': { borderColor: '#e0e0e0', color: '#ccc' },
+            }}
+          >
+            Download Template
+          </Button>
+        </Box>
+
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          {masterContractDocs.map((doc, index) => (
+            <Box
+              key={doc.document_id}
+              sx={{
+                px: 2,
+                py: 1.5,
+                border: '1px solid #e4e4e4',
+                borderRadius: '4px',
+                bgcolor: '#fafafa',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <FolderClosed color="#5B0429" size={18} />
+                <Typography sx={{ fontWeight: 500, fontSize: '14px', color: '#222' }}>
+                  {`Contract ${index + 1}`}
+                </Typography>
+              </Box>
+              {isActionEnabled && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, color: '#5B0429' }}>
+                    <FileText size={15} color="#5B0429" />
+                    <Typography sx={{ fontSize: '13px', fontWeight: 600 }}>{doc.document_name}</Typography>
+                  </Box>
+                  <Box
+                    onClick={() => handleReplaceMasterContract(doc)}
+                    sx={{ display: 'flex', alignItems: 'center', gap: 0.5, cursor: 'pointer', color: '#666', '&:hover': { color: '#444' } }}
+                  >
+                    <RefreshCw size={13} />
+                    <Typography sx={{ fontSize: '13px' }}>Replace</Typography>
+                  </Box>
+                  <Popconfirm
+                    title="Delete Master Contract"
+                    description={`Are you sure you want to delete "${doc.document_name}"?`}
+                    onConfirm={() => handleDeleteMasterContract(doc)}
+                    okText="Delete"
+                    cancelText="Cancel"
+                    okType="danger"
+                    disabled={shouldDisable}
+                  >
+                    <X
+                      size={15}
+                      color={shouldDisable ? "#ccc" : "#e53935"}
+                      style={{ cursor: shouldDisable ? "default" : 'pointer' }}
+                    />
+                  </Popconfirm>
+                </Box>
+              )}
+            </Box>
+          ))}
+
+          <input
+            type="file"
+            ref={replaceMasterContractInputRef}
+            onChange={onReplaceMasterContractFileChange}
+            style={{ display: "none" }}
+            accept=".pdf,.doc,.docx"
+          />
+
+          {masterContractDocs.length === 0 && (
+            <Box sx={{ py: 3, color: '#bbb', fontSize: '13px', textAlign: 'center', fontStyle: 'italic', border: '1px dashed #e4e4e4', borderRadius: '4px', bgcolor: '#fafafa' }}>
+              No master contract uploaded yet.
+            </Box>
+          )}
+        </Box>
       </Box>
 
       {/* ── Project Configuration section ── */}
@@ -587,14 +903,38 @@ const OverviewTab = ({
           <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
             File: {currentConfigFileName}
           </Typography>
-          <Progress 
-            percent={Math.round(configUploadProgress)} 
+          <Progress
+            percent={Math.round(configUploadProgress)}
             status={configUploadProgress === 100 ? "success" : "active"}
             strokeColor={brand.primary}
           />
         </Box>
         <Typography variant="caption" sx={{ color: '#666' }}>
           Uploading files sequentially to the project storage...
+        </Typography>
+      </Modal>
+
+      {/* Master Contract Upload Modal */}
+      <Modal
+        open={isMasterContractUploading}
+        footer={null}
+        closable={false}
+        maskClosable={false}
+        title="Uploading Master Contract"
+        centered
+      >
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+            File: {currentMasterContractFileName}
+          </Typography>
+          <Progress
+            percent={Math.round(masterContractUploadProgress)}
+            status={masterContractUploadProgress === 100 ? "success" : "active"}
+            strokeColor={brand.primary}
+          />
+        </Box>
+        <Typography variant="caption" sx={{ color: '#666' }}>
+          Uploading master contract to the project storage...
         </Typography>
       </Modal>
     </Box>
