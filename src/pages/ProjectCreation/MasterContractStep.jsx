@@ -76,9 +76,9 @@ const MasterContractStep = () => {
 
         const ext = config.name.split(".").pop().toLowerCase();
         const mimeTypes = {
-          xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          xls: "application/vnd.ms-excel",
-          csv: "text/csv",
+            pdf: "application/pdf",
+            doc: "application/msword",
+            docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         };
         const mimeType = mimeTypes[ext] || "application/octet-stream";
 
@@ -220,7 +220,7 @@ const MasterContractStep = () => {
           ref={globalFileInputRef}
           type="file"
           hidden
-          accept=".xlsx,.csv,.xls"
+          accept=".pdf,.doc,.docx"
           onChange={onGlobalFileChange}
         />
 
@@ -380,7 +380,7 @@ const MasterContractStep = () => {
                     ref={(el) => (fileInputRefs.current[folder.id] = el)}
                     type="file"
                     hidden
-                    accept=".xlsx,.csv,.xls"
+                    accept=".pdf,.doc,.docx"
                     onChange={onFolderFileChange(folder.id)}
                   />
                 </AccordionDetails>

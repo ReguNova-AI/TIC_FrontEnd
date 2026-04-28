@@ -152,19 +152,27 @@ export const ProjectCreationProvider = ({ children }) => {
 
     const projectDocs = projectData.project_documents || [];
     const configDocs = [];
+    const masterContractDocs = [];
     const tempFolderMap = new Map(); // key: lowercase name, value: { id, name, files }
 
     projectDocs.forEach((doc) => {
       const docName = doc.document_name || "";
       const lowerDocName = docName.toLowerCase();
-      
-      // Detect configuration documents based on type or empty folder_name
-      const isConfig = !doc.folder_name || 
-                       doc.folder_name?.trim() === "" ||
-                       doc.document_type === "Configuration Document" ||
-                       doc.document_type === "Config File";
 
-      if (isConfig) {
+      const isMasterContract = doc.document_type === "Master Contract";
+
+      // Detect configuration documents based on type or empty folder_name,
+      // but never treat master contracts as config files
+      const isConfig = !isMasterContract && (
+        !doc.folder_name ||
+        doc.folder_name?.trim() === "" ||
+        doc.document_type === "Configuration Document" ||
+        doc.document_type === "Config File"
+      );
+
+      if (isMasterContract) {
+        masterContractDocs.push(doc);
+      } else if (isConfig) {
         configDocs.push(doc);
       } else {
         const originalName = doc.folder_name?.trim();
@@ -257,6 +265,23 @@ export const ProjectCreationProvider = ({ children }) => {
         });
       }
       setConfigFiles(newConfigFiles);
+
+      // Restore master contract files — one shared contract applied to all folders
+      const newMasterContractFiles = {};
+      if (masterContractDocs.length > 0) {
+        const defaultContract = masterContractDocs[0];
+        stabilizedFolders.forEach((folder) => {
+          newMasterContractFiles[folder.id] = {
+            file: null,
+            name: defaultContract.document_name,
+            document_name: defaultContract.document_name,
+            path: defaultContract.path || defaultContract.file_path,
+            document_id: defaultContract.document_id,
+            version_id: defaultContract.version_id,
+          };
+        });
+      }
+      setMasterContractFiles(newMasterContractFiles);
 
       return stabilizedFolders;
     });
@@ -592,7 +617,7 @@ export const ProjectCreationProvider = ({ children }) => {
     const payload = {
       project_id: createdProjectId,
       document_name: fileEntry.name,
-      document_type: fileEntry.file?.type || "application/octet-stream",
+      document_type: fileEntry.document_type || fileEntry.file?.type || "application/octet-stream",
       uploaded_by_id: userdetails?.[0]?.user_id,
       uploaded_by_name:
         userdetails?.[0]?.user_first_name +
@@ -1729,6 +1754,7 @@ export const ProjectCreationProvider = ({ children }) => {
           files.push({
             path: file.path,
             name: file.name,
+            type: "Contract",
           });
         }
       });
@@ -1742,6 +1768,21 @@ export const ProjectCreationProvider = ({ children }) => {
         files.push({
           path: configFile.path,
           name: configFile.name,
+          type: "Configuration Document",
+        });
+      }
+    });
+
+    // Add master contract files (deduplicated by path)
+    const currentMasterContractFiles = masterContractFilesRef.current;
+    const seenMasterContractPaths = new Set();
+    Object.entries(currentMasterContractFiles).forEach(([, contractFile]) => {
+      if (contractFile && contractFile.path && !seenMasterContractPaths.has(contractFile.path)) {
+        seenMasterContractPaths.add(contractFile.path);
+        files.push({
+          path: contractFile.path,
+          name: contractFile.name,
+          type: "Master Contract",
         });
       }
     });
