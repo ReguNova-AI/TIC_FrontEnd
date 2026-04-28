@@ -1363,7 +1363,7 @@ export const ProjectCreationProvider = ({ children }) => {
       documents: [surgicalString],
       type: ext,
       folder_name: "",
-      isConfig: true,
+      isConfig: false,
       document_type: "Master Contract",
       project_id: createdProjectId,
       document_name: file.name,

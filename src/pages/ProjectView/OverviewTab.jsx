@@ -177,7 +177,7 @@ const OverviewTab = ({
       const uploadPayload = {
         documents: [fileDataUrl],
         folder_name: "",
-        isConfig: true,
+        isConfig: false,
         project_id: projectData?.project_id,
         type: ext,
         document_type: "Master Contract",
@@ -263,7 +263,7 @@ const OverviewTab = ({
       const uploadPayload = {
         documents: [fileDataUrl],
         folder_name: "",
-        isConfig: true,
+        isConfig: false,
         project_id: projectData?.project_id,
         type: ext,
         document_type: "Master Contract",
