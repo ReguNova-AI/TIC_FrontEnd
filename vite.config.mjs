@@ -118,7 +118,7 @@ export default defineConfig({
 
           if (id.includes("/node_modules/dompurify/")) return "purify-vendor";
           if (id.includes("/node_modules/react-router/") || id.includes("/node_modules/react-router-dom/") || id.includes("/node_modules/@remix-run/")) return "router-vendor";
-          if (id.includes("/node_modules/formik/") || id.includes("/node_modules/yup/")) return "forms-vendor";
+          //if (id.includes("/node_modules/formik/") || id.includes("/node_modules/yup/")) return "forms-vendor";
           if (id.includes("/node_modules/axios/")) return "axios-vendor";
         },
       },
