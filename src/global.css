@@ -32,25 +32,29 @@
 
   table {
     width: 100% !important;
+    table-layout: fixed !important;
 
-    td:nth-child(n + 1):nth-child(-n + 2),
-    th:nth-child(n + 1):nth-child(-n + 2) {
-      width: 6% !important;
+    td, th {
+      word-wrap: break-word !important;
+      overflow-wrap: break-word !important;
+      white-space: normal !important;
+      overflow: visible !important;
     }
 
-    /* td:nth-child(3),
-    th:nth-child(3) {
-      width: 18% !important;
-    } */
-
-    td:nth-child(4),
-    th:nth-child(4) {
-      width: 70% !important;
+    td:nth-child(1), th:nth-child(1) {
+      width: 20% !important;
     }
 
-    /* td:nth-child(5),
-    th:nth-child(5) {
-      width: 40% !important;
-    } */
+    td:nth-child(2), th:nth-child(2) {
+      width: 12% !important;
+    }
+
+    td:nth-child(3), th:nth-child(3) {
+      width: 33% !important;
+    }
+
+    td:nth-child(4), th:nth-child(4) {
+      width: 35% !important;
+    }
   }
 }
