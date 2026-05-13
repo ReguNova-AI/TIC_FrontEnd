@@ -56,6 +56,7 @@ export const ProjectCreationProvider = ({ children }) => {
   // { [folderId]: { file, name, path } | null }
   const [masterContractFiles, setMasterContractFiles] = useState({});
   const masterContractFilesRef = useRef(masterContractFiles);
+  const [masterContractType, setMasterContractType] = useState("Master Contract");
 
   // Keep ref in sync with state to avoid stale closure issues
   useEffect(() => {
@@ -141,6 +142,7 @@ export const ProjectCreationProvider = ({ children }) => {
     setCreatedProject(projectData);
     setProjectName(projectData.project_name || "");
     setProjectDesc(projectData.project_description || "");
+    setMasterContractType(projectData.master_contract_type || "Master Contract");
     setFormData((prev) => ({
       ...prev,
       projectNo: projectData.project_no || "",
@@ -1364,7 +1366,7 @@ export const ProjectCreationProvider = ({ children }) => {
       type: ext,
       folder_name: "",
       isConfig: false,
-      document_type: "Master Contract",
+      document_type: masterContractType,
       project_id: createdProjectId,
       document_name: file.name,
     };
@@ -1782,7 +1784,7 @@ export const ProjectCreationProvider = ({ children }) => {
         files.push({
           path: contractFile.path,
           name: contractFile.name,
-          type: "Master Contract",
+          type: masterContractType,
         });
       }
     });
@@ -1811,7 +1813,7 @@ export const ProjectCreationProvider = ({ children }) => {
       });
       return false;
     }
-  }, [createdProjectId, folders]);
+  }, [createdProjectId, folders, masterContractType]);
 
   // ---- Submit: Only run AI Assessment ----
   const handleSubmit = useCallback(
@@ -1922,6 +1924,8 @@ export const ProjectCreationProvider = ({ children }) => {
     masterContractFiles,
     setMasterContractFileForFolder,
     removeMasterContractFileForFolder,
+    masterContractType,
+    setMasterContractType,
 
     // Step 3
     configFiles,

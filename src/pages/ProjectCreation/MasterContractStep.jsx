@@ -4,6 +4,10 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
 import FolderOutlinedIcon from "@mui/icons-material/FolderOutlined";
 import UploadFileOutlinedIcon from "@mui/icons-material/UploadFileOutlined";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
@@ -19,7 +23,7 @@ import { useProjectCreation } from "./ProjectCreationContext";
 import { FileUploadApiService } from "services/api/FileUploadAPIService";
 
 const MasterContractStep = () => {
-  const { folders, masterContractFiles, setMasterContractFileForFolder, removeMasterContractFileForFolder } = useProjectCreation();
+  const { folders, masterContractFiles, setMasterContractFileForFolder, removeMasterContractFileForFolder, masterContractType, setMasterContractType } = useProjectCreation();
   const fileInputRefs = useRef({});
   const globalFileInputRef = useRef(null);
   const [expandedFolders, setExpandedFolders] = useState({});
@@ -201,6 +205,20 @@ const MasterContractStep = () => {
 
   return (
     <Box>
+      {/* ---- Contract Type dropdown ---- */}
+      <Box sx={{ mb: 3, maxWidth: 300 }}>
+        <FormControl fullWidth size="small">
+          <InputLabel>Contract Type</InputLabel>
+          <Select
+            value={masterContractType}
+            label="Contract Type"
+            onChange={(e) => setMasterContractType(e.target.value)}
+          >
+            <MenuItem value="Master Contract">Master Contract</MenuItem>
+            <MenuItem value="Template">Template</MenuItem>
+          </Select>
+        </FormControl>
+      </Box>
       {/* ---- Action buttons ---- */}
       <Box sx={{ display: "flex", gap: 2, mb: 4 }}>
         <Button
