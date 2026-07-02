@@ -12,6 +12,7 @@ import { useProjectCreation } from "./ProjectCreationContext";
 import ProjectDetailsStep from "./ProjectDetailsStep";
 import UploadDocumentsStep from "./UploadDocumentsStep";
 import ProjectConfigurationStep from "./ProjectConfigurationStep";
+import MasterContractStep from "./MasterContractStep";
 import ReviewAssessStep from "./ReviewAssessStep";
 import { useNavigate } from "react-router-dom";
 import { Spin, Modal, Progress, Typography as AntTypography } from "antd";
@@ -52,6 +53,7 @@ const getFileIcon = (filename) => {
 const STEPS = [
   "Project Details",
   "Upload Documents",
+  "Master Contract",
   "Project Configuration",
   "Review & Assess",
 ];
@@ -198,6 +200,9 @@ const ProjectCreationWizard = () => {
         return true;
       }
       case 2:
+        // Master Contract step is optional
+        return true;
+      case 3:
         // Config step is optional
         return true;
       default:
@@ -227,8 +232,10 @@ const ProjectCreationWizard = () => {
       case 1:
         return <UploadDocumentsStep />;
       case 2:
-        return <ProjectConfigurationStep />;
+        return <MasterContractStep />;
       case 3:
+        return <ProjectConfigurationStep />;
+      case 4:
         return <ReviewAssessStep />;
       default:
         return null;
@@ -381,7 +388,7 @@ const ProjectCreationWizard = () => {
                 </Button>
               )}
 
-              {activeStep < 3 && (
+              {activeStep < 4 && (
                 <Button
                   variant="contained"
                   onClick={onNextClick}
@@ -398,7 +405,7 @@ const ProjectCreationWizard = () => {
                 </Button>
               )}
 
-              {activeStep === 3 && (
+              {activeStep === 4 && (
                 <Button
                   variant="contained"
                   onClick={onRunAssessment}

@@ -95,12 +95,25 @@ export const useAIAssessmentOperations = (projectData) => {
     // Prepare file paths
     let files = [];
     if (projectData?.project_documents?.length > 0) {
+      //const seenPaths = new Set();
       projectData.project_documents.forEach((document) => {
-        let { file_path, document_name } = document;
-        if (file_path !== null && file_path !== "null" && file_path !== "") {
+        const { document_name, document_type } = document;
+        const file_path = document.file_path || document.path;
+        if (
+          file_path &&
+          file_path !== "null"
+          //!seenPaths.has(file_path)
+        ) {
+          //seenPaths.add(file_path);
+
+          let type = "Contract";
+          if (document_type === "Master Contract") type = "Master Contract";
+          else if (document_type === "Configuration Document") type = "Config";
+
           files.push({
             path: file_path,
-            name: document_name || file_path.split('/').pop()
+            name: document_name || file_path.split('/').pop(),
+            type,
           });
         }
       });
@@ -116,7 +129,6 @@ export const useAIAssessmentOperations = (projectData) => {
       files: files,
     };
 
-    // Execute the mutation
     uploadFilesToAIServerMutation.mutate(payload);
   }, [
     projectData,

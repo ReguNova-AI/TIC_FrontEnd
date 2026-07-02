@@ -68,7 +68,7 @@ const ReviewSection = ({ title, onEdit, children }) => (
 );
 
 const ReviewAssessStep = () => {
-  const { projectName, projectDesc, folders, configFiles, setActiveStep } =
+  const { projectName, projectDesc, folders, masterContractFiles, configFiles, setActiveStep } =
     useProjectCreation();
 
   return (
@@ -190,8 +190,93 @@ const ReviewAssessStep = () => {
         )}
       </ReviewSection>
 
-      {/* ---- 3. Project Configuration ---- */}
-      <ReviewSection title="Project Configuration" onEdit={() => setActiveStep(2)}>
+      {/* ---- 3. Master Contract ---- */}
+      <ReviewSection title="Master Contract" onEdit={() => setActiveStep(2)}>
+        {folders.length === 0 ? (
+          <Typography variant="body2" sx={{ color: "#8c8c8c" }}>
+            No master contract files uploaded.
+          </Typography>
+        ) : (
+          <Box>
+            {folders.map((folder) => {
+              const contract = masterContractFiles[folder.id];
+              const hasContract = !!contract;
+
+              return (
+                <Accordion
+                  key={folder.id}
+                  defaultExpanded={true}
+                  disableGutters
+                  sx={{
+                    mb: 1,
+                    boxShadow: "none",
+                    borderRadius: "6px !important",
+                    border: "1px solid #f0f0f0",
+                    "&::before": { display: "none" },
+                  }}
+                >
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    sx={{
+                      minHeight: 44,
+                      "& .MuiAccordionSummary-content": {
+                        alignItems: "center",
+                        gap: 1,
+                        my: 0.5,
+                      },
+                    }}
+                  >
+                    <FolderOutlinedIcon sx={{ color: brand.primary, fontSize: 20 }} />
+                    <Typography variant="body2" sx={{ fontWeight: 600, flex: 1 }}>
+                      {folder.name}
+                    </Typography>
+                    {hasContract && (
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mr: 1 }}>
+                        <GridOnOutlinedIcon sx={{ fontSize: 14, color: brand.primary }} />
+                        <Typography variant="caption" sx={{ color: "#262626", fontWeight: 500 }}>
+                          {contract.name}
+                        </Typography>
+                      </Box>
+                    )}
+                  </AccordionSummary>
+                  <AccordionDetails sx={{ py: 0, px: 2, pb: 1.5 }}>
+                    {hasContract ? (
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1.5,
+                          py: 0.75,
+                          px: 1,
+                          borderRadius: "4px",
+                          border: "1px solid #f5f5f5",
+                          mb: 0.5,
+                          backgroundColor: "#fafafa",
+                        }}
+                      >
+                        <GridOnOutlinedIcon sx={{ color: "#52c41a", fontSize: 18 }} />
+                        <Typography variant="body2" sx={{ flex: 1, color: "#434343" }} noWrap>
+                          {contract.name}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: "#8c8c8c" }}>
+                          Master Contract File
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <Typography variant="caption" sx={{ color: "#bfbfbf" }}>
+                        No master contract file for this folder.
+                      </Typography>
+                    )}
+                  </AccordionDetails>
+                </Accordion>
+              );
+            })}
+          </Box>
+        )}
+      </ReviewSection>
+
+      {/* ---- 4. Project Configuration ---- */}
+      <ReviewSection title="Project Configuration" onEdit={() => setActiveStep(3)}>
         {folders.length === 0 ? (
           <Typography variant="body2" sx={{ color: "#8c8c8c" }}>
             No configuration files uploaded.

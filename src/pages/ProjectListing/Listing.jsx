@@ -239,17 +239,15 @@ const Listing = () => {
     });
   };
 
-  const handleTableChange = (pagination, _, sorter) => {
+  const handleTableChange = (pagination, _, sorter, extra) => {
+    if (extra?.action !== "sort") return;
     if (sorter?.columnKey) {
-      const dbColumn = sorter.columnKey;
-      setSortBy(dbColumn);
+      setSortBy(sorter.columnKey);
       setSortOrder(sorter.order === "ascend" ? "asc" : "desc");
     } else {
-      // Sorter cleared
       setSortBy(null);
       setSortOrder(null);
     }
-    // Reset to page 1 on sort change
     setCurrentPage(1);
     setCurrentInvitedPage(1);
   };

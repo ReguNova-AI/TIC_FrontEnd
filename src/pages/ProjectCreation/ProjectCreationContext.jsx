@@ -52,6 +52,17 @@ export const ProjectCreationProvider = ({ children }) => {
   // Each folder: { id, name, files: [{ id, file, name, size, path, progress }] }
   const [folders, setFolders] = useState([]);
 
+  // ---- Step 2: Master Contract ----
+  // { [folderId]: { file, name, path } | null }
+  const [masterContractFiles, setMasterContractFiles] = useState({});
+  const masterContractFilesRef = useRef(masterContractFiles);
+  const [masterContractType, setMasterContractType] = useState("Master Contract");
+
+  // Keep ref in sync with state to avoid stale closure issues
+  useEffect(() => {
+    masterContractFilesRef.current = masterContractFiles;
+  }, [masterContractFiles]);
+
   // ---- Step 3: Project Configuration ----
   // { [folderId]: { file, name, path } | null }
   const [configFiles, setConfigFiles] = useState({});
@@ -131,6 +142,7 @@ export const ProjectCreationProvider = ({ children }) => {
     setCreatedProject(projectData);
     setProjectName(projectData.project_name || "");
     setProjectDesc(projectData.project_description || "");
+    setMasterContractType(projectData.master_contract_type || "Master Contract");
     setFormData((prev) => ({
       ...prev,
       projectNo: projectData.project_no || "",
@@ -142,19 +154,27 @@ export const ProjectCreationProvider = ({ children }) => {
 
     const projectDocs = projectData.project_documents || [];
     const configDocs = [];
+    const masterContractDocs = [];
     const tempFolderMap = new Map(); // key: lowercase name, value: { id, name, files }
 
     projectDocs.forEach((doc) => {
       const docName = doc.document_name || "";
       const lowerDocName = docName.toLowerCase();
-      
-      // Detect configuration documents based on type or empty folder_name
-      const isConfig = !doc.folder_name || 
-                       doc.folder_name?.trim() === "" ||
-                       doc.document_type === "Configuration Document" ||
-                       doc.document_type === "Config File";
 
-      if (isConfig) {
+      const isMasterContract = doc.document_type === "Master Contract";
+
+      // Detect configuration documents based on type or empty folder_name,
+      // but never treat master contracts as config files
+      const isConfig = !isMasterContract && (
+        !doc.folder_name ||
+        doc.folder_name?.trim() === "" ||
+        doc.document_type === "Configuration Document" ||
+        doc.document_type === "Config File"
+      );
+
+      if (isMasterContract) {
+        masterContractDocs.push(doc);
+      } else if (isConfig) {
         configDocs.push(doc);
       } else {
         const originalName = doc.folder_name?.trim();
@@ -247,6 +267,23 @@ export const ProjectCreationProvider = ({ children }) => {
         });
       }
       setConfigFiles(newConfigFiles);
+
+      // Restore master contract files — one shared contract applied to all folders
+      const newMasterContractFiles = {};
+      if (masterContractDocs.length > 0) {
+        const defaultContract = masterContractDocs[0];
+        stabilizedFolders.forEach((folder) => {
+          newMasterContractFiles[folder.id] = {
+            file: null,
+            name: defaultContract.document_name,
+            document_name: defaultContract.document_name,
+            path: defaultContract.path || defaultContract.file_path,
+            document_id: defaultContract.document_id,
+            version_id: defaultContract.version_id,
+          };
+        });
+      }
+      setMasterContractFiles(newMasterContractFiles);
 
       return stabilizedFolders;
     });
@@ -582,7 +619,7 @@ export const ProjectCreationProvider = ({ children }) => {
     const payload = {
       project_id: createdProjectId,
       document_name: fileEntry.name,
-      document_type: fileEntry.file?.type || "application/octet-stream",
+      document_type: fileEntry.document_type || fileEntry.file?.type || "application/octet-stream",
       uploaded_by_id: userdetails?.[0]?.user_id,
       uploaded_by_name:
         userdetails?.[0]?.user_first_name +
@@ -1311,6 +1348,281 @@ export const ProjectCreationProvider = ({ children }) => {
     );
   }, [folders]);
 
+  // ---- Step 2: Master Contract upload helpers ----
+  const uploadSingleMasterContractFile = async (file, folderId, folderName = "", isGlobal = false, forceCreateNew = false) => {
+    const reader = new FileReader();
+    const dataUrl = await new Promise((resolve, reject) => {
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    const base64Data = dataUrl.split(",")[1];
+    const surgicalString = "," + base64Data;
+
+    const ext = file.name.split(".").pop();
+    const payload = {
+      documents: [surgicalString],
+      type: ext,
+      folder_name: "",
+      isConfig: false,
+      document_type: masterContractType,
+      project_id: createdProjectId,
+      document_name: file.name,
+    };
+
+    const response = await FileUploadApiService.fileUploadWithMetadata(payload);
+    const s3Path = response.data.details[0];
+
+    const contractEntry = {
+      file,
+      name: file.name,
+      document_name: file.name,
+      path: s3Path,
+      document_id: null,
+      version_id: null,
+      document_type: "Master Contract",
+    };
+
+    const currentMasterContractFiles = masterContractFilesRef.current;
+    if (createdProjectId) {
+      const existingContract = currentMasterContractFiles[folderId];
+
+      if (existingContract?.document_id && existingContract?.version_id && !isGlobal && !forceCreateNew) {
+        const updatePayload = {
+          file_path: s3Path,
+          uploaded_by_id: userdetails?.[0]?.user_id,
+          uploaded_by_name:
+            userdetails?.[0]?.user_first_name + " " + userdetails?.[0]?.user_last_name,
+        };
+
+        const updateResponse = await ProjectApiService.uploadProjectDocument(
+          updatePayload,
+          existingContract.version_id
+        );
+
+        const updatedDocData = updateResponse?.data?.details?.[0];
+        if (updatedDocData) {
+          contractEntry.document_id = updatedDocData.document_id;
+          contractEntry.version_id = updatedDocData.version_id;
+        } else {
+          contractEntry.document_id = existingContract.document_id;
+          contractEntry.version_id = existingContract.version_id;
+        }
+      } else {
+        const docResult = await createProjectDocumentEntry({ ...contractEntry, file }, "");
+        if (docResult) {
+          contractEntry.document_id = docResult.document_id;
+          contractEntry.version_id = docResult.version_id;
+        }
+      }
+    }
+
+    return contractEntry;
+  };
+
+  const setMasterContractFileForFolder = useCallback(async (folderId, file, isGlobal = false, shouldDeleteExisting = false) => {
+    if (!file) return;
+
+    const filesArray = Array.isArray(file) ? file : [file];
+    if (filesArray.length === 0) return;
+
+    const isMultiple = filesArray.length > 1;
+    const currentMasterContractFiles = masterContractFilesRef.current;
+
+    if (shouldDeleteExisting) {
+      if (isGlobal) {
+        for (const [fid, existingContract] of Object.entries(currentMasterContractFiles)) {
+          if (existingContract) {
+            try {
+              if (existingContract.document_id && existingContract.version_id) {
+                await ProjectApiService.deleteProjectDocument(
+                  existingContract.document_id,
+                  existingContract.version_id
+                );
+              }
+            } catch (error) {
+              console.error("Global delete - Failed to delete master contract for folder:", fid, error);
+            }
+          }
+        }
+        setMasterContractFiles({});
+      } else if (folderId) {
+        const existingContract = currentMasterContractFiles[folderId];
+        if (existingContract) {
+          try {
+            if (existingContract.document_id && existingContract.version_id) {
+              await ProjectApiService.deleteProjectDocument(
+                existingContract.document_id,
+                existingContract.version_id
+              );
+            }
+            setMasterContractFiles((prev) => {
+              const next = { ...prev };
+              delete next[folderId];
+              return next;
+            });
+          } catch (error) {
+            console.error("Failed to delete existing master contract:", error);
+          }
+        }
+      }
+    }
+
+    try {
+      setUploadType("configuration");
+
+      if (isMultiple) {
+        setIsUploadingMultiple(true);
+        setMultipleUploadProgress(0);
+        setCurrentFileProgress(0);
+        setCurrentFileName("");
+        setUploadedFilesCount(0);
+        setTotalFilesCount(filesArray.length);
+        setUploadingFilesList(
+          filesArray.map((f, index) => ({
+            id: `master-${index}`,
+            name: f.name,
+            progress: 0,
+            status: "uploading",
+          }))
+        );
+        setUploadModalOpen(true);
+      } else {
+        setUploadingFile(filesArray[0]);
+        setUploadProgress(0);
+        setUploadSuccess(false);
+        setUploadModalOpen(true);
+      }
+
+      for (let i = 0; i < filesArray.length; i++) {
+        const currentFile = filesArray[i];
+
+        if (isMultiple) {
+          setCurrentFileName(currentFile.name);
+          setCurrentFileProgress(0);
+          setUploadingFilesList((prev) =>
+            prev.map((f, idx) => (idx === i ? { ...f, progress: 0, status: "uploading" } : f))
+          );
+        }
+
+        try {
+          const targetFolder = folders.find((f) => f.id === folderId);
+          const folderName = targetFolder?.name || "";
+
+          const contractEntry = await uploadSingleMasterContractFile(
+            currentFile,
+            folderId,
+            folderName,
+            isGlobal,
+            shouldDeleteExisting
+          );
+
+          if (isMultiple) {
+            setCurrentFileProgress(100);
+            setUploadingFilesList((prev) =>
+              prev.map((f, idx) => (idx === i ? { ...f, progress: 100, status: "completed" } : f))
+            );
+            setUploadedFilesCount(i + 1);
+            setMultipleUploadProgress(((i + 1) / filesArray.length) * 100);
+          } else {
+            setUploadProgress(100);
+            setUploadSuccess(true);
+          }
+
+          if (isGlobal) {
+            setMasterContractFiles((prev) => {
+              const next = { ...prev };
+              folders.forEach((f) => {
+                next[f.id] = { ...contractEntry };
+              });
+              return next;
+            });
+          } else {
+            setMasterContractFiles((prev) => ({ ...prev, [folderId]: contractEntry }));
+          }
+        } catch (error) {
+          console.error(`Failed to upload master contract file ${currentFile.name}:`, error);
+          if (isMultiple) {
+            setUploadingFilesList((prev) =>
+              prev.map((f, idx) => (idx === i ? { ...f, progress: 0, status: "error" } : f))
+            );
+            setUploadedFilesCount(i + 1);
+            setMultipleUploadProgress(((i + 1) / filesArray.length) * 100);
+          }
+        }
+      }
+
+      if (createdProjectId) {
+        await refreshProjectState();
+      }
+
+      setSnackData({
+        show: true,
+        message: isGlobal
+          ? `Master contract file${filesArray.length > 1 ? "s" : ""} uploaded successfully for all folders!`
+          : `Master contract file${filesArray.length > 1 ? "s" : ""} uploaded successfully!`,
+        type: "success",
+      });
+
+      if (isMultiple) {
+        setTimeout(() => {
+          setIsUploadingMultiple(false);
+          setUploadModalOpen(false);
+          setMultipleUploadProgress(0);
+          setCurrentFileProgress(0);
+          setCurrentFileName("");
+          setUploadedFilesCount(0);
+          setTotalFilesCount(0);
+          setUploadingFilesList([]);
+        }, 1500);
+      } else {
+        setTimeout(() => {
+          setUploadModalOpen(false);
+          setUploadingFile(null);
+        }, 800);
+      }
+    } catch (err) {
+      console.error("Master contract upload failed:", err);
+      setSnackData({
+        show: true,
+        message: "Master contract file upload failed!",
+        type: "error",
+      });
+      if (isMultiple) {
+        setIsUploadingMultiple(false);
+        setUploadModalOpen(false);
+      }
+    }
+  }, [createdProjectId, folders, createProjectDocumentEntry, userdetails, refreshProjectState]);
+
+  // ---- Step 2: Remove master contract for a folder ----
+  const removeMasterContractFileForFolder = useCallback(async (folderId) => {
+    const contract = masterContractFilesRef.current[folderId];
+
+    if (contract?.document_id && contract?.version_id) {
+      try {
+        await ProjectApiService.deleteProjectDocument(contract.document_id, contract.version_id);
+      } catch (error) {
+        console.error("Failed to delete master contract document:", error);
+      }
+    }
+
+    setMasterContractFiles((prev) => {
+      const next = { ...prev };
+      delete next[folderId];
+      return next;
+    });
+
+    await refreshProjectState();
+
+    setSnackData({
+      show: true,
+      message: "Master contract file removed successfully!",
+      type: "success",
+    });
+  }, [refreshProjectState]);
+
   // ---- Step 3: Remove config for a folder ----
   const removeConfigFileForFolder = useCallback(async (folderId) => {
     // Use ref to get latest state and avoid stale closure issues
@@ -1364,7 +1676,7 @@ export const ProjectCreationProvider = ({ children }) => {
       }
       return;
     }
-    setActiveStep((prev) => Math.min(prev + 1, 3));
+    setActiveStep((prev) => Math.min(prev + 1, 4));
   }, [activeStep, createdProjectId, createProjectStep1, updateProjectStep1]);
 
   const handleBack = useCallback(() => {
@@ -1444,6 +1756,7 @@ export const ProjectCreationProvider = ({ children }) => {
           files.push({
             path: file.path,
             name: file.name,
+            type: "Contract",
           });
         }
       });
@@ -1457,6 +1770,21 @@ export const ProjectCreationProvider = ({ children }) => {
         files.push({
           path: configFile.path,
           name: configFile.name,
+          type: "Configuration Document",
+        });
+      }
+    });
+
+    // Add master contract files (deduplicated by path)
+    const currentMasterContractFiles = masterContractFilesRef.current;
+    const seenMasterContractPaths = new Set();
+    Object.entries(currentMasterContractFiles).forEach(([, contractFile]) => {
+      if (contractFile && contractFile.path && !seenMasterContractPaths.has(contractFile.path)) {
+        seenMasterContractPaths.add(contractFile.path);
+        files.push({
+          path: contractFile.path,
+          name: contractFile.name,
+          type: masterContractType,
         });
       }
     });
@@ -1485,7 +1813,7 @@ export const ProjectCreationProvider = ({ children }) => {
       });
       return false;
     }
-  }, [createdProjectId, folders]);
+  }, [createdProjectId, folders, masterContractType]);
 
   // ---- Submit: Only run AI Assessment ----
   const handleSubmit = useCallback(
@@ -1591,6 +1919,13 @@ export const ProjectCreationProvider = ({ children }) => {
     removeFolder,
     addFilesToFolder,
     removeFileFromFolder,
+
+    // Step 2 - Master Contract
+    masterContractFiles,
+    setMasterContractFileForFolder,
+    removeMasterContractFileForFolder,
+    masterContractType,
+    setMasterContractType,
 
     // Step 3
     configFiles,
