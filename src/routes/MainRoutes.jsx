@@ -37,6 +37,9 @@ const ProjectListing = Loadable(
   lazy(() => import("pages/ProjectListing/Listing")),
 );
 const Payment = Loadable(lazy(() => import("pages/Payment")));
+const PaymentHistory = Loadable(
+  lazy(() => import("pages/Payment/PaymentHistory")),
+);
 const CertificateListing = Loadable(
   lazy(() => import("pages/CertificateManager/Listing")),
 );
@@ -179,6 +182,14 @@ const MainRoutes = {
       element: (
         <ProtectedRoute>
           <Payment />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "payment-history",
+      element: (
+        <ProtectedRoute>
+          <PaymentHistory />
         </ProtectedRoute>
       ),
     },

@@ -8,6 +8,7 @@ import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
+import Dialog from "@mui/material/Dialog";
 
 // project import
 import Drawer from "./Drawer";
@@ -17,20 +18,7 @@ import Loader from "components/Loader";
 import Breadcrumbs from "components/@extended/Breadcrumbs";
 import { handlerDrawerOpen, useGetMenuMaster } from "api/menu";
 import menuIcon from "../../assets/images/icons/menuIcon.svg";
-const CouponModal = lazy(() => import("pages/Payment/CouponModal"));
-
-const DEFAULT_PLAN = {
-  id: "additionalcontract",
-  title: "Additional Contract",
-  price: "99",
-  period: "",
-  description: "Ideal for exploring additional contract conformity.",
-  features: ["1 Contract/Documents"],
-  isPopular: true,
-  buttonText: "Get Started",
-  buttonVariant: "contained",
-  buttonLink: "https://buy.stripe.com/14A3cufMRaGSbnPa3Gc7u04",
-};
+const Payment = lazy(() => import("pages/Payment"));
 
 // ==============================|| MAIN LAYOUT ||============================== //
 
@@ -40,7 +28,7 @@ export default function DashboardLayout() {
   const drawerOpen = menuMaster?.isDashboardDrawerOpened;
   const navigate = useNavigate();
 
-  const [modalOpen, setModalOpen] = useState(false);
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [snackData, setSnackData] = useState({
     show: false,
     message: "",
@@ -50,7 +38,7 @@ export default function DashboardLayout() {
   useEffect(() => {
     handlerDrawerOpen(!downXL);
 
-    // Payment redirection logic
+    // Payment restriction logic
     const userDetailsRaw = sessionStorage.getItem("userDetails");
     if (userDetailsRaw) {
       try {
@@ -63,7 +51,7 @@ export default function DashboardLayout() {
           (user.is_allowed === false || !user.is_allowed) &&
           user.role_name?.toLowerCase() === "editor"
         ) {
-          setModalOpen(true);
+          setPaymentModalOpen(true);
         }
       } catch (e) {
         console.error("Error parsing userDetails from sessionStorage", e);
@@ -88,17 +76,17 @@ export default function DashboardLayout() {
         <Outlet />
       </Box>
 
-      {/* Conditional render means the lazy chunk only downloads when modalOpen becomes true */}
-      {modalOpen && (
-        <Suspense fallback={null}>
-          <CouponModal
-            open={modalOpen}
-            setSnackData={setSnackData}
-            handleClose={() => setModalOpen(false)}
-            plan={DEFAULT_PLAN}
-            disableClose={true}
-          />
-        </Suspense>
+      {paymentModalOpen && (
+        <Dialog
+          open={paymentModalOpen}
+          fullWidth
+          maxWidth="xl"
+          disableEscapeKeyDown
+        >
+          <Suspense fallback={null}>
+            <Payment isFromRestriction={true} />
+          </Suspense>
+        </Dialog>
       )}
 
       <Snackbar

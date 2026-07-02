@@ -5,6 +5,7 @@ import PeopleOutlinedIcon from "@mui/icons-material/PeopleOutlined";
 import PersonSearchOutlinedIcon from "@mui/icons-material/PersonSearchOutlined";
 import AccountTreeOutlinedIcon from "@mui/icons-material/AccountTreeOutlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
+import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 
 // icons
 const icons = {
@@ -14,6 +15,7 @@ const icons = {
   ExternalUserOutlined: PersonSearchOutlinedIcon,
   PartitionOutlined: AccountTreeOutlinedIcon,
   SettingOutlined: SettingsOutlinedIcon,
+  PaymentHistoryOutlined: ReceiptLongOutlinedIcon,
 };
 
 // ==============================|| MENU ITEMS - DASHBOARD ||============================== //
@@ -92,6 +94,16 @@ const dashboard = {
       breadcrumbs: false,
       access: ["Super Admin"],
       superAdminAccess: true,
+    },
+    {
+      id: "paymentHistory",
+      title: "Payment History",
+      type: "item",
+      url: "/payment-history",
+      icon: icons.PaymentHistoryOutlined,
+      breadcrumbs: false,
+      access: ["all"],
+      superAdminAccess: false,
     },
   ],
 };

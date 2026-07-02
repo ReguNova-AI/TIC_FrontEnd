@@ -140,10 +140,10 @@ const CouponModal = ({
         {plan && (
           <Box sx={{ mb: 3, p: 2, bgcolor: "grey.50", borderRadius: 1 }}>
             <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-              Selected Plan: {plan.title}
+              Selected Plan: {plan.name}
             </Typography>
             <Typography variant="h3" color="primary" sx={{ mt: 1 }}>
-              ${plan.price}
+              ${plan.amount}
             </Typography>
           </Box>
         )}

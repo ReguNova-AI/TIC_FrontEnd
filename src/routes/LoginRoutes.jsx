@@ -9,6 +9,7 @@ import { useSelector } from "react-redux";
 // render - login
 const AuthLogin = Loadable(lazy(() => import("pages/authentication/login")));
 const ErrorPage = Loadable(lazy(() => import("./ErrorPage")));
+const PaymentSuccess = Loadable(lazy(() => import("pages/Payment/PaymentSuccess")));
 const AuthRegister = Loadable(
   lazy(() => import("pages/authentication/register")),
 );
@@ -91,6 +92,10 @@ const LoginRoutes = {
           <AuthPasswordReset />
         </ResetFlowRoute>
       ),
+    },
+    {
+      path: "/payment/success",
+      element: <PaymentSuccess />,
     },
     {
       path: "*",
