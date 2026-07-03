@@ -67,6 +67,14 @@ const StatCard = ({ count, label, icon: Icon, color = "#5B0428" }) => (
 const DashboardStats = ({ data }) => {
   const navigate = useNavigate();
 
+  let availableContractCount = 0;
+  try {
+    const userDetails = JSON.parse(sessionStorage.getItem('userDetails'));
+    availableContractCount = userDetails?.[0]?.available_contract_count ?? 0;
+  } catch {
+    availableContractCount = 0;
+  }
+
   return (
     <Grid container spacing={3}>
       {/* ── Create New Project Card (Takes 50% width on desktop) ── */}
@@ -108,9 +116,31 @@ const DashboardStats = ({ data }) => {
             <Typography variant="h3" sx={{ fontSize: '26px', fontWeight: 700, mb: 1, color: 'white' }}>
               Create New Project
             </Typography>
-            <Typography sx={{ fontSize: '14px', mb: 2, fontWeight: 400, opacity: 0.9 }}>
+            <Typography sx={{ fontSize: '14px', mb: 1.5, fontWeight: 400, opacity: 0.9 }}>
               Start a new project and upload documents
             </Typography>
+            <Box
+              sx={{
+                display: 'inline-flex',
+                alignItems: 'baseline',
+                gap: 0.75,
+                mb: 2,
+                px: 1.5,
+                py: 0.5,
+                borderRadius: '16px',
+                bgcolor: 'rgba(255,255,255,0.12)',
+                border: '1px solid rgba(255,255,255,0.25)',
+                width: 'fit-content',
+                marginRight:'5px'
+              }}
+            >
+              <Typography component="span" sx={{ fontSize: '18px', fontWeight: 700, color: 'white', lineHeight: 1 }}>
+                {availableContractCount}
+              </Typography>
+              <Typography component="span" sx={{ fontSize: '12px', fontWeight: 500, color: 'white', opacity: 0.9 }}>
+                {availableContractCount === 1 ? 'contract available' : 'contracts available'}
+              </Typography>
+            </Box>
             <Button
               variant="outlined"
               onClick={() => navigate('/createProject')}

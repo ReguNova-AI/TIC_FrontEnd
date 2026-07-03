@@ -97,7 +97,7 @@ const dashboard = {
     },
     {
       id: "paymentHistory",
-      title: "Payment History",
+      title: "Purchase History",
       type: "item",
       url: "/payment-history",
       icon: icons.PaymentHistoryOutlined,
