@@ -49,8 +49,8 @@ export default function DashboardLayout() {
         if (
           user &&
           (!user.is_allowed) 
-          // &&
-          // user.role_name?.toLowerCase() === "editor"
+          &&
+          user.role_name?.toLowerCase() === "editor"
         ) {
           setPaymentModalOpen(true);
         }
