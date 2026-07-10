@@ -102,6 +102,7 @@ export default function Button(theme) {
       },
       styleOverrides: {
         root: {
+          borderRadius:40,
           fontWeight: 400,
           '&::after': {
             content: '""',

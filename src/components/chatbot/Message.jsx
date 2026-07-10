@@ -1,7 +1,14 @@
 import React, { useState } from "react";
-import { Box, TextField, IconButton, Typography, Avatar, Paper, Container, Stack } from "@mui/material";
+import Box from "@mui/material/Box";
+import TextField from "@mui/material/TextField";
+import IconButton from "@mui/material/IconButton";
+import Typography from "@mui/material/Typography";
+import Avatar from "@mui/material/Avatar";
+import Paper from "@mui/material/Paper";
+import Container from "@mui/material/Container";
+import Stack from "@mui/material/Stack";
 import { styled } from "@mui/system";
-import { SendOutlined } from "@ant-design/icons";
+import SendOutlined from "@ant-design/icons/SendOutlined";
 
 const ChatContainer = styled(Box)(({ theme }) => ({
   height: "80vh",

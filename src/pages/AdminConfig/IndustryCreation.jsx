@@ -1,30 +1,23 @@
 import React, { useEffect, useState } from "react";
-import {
-  TextField,
-  Button,
-  Grid,
-  Box,
-  Typography,
-  FormControl,
-  Select,
-  MenuItem,
-  InputLabel,
-} from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import Grid from "@mui/material/Grid";
+import Box from "@mui/material/Box";
+// import FormControl from "@mui/material/FormControl";
+// import Select from "@mui/material/Select";
+// import MenuItem from "@mui/material/MenuItem";
+// import InputLabel from "@mui/material/InputLabel";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import {
   API_ERROR_MESSAGE,
-  API_SUCCESS_MESSAGE,
+  // API_SUCCESS_MESSAGE,
   BUTTON_LABEL,
   FORM_LABEL,
-  STATUS,
 } from "shared/constants";
 import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
-import { UserApiService } from "services/api/UserAPIService";
 
 const IndustryCreation = ({onHandleClose,type,selecteddata}) => {
-  const navigate = useNavigate();
   const [sectorData, setSectorData] = useState([]);
   const [snackData, setSnackData] = useState({
     show: false,
@@ -224,7 +217,6 @@ const IndustryCreation = ({onHandleClose,type,selecteddata}) => {
                 type="submit"
                 variant="contained"
                 style={{
-                  background: "#2ba9bc",
                   float: "right",
                   textTransform: "none",
                 }}

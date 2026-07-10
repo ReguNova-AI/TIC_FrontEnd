@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import * as actions from "../../../store/actions";
@@ -28,7 +28,7 @@ import AnimateButton from "components/@extended/AnimateButton";
 import EyeOutlined from "@ant-design/icons/EyeOutlined";
 import EyeInvisibleOutlined from "@ant-design/icons/EyeInvisibleOutlined";
 import { AuthApiService } from "services/api/AuthApiService";
-import { LOGIN_PAGE, API_ERROR_MESSAGE } from "shared/constants";
+import { LOGIN_PAGE, API_ERROR_MESSAGE } from "shared/constants.login";
 
 // ============================|| JWT - LOGIN ||============================ //
 
@@ -42,64 +42,52 @@ export default function AuthLogin() {
     type: "error",
   });
 
-  sessionStorage.clear();
-  sessionStorage.removeItem("userDetails");
-  localStorage.removeItem("userDetails"); // If you're using localStorage
-  document.cookie = "session_cookie=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/"; // Example for clearing cookies
-  
+  // Clear session once on mount, not on every render
+  useEffect(() => {
+    sessionStorage.clear();
+    document.cookie =
+      "session_cookie=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+  }, []);
+
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
   };
 
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
-  }; 
+  };
 
   const handleSubmitForm = (values, { setSubmitting }) => {
     let payload = values;
     AuthApiService.login(payload)
       .then((response) => {
         // On success, you can add any additional logic here
-        
-        if (response.message === API_ERROR_MESSAGE.INVALID_PASSWORD) {
-          setSnackData({
-            show: true,
-            message: response?.message,
-            type: "error",
-          });
+        if (response?.data?.userDetails?.[0].password_updated_date === null) {
+          sessionStorage.setItem(
+            "email",
+            response?.data?.userDetails?.[0]?.user_email,
+          );
+          sessionStorage.setItem("resetFlow", true);
+          navigate("/passwordReset", { state: { showPage: true } });
         } else {
-          setSnackData({
-            show: true,
-            message: response.message,
-            type: "success",
-          });
-
-          if(response?.data?.userDetails?.[0].password_updated_date === null)
-          {
-            sessionStorage.setItem("email",response?.data?.userDetails?.[0]?.user_email);
-            sessionStorage.setItem("resetFlow",true);
-            navigate("/passwordReset", { state: { showPage: true } });
-          }
-          else{
-             dispatch(actions.setAuthentication(response)); 
-             navigate("/dashboard/default");
-          }
-
-
-          
+          dispatch(actions.setAuthentication(response));
+          navigate("/dashboard");
         }
       })
       .catch((errResponse) => {
         // On failure, reset the button to enable again
         setSnackData({
           show: true,
-          message: errResponse?.response?.data?.message === "User password has expired." ? API_ERROR_MESSAGE.PASSWORD_EXPIRED : errResponse?.response?.data?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+          message:
+            errResponse?.response?.data?.message ===
+            "User password has expired."
+              ? API_ERROR_MESSAGE.PASSWORD_EXPIRED
+              : errResponse?.response?.data?.message ||
+                API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
-
-        // Enable the button again after failure
-        setSubmitting(false); // This will reset isSubmitting in Formik
-      });
+      })
+      .finally(() => setSubmitting(false));
   };
 
   const handleRedirection = (link) => {
@@ -135,7 +123,7 @@ export default function AuthLogin() {
           values,
         }) => (
           <form noValidate onSubmit={handleSubmit}>
-            <Grid container spacing={3}>
+            <Grid container spacing={2}>
               <Grid item xs={12}>
                 <Stack spacing={1}>
                   <InputLabel htmlFor="email-login">
@@ -232,12 +220,17 @@ export default function AuthLogin() {
                 </Grid>
               )}
 
-              <Grid item xs={12}>
+              <Grid
+                item
+                xs={12}
+                sx={{ display: "flex", justifyContent: "center" }}
+              >
                 <AnimateButton>
                   <Button
                     disableElevation
                     disabled={isSubmitting} // Button is disabled if form is submitting
-                    fullWidth
+                    // fullWidth
+                    sx={{ width: "250px" }}
                     size="large"
                     type="submit"
                     variant="contained"
@@ -254,17 +247,22 @@ export default function AuthLogin() {
                 </Divider>
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid
+                item
+                xs={12}
+                sx={{ display: "flex", justifyContent: "center" }}
+              >
                 <Button
                   disableElevation
                   onClick={(e) => handleRedirection("/register")}
-                  fullWidth
+                  // fullWidth
+                  sx={{ width: "250px" }}
                   size="large"
                   type="button" // Change to "button" to avoid form submission
                   variant="outlined"
                   color="primary"
                 >
-                  {LOGIN_PAGE.REQUEST_BUTTON}
+                  {LOGIN_PAGE.SIGNUP_BUTTON}
                 </Button>
               </Grid>
             </Grid>
@@ -273,7 +271,7 @@ export default function AuthLogin() {
       </Formik>
 
       <Snackbar
-      style={{top:"80px"}}
+        style={{ top: "80px" }}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
         open={snackData.show}
         autoHideDuration={3000}

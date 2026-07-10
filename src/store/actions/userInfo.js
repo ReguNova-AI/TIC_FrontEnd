@@ -1,6 +1,6 @@
 import * as actionTypes from './actionTypes';
 
-import { APP_ROLES, USER_ROLES } from 'shared/constants';
+import { APP_ROLES, USER_ROLES } from 'shared/constants.login';
 
 export const userInfoFetchSuccess = (info, permissions) => {
   return {

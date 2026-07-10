@@ -1,283 +1,214 @@
-import React, { useEffect, useState } from "react";
-import {
-  TextField,
-  Button,
-  MenuItem,
-  Select,
-  InputLabel,
-  FormControl,
-  Grid,
-  Box,
-  Chip,
-  Typography,
-} from "@mui/material";
+import React, { useState } from "react";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Divider from "@mui/material/Divider";
+import IconButton from "@mui/material/IconButton";
+import { message } from "antd";
+import CloseIcon from "@mui/icons-material/Close";
 
-import { BUTTON_LABEL, FORM_LABEL } from "shared/constants";
-import { UserApiService } from "services/api/UserAPIService";
-import UserProfileCard from "../ProjectCreation/UserProfileCard";
+const MAX_NAME = 50;
+const MAX_DESC = 250;
 
 const EditProject = ({ data, onHandleClose, editDetails, type }) => {
-  const [changeFlag, setChangeFlag] = useState(false);
-  const [userData, setUserData] = useState([]);
-  const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
-  const selectedIds = [];
-
-  data?.invite_members?.map((user) => {
-    selectedIds.push(user.user_id);
-  });
   const [formData, setFormData] = useState({
-    projectName: data.project_name || "",
-    projectNo: data.project_no || "",
-    projectDesc: data.project_description || "",
-    teamMembers: selectedIds,
-    invite_Users: data.invite_members,
-    invited_user_list : data.invited_user_list,
+    projectName: data?.project_name || "",
+    projectDesc: data?.project_description || "",
   });
-  useEffect(() => {
-    if (type !== "Edit") {
-      fetchUserData();
+
+  const handleInputChange = (field, value) => {
+    const limit = field === "projectName" ? MAX_NAME : MAX_DESC;
+    const label = field === "projectName" ? "Project Name" : "Project Details";
+
+    if (value.length <= limit) {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+    } else {
+      message.warning(`${label} cannot exceed ${limit} characters.`);
     }
-  }, []);
-
-  const fetchUserData = () => {
-    UserApiService.userListing()
-      .then((response) => {
-        if (response && response?.data) {
-          const userEmailToExclude = userdetails?.[0]?.user_email;
-          const filteredUsers = response?.data?.activeUsers?.filter(user => user.user_email !== userEmailToExclude);
-          setUserData(filteredUsers); //
-          // setUserData(response?.data?.activeUsers); // Assuming response.data contains the user list
-        }
-      })
-      .catch((errResponse) => {
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
-      });
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setChangeFlag(true);
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
-
-  const handleSelectChange = (e) => {
-    const { value } = e.target;
-    setFormData({
-      ...formData,
-      teamMembers: value, // Update selected team members
-    });
-  };
-
-  useEffect(()=>{
-    handleMultiple(formData.teamMembers)
-  },[formData.teamMembers])
-
-  const handleMultiple = (selectedIds) => {
-    const invitedId=formData.invited_user_list;
-    setChangeFlag(true);
-    const selectedMembers = selectedIds?.map((userId) => {
-        const member = userData.find((user) => user?.user_id === userId);
-      if (member && !invitedId?.includes(member.user_id)) {
-        invitedId.push(member.user_id);
-      }
-        return member
-          ? {
-              user_id: member?.user_id,
-              user_name: `${member?.user_first_name} ${member?.user_last_name}`,
-              user_email: member?.user_email,
-              user_profile: member?.user_profile,
-            }
-          : null;
-      })
-      .filter(Boolean);
-    setFormData({
-      ...formData,
-      invite_Users: selectedMembers,
-      invited_user_list:invitedId,
-    });
-    return selectedMembers;
-  };
-
-  const handleProfileDelete = (id) => {
-    setFormData({
-      ...formData,
-      teamMembers: formData.teamMembers.filter((memberId) => memberId !== id),
-    });
   };
 
   const handleSubmit = () => {
-    const selectedUserData = handleMultiple(formData.teamMembers);
-    if (changeFlag !== false) {
-      editDetails(formData);
-    }
+    if (!formData.projectName.trim()) return;
+    editDetails({
+      ...data,
+      project_name: formData.projectName,
+      project_description: formData.projectDesc,
+    });
     onHandleClose(true);
   };
 
-  const handleClose = () => {
-    onHandleClose(true);
-  };
+  // Invite members mode — keep existing flow
+  if (type !== "Edit") {
+    return (
+      <Box sx={{ p: 2 }}>
+        <Typography variant="body1" color="text.secondary">
+          Invite members functionality is handled externally.
+        </Typography>
+        <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3, gap: 1 }}>
+          <Button onClick={() => onHandleClose(true)} sx={{ textTransform: "none", color: "#666" }}>
+            Cancel
+          </Button>
+        </Box>
+      </Box>
+    );
+  }
 
   return (
-    <>
-      <Box>
-        <Grid container spacing={2} style={{marginTop:"20px"}}>
-          {/* First row - 3 items */}
-
-          {type === "Edit" ? (
-            <>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label={FORM_LABEL.PROJECT_NAME}
-                  variant="outlined"
-                  fullWidth
-                  name="projectName"
-                  value={formData.projectName}
-                  onChange={handleInputChange}
-                  required
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label={FORM_LABEL.PROJECT_NO}
-                  variant="outlined"
-                  fullWidth
-                  name="projectNo"
-                  value={formData.projectNo}
-                  onChange={handleInputChange}
-                  required
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label={FORM_LABEL.PROJECT_DESC}
-                  variant="outlined"
-                  fullWidth
-                  multiline
-                  rows={4}
-                  name="projectDesc"
-                  value={formData.projectDesc}
-                  onChange={handleInputChange}
-                  required
-                  inputProps={{ maxLength: 200 }}
-                  helperText={`${formData.projectDesc.length}/200`}
-                  FormHelperTextProps={{
-                    sx: {
-                      textAlign: "right",
-                      width: "100%",
-                      position: "absolute",
-                      bottom: "8px",
-                      right: "10px",
-                      color:
-                        formData.projectDesc.length > 180
-                          ? "red"
-                          : "text.secondary",
-                    },
-                  }}
-                  sx={{
-                    position: "relative",
-                  }}
-                />
-              </Grid>
-            </>
-          ) : (
-            <>
-              <Grid item xs={12} sm={8}>
-                <FormControl fullWidth>
-                  <InputLabel id="teamMembers-label">
-                    {FORM_LABEL.INVITE_MEMBERS}
-                  </InputLabel>
-                  <Select
-                    labelId="teamMembers-label"
-                    id="teamMembers"
-                    multiple
-                    value={formData.teamMembers}
-                    onChange={handleSelectChange}
-                    renderValue={(selected) => (
-                      <Box sx={{ display: "flex", flexWrap: "wrap" }}>
-                        {selected?.map((value) => {
-                          const member = userData.find(
-                            (member) => member?.user_id === value
-                          );
-                          return (
-                            <Chip
-                              key={value}
-                              label={member?.user_email}
-                              sx={{ margin: 0.5 }}
-                            />
-                          );
-                        })}
-                      </Box>
-                    )}
-                  >
-                    {userData?.map((member) => (
-                      <MenuItem key={member.user_id} value={member.user_id}>
-                        {member.user_first_name} {member.user_last_name} -{" "}
-                        {member.user_email}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} sm={12}>
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
-                  {formData?.invite_Users?.map((selectedId) => {
-                    const member = userData.find(
-                      (user) => user.user_id === selectedId.user_id
-                    );
-                    return member ? (
-                      <UserProfileCard
-                        key={member.user_id}
-                        id={member.user_id}
-                        name={member.user_first_name}
-                        role={member.user_email}
-                        profile={member.user_profile}
-                        onDelete={handleProfileDelete}
-                      />
-                    ) : null;
-                  })}
-                </Box>
-              </Grid>
-            </>
-          )}
-          <Grid item xs={12} sm={12}>
-            <Button
-              type="submit"
-              variant="contained"
-              onClick={handleSubmit}
-              style={{
-                background: "#003a8c",
-                float: "right",
-                textTransform: "none",
-              }}
-            >
-              {BUTTON_LABEL.UPDATE}
-            </Button>
-            <Button
-              type="submit"
-              variant="outlined"
-              onClick={handleClose}
-              style={{
-                float: "right",
-                marginRight: "10px",
-                textTransform: "none",
-              }}
-            >
-              {BUTTON_LABEL.CLOSE}
-            </Button>
-          </Grid>
-        </Grid>
+    <Box>
+      {/* Modal Header */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          px: 3,
+          py: 2,
+          borderBottom: "1px solid #e8e8e8",
+        }}
+      >
+        <Typography sx={{ fontWeight: 700, fontSize: "17px", color: "#222" }}>
+          Project Details
+        </Typography>
+        <IconButton size="small" onClick={() => onHandleClose(true)} sx={{ color: "#888" }}>
+          <CloseIcon fontSize="small" />
+        </IconButton>
       </Box>
-    </>
+
+      {/* Form Body */}
+      <Box sx={{ px: 3, py: 3, display: "flex", flexDirection: "column", gap: 3 }}>
+
+        {/* Project Name Field */}
+        <Box>
+          <Typography
+            component="label"
+            htmlFor="edit-project-name"
+            sx={{ display: "block", fontWeight: 600, fontSize: "13px", color: "#444", mb: 0.75 }}
+          >
+            Project Name <Box component="span" sx={{ color: "#d32f2f" }}>*</Box>
+          </Typography>
+          <TextField
+            id="edit-project-name"
+            fullWidth
+            size="small"
+            placeholder="Enter project name"
+            value={formData.projectName}
+            onChange={(e) => handleInputChange("projectName", e.target.value)}
+            required
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "4px",
+                fontSize: "14px",
+                "&.Mui-focused fieldset": { borderColor: "#5B0429" },
+              },
+            }}
+          />
+          {/* Project Name character counter */}
+          <Typography
+            variant="caption"
+            sx={{
+              display: "block",
+              textAlign: "right",
+              mt: 0.5,
+              fontSize: "11px",
+              color: formData.projectName.length > MAX_NAME * 0.9 ? "#d32f2f" : "#aaa",
+            }}
+          >
+            {formData.projectName.length}/{MAX_NAME}
+          </Typography>
+        </Box>
+
+        {/* Project Details Field */}
+        <Box>
+          <Typography
+            component="label"
+            htmlFor="edit-project-desc"
+            sx={{ display: "block", fontWeight: 600, fontSize: "13px", color: "#444", mb: 0.75 }}
+          >
+            Project Details <Box component="span" sx={{ color: "#d32f2f" }}>*</Box>
+          </Typography>
+          <Box sx={{ position: "relative" }}>
+            <TextField
+              id="edit-project-desc"
+              fullWidth
+              multiline
+              rows={5}
+              size="small"
+              placeholder="Enter project details..."
+              value={formData.projectDesc}
+              onChange={(e) => handleInputChange("projectDesc", e.target.value)}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "4px",
+                  fontSize: "14px",
+                  alignItems: "flex-start",
+                  "&.Mui-focused fieldset": { borderColor: "#5B0429" },
+                },
+              }}
+            />
+            {/* Character counter */}
+            <Typography
+              variant="caption"
+              sx={{
+                display: "block",
+                textAlign: "right",
+                mt: 0.5,
+                fontSize: "11px",
+                color: formData.projectDesc.length > MAX_DESC * 0.9 ? "#d32f2f" : "#aaa",
+                pointerEvents: "none",
+              }}
+            >
+              {formData.projectDesc.length}/{MAX_DESC}
+            </Typography>
+          </Box>
+        </Box>
+      </Box>
+
+      {/* Footer */}
+      <Divider />
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "flex-end",
+          gap: 1.5,
+          px: 3,
+          py: 2,
+        }}
+      >
+        <Button
+          onClick={() => onHandleClose(true)}
+          sx={{
+            textTransform: "none",
+            color: "#666",
+            fontWeight: 500,
+            fontSize: "14px",
+            borderRadius: "20px",
+            px: 2,
+            "&:hover": { bgcolor: "#f5f5f5" },
+          }}
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="contained"
+          onClick={handleSubmit}
+          disabled={!formData.projectName.trim()}
+          sx={{
+            textTransform: "none",
+            fontWeight: 600,
+            fontSize: "14px",
+            borderRadius: "20px",
+            px: 3,
+            bgcolor: "#5B0429",
+            boxShadow: "none",
+            "&:hover": { bgcolor: "#4a0322", boxShadow: "none" },
+            "&.Mui-disabled": { bgcolor: "#e0e0e0", color: "#aaa" },
+          }}
+        >
+          Save
+        </Button>
+      </Box>
+    </Box>
   );
 };
 

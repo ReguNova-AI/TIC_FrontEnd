@@ -1,13 +1,14 @@
+import { lazy, Suspense, useEffect, useState } from "react";
 // material-ui
-import Avatar from "@mui/material/Avatar";
-import AvatarGroup from "@mui/material/AvatarGroup";
-import Button from "@mui/material/Button";
+// import Avatar from "@mui/material/Avatar";
+// import AvatarGroup from "@mui/material/AvatarGroup";
+// import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
-import List from "@mui/material/List";
-import ListItemAvatar from "@mui/material/ListItemAvatar";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemSecondaryAction from "@mui/material/ListItemSecondaryAction";
-import ListItemText from "@mui/material/ListItemText";
+// import List from "@mui/material/List";
+// import ListItemAvatar from "@mui/material/ListItemAvatar";
+// import ListItemButton from "@mui/material/ListItemButton";
+// import ListItemSecondaryAction from "@mui/material/ListItemSecondaryAction";
+// import ListItemText from "@mui/material/ListItemText";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
@@ -15,33 +16,28 @@ import { useDispatch } from "react-redux";
 // project import
 import MainCard from "components/MainCard";
 import AnalyticEcommerce from "components/cards/statistics/AnalyticEcommerce";
-import CountView from "components/cards/statistics/CountView";
+import DashboardStats from "./DashboardStats";
 
-import MonthlyBarChart from "./MonthlyBarChart";
-import ReportAreaChart from "./ReportAreaChart";
-import UniqueVisitorCard from "./UniqueVisitorCard";
-import SaleReportCard from "./SaleReportCard";
+// import ReportAreaChart from "./ReportAreaChart";
+// import UniqueVisitorCard from "./UniqueVisitorCard";
+// import SaleReportCard from "./SaleReportCard";
 import ProjectTable from "./ProjectTable";
-import ChatBotView from "../../components/chatbot/ChatbotView";
+// import ChatBotView from "../../components/chatbot/ChatbotView";
 
-import SessionService from "../../services/SessionService";
-import { API_ERROR_MESSAGE, STORAGE_KEYS } from "../../shared/constants";
-import BarChart from "./BarChart";
+import { API_ERROR_MESSAGE } from "../../shared/constants";
+const BarChart = lazy(() => import("./BarChart"));
+const PieChart = lazy(() => import("./PieChart"));
+const UserWeeklyBarChart = lazy(() => import("./UserWeeklyBarChart"));
 import orgIcon from "../../assets/images/icons/orgIcon4.svg";
 import UserIcon from "../../assets/images/icons/userIcon4.svg";
 import UserIcon2 from "../../assets/images/icons/userIcon6.svg";
 
 import { ProjectApiService } from "services/api/ProjectAPIService";
 import content from "../../components/cards/statistics/content";
-import { useEffect, useState } from "react";
-import UserWeeklyBarChart from "./UserWeeklyBarChart";
 import { DashboardApiService } from "services/api/DashboardAPIService";
-import PieChart from "./PieChart";
 import { UserApiService } from "services/api/UserAPIService";
-import * as actions from "../../store/actions";
-import { useSelector } from 'react-redux';
+// import { useSelector } from 'react-redux';
 import { AdminConfigAPIService } from "services/api/AdminConfigAPIService";
-
 
 // import ChatBotView from 'components/chatbot/ChatbotView';
 
@@ -76,31 +72,27 @@ export default function DashboardDefault() {
   const [orgCount, setOrgCount] = useState("");
   const [userCount, setUserCount] = useState("");
   const [inactiveUserCount, setInactiveUserCount] = useState("");
-  const [chartData,setChartData] = useState([]);
-  const [pieChartData,setPieChartData]= useState([]);
+  const [chartData, setChartData] = useState([]);
+  const [pieChartData, setPieChartData] = useState([]);
 
   useEffect(() => {
     fetchData();
-    if(userRole === "Super Admin")
-    {
+    if (userRole === "Super Admin") {
       fetchDataForCharts();
     }
   }, []);
 
   const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
-    const id = userdetails?.[0]?.user_id;
+  const id = userdetails?.[0]?.user_id;
 
-    const fetchDataForCharts = ()=>{
+  const fetchDataForCharts = () => {
     DashboardApiService.topprojectIndustryVise()
       .then((response) => {
         setChartData(response?.data?.industryCount);
-        setPieChartData(response?.data?.orgCount)
-       
+        setPieChartData(response?.data?.orgCount);
       })
-      .catch((errResponse) => {
-       
-      });
-    }
+      .catch((errResponse) => {});
+  };
 
   const fetchData = () => {
     ProjectApiService.projectCounts(userId)
@@ -111,30 +103,29 @@ export default function DashboardDefault() {
         setInactiveUserCount(response?.data?.inactiveUserCount?.[0]?.count);
       })
       .catch((errResponse) => {
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
         setUpdatedCardsValue([...content.cards1]);
       });
 
-      UserApiService.roleDetails()
+    UserApiService.roleDetails()
       .then((response) => {
-        sessionStorage.setItem('roleDetails',JSON.stringify(response?.data?.details))
+        sessionStorage.setItem(
+          "roleDetails",
+          JSON.stringify(response?.data?.details),
+        );
       })
       .catch((errResponse) => {
-       console.log('errResponse',errResponse);
+        console.log("errResponse", errResponse);
       });
 
-      AdminConfigAPIService.permissionListing()
+    AdminConfigAPIService.permissionListing()
       .then((response) => {
-        sessionStorage.setItem('permissionDetails',JSON.stringify(response?.data?.details))
+        sessionStorage.setItem(
+          "permissionDetails",
+          JSON.stringify(response?.data?.details),
+        );
       })
       .catch((errResponse) => {
-       console.log('errResponse',errResponse);
+        console.log("errResponse", errResponse);
       });
   };
   // const roleDetails = useSelector(state => console.log("state",state));
@@ -144,10 +135,7 @@ export default function DashboardDefault() {
     <Grid container rowSpacing={4.5} columnSpacing={2.75}>
       {/* row 1 */}
       <Grid item xs={12} sx={{ mb: -2.25 }}>
-        <Typography variant="h5">Dashboard</Typography>
-      </Grid>
-      <Grid item xs={12} sx={{ mb: -2.25 }}>
-        <CountView data={countData} />
+        <DashboardStats data={countData} />
       </Grid>
 
       {/* <AnalyticEcommerce title="Total Page Views" count="4,42,236" percentage={59.3} extra="35,000" /> */}
@@ -182,7 +170,10 @@ export default function DashboardDefault() {
               <Typography variant="h5" style={{ padding: "25px 0px 0px 24px" }}>
                 Industry wise project counts
               </Typography>
-              <BarChart data={chartData}/>
+              {/* echarts loads here only for Super Admin, deferred via lazy() */}
+              <Suspense fallback={<Box sx={{ height: 400 }} />}>
+                <BarChart data={chartData} />
+              </Suspense>
             </Box>
           </Grid>
           <Grid item xs={12} md={6} lg={3}>
@@ -193,7 +184,7 @@ export default function DashboardDefault() {
               iconRender={true}
               icon={orgIcon}
             />
-            <br />
+            {/* <br />
             <AnalyticEcommerce
               title="Total Active Users"
               count={userCount || 0}
@@ -208,12 +199,10 @@ export default function DashboardDefault() {
               graphic={false}
               iconRender={true}
               icon={UserIcon2}
-            />
-
-
+            /> */}
           </Grid>
-          <Grid item xs={12} md={8} lg={8} >
-          <Box
+          <Grid item xs={12} md={8} lg={8}>
+            <Box
               sx={{
                 bgcolor: "white",
                 border: "1px solid #eeeeee",
@@ -224,9 +213,10 @@ export default function DashboardDefault() {
               <Typography variant="h5" style={{ padding: "25px 0px 0px 24px" }}>
                 Organisation wise project counts
               </Typography>
-              <PieChart data={pieChartData} />
+              <Suspense fallback={<Box sx={{ height: 550 }} />}>
+                <PieChart data={pieChartData} />
+              </Suspense>
             </Box>
-          
           </Grid>
         </>
       ) : (
@@ -242,60 +232,8 @@ export default function DashboardDefault() {
         <UniqueVisitorCard />
       </Grid> */}
 
-          <Grid item xs={12} md={7} lg={8}>
-            {/* <Grid container alignItems="center" justifyContent="space-between">
-              <Grid item>
-                <Typography variant="h5">Recent Projects</Typography>
-              </Grid>
-              <Grid item />
-            </Grid> */}
-            <MainCard
-              
-              content={false}
-              style={{ boxShadow: "6px 12px 20px #e4e4e4", minHeight: "428px" }}
-            >
-              <ProjectTable />
-            </MainCard>
-          </Grid>
-          <Grid item xs={12} md={5} lg={4}>
-            {userRole === "Org Super Admin" || userRole === "Admin" ? (
-              <>
-              <AnalyticEcommerce
-                title="Total Active Users"
-                count={userCount || 0}
-                graphic={false}
-                iconRender={true}
-                icon={UserIcon}
-              />
-              <br />
-            <AnalyticEcommerce
-              title="Total Inactive Users"
-              count={inactiveUserCount || 0}
-              graphic={false}
-              iconRender={true}
-              icon={UserIcon2}
-            />
-            </>
-            ) : (
-              <>
-                
-                <MainCard
-                 
-                  content={false}
-                  style={{ boxShadow: "6px 12px 20px #e4e4e4" }}
-                >
-                  <Box sx={{ p: 3, pb: 0 }}>
-                    <Stack spacing={2}>
-                      <Typography variant="h6" color="text.secondary">
-                        Last 10 days Statistics
-                      </Typography>
-                      {/* <Typography variant="h3">$7,650</Typography> */}
-                    </Stack>
-                  </Box>
-                  <UserWeeklyBarChart />
-                </MainCard>
-              </>
-            )}
+          <Grid item xs={12} md={12} lg={12}>
+            <ProjectTable onDataChange={fetchData} countData={countData} />
           </Grid>
           {/* <Grid item xs={12} md={8} lg={8}>
           <MainCard

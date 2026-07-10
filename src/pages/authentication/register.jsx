@@ -7,7 +7,7 @@ import Typography from "@mui/material/Typography";
 
 // project import
 import AuthWrapper from "./AuthWrapper";
-import AuthRegister from "./auth-forms/AuthRegister";
+import AuthRegisterDirect from "./auth-forms/AuthRegisterDirect";
 
 // ================================|| REGISTER ||================================ //
 
@@ -35,7 +35,7 @@ export default function Register() {
           </Stack>
         </Grid>
         <Grid item xs={12}>
-          <AuthRegister />
+          <AuthRegisterDirect />
         </Grid>
       </Grid>
     </AuthWrapper>

@@ -1,15 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { Modal, Select, message, Progress,Popconfirm } from "antd"; // Import Modal, Select, and Progress from Ant Design
-import {
-  FileImageOutlined,
-  FilePdfOutlined,
-  FileOutlined,
-  FileTextOutlined,
-  DeleteFilled,
-  FileExcelOutlined,
-  CloseCircleOutlined,
-} from "@ant-design/icons";
+import FileImageOutlined from "@ant-design/icons/FileImageOutlined";
+import FilePdfOutlined from "@ant-design/icons/FilePdfOutlined";
+import FileOutlined from "@ant-design/icons/FileOutlined";
+import FileTextOutlined from "@ant-design/icons/FileTextOutlined";
+import DeleteFilled from "@ant-design/icons/DeleteFilled";
+import FileExcelOutlined from "@ant-design/icons/FileExcelOutlined";
+import CloseCircleOutlined from "@ant-design/icons/CloseCircleOutlined";
 import UploadIcon from "../../assets/images/icons/upload.svg";
 import {
   API_ERROR_MESSAGE,
@@ -20,7 +18,7 @@ import {
 import { FileUploadApiService } from "services/api/FileUploadAPIService";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
-import { Tooltip } from "@mui/material";
+import Tooltip from "@mui/material/Tooltip";
 
 const { Option } = Select;
 

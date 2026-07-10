@@ -17,14 +17,13 @@ const _resetPassword = (payload) => {
 };
 const _logout = (payload) => {
   // console.log("payload",payload)
-  return BaseApiService.post(`/api/v1/logout`,null,payload);
+  return BaseApiService.post(`/api/v1/logout`, null, payload);
 };
 
 export const AuthApiService = {
   login: _login,
   logout: _logout,
-  forgotPassword:_forgotPassword,
+  forgotPassword: _forgotPassword,
   verifyOtp: _verifyOtp,
-  resetPassword:_resetPassword,
-
+  resetPassword: _resetPassword,
 };

@@ -17,7 +17,7 @@ import { Formik } from "formik";
 // Project imports
 import AnimateButton from "components/@extended/AnimateButton";
 import { AuthApiService } from "services/api/AuthApiService";
-import { API_ERROR_MESSAGE, API_SUCCESS_MESSAGE } from "shared/constants";
+import { API_ERROR_MESSAGE, API_SUCCESS_MESSAGE } from "shared/constants.login";
 
 // ============================|| OTP - VALIDATION ||============================ //
 

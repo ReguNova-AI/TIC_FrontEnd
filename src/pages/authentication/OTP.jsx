@@ -9,7 +9,7 @@ import Typography from "@mui/material/Typography";
 // project import
 import AuthWrapper from "./AuthWrapper";
 import AuthOTP from "./auth-forms/AuthOTP";
-import { LOGIN_PAGE } from "shared/constants";
+import { LOGIN_PAGE } from "shared/constants.login";
 
 // ================================|| OTP ||================================ //
 

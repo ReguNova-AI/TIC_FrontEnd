@@ -1,6 +1,6 @@
-import useSWR, { mutate } from 'swr';
-import { useMemo } from 'react';
+import { useState, useEffect } from 'react';
 
+// ─── Module-level state (single source of truth, no SWR needed) ───────────────
 const initialState = {
   openedItem: 'dashboard',
   openedComponent: 'buttons',
@@ -9,50 +9,39 @@ const initialState = {
   isComponentDrawerOpened: true
 };
 
+let menuState = { ...initialState };
+const listeners = new Set();
+
+function notifyListeners() {
+  listeners.forEach((fn) => fn(menuState));
+}
+
+// ─── Public API (same surface as before — no call-site changes needed) ─────────
 export const endpoints = {
   key: 'api/menu',
   master: 'master',
-  dashboard: '/dashboard' // server URL
+  dashboard: '/dashboard'
 };
 
 export function useGetMenuMaster() {
-  const { data, isLoading } = useSWR(endpoints.key + endpoints.master, () => initialState, {
-    revalidateIfStale: false,
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false
-  });
+  const [state, setState] = useState(menuState);
 
-  const memoizedValue = useMemo(
-    () => ({
-      menuMaster: data,
-      menuMasterLoading: isLoading
-    }),
-    [data, isLoading]
-  );
+  useEffect(() => {
+    // Sync in case state changed between render and effect
+    setState(menuState);
+    listeners.add(setState);
+    return () => listeners.delete(setState);
+  }, []);
 
-  return memoizedValue;
+  return { menuMaster: state, menuMasterLoading: false };
 }
 
 export function handlerDrawerOpen(isDashboardDrawerOpened) {
-  // to update local state based on key
-
-  mutate(
-    endpoints.key + endpoints.master,
-    (currentMenuMaster) => {
-      return { ...currentMenuMaster, isDashboardDrawerOpened };
-    },
-    false
-  );
+  menuState = { ...menuState, isDashboardDrawerOpened };
+  notifyListeners();
 }
 
 export function handlerActiveItem(openedItem) {
-  // to update local state based on key
-
-  mutate(
-    endpoints.key + endpoints.master,
-    (currentMenuMaster) => {
-      return { ...currentMenuMaster, openedItem };
-    },
-    false
-  );
+  menuState = { ...menuState, openedItem };
+  notifyListeners();
 }

@@ -35,6 +35,19 @@ export default function AuthRegister() {
             .max(255)
             .required("Email is required"),
         })}
+         onSubmit={async (values, { setSubmitting, setErrors }) => {
+          try {
+            console.log(values);
+
+            // simulate API call
+            // await new Promise((resolve) => setTimeout(resolve, 1000));
+
+            setSubmitting(false);
+          } catch (error) {
+            setErrors({ submit: error.message });
+            setSubmitting(false);
+          }
+        }}
       >
         {({
           errors,
@@ -165,12 +178,13 @@ export default function AuthRegister() {
                   <FormHelperText error>{errors.submit}</FormHelperText>
                 </Grid>
               )}
-              <Grid item xs={12}>
+              <Grid item xs={12} sx={{display:"flex", justifyContent:"center"}}>
                 <AnimateButton>
                   <Button
                     disableElevation
                     disabled={isSubmitting}
-                    fullWidth
+                    sx={{width:"250px"}}
+                    // fullWidth
                     size="large"
                     type="submit"
                     variant="contained"

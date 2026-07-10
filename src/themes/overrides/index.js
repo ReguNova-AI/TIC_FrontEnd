@@ -1,5 +1,5 @@
 // third-party
-import { merge } from 'lodash';
+import merge  from 'lodash/merge';
 
 // project import
 import Badge from './Badge';
@@ -17,6 +17,7 @@ import Tab from './Tab';
 import TableCell from './TableCell';
 import Tabs from './Tabs';
 import Typography from './Typography';
+import ListItemButton from './ListItemButton';
 
 // ==============================|| OVERRIDES - MAIN ||============================== //
 
@@ -36,6 +37,7 @@ export default function ComponentsOverrides(theme) {
     Tab(theme),
     TableCell(theme),
     Tabs(),
-    Typography()
+    Typography(),
+    ListItemButton(theme)
   );
 }

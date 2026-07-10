@@ -1,6 +1,13 @@
-import React, { useEffect } from 'react';
-import { Table, TableHead, TableBody, TableRow, TableCell, Typography, Box } from '@mui/material';
-import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import React from 'react';
+import Table from '@mui/material/Table';
+import TableHead from '@mui/material/TableHead';
+import TableBody from '@mui/material/TableBody';
+import TableRow from '@mui/material/TableRow';
+import TableCell from '@mui/material/TableCell';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import CheckCircleOutlined from "@ant-design/icons/CheckCircleOutlined";
+import CloseCircleOutlined from "@ant-design/icons/CloseCircleOutlined";
 
 // const complianceData = [];
 
@@ -126,9 +133,9 @@ const AssessmentView = () => {
       <Table sx={{ minWidth: 650 }}>
         <TableHead>
           <TableRow>
-            <TableCell><strong>Requirements</strong></TableCell>
-            <TableCell align="center"><strong>Fulfilled or Not</strong></TableCell>
-            <TableCell><strong>Explanation</strong></TableCell>
+            <TableCell sx={{ textTransform: 'none', fontWeight: 600, fontSize: '14px' }}><strong>Requirements</strong></TableCell>
+            <TableCell align="center" sx={{ textTransform: 'none', fontWeight: 600, fontSize: '14px' }}><strong>Fulfilled or Not</strong></TableCell>
+            <TableCell sx={{ textTransform: 'none', fontWeight: 600, fontSize: '14px' }}><strong>Explanation</strong></TableCell>
           </TableRow>
         </TableHead>
         <TableBody>

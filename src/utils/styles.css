@@ -6,4 +6,18 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+
+ .picker-dialog {
+  position: fixed !important;
+  top: 50% !important; 
+  left: 50% !important; 
+  transform: translate(-50%, -50%) ;
+  width: 70vw !important;   
+  height: 70vh !important; 
+  z-index: 999999 !important; 
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3) !important;
+}
+
   

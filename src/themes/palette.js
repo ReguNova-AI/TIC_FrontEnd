@@ -26,7 +26,7 @@ export default function Palette(mode, presetColor) {
     '#000000'
   ];
   let greyAscent = ['#fafafa', '#bfbfbf', '#434343', '#1f1f1f'];
-  let greyConstant = ['#fafafb', '#e6ebf1'];
+  let greyConstant = ['#ECF0F6', '#e6ebf1'];
 
   colors.grey = [...greyPrimary, ...greyAscent, ...greyConstant];
 

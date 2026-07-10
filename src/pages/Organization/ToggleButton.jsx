@@ -1,7 +1,8 @@
 import * as React from 'react';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import { UnorderedListOutlined, AppstoreFilled } from '@ant-design/icons';
+import UnorderedListOutlined from "@ant-design/icons/UnorderedListOutlined";
+import AppstoreFilled from "@ant-design/icons/AppstoreFilled";
 
 export default function ToggleButtons({ onViewModeChange,viewSelected }) {
   const [alignment, setAlignment] = React.useState(viewSelected || 'list'); // Default view mode is 'list'

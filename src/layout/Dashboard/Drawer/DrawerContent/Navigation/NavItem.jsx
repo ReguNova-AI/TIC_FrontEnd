@@ -25,7 +25,7 @@ import users2 from "../../../../../assets/images/icons/users2.svg";
 import setting from "../../../../../assets/images/icons/setting.svg";
 
 import dashboard2 from "../../../../../assets/images/icons/dashboard2.svg";
-import { Tooltip } from "@mui/material";
+import Tooltip from "@mui/material/Tooltip";
 
 export default function NavItem({ item, level }) {
   const theme = useTheme();
@@ -47,40 +47,24 @@ export default function NavItem({ item, level }) {
     listItemProps = { component: "a", href: item.url, target: itemTarget };
   }
 
-  const icons = {
-    dashboard: dashboard2,
-    myProject: projects,
-    certificateManager: certificate3,
-    downloadReports: report,
-    users: users2,
-    organization: organization,
-    configuration: setting, // Default icon
-  };
+  const { pathname } = useLocation();
+  const isSelected = !!matchPath({ path: item.url, end: false }, pathname) || openItem === item.id;
 
   const Icon = item.icon;
-  // const itemIcon = item.icon ? <Icon style={{ fontSize: drawerOpen ? '1rem' : '1.25rem' }} /> : false;
-  const itemIcon = item.id ? (
-    <img
-      src={icons[item.id] || dashboardIcon} // fallback icon
-      width={drawerOpen ? "22px" : "27px"}
-      alt={`${item.title} icon`} // Add alt for accessibility
+  const itemIcon = Icon ? (
+    <Icon 
+      style={{ 
+        fontSize: drawerOpen ? '22px' : '26px',
+        color: isSelected ? '#5B0428' : '#888888'
+      }} 
     />
-  ) : (
-    false
-  );
-  const { pathname } = useLocation();
-  const isSelected =
-    !!matchPath({ path: item.url, end: false }, pathname) ||
-    openItem === item.id;
+  ) : false;
 
   // active menu item on page load
   useEffect(() => {
     if (pathname === item.url) handlerActiveItem(item.id);
     // eslint-disable-next-line
   }, [pathname]);
-
-  const textColor = "text.primary";
-  const iconSelectedColor = "#2ba9bc";
 
   return (
     <ListItemButton
@@ -90,43 +74,23 @@ export default function NavItem({ item, level }) {
       selected={isSelected}
       sx={{
         zIndex: 1201,
-        pl: drawerOpen ? `${level * 28}px` : 1.5,
-        py: !drawerOpen && level === 1 ? 1.25 : 1,
-        mb:drawerOpen ? 1 : 0,
+        pl: drawerOpen ? `${level * 24}px` : 1.5,
+        py: 1.25,
         justifyContent : drawerOpen ? "left" : "center",
-        ...(drawerOpen && {
-          "&:hover": {
-            bgcolor: "primary.lighter",
-          },
-          "&.Mui-selected": {
-            bgcolor: "primary.lighter",
-            borderRight: `2px solid ${iconSelectedColor}`,
-            
-            color: iconSelectedColor,
-            "&:hover": {
-              color: iconSelectedColor,
-              bgcolor: "primary.lighter",
-            },
-          },
-        }),
-        ...(!drawerOpen && {
-          "&:hover": {
-            bgcolor: "transparent",
-          },
-          "&.Mui-selected": {
-            "&:hover": {
-              bgcolor: "transparent",
-            },
-            bgcolor: "transparent",
-          },
-        }),
+        borderBottom: "none",
+        textTransform: "none",
+        mb: 0.5,
+        color: isSelected ? "#5B0428" : "#888888",
+        bgcolor: 'transparent',
+        "&:hover": {
+          bgcolor: 'transparent'
+        }
       }}
     >
       {itemIcon && (
         <ListItemIcon
           sx={{
             minWidth: 28,
-            color: isSelected ? iconSelectedColor : textColor,
             justifyContent : drawerOpen ? "left" : "center",
             ...(!drawerOpen && {
               borderRadius: 1.5,
@@ -134,17 +98,7 @@ export default function NavItem({ item, level }) {
               height: 36,
               alignItems: "center",
               justifyContent: "center",
-              "&:hover": {
-                bgcolor: "secondary.lighter",
-              },
             }),
-            ...(!drawerOpen &&
-              isSelected && {
-                bgcolor: "primary.lighter",
-                "&:hover": {
-                  bgcolor: "primary.lighter",
-                },
-              }),
           }}
         >
           {!drawerOpen ? <Tooltip title={item.title}> {itemIcon}</Tooltip> :itemIcon}
@@ -155,9 +109,13 @@ export default function NavItem({ item, level }) {
         <ListItemText
           primary={
             <Typography
-              variant="h6"
-              sx={{ ml:1, color: isSelected ? iconSelectedColor : textColor , fontSize:"0.875rem",fontWeight:isSelected ?500 : 400}}
-              
+              sx={{ 
+                ml: 1.5, 
+                fontSize: "15px",
+                fontWeight: isSelected ? 600 : 500,
+                color: isSelected ? "#5B0428" : "#888888",
+                letterSpacing: "0.2px"
+              }}
             >
               {item.title} 
             </Typography>

@@ -1,21 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { animated } from "react-spring";
-import styled from "styled-components";
+import { useEffect, useState } from "react";
 import CardGrid from "./CardGrid";
 import content from "./content";
-import { ProjectApiService } from "services/api/ProjectAPIService";
-import { API_ERROR_MESSAGE, API_SUCCESS_MESSAGE } from "shared/constants";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
-
-const StyledPage = styled(animated.main)`
-  .section__header {
-    display: flex;
-    width: 100%;
-    justify-content: space-between;
-    align-items: center;
-  }
-`;
 
 const CountView = ({data}) => {
   
@@ -55,8 +42,8 @@ const CountView = ({data}) => {
 
 
   return (
-    <StyledPage className="page">
-      <div className="page__scrollable-content" onScroll={(e) => handleScroll(e)}>
+    <main className="page">
+      <div className="page__scrollable-content">
         <div className="page__body">
           <section className="padding-h40">
             <CardGrid
@@ -70,16 +57,15 @@ const CountView = ({data}) => {
         </div>
       </div>
 
-      {/* Snackbar for showing error messages */}
       <Snackbar
-      style={{top:"80px"}}
+        style={{ top: "80px" }}
         open={snackData.show}
         autoHideDuration={6000}
         onClose={() => setSnackData({ ...snackData, show: false })}
       >
         <Alert severity={snackData.type}>{snackData.message}</Alert>
       </Snackbar>
-    </StyledPage>
+    </main>
   );
 };
 

@@ -1,16 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Space, Table, ConfigProvider, Empty, Button, Spin, Modal } from "antd";
-import { Chip } from "@mui/material";
-import FormControl from "@mui/material/FormControl";
-import OutlinedInput from "@mui/material/OutlinedInput";
-import InputLabel from "@mui/material/InputLabel";
-import InputAdornment from "@mui/material/InputAdornment";
+import Chip  from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
-import {
-  SearchOutlined,
-  DownloadOutlined,
-  FileFilled,
-} from "@ant-design/icons";
+import DownloadOutlined from "@ant-design/icons/DownloadOutlined";
+// import FileFilled from "@ant-design/icons/FileFilled";
 import { useLocation, useNavigate } from "react-router-dom";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
@@ -18,7 +11,6 @@ import {
   API_ERROR_MESSAGE,
   LISTING_PAGE,
   API_SUCCESS_MESSAGE,
-  STATUS,
   BUTTON_LABEL,
   GENERIC_DATA_LABEL,
   FORM_LABEL,
@@ -29,6 +21,7 @@ import CreateCertificate from "./CreateCertificate";
 import { FileUploadApiService } from "services/api/FileUploadAPIService";
 import certificateIcon from "../../assets/images/icons/certificateIcon.svg";
 import addCertificateIcon from "../../assets/images/icons/addCertificate.svg";
+import SearchInput from "components/form/SearchInput";
 
 
 const Listing = () => {
@@ -138,12 +131,12 @@ const finalStatus = expiryDateString < todayString ? 'Expired' : certificate_sta
     CertificateApiService.certificateListing(userid)
       .then((response) => {
         // On success, you can add any additional logic here
-        setSnackData({
+        /* setSnackData({
           show: true,
           message:
             response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
           type: "success",
-        });
+        }); */
 
         const newData = response?.data?.details.map((certificate, index) => {
           return createData(
@@ -462,10 +455,10 @@ FileUploadApiService.fileget(filepayload).then((response) => {
               type="primary"
               onClick={() => handleModalOpen()}
               style={{
-                background: "#2ba9bc",
                 display: "flex",
                 alignItems: "center",
                 borderRadius: "20px",
+                boxShadow:"none"
               }}
             >
               {/* <FileFilled style={{ marginRight: 4 }} /> */}
@@ -475,21 +468,12 @@ FileUploadApiService.fileget(filepayload).then((response) => {
 
             {/* Search Input and Popover Filter */}
             <Space>
-              <FormControl fullWidth>
-                <InputLabel htmlFor="outlined-adornment-search">
-                  {FORM_LABEL.SEARCH}
-                </InputLabel>
-                <OutlinedInput
-                  id="outlined-adornment-search"
-                  startAdornment={
-                    <InputAdornment position="start">
-                      <SearchOutlined />
-                    </InputAdornment>
-                  }
-                  label={FORM_LABEL.SEARCH}
-                  onChange={(e) => handleSearch(e.target.value)}
-                />
-              </FormControl>
+              <SearchInput
+                value={searchText}
+                onChange={(e) => handleSearch(e.target.value)}
+                placeholder="Search"
+                width={300}
+              />
               {/* <Button>
                 <DownloadOutlined />
               </Button> */}

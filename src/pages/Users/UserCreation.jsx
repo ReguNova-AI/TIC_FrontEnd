@@ -1,18 +1,18 @@
 import * as React from "react";
-import {
-  TextField,
-  Button,
-  Grid,
-  Box,
-  Typography,
-  Stepper,
-  Step,
-  StepLabel,
-  FormControl,
-  Select,
-  MenuItem,
-  InputLabel,
-} from "@mui/material";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import Grid from "@mui/material/Grid";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Stepper from "@mui/material/Stepper";
+import Step from "@mui/material/Step";
+import StepLabel from "@mui/material/StepLabel";
+import FormControl from "@mui/material/FormControl";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import InputLabel from "@mui/material/InputLabel";
+import Checkbox from "@mui/material/Checkbox";
+import CircularProgress from "@mui/material/CircularProgress";
 import AvatarUpload from "./AvatarUpload";
 import {
   API_ERROR_MESSAGE,
@@ -34,8 +34,7 @@ const steps = [
   STEPPER_LABEL.ORG_DETAILS,
 ];
 
-export default function UserCreation({ onHandleClose,type,selecteddata  }) {
-  // console.log("selecteddata",selecteddata)
+export default function UserCreation({ onHandleClose, type, selecteddata }) {
   const [activeStep, setActiveStep] = useState(0);
   const [skipped, setSkipped] = useState(new Set());
   const [orgData, setOrgData] = useState([]);
@@ -44,10 +43,11 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
   const [sectorData, setSectorData] = useState([]);
   const [selectedOrg, setSelectedOrg] = useState("");
   const [filteredIndustries, setFilteredIndustries] = useState([]);
-  const [selectedIndustry, setSelectedIndustry] = useState("");
+  const [selectedIndustry, setSelectedIndustry] = useState([]);
   const [filteredSectors, setFilteredSectors] = useState([]); // Holds sectors filtered by organization
   const [uploadedFileData, setUpoadedFileData] = useState("");
   const [mandatoryError, setMandatoryError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [snackData, setSnackData] = useState({
     show: false,
@@ -59,7 +59,7 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
   // Updated formData structure to match the desired format
   const [formData, setFormData] = React.useState({
     role_id: "",
-    role_name:"",
+    role_name: "",
     user_first_name: "",
     user_last_name: "",
     user_profile: "", // URL for avatar upload
@@ -75,9 +75,11 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
     sector_name: "Nil",
     org_id: "",
     org_name: "",
-    industry_id: "",
-    industry_name: "",
+    industry_id: [],
+    industry_name: [],
     created_by: userdetails?.[0]?.user_id,
+    industries: [],
+    industry_names: [],
   });
 
   const [errorValue, setErrorValue] = React.useState({
@@ -85,19 +87,25 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
     phoneError: "",
   });
 
-  
+  // Whether to send an email notification to the newly created user. Default: true
+  const [sendEmail, setSendEmail] = React.useState(true);
 
   const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
   const phoneRegex = /^[0-9]{10}$/; // For a 10-digit phone number (adjust as needed)
 
   const isStepOptional = (step) => step === 1;
   const isStepSkipped = (step) => skipped.has(step);
-  
+
   const handleNext = () => {
     if (activeStep === 0 && !validateStep()) {
       return; // Stop if validation fails
     }
-    if(errorValue.emailError !== "" && errorValue.emailError !== NULL && errorValue.phoneError !== "" && errorValue.phoneError !== NULL){
+    if (
+      errorValue.emailError !== "" &&
+      errorValue.emailError !== null &&
+      errorValue.phoneError !== "" &&
+      errorValue.phoneError !== null
+    ) {
       return;
     }
     let newSkipped = skipped;
@@ -127,11 +135,11 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
     });
   };
 
-  const setValuetoNull = ()=>{
+  const setValuetoNull = () => {
     setFormData({
       ...formData,
       role_id: null,
-      role_name:"",
+      role_name: "",
       user_first_name: "",
       user_last_name: "",
       user_profile: "", // URL for avatar upload
@@ -151,131 +159,151 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
       industry_name: "",
       created_by: userdetails?.[0]?.user_id,
     });
-  }
+    setSelectedOrg("");
+    setSelectedIndustry([]);
+  };
 
-  const handleSubmit = () => {
-    if (!validateStep("final")) {
-      return; // Stop if validation fails
-    }
+  const handleSubmit = async () => {
+    if (isSubmitting) return;
+    try {
+      if (!validateStep("final")) {
+        return; // Stop if validation fails
+      }
+      setIsSubmitting(true)
 
-    // let filepayload = { documents: [uploadedFileData], type: "jpg" };
-    // FileUploadApiService.fileUpload(filepayload)
-    //   .then((response) => {
-    //     setSnackData({
-    //       show: true,
-    //       message: response?.message || API_SUCCESS_MESSAGE.USER_CREATED,
-    //       type: "success",
-    //     });
-    //     const url = response?.data?.details?.[0];
+      // let filepayload = { documents: [uploadedFileData], type: "jpg" };
+      // FileUploadApiService.fileUpload(filepayload)
+      //   .then((response) => {
+      //     setSnackData({
+      //       show: true,
+      //       message: response?.message || API_SUCCESS_MESSAGE.USER_CREATED,
+      //       type: "success",
+      //     });
+      //     const url = response?.data?.details?.[0];
 
-    //     setFormData({
-    //       ...formData,
-    //       user_profile: url, // URL for avatar upload
-    //     });
-    //   })
-    //   .catch((errResponse) => {
-    //     setSnackData({
-    //       show: true,
-    //       message:
-    //         errResponse?.error?.message ||
-    //         API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-    //       type: "error",
-    //     });
-    //   });
+      //     setFormData({
+      //       ...formData,
+      //       user_profile: url, // URL for avatar upload
+      //     });
+      //   })
+      //   .catch((errResponse) => {
+      //     setSnackData({
+      //       show: true,
+      //       message:
+      //         errResponse?.error?.message ||
+      //         API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+      //       type: "error",
+      //     });
+      //   });
 
-    let payload = formData;
+      let payload = { ...formData, send_email: sendEmail };
 
-    if(type === "new")
-    {
-    UserApiService.userCreate(payload)
-      .then((response) => {
-        setSnackData({
-          show: true,
-          message: response?.message || API_SUCCESS_MESSAGE.USER_CREATED,
-          type: "success",
-        });
-        setValuetoNull()
-        setActiveStep(0);
-       setFormData({
-        ...formData,
-          role_id: "",
-          role_name:"",
-          user_first_name: "",
-          user_last_name: "",
-          user_profile: "", // URL for avatar upload
-          user_email: "",
-          user_phone_no: "",
-          user_address: {
-            street: "",
-            city: "",
-            state: "",
-            zip: "",
-          },
-          sector_id: "",
-          sector_name: "",
-          org_id: "",
-          org_name: "",
-          industry_id: "",
-          industry_name: "",
-          created_by: userdetails?.[0]?.user_id,
-        });
-        onHandleClose(true);
-      })
-      .catch((errResponse) => {
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
+      if (type === "new") {
+        const response = await UserApiService.userCreate(payload);
+        if (response?.statusCode === 200) {
+          setSnackData({
+            show: true,
+            message: response?.message || API_SUCCESS_MESSAGE.USER_CREATED,
+            type: "success",
+          });
+          setValuetoNull();
+          setActiveStep(0);
+          setUpoadedFileData("");
+          setFormData({
+            ...formData,
+            role_id: "",
+            role_name: "",
+            user_first_name: "",
+            user_last_name: "",
+            user_profile: "", // URL for avatar upload
+            user_email: "",
+            user_phone_no: "",
+            user_address: {
+              street: "",
+              city: "",
+              state: "",
+              zip: "",
+            },
+            sector_id: "",
+            sector_name: "",
+            org_id: "",
+            org_name: "",
+            industry_id: "",
+            industry_name: "",
+            created_by: userdetails?.[0]?.user_id,
+          });
+          onHandleClose(true);
+        } else {
+          setSnackData({
+            show: true,
+            message: response?.message || API_ERROR_MESSAGE.ERROR_OCCURED,
+            type: "error",
+          });
+        }
+      } else {
+        let payload = {
+          ...formData,
+          user_id: selecteddata.index,
+          updated_by: userdetails?.[0]?.user_id,
+          isActive: selecteddata?.isActive,
+        };
+        const response = await UserApiService.userUpdate(payload);
+        if (response?.statusCode === 200) {
+          setSnackData({
+            show: true,
+            message: response?.message || API_SUCCESS_MESSAGE.USER_UPDATED,
+            type: "success",
+          });
+
+          setValuetoNull();
+          setActiveStep(0);
+          setUpoadedFileData("");
+          setFormData({
+            ...formData,
+            role_id: "",
+            role_name: "",
+            user_first_name: "",
+            user_last_name: "",
+            user_profile: "", // URL for avatar upload
+            user_email: "",
+            user_phone_no: "",
+            user_address: {
+              street: "",
+              city: "",
+              state: "",
+              zip: "",
+            },
+            sector_id: "",
+            sector_name: "",
+            org_id: "",
+            org_name: "",
+            industry_id: "",
+            industry_name: "",
+            created_by: userdetails?.[0]?.user_id,
+          });
+          onHandleClose(true);
+        } else {
+          setSnackData({
+            show: true,
+            message: response?.message || API_ERROR_MESSAGE.ERROR_OCCURED,
+            type: "error",
+          });
+        }
+      }
+    } catch (error) {
+      console.error(
+        "Error during form submission:",
+        error?.response?.data?.message
+      );
+      setSnackData({
+        show: true,
+        message:
+          error?.response?.data?.message ||
+          API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+        type: "error",
       });
-    }
-    else{
-      let payload = {...formData, user_id: selecteddata.index,updated_by: userdetails?.[0]?.user_id,isActive:selecteddata?.isActive}
-      UserApiService.userUpdate(payload)
-      .then((response) => {
-        setSnackData({
-          show: true,
-          message: response?.message || API_SUCCESS_MESSAGE.USER_CREATED,
-          type: "success",
-        });
-        setValuetoNull()
-        setActiveStep(0);
-       setFormData({
-        ...formData,
-          role_id: "",
-          role_name:"",
-          user_first_name: "",
-          user_last_name: "",
-          user_profile: "", // URL for avatar upload
-          user_email: "",
-          user_phone_no: "",
-          user_address: {
-            street: "",
-            city: "",
-            state: "",
-            zip: "",
-          },
-          sector_id: "",
-          sector_name: "",
-          org_id: "",
-          org_name: "",
-          industry_id: "",
-          industry_name: "",
-          created_by: userdetails?.[0]?.user_id,
-        });
-        onHandleClose(true);
-      })
-      .catch((errResponse) => {
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
-      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -289,7 +317,7 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
         "user_phone_no",
         // "sector_id",
         "org_id",
-        "industry_id",
+        // "industry_id",
       ];
     } else {
       // Validate required fields for Step 1
@@ -303,6 +331,7 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
 
     for (const field of requiredFields) {
       if (!formData[field] || formData[field].length === 0) {
+        console.log(field);
         setMandatoryError("Please fill all the required fields");
         return false;
       }
@@ -322,12 +351,11 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
         });
       } else {
         setErrorValue({
-          ...formData,
+          ...errorValue,
           emailError: "",
         });
 
-        checkEmailAvailablity(value);
-        
+        // checkEmailAvailablity(value);
       }
     }
 
@@ -369,12 +397,12 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
     setUpoadedFileData(data);
   };
 
-  useEffect(()=>{
+  useEffect(() => {
     setFormData({
       ...formData,
       user_profile: uploadedFileData, // URL for avatar upload
     });
-  },[uploadedFileData])
+  }, [uploadedFileData]);
 
   const handleReset = () => {
     setActiveStep(0);
@@ -388,71 +416,102 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
     fetchRole();
   }, []);
 
-  const fetchOrgDetails = () => {
-    UserApiService.orgDetails()
-      .then((response) => {
-        setSnackData({
-          show: true,
-          message:
-            response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-          type: "success",
-        });
+  const fetchOrgDetails = async () => {
+    const userRole = userdetails?.[0]?.role_name;
+    const userOrgId = userdetails?.[0]?.org_id;
+    const limit = 10;
+    let page = 1;
+    let allOrgs = [];
 
-        let filteredOrg = response?.data?.details || [];
+    try {
+      if (userRole === "Super Admin") {
+        // Fetch all pages until we have everything
+        let totalOrgs = null;
 
-        // Get the logged-in user's role from `userdetails`
-        const userRole = userdetails?.[0]?.role_name;
-        const userOrg = userdetails?.[0]?.org_id;
-  
-        // Filter org based on the logged-in user's role
-        if (userRole !== "Super Admin") {
-          filteredOrg = filteredOrg.filter(org => org.org_id === userOrg);
+        while (true) {
+          const response = await UserApiService.orgDetails(page, limit);
+          const details = response?.data?.details || [];
+          const total = response?.data?.totalActiveOrgs?.[0]?.count || 0;
+
+          if (totalOrgs === null) totalOrgs = total;
+
+          allOrgs = [...allOrgs, ...details];
+
+          if (allOrgs.length >= totalOrgs || details.length === 0) break;
+
+          page++;
         }
 
-        setOrgData(filteredOrg); // Use an empty array as fallback
-      })
-      .catch((errResponse) => {
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
+      } else {
+        // Org Super Admin or others — fetch until we find their org_id
+        while (true) {
+          const response = await UserApiService.orgDetails(page, limit);
+          const details = response?.data?.details || [];
+          const total = response?.data?.totalActiveOrgs?.[0]?.count || 0;
+
+          allOrgs = [...allOrgs, ...details];
+
+          const foundOrg = details.find((org) => org.org_id === userOrgId);
+
+          if (foundOrg || details.length === 0 || allOrgs.length >= total) break;
+
+          page++;
+        }
+
+        // Filter to only their own org
+        allOrgs = allOrgs.filter((org) => org.org_id === userOrgId);
+      }
+
+      setOrgData(allOrgs);
+
+    } catch (errResponse) {
+      setSnackData({
+        show: true,
+        message:
+          errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+        type: "error",
       });
+    }
   };
 
-  const fetchIndustryDetails = () => {
-    UserApiService.industryDetails()
-      .then((response) => {
-        setSnackData({
-          show: true,
-          message:
-            response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-          type: "success",
-        });
-        setIndustryData(response?.data?.details || []); // Use an empty array as fallback
-      })
-      .catch((errResponse) => {
-        setSnackData({
-          show: true,
-          message:
-            errResponse?.error?.message ||
-            API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-          type: "error",
-        });
+  const fetchIndustryDetails = async () => {
+    let allIndustries = [];
+    let page = 1;
+    const limit = 10;
+
+    try {
+      while (true) {
+        const response = await UserApiService.industryDetails(page, limit);
+        const details = response?.data?.details || [];
+        const total = response?.data?.total_count || 0;
+
+        allIndustries = [...allIndustries, ...details];
+
+        if (allIndustries.length >= total || details.length === 0) break;
+
+        page++;
+      }
+
+      setIndustryData(allIndustries);
+    } catch (errResponse) {
+      setSnackData({
+        show: true,
+        message:
+          errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+        type: "error",
       });
+    }
   };
 
   const fetchSectorDetails = () => {
     UserApiService.sectorDetails()
       .then((response) => {
-        setSnackData({
+        /* setSnackData({
           show: true,
           message:
             response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
           type: "success",
-        });
+        }); */
         const sectors = response?.data?.details || []; // Use an empty array as fallback
         setSectorData(sectors);
         // setFilteredSectors(
@@ -470,35 +529,74 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
       });
   };
 
-  const fetchRole= () => {
-    UserApiService.roleDetails()
-      .then((response) => {
-        setSnackData({
-          show: true,
-          message:
-            response?.message || API_SUCCESS_MESSAGE.FETCHED_SUCCESSFULLY,
-          type: "success",
-        });
-        let filteredRoles = response?.data?.details || [];
+  const fetchRole = async () => {
+    let allRoles = [];
+    let page = 1;
+    const limit = 10;
+    const userRole = userdetails?.[0]?.role_name;
 
-        // Get the logged-in user's role from `userdetails`
-        const userRole = userdetails?.[0]?.role_name;
-  
-        // Filter roles based on the logged-in user's role
-        if (userRole === "Super Admin") {
-          filteredRoles = filteredRoles.filter(role => role.role_name !== "Super Admin");
+    try {
+      while (true) {
+        const response = await UserApiService.roleDetails(page, limit);
+        const details = response?.data?.details || [];
+        const total = response?.data?.total_count || 0;
+
+        allRoles = [...allRoles, ...details];
+
+        if (allRoles.length >= total || details.length === 0) break;
+
+        page++;
+      }
+
+      // Permission filtering — unchanged from your original logic
+      if (userRole === "Super Admin") {
+        allRoles = allRoles.filter((role) => role.role_name !== "Super Admin");
+      }
+
+      if (userRole === "Org Super Admin") {
+        allRoles = allRoles.filter(
+          (role) =>
+            role.role_name !== "Super Admin" &&
+            role.role_name !== "Org Super Admin"
+        );
+      }
+
+      if (userRole !== "Super Admin" && userRole !== "Org Super Admin") {
+        allRoles = allRoles.filter(
+          (role) =>
+            role.role_name !== "Super Admin" &&
+            role.role_name !== "Org Super Admin" &&
+            role.role_name !== "Admin"
+        );
+      }
+
+      setRoleData(allRoles);
+    } catch (errResponse) {
+      setSnackData({
+        show: true,
+        message:
+          errResponse?.error?.message || API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+        type: "error",
+      });
+    }
+  };
+
+  const checkEmailAvailablity = (value) => {
+    UserApiService.userEmailCheck(value)
+      .then((response) => {
+        if (response?.data?.message === "User exist") {
+          setErrorValue({
+            ...errorValue,
+            emailError: "Email Id already exists. Please add another email id",
+          });
+          return false;
+        } else {
+          setErrorValue({
+            ...errorValue,
+            emailError: "",
+          });
+          return true;
         }
-  
-        if (userRole === "Org Super Admin") {
-          filteredRoles = filteredRoles.filter(role => role.role_name !== "Super Admin" && role.role_name !== "Org Super Admin");
-        }
-        
-        if(userRole !== "Super Admin" && userRole !== "Org Super Admin")
-        {
-          filteredRoles = filteredRoles.filter(role => role.role_name !== "Super Admin" && role.role_name !== "Org Super Admin" && role.role_name !== "Admin");
-        }
-        // Set the filtered roles data
-        setRoleData(filteredRoles);
       })
       .catch((errResponse) => {
         setSnackData({
@@ -509,74 +607,35 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
           type: "error",
         });
       });
-  };
-
-  const checkEmailAvailablity = (value)=>{
-    UserApiService.userEmailCheck(value)
-    .then((response) => {
-      
-
-      if(response?.data?.message === "User exist")
-      {
-        setErrorValue({
-          ...errorValue,
-          emailError: "Email Id already exists. Please add another email id",
-        });
-        return false;
-      }
-      else
-      {
-        setErrorValue({
-          ...errorValue,
-          emailError: "",
-        });
-        return true;
-      }
-     
-    })
-    .catch((errResponse) => {
-      setSnackData({
-        show: true,
-        message:
-          errResponse?.error?.message ||
-          API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
-        type: "error",
-      });
-    });
 
     setErrorValue({
       ...errorValue,
       emailError: "",
     });
     return true;
-  }
+  };
 
   const handleOrgChange = (event) => {
     let orgId = event?.target?.value;
 
-    if(selecteddata)
-    {
-      orgId = selecteddata?.org_id;
-      setSelectedOrg(selecteddata?.org_id);
-    }
-    else{
-      setSelectedOrg(orgId);
-    }
-    
-
-    
+    setSelectedOrg(orgId);
 
     // Find the selected organization
     const selectedOrganization = orgData.find((org) => org.org_id === orgId);
 
-    let industryIds = null;
-    if (selectedOrganization?.industries?.includes(",")) {
-      industryIds = selectedOrganization?.industries
-        .split(',')  // Split by comma
-        .map(industry => Number(industry.trim())); // Convert each string to a number
-    }
-    else{
-      industryIds = JSON.parse(selectedOrganization?.industries || "[]");
+    let industryIds = [];
+    const rawIndustries = selectedOrganization?.industries;
+    if (rawIndustries && rawIndustries.trim() !== "") {
+      if (rawIndustries.includes(",")) {
+        industryIds = rawIndustries.split(",").map((id) => Number(id.trim()));
+      } else {
+        try {
+          const parsed = JSON.parse(rawIndustries);
+          industryIds = Array.isArray(parsed) ? parsed : [Number(parsed)];
+        } catch {
+          industryIds = [Number(rawIndustries)];
+        }
+      }
     }
     // console.log("industryIds",industryIds)
 
@@ -584,8 +643,8 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
       ? selectedOrganization.sector_id
       : [];
 
-      if (!Array.isArray(industryIds)) {
-        industryIds = [industryIds]; // Wrap in an array if it's not already an array
+    if (!Array.isArray(industryIds)) {
+      industryIds = [industryIds]; // Wrap in an array if it's not already an array
     }
 
     // Filter industries based on the organization's available industries
@@ -593,10 +652,9 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
       industryIds.includes(industry.industry_id)
     );
 
-
-// console.log("availableIndustries",availableIndustries)
+    // console.log("availableIndustries",availableIndustries)
     setFilteredIndustries(availableIndustries);
-    setSelectedIndustry(""); // Reset selected industry
+    setSelectedIndustry([]);
 
     // Filter sectors based on the selected organization
     const availableSectors = sectorData.filter(
@@ -613,36 +671,32 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
   };
 
   const handleOrgChangeForEdit = (data) => {
-     let orgId = data?.org_id;
-      setSelectedOrg(data?.org_id);
-   
+    let orgId = data?.org_id;
+    setSelectedOrg(data?.org_id);
+
     // Find the selected organization
     const selectedOrganization = orgData.find((org) => org.org_id === orgId);
 
     let industryIds = null;
     if (selectedOrganization?.industries?.includes(",")) {
       industryIds = selectedOrganization?.industries
-        .split(',')  // Split by comma
-        .map(industry => Number(industry.trim())); // Convert each string to a number
-    }
-    else{
+        .split(",") // Split by comma
+        .map((industry) => Number(industry.trim())); // Convert each string to a number
+    } else {
       industryIds = JSON.parse(selectedOrganization?.industries || "[]");
     }
 
-
-      if (!Array.isArray(industryIds)) {
-        industryIds = [industryIds]; // Wrap in an array if it's not already an array
+    if (!Array.isArray(industryIds)) {
+      industryIds = [industryIds]; // Wrap in an array if it's not already an array
     }
 
     const availableIndustries = industryData.filter((industry) =>
       industryIds.includes(industry.industry_id)
     );
 
-
-// console.log("availableIndustries",availableIndustries)
+    // console.log("availableIndustries",availableIndustries)
     setFilteredIndustries(availableIndustries);
     setSelectedIndustry(industryIds); // Reset selected industry
-   
   };
 
   const handleSectorChange = (event) => {
@@ -658,239 +712,278 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
   };
 
   const handleIndustryChange = (event) => {
-    const industryId = event.target.value;    
-    setSelectedIndustry(industryId);
+    const industryId = event.target.value;
+    const { value } = event.target;
+    setSelectedIndustry(value);
 
-    const selectedIndustry = filteredIndustries.find(
-      (industry) => industry.industry_id === industryId
+    // const selectedIndustry = filteredIndustries.find(
+    //   (industry) => industry.industry_id === industryId
+    // );
+
+    const selectedIndustries = filteredIndustries.filter((industry) =>
+      industryId.includes(industry.industry_id)
     );
+
+    const selectedIndustryNames = selectedIndustries.map(
+      (industry) => industry.industry_name
+    ); // Get industry names for selected ids
 
     setFormData({
       ...formData,
-      industry_id: selectedIndustry?.industry_id || "",
-      industry_name: selectedIndustry?.industry_name || "",
+      industries: value || [],
+      industry_names: selectedIndustryNames || [],
+      industry_id: value[0] || "",
+      industry_name: selectedIndustryNames[0] || "",
     });
   };
 
   const handleRoleChange = (event) => {
     const roleId = event.target.value;
 
-    const roleName= roleData.find((role) => role.role_id === roleId)?.role_name
-    
+    const roleName = roleData.find(
+      (role) => role.role_id === roleId
+    )?.role_name;
+
     setFormData({
       ...formData,
       role_id: roleId,
-      role_name:roleName,
+      role_name: roleName,
     });
   };
 
+  useEffect(() => {
+    if (orgData) {
+      setFormData({
+        ...formData,
+        role_id: selecteddata?.role_id || "",
+        role_name: selecteddata?.role_name || "",
+        user_first_name: selecteddata?.first_name || "",
+        user_last_name: selecteddata?.last_name || "",
+        user_profile: selecteddata?.profile_url || "", // URL for avatar upload
+        user_email: selecteddata?.email || "",
+        user_phone_no: selecteddata?.phone_no || "",
+        user_address: {
+          street: selecteddata?.user_address?.street || "",
+          city: selecteddata?.user_address?.city || "",
+          state: selecteddata?.user_address?.state || "",
+          zip: selecteddata?.user_address?.zip || "",
+        },
+        sector_id: 1,
+        sector_name: "Nil",
+        org_id: selecteddata?.org_id || "",
+        org_name: selecteddata?.org_name || "",
+        industry_id: selecteddata?.industry_id || "",
+        industry_name: selecteddata?.industry || "",
+        created_by: userdetails?.[0]?.user_id,
+        industries: selecteddata?.industries || [],
+        industry_names: selecteddata?.industry_names || [],
+      });
 
-  useEffect(()=>{
-    console.log("selecteddata",selecteddata)
-  
-    setFormData({
-      ...formData,
-      role_id: selecteddata?.role_id || "",
-  role_name: selecteddata?.role_name || "",
-  user_first_name: selecteddata?.first_name || "",
-  user_last_name: selecteddata?.last_name ||"",
-  user_profile: selecteddata?.profile_url ||"", // URL for avatar upload
-  user_email: selecteddata?.email ||"",
-  user_phone_no: selecteddata?.phone_no ||"",
-  user_address: {
-    street: selecteddata?.user_address?.street ||"",
-    city: selecteddata?.user_address?.city ||"",
-    state: selecteddata?.user_address?.state ||"",
-    zip: selecteddata?.user_address?.zip ||"",
-  },
-  sector_id: 1,
-  sector_name: "Nil",
-  org_id: selecteddata?.org_id ||"",
-  org_name: selecteddata?.org_name ||"",
-  industry_id: selecteddata?.industry_id ||"",
-  industry_name: selecteddata?.industry ||"",
-  created_by: userdetails?.[0]?.user_id,
-    });
+      if (selecteddata?.org_id) {
+        setSelectedOrg(selecteddata?.org_id);
+        handleOrgChangeForEdit(selecteddata);
+      }
+      if (
+        !selecteddata?.industry_id &&
+        selecteddata?.industry_names?.length > 0
+      ) {
+        const matchedIndustryIds = industryData
+          .filter((ind) =>
+            selecteddata.industry_names.includes(ind.industry_name)
+          )
+          .map((ind) => ind.industry_id);
 
-    setSelectedOrg(selecteddata?.org_id);
-    setSelectedIndustry([Number(selecteddata?.industry_id)]);
-    handleOrgChangeForEdit(selecteddata);
-
-  },[selecteddata]);
-
+        setSelectedIndustry(matchedIndustryIds);
+      } else if (selecteddata?.industry_id) {
+        setSelectedIndustry([Number(selecteddata.industry_id)]);
+      }
+    }
+  }, [selecteddata, orgData, industryData]);
 
   return (
-    <Box sx={{ width: "100%" }}>
-      <Grid container spacing={2} style={{ padding: "10px 10px 10px 0px" }}>
-        <Grid item xs={12} sm={4} style={{ borderRight: "1px solid #dfdfdf" }}>
-          <Stepper activeStep={activeStep} orientation="vertical">
-            {steps.map((label, index) => {
-              const stepProps = {};
-              const labelProps = {};
-              if (isStepOptional(index)) {
-                labelProps.optional = (
-                  <Typography variant="caption">
-                    {FORM_LABEL.OPTIONAL}
-                  </Typography>
+    <>
+      <Box sx={{ width: "100%" }}>
+        <Grid container spacing={2} style={{ padding: "10px 10px 10px 0px" }}>
+          <Grid
+            item
+            xs={12}
+            sm={4}
+            style={{ borderRight: "1px solid #dfdfdf" }}
+          >
+            <Stepper activeStep={activeStep} orientation="vertical">
+              {steps.map((label, index) => {
+                const stepProps = {};
+                const labelProps = {};
+                if (isStepOptional(index)) {
+                  labelProps.optional = (
+                    <Typography variant="caption">
+                      {FORM_LABEL.OPTIONAL}
+                    </Typography>
+                  );
+                }
+                if (isStepSkipped(index)) {
+                  stepProps.completed = false;
+                }
+                return (
+                  <Step key={label} {...stepProps}>
+                    <StepLabel {...labelProps}>{label}</StepLabel>
+                  </Step>
                 );
-              }
-              if (isStepSkipped(index)) {
-                stepProps.completed = false;
-              }
-              return (
-                <Step key={label} {...stepProps}>
-                  <StepLabel {...labelProps}>{label}</StepLabel>
-                </Step>
-              );
-            })}
-          </Stepper>
-        </Grid>
+              })}
+            </Stepper>
+          </Grid>
 
-        <Grid item xs={12} sm={8}>
-          {activeStep === 0 ? (
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={12} style={{ padding: "18px" }}>
-                <AvatarUpload onUpload={setUpoadedFileData} uploadedImage={formData.user_profile}/>
+          <Grid item xs={12} sm={8}>
+            {activeStep === 0 ? (
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={12} style={{ padding: "18px" }}>
+                  <AvatarUpload
+                    onUpload={setUpoadedFileData}
+                    uploadedImage={formData.user_profile}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label={FORM_LABEL.FIRST_NAME}
+                    variant="outlined"
+                    fullWidth
+                    name="user_first_name"
+                    value={formData.user_first_name}
+                    onChange={handleInputChange}
+                    required
+                    inputProps={{
+                      maxLength: 30, // Restrict input to 40 characters
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label={FORM_LABEL.LAST_NAME}
+                    variant="outlined"
+                    fullWidth
+                    name="user_last_name"
+                    value={formData.user_last_name}
+                    onChange={handleInputChange}
+                    required
+                    inputProps={{
+                      maxLength: 30, // Restrict input to 40 characters
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label={FORM_LABEL.EMAIL}
+                    variant="outlined"
+                    fullWidth
+                    name="user_email"
+                    value={formData.user_email}
+                    onChange={handleInputChange}
+                    error={!!errorValue.emailError}
+                    helperText={errorValue.emailError}
+                    required
+                    disabled={type !== "new" ? true : false}
+                    inputProps={{
+                      maxLength: 350, // Restrict input to 40 characters
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label={FORM_LABEL.PHONE}
+                    variant="outlined"
+                    fullWidth
+                    name="user_phone_no"
+                    value={formData.user_phone_no}
+                    onChange={handleInputChange}
+                    error={!!errorValue.phoneError}
+                    helperText={errorValue.phoneError}
+                    required
+                    inputProps={{
+                      maxLength: 10, // Restrict input to 40 characters
+                    }}
+                  />
+                </Grid>
               </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label={FORM_LABEL.FIRST_NAME}
-                  variant="outlined"
-                  fullWidth
-                  name="user_first_name"
-                  value={formData.user_first_name}
-                  onChange={handleInputChange}
-                  required
-                  inputProps={{
-                    maxLength: 30, // Restrict input to 40 characters
-                  }}
-                  
-                />
+            ) : activeStep === 1 ? (
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label={FORM_LABEL.STREET}
+                    variant="outlined"
+                    fullWidth
+                    name="user_address_street"
+                    value={formData.user_address.street}
+                    onChange={handleInputChange}
+                    inputProps={{
+                      maxLength: 30, // Restrict input to 40 characters
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label={FORM_LABEL.CITY}
+                    variant="outlined"
+                    fullWidth
+                    name="user_address_city"
+                    value={formData.user_address.city}
+                    onChange={handleInputChange}
+                    inputProps={{
+                      maxLength: 30, // Restrict input to 40 characters
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label={FORM_LABEL.STATE}
+                    variant="outlined"
+                    fullWidth
+                    name="user_address_state"
+                    value={formData.user_address.state}
+                    onChange={handleInputChange}
+                    inputProps={{
+                      maxLength: 30, // Restrict input to 40 characters
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label={FORM_LABEL.ZIP}
+                    variant="outlined"
+                    fullWidth
+                    name="user_address_zip"
+                    value={formData.user_address.zip}
+                    onChange={handleInputChange}
+                    inputProps={{
+                      maxLength: 30, // Restrict input to 40 characters
+                    }}
+                  />
+                </Grid>
               </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label={FORM_LABEL.LAST_NAME}
-                  variant="outlined"
-                  fullWidth
-                  name="user_last_name"
-                  value={formData.user_last_name}
-                  onChange={handleInputChange}
-                  required
-                  inputProps={{
-                    maxLength: 30, // Restrict input to 40 characters
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label={FORM_LABEL.EMAIL}
-                  variant="outlined"
-                  fullWidth
-                  name="user_email"
-                  value={formData.user_email}
-                  onChange={handleInputChange}
-                  error={!!errorValue.emailError}
-                  helperText={errorValue.emailError}
-                  required
-                  disabled={type !== "new" ? true : false}
-                  inputProps={{
-                    maxLength: 30, // Restrict input to 40 characters
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label={FORM_LABEL.PHONE}
-                  variant="outlined"
-                  fullWidth     
-                  name="user_phone_no"
-                  value={formData.user_phone_no}
-                  onChange={handleInputChange}
-                  error={!!errorValue.phoneError}
-                  helperText={errorValue.phoneError}
-                  required
-                  inputProps={{
-                    maxLength: 10, // Restrict input to 40 characters
-                  }}
-                />
-              </Grid>
-            </Grid>
-          ) : activeStep === 1 ? (
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label={FORM_LABEL.STREET}
-                  variant="outlined"
-                  fullWidth
-                  name="user_address_street"
-                  value={formData.user_address.street}
-                  onChange={handleInputChange}
-                  inputProps={{
-                    maxLength: 30, // Restrict input to 40 characters
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label={FORM_LABEL.CITY}
-                  variant="outlined"
-                  fullWidth
-                  name="user_address_city"
-                  value={formData.user_address.city}
-                  onChange={handleInputChange}
-                  inputProps={{
-                    maxLength: 30, // Restrict input to 40 characters
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label={FORM_LABEL.STATE}
-                  variant="outlined"
-                  fullWidth
-                  name="user_address_state"
-                  value={formData.user_address.state}
-                  onChange={handleInputChange}
-                  inputProps={{
-                    maxLength: 30, // Restrict input to 40 characters
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label={FORM_LABEL.ZIP}
-                  variant="outlined"
-                  fullWidth
-                  name="user_address_zip"
-                  value={formData.user_address.zip}
-                  onChange={handleInputChange}
-                  inputProps={{
-                    maxLength: 30, // Restrict input to 40 characters
-                  }}
-                />
-              </Grid>
-            </Grid>
-          ) : activeStep === 2 ? (
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
-                  <InputLabel>
-                    {FORM_LABEL.ORGANIZATION}
-                    <span>*</span>
-                  </InputLabel>
-                  <Select value={selectedOrg} onChange={handleOrgChange} disabled={type !== "new" ? true : false}>
-                    {/* <MenuItem value="">
+            ) : activeStep === 2 ? (
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth>
+                    <InputLabel>
+                      {FORM_LABEL.ORGANIZATION}
+                      <span>*</span>
+                    </InputLabel>
+                    <Select
+                      value={selectedOrg}
+                      onChange={handleOrgChange}
+                    // disabled={type !== "new" ? true : false}
+                    >
+                      {/* <MenuItem value="">
                       <em>None</em>
                     </MenuItem> */}
-                    {orgData.map((org) => (
-                      <MenuItem key={org.org_id} value={org.org_id}>
-                        {org.org_name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              {/* <Grid item xs={12} sm={6}>
+                      {orgData.map((org) => (
+                        <MenuItem key={org.org_id} value={org.org_id}>
+                          {org.org_name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+                {/* <Grid item xs={12} sm={6}>
                 <FormControl fullWidth>
                   <InputLabel>
                     {FORM_LABEL.SECTOR}
@@ -913,97 +1006,139 @@ export default function UserCreation({ onHandleClose,type,selecteddata  }) {
                   </Select>
                 </FormControl>
               </Grid> */}
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
-                  <InputLabel>
-                    {FORM_LABEL.INDUSTRY}
-                    <span>*</span>
-                  </InputLabel>
-                  <Select
-                    value={selectedIndustry}
-                    onChange={handleIndustryChange}
-                    disabled={filteredIndustries.length === 0 || type !== "new"}
-                  >
-                    {/* <MenuItem value="">
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth>
+                    <InputLabel>
+                      {FORM_LABEL.INDUSTRY}
+                      <span>*</span>
+                    </InputLabel>
+                    <Select
+                      value={selectedIndustry}
+                      // value={selecteddata?.industry_names.join(", ")}
+                      onChange={handleIndustryChange}
+                      multiple
+                      // renderValue={(selected) => {
+                      //   console.log("selected data",selected)
+                      //   const selectedIndustries = filteredIndustries.filter(
+                      //     (industry) => selected.includes(industry.industry_id)
+                      //   );
+                      //   return selectedIndustries
+                      //     .map((industry) => industry.industry_name)
+                      //     .join(", ");
+                      // }}
+                      renderValue={(selected) => {
+                        const selectedIndustries = filteredIndustries.filter(
+                          (industry) => selected.includes(industry.industry_id)
+                        );
+                        return selectedIndustries
+                          .map((industry) => industry.industry_name)
+                          .join(", ");
+                      }}
+                    // disabled={filteredIndustries.length === 0 || type !== "new"}
+                    >
+                      {filteredIndustries.map((industry) => (
+                        <MenuItem
+                          key={industry.industry_id}
+                          value={industry.industry_id}
+                        >
+                          <Checkbox
+                            checked={selectedIndustry.includes(
+                              industry.industry_id
+                            )}
+                          />
+                          {industry.industry_name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth>
+                    <InputLabel>
+                      {FORM_LABEL.ROLE}
+                      <span>*</span>
+                    </InputLabel>
+                    <Select
+                      value={formData.role_id}
+                      onChange={handleRoleChange}
+                      disabled={roleData.length === 0}
+                    >
+                      {/* <MenuItem value="">
                       <em>None</em>
                     </MenuItem> */}
-                    {filteredIndustries.map((industry) => (
-                      <MenuItem
-                        key={industry.industry_id}
-                        value={industry.industry_id}
-                      >
-                        {industry.industry_name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                      {roleData.map((role) => (
+                        <MenuItem key={role.role_id} value={role.role_id}>
+                          {role.role_name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
               </Grid>
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
-                  <InputLabel>
-                    {FORM_LABEL.ROLE}
-                    <span>*</span>
-                  </InputLabel>
-                  <Select
-                    value={formData.role_id}
-                    onChange={handleRoleChange}
-                    disabled={roleData.length === 0}
-                  >
-                    {/* <MenuItem value="">
-                      <em>None</em>
-                    </MenuItem> */}
-                    {roleData.map((role) => (
-                      <MenuItem
-                        key={role.role_id}
-                        value={role.role_id}
-                      >
-                        {role.role_name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-            </Grid>
-          ) : null}
+            ) : null}
 
-          {activeStep <= 2 && (
-            
-           
-            <Box sx={{pt: 2, mt: 4}}>
-               <span style={{ color: "red",marginBottom:"20px", display:"block" }}>{mandatoryError}</span>
-            <Box sx={{ display: "flex", flexDirection: "row" }}>
-              
-              {activeStep !== 0 && (
-                <Button
-                  disabled={activeStep === 0}
-                  onClick={handleBack}
-                  sx={{ mr: 1 }}
-                  variant="outlined"
+            {activeStep <= 2 && (
+              <Box sx={{ pt: 2, mt: 4 }}>
+                <span
+                  style={{
+                    color: "red",
+                    marginBottom: "20px",
+                    display: "block",
+                  }}
                 >
-                  {BUTTON_LABEL.BACK}
-                </Button>
-              )}
-              <Box sx={{ flex: "1 1 auto" }} />
-              {isStepOptional(activeStep) && (
-                <Button color="inherit" onClick={handleSkip} sx={{ mr: 1 }}>
-                  {BUTTON_LABEL.SKIP}
-                </Button>
-              )}
-              <Button
-                onClick={
-                  activeStep === steps.length - 1 ? handleSubmit : handleNext
-                }
-                variant="contained"
-              >
-                {activeStep === steps.length - 1
-                  ? BUTTON_LABEL.FINISH
-                  : BUTTON_LABEL.NEXT}
-              </Button>
-            </Box>
-            </Box>
-          )}
+                  {mandatoryError}
+                </span>
+                <Box sx={{ display: "flex", flexDirection: "row" }}>
+                  {activeStep !== 0 && (
+                    <Button
+                      disabled={activeStep === 0}
+                      onClick={handleBack}
+                      sx={{ mr: 1 }}
+                      variant="outlined"
+                    >
+                      {BUTTON_LABEL.BACK}
+                    </Button>
+                  )}
+                  <Box sx={{ flex: "1 1 auto" }} />
+                  {isStepOptional(activeStep) && (
+                    <Button color="inherit" onClick={handleSkip} sx={{ mr: 1 }}>
+                      {BUTTON_LABEL.SKIP}
+                    </Button>
+                  )}
+                  <Button
+                    onClick={
+                      activeStep === steps.length - 1
+                        ? handleSubmit
+                        : handleNext
+                    }
+                    variant="contained"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? 
+                      (<CircularProgress size={20} color="inherit" />) 
+                      : activeStep === steps.length - 1 ? (BUTTON_LABEL.FINISH) : (BUTTON_LABEL.NEXT)
+                    }
+                  </Button>
+                </Box>
+              </Box>
+            )}
+          </Grid>
         </Grid>
-      </Grid>
-    </Box>
+      </Box>
+      <Snackbar
+        style={{ top: "80px" }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        open={snackData.show}
+        autoHideDuration={3000}
+        onClose={() => setSnackData({ show: false })}
+      >
+        <Alert
+          onClose={() => setSnackData({ show: false })}
+          severity={snackData.type}
+        >
+          {snackData.message}
+        </Alert>
+      </Snackbar>
+    </>
   );
 }

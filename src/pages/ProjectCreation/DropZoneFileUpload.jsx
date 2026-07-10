@@ -1,15 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { Modal, Select, message, Progress,Popconfirm } from "antd"; // Import Modal, Select, and Progress from Ant Design
-import {
-  FileImageOutlined,
-  FilePdfOutlined,
-  FileOutlined,
-  FileTextOutlined,
-  DeleteFilled,
-  FileExcelOutlined,
-  CloseCircleOutlined,
-} from "@ant-design/icons";
+import FileImageOutlined from "@ant-design/icons/FileImageOutlined";
+import FilePdfOutlined from "@ant-design/icons/FilePdfOutlined";
+import FileOutlined from "@ant-design/icons/FileOutlined";
+import FileTextOutlined from "@ant-design/icons/FileTextOutlined";
+import DeleteFilled from "@ant-design/icons/DeleteFilled";
+import FileExcelOutlined from "@ant-design/icons/FileExcelOutlined";
+import CloseCircleOutlined from "@ant-design/icons/CloseCircleOutlined";
 import UploadIcon from "../../assets/images/icons/upload.svg";
 import {
   API_ERROR_MESSAGE,
@@ -18,9 +16,11 @@ import {
   FORM_LABEL,
 } from "shared/constants";
 import { FileUploadApiService } from "services/api/FileUploadAPIService";
+import { ProjectApiService } from "services/api/ProjectAPIService";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
-import { Tooltip } from "@mui/material";
+import Tooltip from "@mui/material/Tooltip";
+import { useParams } from "react-router";
 
 const { Option } = Select;
 
@@ -35,6 +35,8 @@ const DropZoneFileUpload = (props) => {
     message: "",
     type: "error",
   });
+  
+  const { id : project_id } = useParams();
 
   const MAX_FILES_COUNT = props.maxFile || 0;
 
@@ -103,24 +105,19 @@ const DropZoneFileUpload = (props) => {
   };
 
   // Function to handle removing a file from the list
-  const removeFile = (fileDetails) => {
-    const regex = /\/([^/]+)$/; // Match the part after the last "/"
-
-    const match = fileDetails.path.match(regex);
-    const filepayload = {
-      imageKey: match[1],
-    };
-
-    FileUploadApiService.fileDelete(filepayload)
-      .then((response) => {
+  const removeFile = async (fileDetails) => {
+    if (fileDetails.document_id && fileDetails.version_id) {
+      try {
+        await ProjectApiService.deleteProjectDocument(
+          fileDetails.document_id,
+          fileDetails.version_id
+        );
         setSnackData({
           show: true,
-          message:
-            response?.message || API_SUCCESS_MESSAGE.DELETED_SUCCESSFULLY,
+          message: API_SUCCESS_MESSAGE.DELETED_SUCCESSFULLY,
           type: "success",
         });
-      })
-      .catch((errResponse) => {
+      } catch (errResponse) {
         setSnackData({
           show: true,
           message:
@@ -128,7 +125,8 @@ const DropZoneFileUpload = (props) => {
             API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
-      });
+      }
+    }
 
     setUploadedFiles((prevFiles) =>
       prevFiles.filter((file) => file.name !== fileDetails.name)
@@ -213,6 +211,7 @@ const DropZoneFileUpload = (props) => {
           const filepayload = {
             documents: [fileDataUrl],
             type: fileType,
+            project_id
           };
 
           const response = await FileUploadApiService.fileUpload(filepayload, {
@@ -242,6 +241,37 @@ const DropZoneFileUpload = (props) => {
           }
           setTempFiles([])
 
+          let document_id = null;
+          let version_id = null;
+          const s3Path = response.data.details[0];
+
+          if (project_id) {
+            const userdetails = JSON.parse(sessionStorage.getItem("userDetails"));
+            const payload = {
+              project_id,
+              document_name: file.name,
+              document_type: file.type || "application/octet-stream",
+              uploaded_by_id: userdetails?.[0]?.user_id,
+              uploaded_by_name:
+                `${userdetails?.[0]?.user_first_name || ""} ${userdetails?.[0]?.user_last_name || ""}`.trim(),
+              folder_name: "",
+              document_desc: "",
+              file_path: s3Path,
+              risk_information: { risk_level: " ", mitigation: " " },
+              information_extract: { summary: " " },
+            };
+            try {
+              const docRes = await ProjectApiService.createProjectDocument(payload);
+              const docData = docRes?.data?.details?.[0];
+              if (docData) {
+                document_id = docData.document_id;
+                version_id = docData.version_id;
+              }
+            } catch (e) {
+              console.error("Failed to create project document:", e);
+            }
+          }
+
           return {
             relativePath: file.relativePath,
             name: file.name,
@@ -253,9 +283,11 @@ const DropZoneFileUpload = (props) => {
                   ? "Project Document"
                   : ""
                 : selectedType,
-            path: response.data.details[0],
+            path: s3Path,
             uploadedOn: new Date(),
             progress: 100, // After successful upload, set progress to 100%
+            document_id,
+            version_id,
           };
         } catch (errResponse) {
           console.log("errResponse", errResponse);
@@ -270,6 +302,7 @@ const DropZoneFileUpload = (props) => {
   };
 
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
+    accept: props.accept || null,
     onDrop: (newFiles) => {
       const allFiles = [...uploadedFiles, ...newFiles];
       const totalSize = getTotalSize(allFiles);

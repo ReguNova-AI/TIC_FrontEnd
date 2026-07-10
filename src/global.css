@@ -1,0 +1,60 @@
+/* Default state (optional) */
+.ant-table-row-expand-icon {
+  border-color: #d9d9d9;
+}
+
+/* Hover state */
+.ant-table-row-expand-icon:hover {
+  /* border-color: #370e27 !important; */
+  border-color: #5b0429 !important;
+}
+
+.ant-table-row-expand-icon:hover::before,
+.ant-table-row-expand-icon:hover::after {
+  /* background-color: #370e27 !important; */
+  background-color: #5b0429 !important;
+}
+
+.nav-icon {
+  filter: brightness(0) saturate(100%) invert(35%) sepia(11%) saturate(520%)
+    hue-rotate(197deg) brightness(111%) contrast(93%);
+  transition: filter 0.2s ease;
+}
+
+.nav-icon--selected,
+.MuiListItemButton-root:hover .nav-icon:not(.nav-icon--selected) {
+  filter: brightness(0) saturate(100%) invert(10%) sepia(35%) saturate(5643%)
+    hue-rotate(316deg) brightness(92%) contrast(107%);
+}
+
+.docx-preview {
+  padding: 0px !important;
+
+  table {
+    width: 100% !important;
+    table-layout: fixed !important;
+
+    td, th {
+      word-wrap: break-word !important;
+      overflow-wrap: break-word !important;
+      white-space: normal !important;
+      overflow: visible !important;
+    }
+
+    td:nth-child(1), th:nth-child(1) {
+      width: 20% !important;
+    }
+
+    td:nth-child(2), th:nth-child(2) {
+      width: 12% !important;
+    }
+
+    td:nth-child(3), th:nth-child(3) {
+      width: 33% !important;
+    }
+
+    td:nth-child(4), th:nth-child(4) {
+      width: 35% !important;
+    }
+  }
+}

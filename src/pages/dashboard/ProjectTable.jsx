@@ -1,100 +1,108 @@
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
 // material-ui
-import Link from '@mui/material/Link';
-import Stack from '@mui/material/Stack';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import { Empty } from 'antd';
-
-// third-party
-import { NumericFormat } from 'react-number-format';
+import Link from "@mui/material/Link";
+import Stack from "@mui/material/Stack";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableFooter from "@mui/material/TableFooter";
+import TableHead from "@mui/material/TableHead";
+import TablePagination from "@mui/material/TablePagination";
+import TableRow from "@mui/material/TableRow";
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
+import IconButton from "@mui/material/IconButton";
+import TableSortLabel from "@mui/material/TableSortLabel";
+import { visuallyHidden } from "@mui/utils";
+import { Empty, Spin, Modal } from "antd";
 
 // project import
-import Dot from 'components/@extended/Dot';
-import { Chip } from '@mui/material';
-import { useEffect, useState } from 'react';
-import { ProjectApiService } from 'services/api/ProjectAPIService';
+import { useEffect, useState } from "react";
+import { ProjectApiService } from "services/api/ProjectAPIService";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
-import { API_ERROR_MESSAGE } from 'shared/constants';
-import { formatDate, getStatusChipProps } from 'shared/utility';
-import CardView from 'pages/ProjectListing/CardView';
-import ToggleButtons from 'pages/ProjectListing/ToggleButton';
-import { useNavigate } from 'react-router';
+import { API_ERROR_MESSAGE } from "shared/constants";
+import { formatDate } from "shared/utility";
+import CardView from "pages/ProjectListing/CardView";
+import ToggleButtons from "pages/ProjectListing/ToggleButton";
+import { useNavigate } from "react-router";
 
+const TrashLucideIcon = ({
+  size = 18,
+  color = "currentColor",
+  strokeWidth = 1.6,
+}) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth={strokeWidth}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M3 6h18" />
+    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+    <line x1="10" x2="10" y1="11" y2="17" />
+    <line x1="14" x2="14" y1="11" y2="17" />
+  </svg>
+);
 
-
-function descendingComparator(a, b, orderBy) {
-  if (b[orderBy] < a[orderBy]) {
-    return -1;
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1;
-  }
-  return 0;
-}
-
-function getComparator(order, orderBy) {
-  return order === 'desc' ? (a, b) => descendingComparator(a, b, orderBy) : (a, b) => -descendingComparator(a, b, orderBy);
-}
-
-function stableSort(array, comparator) {
-  const stabilizedThis = array.map((el, index) => [el, index]);
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) {
-      return order;
-    }
-    return a[1] - b[1];
-  });
-  return stabilizedThis.map((el) => el[0]);
-}
-
+const PenLucideIcon = ({
+  size = 18,
+  color = "currentColor",
+  strokeWidth = 1.6,
+}) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth={strokeWidth}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+  </svg>
+);
 
 // ==============================|| PROJECT TABLE - HEADER ||============================== //
 
-function ProjectTableHead({ order, orderBy }) {
-
+function ProjectTableHead({ order, orderBy, onRequestSort }) {
   const headCells = [
     {
-      id: 'project_name',
-      align: 'left',
-      disablePadding: false,
-      label: 'Project name'
+      id: "project_name",
+      label: "Project Name",
+      align: "left",
+      sortable: true,
     },
+    { id: "project_id", label: "Project No", align: "left", sortable: true },
     {
-      id: 'project_no',
-      align: 'left',
-      disablePadding: true,
-      label: 'Project no.'
+      id: "no_of_runs",
+      label: "No of Iteration",
+      align: "left",
+      sortable: true,
     },
+    { id: "last_run", label: "Last Run", align: "left", sortable: true },
+    { id: "created_at", label: "Created Date", align: "left", sortable: true },
     {
-      id: 'runs',
-      align: 'left',
-      disablePadding: false,
-      label: 'No. of runs'
+      id: "updated_at",
+      label: "Modified Date",
+      align: "left",
+      sortable: true,
     },
-    {
-      id: 'last_run',
-      align: 'left',
-      disablePadding: false,
-      label: 'Last Run'
-    },
-    {
-      id: 'status',
-      align: 'left',
-      disablePadding: false,
-      label: 'Status'
-    }
+    { id: "actions", label: "Actions", align: "center" },
   ];
 
-  
+  const createSortHandler = (property) => (event) => {
+    onRequestSort(event, property);
+  };
 
   return (
     <TableHead>
@@ -103,10 +111,32 @@ function ProjectTableHead({ order, orderBy }) {
           <TableCell
             key={headCell.id}
             align={headCell.align}
-            padding={headCell.disablePadding ? 'none' : 'normal'}
             sortDirection={orderBy === headCell.id ? order : false}
+            sx={{ textTransform: "none", fontWeight: 600, fontSize: "14px" }}
           >
-            {headCell.label}
+            {headCell.sortable ? (
+              <TableSortLabel
+                active={orderBy === headCell.id}
+                direction={orderBy === headCell.id ? order : "asc"}
+                onClick={createSortHandler(headCell.id)}
+                sx={{
+                  "& .MuiTableSortLabel-icon": {
+                    opacity: 1,
+                  },
+                }}
+              >
+                {headCell.label}
+                {orderBy === headCell.id ? (
+                  <Box component="span" sx={visuallyHidden}>
+                    {order === "desc"
+                      ? "sorted descending"
+                      : "sorted ascending"}
+                  </Box>
+                ) : null}
+              </TableSortLabel>
+            ) : (
+              headCell.label
+            )}
           </TableCell>
         ))}
       </TableRow>
@@ -114,118 +144,117 @@ function ProjectTableHead({ order, orderBy }) {
   );
 }
 
-function ProjectStatus({ status }) {
-  const { title, color, borderColor } = getStatusChipProps(status);
-  
-  return (
-    <Stack direction="row" spacing={1} alignItems="center">
-      {/* <Dot color={color} /> */}
-      {/* <Typography>{title}</Typography> */}
-      <Chip label={title} color={borderColor} variant="outlined" sx={{bgcolor:color, borderRadius:'20px', fontSize:"12px", fontWeight:600}}/>
-    </Stack>
-  );
-}
+ProjectTableHead.propTypes = {
+  order: PropTypes.string.isRequired,
+  orderBy: PropTypes.string.isRequired,
+  onRequestSort: PropTypes.func.isRequired,
+};
 
 // ==============================|| PROJECT TABLE ||============================== //
 
-export default function ProjectTable() {
-  const order = 'asc';
-  const orderBy = 'index';
+export default function ProjectTable({ onDataChange, countData }) {
   const navigate = useNavigate();
-  let info = JSON.parse(sessionStorage.getItem("userDetails"));
+
+  const info = JSON.parse(sessionStorage.getItem("userDetails"));
   const userRole = info?.[0]?.role_name;
-  const userId = info?.[0]?.user_id;
 
   const [data, setData] = useState([]);
-  const [viewMode, setViewMode] = useState(userRole !== "Org Super Admin" && userRole !== "Admin" ? "card": "list");
-  const [loading, setLoading] = useState(true);
-  
+  const [viewMode, setViewMode] = useState("list");
+  const [isLoading, setIsLoading] = useState(true);
+  const [order, setOrder] = useState("desc");
+  const [orderBy, setOrderBy] = useState("created_at");
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalData, setTotalData] = useState(null);
+
   const [snackData, setSnackData] = useState({
     show: false,
     message: "",
     type: "error",
   });
 
-  
+  const handleRequestSort = (event, property) => {
+    const isAsc = orderBy === property && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
+    setOrderBy(property);
+    setPage(0); // reset to first page on sort change
+  };
+
+  const handleChangePage = (_event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
 
   useEffect(() => {
     fetchData();
-  }, []);
-
+  }, [page, rowsPerPage, order, orderBy]);
 
   const createData = (
     index,
     project_no,
     project_name,
-    runs,
-    industry,
-    mapping_no,
-    regulatory_standard,
     start_date,
+    runs,
     last_run,
-    status
+    modified_date,
+    raw_start_date,
+    raw_modified_date,
+    raw_last_run,
   ) => {
     return {
       index,
       project_no,
       project_name,
-      runs,
-      industry,
-      mapping_no,
-      regulatory_standard,
       start_date,
+      runs,
       last_run,
-      status,
+      modified_date,
+      raw_start_date,
+      raw_modified_date,
+      raw_last_run,
     };
   };
 
   const fetchData = () => {
-    ProjectApiService.projectListing()
+    setIsLoading(true);
+    ProjectApiService.projectListing({
+      page: page + 1,
+      limit: rowsPerPage,
+      sortBy: orderBy,
+      sortOrder: order,
+    })
       .then((response) => {
-        let newData = null;
-        
-        // console.log("response",response)
-        if(userRole === "Org Super Admin" || userRole === "Admin")
-        {
-         newData = response?.data?.map((project, index) => {
-          return createData(
-            project.project_id, // index
-            project.project_no, // project_no
-            project.project_name, // project_name
-            project.no_of_runs, // runs
-            project.industry_name, // industry
-            project.mapping_standards, // mapping_no
-            project.regulatory_standard,
-            project.created_at !== "null" && project.created_at !== "" && project.created_at !== null? formatDate(project.created_at) : "", // start_date
-            project.last_run !== "null" && project.last_run !== "" && project.last_run !== null ? formatDate(project.last_run) : "", // last_run
-            project.status // status
-          );
-        });
-      }
-      else
-      {
-         newData = response?.data?.details.map((project, index) => {
-          return createData(
-            project.project_id, // index
-            project.project_no, // project_no
-            project.project_name, // project_name
-            project.no_of_runs, // runs
-            project.industry_name, // industry
-            project.mapping_standards, // mapping_no
-            project.regulatory_standard,
-            project.created_at !== "null" && project.created_at !== "" && project.created_at !== null ? formatDate(project.created_at) : "", // start_date
-            project.last_run !== "null" && project.last_run !== "" && project.last_run !== null ? formatDate(project.last_run) : "", // last_run
-            project.status // status
-          );
-        });
-      }
+        const newData = response?.data?.details.map((project) =>
+          createData(
+            project.project_id,
+            project.project_no,
+            project.project_name,
+            project.created_at ? formatDate(project.created_at) : "",
+            project.no_of_runs ?? 0,
+            project.last_run === "null" || !project.last_run
+              ? "--"
+              : project.last_run,
+            project.updated_at
+              ? formatDate(project.updated_at)
+              : project.created_at
+                ? formatDate(project.created_at)
+                : "",
+            project.created_at || "",
+            project.updated_at || project.created_at || "",
+            project.last_run || "",
+          ),
+        );
 
-        const limitedData = newData.slice(0, 6);
-
-        setData(limitedData);
-        setLoading(false);
+        setData(newData); // store all rows; pagination handles slicing
+        setTotalData(response?.data?.total_project_count);
+        setIsLoading(false);
       })
       .catch((errResponse) => {
+        setIsLoading(false);
         setSnackData({
           show: true,
           message:
@@ -233,75 +262,195 @@ export default function ProjectTable() {
             API_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
           type: "error",
         });
-        setLoading(false);
+        console.error(errResponse, "errResponse");
       });
   };
 
   const handleViewModeChange = (newViewMode) => {
-    setViewMode(newViewMode); // Update view mode (list or card)
+    setViewMode(newViewMode);
   };
 
-  const handleClick = (project_id)=>{
+  const handleDelete = (projectId) => {
+    Modal.confirm({
+      title: "Are you sure you want to delete this project?",
+      content: "This action cannot be undone.",
+      okText: "Yes, Delete",
+      okType: "danger",
+      cancelText: "No",
+      onOk: async () => {
+        try {
+          await ProjectApiService.projectDelete(projectId);
+          setSnackData({
+            show: true,
+            message: "Project deleted successfully!",
+            type: "success",
+          });
+          fetchData();
+          if (onDataChange) onDataChange();
+        } catch (error) {
+          setSnackData({
+            show: true,
+            message: error?.message || "Failed to delete project",
+            type: "error",
+          });
+        }
+      },
+    });
+  };
+
+  const handleEdit = (projectId) => {
+    navigate(`/projectView/${projectId}`, { state: { project_id: projectId } });
+  };
+
+  const handleClick = (project_id) => {
     navigate(`/projectView/${project_id}`, { state: { project_id } });
-  }
+  };
 
   return (
-    <Box style={{padding:"10px 20px", minHeight:"428px",alignContent: data.length > 0 ? "normal" :"space-around"}}>
-      <Typography variant="h5">Recent Projects</Typography>
-      {data.length > 0 && userRole !== "Org Super Admin" && userRole !== "Admin" &&
-      <Box style={{float:"right"}}>
-      <ToggleButtons onViewModeChange={handleViewModeChange} viewSelected="card" />
-      </Box>
-      }
-      {data.length > 0 ?
-      viewMode === "list"? 
-      <TableContainer
+    <Box
+      sx={{
+        width: "100%",
+        minHeight: "428px",
+      }}
+    >
+      <Box
         sx={{
-          width: '100%',
-          overflowX: 'auto',
-          position: 'relative',
-          display: 'block',
-          maxWidth: '100%',
-          '& td, & th': { whiteSpace: 'nowrap' }
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 2,
+          px: 0,
         }}
       >
-        <Table aria-labelledby="tableTitle">
-          <ProjectTableHead order={order} orderBy={orderBy} />
-          <TableBody>
-            {stableSort(data, getComparator(order, orderBy)).map((row, index) => {
-              const labelId = `enhanced-table-checkbox-${index}`;
+        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+          Recent Projects
+        </Typography>
+      </Box>
 
-              return (
-                <TableRow
-                  hover
-                  role="checkbox"
-                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                  tabIndex={-1}
-                  key={row.project_name}
-                >
-                  <TableCell component="th" id={labelId} scope="row">
-                    <Link color="secondary" onClick={(e)=>handleClick(row.index)}> {row.project_name}</Link>
-                  </TableCell>
-                  <TableCell>{row.project_no}</TableCell>
-                  <TableCell>{row.runs}</TableCell>
-                  <TableCell>{row.last_run}</TableCell>
-                  <TableCell align="right">
-                    <ProjectStatus status={row.status} />
-                    {/* <NumericFormat value={row.status} displayType="text" thousandSeparator prefix="$" /> */}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      :
-      <CardView data={data} gridValue="2"/>
-      : <Empty />}
+      {data.length > 0 &&
+        userRole !== "Org Super Admin" &&
+        userRole !== "Admin" && (
+          <Box sx={{ float: "right" }}>
+            <ToggleButtons
+              onViewModeChange={handleViewModeChange}
+              viewSelected="list"
+            />
+          </Box>
+        )}
+
+      <Spin spinning={isLoading} tip="Loading projects...">
+        {data.length > 0 ? (
+          viewMode === "list" ? (
+            <TableContainer
+              sx={{
+                overflowX: "auto",
+                bgcolor: "white",
+                borderRadius: "0",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+              }}
+            >
+              <Table>
+                <ProjectTableHead
+                  order={order}
+                  orderBy={orderBy}
+                  onRequestSort={handleRequestSort}
+                />
+                <TableBody>
+                  {data.map((row, index) => (
+                    <TableRow
+                      key={index}
+                      hover
+                      sx={{
+                        "& td, & th": { borderBottom: "1px solid #f0f0f0" },
+                      }}
+                    >
+                      <TableCell>
+                        <Link
+                          onClick={() => handleClick(row.index)}
+                          sx={{
+                            cursor: "pointer",
+                            color: "#5B0428",
+                            fontWeight: 500,
+                            textDecoration: "none",
+                            fontSize: "14px",
+                          }}
+                        >
+                          {row.project_name}
+                        </Link>
+                      </TableCell>
+                      <TableCell>{row.index}</TableCell>
+                      <TableCell>{row.runs}</TableCell>
+                      <TableCell>{row.last_run}</TableCell>
+                      <TableCell sx={{ fontSize: "14px", color: "#222" }}>
+                        {row.start_date}
+                      </TableCell>
+                      <TableCell sx={{ fontSize: "14px", color: "#222" }}>
+                        {row.modified_date}
+                      </TableCell>
+                      <TableCell align="center">
+                        <Stack
+                          direction="row"
+                          spacing={1}
+                          justifyContent="center"
+                          alignItems="center"
+                        >
+                          <IconButton
+                            size="small"
+                            onClick={() => handleDelete(row.index)}
+                          >
+                            <TrashLucideIcon color="#D32F2F" size={17} />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleEdit(row.index)}
+                          >
+                            <PenLucideIcon color="#757575" size={17} />
+                          </IconButton>
+                        </Stack>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+                <TableFooter>
+                  <TableRow>
+                    <TablePagination
+                      rowsPerPageOptions={[10, 25, 50]}
+                      count={totalData ?? countData?.total_projects_count}
+                      rowsPerPage={rowsPerPage}
+                      page={page}
+                      onPageChange={handleChangePage}
+                      onRowsPerPageChange={handleChangeRowsPerPage}
+                      sx={{
+                        borderTop: "1px solid #f0f0f0",
+                        "& .MuiTablePagination-toolbar": { minHeight: "48px" },
+                        "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows":
+                          {
+                            fontSize: "13px",
+                            color: "#555",
+                          },
+                      }}
+                    />
+                  </TableRow>
+                </TableFooter>
+              </Table>
+            </TableContainer>
+          ) : (
+            <CardView data={data} gridValue="2" />
+          )
+        ) : !isLoading ? (
+          <Empty />
+        ) : (
+          <Box sx={{ minHeight: "300px" }} />
+        )}
+      </Spin>
+
+      <Snackbar
+        open={snackData.show}
+        autoHideDuration={4000}
+        onClose={() => setSnackData({ ...snackData, show: false })}
+      >
+        <Alert severity={snackData.type}>{snackData.message}</Alert>
+      </Snackbar>
     </Box>
   );
 }
-
-ProjectTableHead.propTypes = { order: PropTypes.any, orderBy: PropTypes.string };
-
-ProjectStatus.propTypes = { status: PropTypes.number };

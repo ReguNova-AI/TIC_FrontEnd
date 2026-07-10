@@ -1,10 +1,14 @@
-import { useEffect } from "react";
-import { Outlet } from "react-router-dom";
+import { lazy, Suspense, useEffect, useState } from "react";
+import { Outlet, useNavigate } from "react-router-dom";
 
 // material-ui
 import useMediaQuery from "@mui/material/useMediaQuery";
 import Toolbar from "@mui/material/Toolbar";
 import Box from "@mui/material/Box";
+import IconButton from "@mui/material/IconButton";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
+import Dialog from "@mui/material/Dialog";
 
 // project import
 import Drawer from "./Drawer";
@@ -12,44 +16,58 @@ import Header from "./Header";
 import navigation from "menu-items";
 import Loader from "components/Loader";
 import Breadcrumbs from "components/@extended/Breadcrumbs";
-
 import { handlerDrawerOpen, useGetMenuMaster } from "api/menu";
-import { IconButton } from "@mui/material";
-import MenuFoldOutlined from "@ant-design/icons/MenuFoldOutlined";
-import MenuUnfoldOutlined from "@ant-design/icons/MenuUnfoldOutlined";
-import { Button } from "antd";
-import menuIcon from "../../assets/images/icons/menuIcon.svg"
+import menuIcon from "../../assets/images/icons/menuIcon.svg";
+const Payment = lazy(() => import("pages/Payment"));
 
 // ==============================|| MAIN LAYOUT ||============================== //
 
 export default function DashboardLayout() {
-  const { menuMasterLoading } = useGetMenuMaster();
-  const { menuMaster } = useGetMenuMaster();
+  const { menuMasterLoading, menuMaster } = useGetMenuMaster();
   const downXL = useMediaQuery((theme) => theme.breakpoints.down("lg"));
   const drawerOpen = menuMaster?.isDashboardDrawerOpened;
+  const navigate = useNavigate();
+
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [snackData, setSnackData] = useState({
+    show: false,
+    message: "",
+    type: "success",
+  });
+
   useEffect(() => {
     handlerDrawerOpen(!downXL);
+
+    // Payment restriction logic
+    const userDetailsRaw = sessionStorage.getItem("userDetails");
+    if (userDetailsRaw) {
+      try {
+        const userDetails = JSON.parse(userDetailsRaw);
+        // Assuming userDetails is an array based on AuthLogin.jsx usage
+        const user = Array.isArray(userDetails) ? userDetails[0] : userDetails;
+
+        if (
+          user &&
+          (!user.is_allowed) 
+          &&
+          user.role_name?.toLowerCase() === "editor"
+        ) {
+          setPaymentModalOpen(true);
+        }
+      } catch (e) {
+        console.error("Error parsing userDetails from sessionStorage", e);
+      }
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [downXL]);
+  }, [downXL, navigate]);
 
   if (menuMasterLoading) return <Loader />;
+
   return (
     <Box sx={{ display: "flex", width: "100%" }}>
       <Header />
       <Drawer />
-      <Button
-        onClick={() => handlerDrawerOpen(!drawerOpen)}
-        style={{
-          marginTop: "66px",
-          position: "fixed",
-          marginLeft: drawerOpen ? "240px" : !downXL ? "63px" : "2px",
-          zIndex: "999999",
-          borderRadius:"50%",
-          padding:"6px"
-        }}
-      >
-         <img src={menuIcon} width="20px" style={{transform: !drawerOpen ? "none" :"scaleX(-1)"}}/>
-      </Button>
+
       <Box
         component="main"
         sx={{ width: "calc(100% - 260px)", flexGrow: 1, p: { xs: 2, sm: 3 } }}
@@ -58,6 +76,35 @@ export default function DashboardLayout() {
         <Breadcrumbs navigation={navigation} title />
         <Outlet />
       </Box>
+
+      {paymentModalOpen && (
+        <Dialog
+          open={paymentModalOpen}
+          fullWidth
+          maxWidth="xl"
+          disableEscapeKeyDown
+        >
+          <Suspense fallback={null}>
+            <Payment isFromRestriction={true} />
+          </Suspense>
+        </Dialog>
+      )}
+
+      <Snackbar
+        style={{ top: "80px" }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        open={snackData.show}
+        autoHideDuration={6000}
+        onClose={() => setSnackData({ ...snackData, show: false })}
+      >
+        <Alert
+          onClose={() => setSnackData({ ...snackData, show: false })}
+          severity={snackData.type}
+          sx={{ width: "100%" }}
+        >
+          {snackData.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

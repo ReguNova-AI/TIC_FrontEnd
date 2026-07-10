@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { TextField, Button, Grid, Box, Typography } from "@mui/material";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import Grid from "@mui/material/Grid";
+import Box from "@mui/material/Box";
 import { useNavigate } from "react-router-dom";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
@@ -98,7 +101,6 @@ const SectorCreation = ({onHandleClose}) => {
                 type="submit"
                 variant="contained"
                 style={{
-                  background: "#2ba9bc",
                   float: "right",
                   textTransform: "none",
                 }}

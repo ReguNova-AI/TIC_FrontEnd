@@ -1,7 +1,6 @@
 import PropTypes from "prop-types";
 import React, { useState } from "react";
-import { Link as RouterLink, useNavigate } from "react-router-dom";
-import * as actions from "../../../store/actions";
+import { useNavigate } from "react-router-dom";
 
 // Material-UI imports
 import Button from "@mui/material/Button";
@@ -20,7 +19,7 @@ import { Formik } from "formik";
 // Project imports
 import AnimateButton from "components/@extended/AnimateButton";
 import { AuthApiService } from "services/api/AuthApiService";
-import { LOGIN_PAGE, API_ERROR_MESSAGE, API_SUCCESS_MESSAGE } from "shared/constants";
+import { LOGIN_PAGE, API_ERROR_MESSAGE, API_SUCCESS_MESSAGE } from "shared/constants.login";
 
 // ============================|| FORGOT PASSWORD||============================ //
 
@@ -116,12 +115,13 @@ export default function AuthForgotPassword() {
                 </Grid>
               )}
 
-              <Grid item xs={12}>
+              <Grid item xs={12} sx={{display:"flex", justifyContent:"center"}}>
                 <AnimateButton>
                   <Button
                     disableElevation
                     disabled={isSubmitting}
-                    fullWidth
+                    // fullWidth
+                    sx={{width:"250px", }}
                     size="large"
                     type="submit"
                     variant="contained"

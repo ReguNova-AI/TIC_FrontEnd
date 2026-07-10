@@ -24,13 +24,13 @@ import { Formik } from "formik";
 // Project imports
 import AnimateButton from "components/@extended/AnimateButton";
 import { AuthApiService } from "services/api/AuthApiService";
-import { LOGIN_PAGE, API_ERROR_MESSAGE, API_SUCCESS_MESSAGE } from "shared/constants";
+import { LOGIN_PAGE, API_ERROR_MESSAGE, API_SUCCESS_MESSAGE } from "shared/constants.login";
 
 // ============================|| PASSWORD RESET ||============================ //
 
 export default function AuthPasswordReset() {
   const navigate = useNavigate();
-  const [showPassword, setShowPassword] = useState(true);
+  const [showPassword, setShowPassword] = useState({new: false, confirm :false});
 
   const [snackData, setSnackData] = useState({
     show: false,
@@ -38,8 +38,11 @@ export default function AuthPasswordReset() {
     type: "error",
   });
 
-  const handleClickShowPassword = () => {
-    setShowPassword(!showPassword);
+  const handleClickShowPassword = (field) => {
+    setShowPassword((prev) => ({
+      ...prev,
+      [field]: !prev[field],
+    }));
   };
 
   const handleMouseDownPassword = (event) => {
@@ -111,28 +114,28 @@ export default function AuthPasswordReset() {
                     fullWidth
                     error={Boolean(touched.password && errors.password)}
                     id="password-reset"
-                    type={showPassword ? "text" : "password"}
+                    type={showPassword.new ? "text" : "password"}
                     value={values.password}
                     name="password"
                     onBlur={handleBlur}
                     onChange={handleChange}
-                    // endAdornment={
-                    //   <InputAdornment position="end">
-                    //     <IconButton
-                    //       aria-label="toggle password visibility"
-                    //       onClick={handleClickShowPassword}
-                    //       onMouseDown={handleMouseDownPassword}
-                    //       edge="end"
-                    //       color="secondary"
-                    //     >
-                    //       {showPassword ? (
-                    //         <EyeOutlined />
-                    //       ) : (
-                    //         <EyeInvisibleOutlined />
-                    //       )}
-                    //     </IconButton>
-                    //   </InputAdornment>
-                    // }
+                    endAdornment={
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle password visibility"
+                          onClick={()=>handleClickShowPassword("new")}
+                          onMouseDown={handleMouseDownPassword}
+                          edge="end"
+                          color="secondary"
+                        >
+                          {showPassword.new ? (
+                            <EyeOutlined />
+                          ) : (
+                            <EyeInvisibleOutlined />
+                          )}
+                        </IconButton>
+                      </InputAdornment>
+                    }
                     placeholder="Enter your new password"
                   />
                 </Stack>
@@ -156,28 +159,28 @@ export default function AuthPasswordReset() {
                     fullWidth
                     error={Boolean(touched.confirmPassword && errors.confirmPassword)}
                     id="confirm-password-reset"
-                    type={showPassword ? "text" : "password"}
+                    type={showPassword.confirm ? "text" : "password"}
                     value={values.confirmPassword}
                     name="confirmPassword"
                     onBlur={handleBlur}
                     onChange={handleChange}
-                    // endAdornment={
-                    //   <InputAdornment position="end">
-                    //     <IconButton
-                    //       aria-label="toggle password visibility"
-                    //       onClick={handleClickShowPassword}
-                    //       onMouseDown={handleMouseDownPassword}
-                    //       edge="end"
-                    //       color="secondary"
-                    //     >
-                    //       {showPassword ? (
-                    //         <EyeOutlined />
-                    //       ) : (
-                    //         <EyeInvisibleOutlined />
-                    //       )}
-                    //     </IconButton>
-                    //   </InputAdornment>
-                    // }
+                    endAdornment={
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle password visibility"
+                          onClick={()=>handleClickShowPassword("confirm")}
+                          onMouseDown={handleMouseDownPassword}
+                          edge="end"
+                          color="secondary"
+                        >
+                          {showPassword.confirm ? (
+                            <EyeOutlined />
+                          ) : (
+                            <EyeInvisibleOutlined />
+                          )}
+                        </IconButton>
+                      </InputAdornment>
+                    }
                     placeholder="Re-enter your new password"
                   />
                 </Stack>
@@ -198,12 +201,13 @@ export default function AuthPasswordReset() {
                 </Grid>
               )}
 
-              <Grid item xs={12}>
+              <Grid item xs={12} sx={{display:"flex", justifyContent:"center"}}>
                 <AnimateButton>
                   <Button
                     disableElevation
                     disabled={isSubmitting}
-                    fullWidth
+                    // fullWidth
+                    sx={{width:"250px"}}
                     size="large"
                     type="submit"
                     variant="contained"
