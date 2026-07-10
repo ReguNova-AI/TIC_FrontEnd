@@ -160,7 +160,7 @@ function Payment({ isFromRestriction: isFromRestrictionProp = false }) {
                       component="span"
                       sx={{ fontWeight: 700 }}
                     >
-                      ${plan.amount/100}
+                      ${plan.amount / 100}
                     </Typography>
                   </Stack>
 
@@ -189,7 +189,7 @@ function Payment({ isFromRestriction: isFromRestrictionProp = false }) {
                     What's included:
                   </Typography>
 
-                  <List sx={{ p: 0 }}>
+                  {/* <List sx={{ p: 0 }}>
                     <ListItem
                       disableGutters
                       sx={{ py: 1, alignItems: "flex-start" }}
@@ -210,6 +210,34 @@ function Payment({ isFromRestriction: isFromRestrictionProp = false }) {
                         }}
                       />
                     </ListItem>
+                  </List> */}
+
+                  <List sx={{ p: 0 }}>
+                    {plan.metadata &&
+                      Object.entries(plan.metadata).map(([key, value]) => (
+                        <ListItem
+                          key={key}
+                          disableGutters
+                          sx={{ py: 1, alignItems: "flex-start" }}
+                        >
+                          <ListItemIcon sx={{ minWidth: 32, mt: 0.5 }}>
+                            <CheckOutlined
+                              style={{
+                                color: theme.palette.success.main,
+                                fontSize: "1rem",
+                              }}
+                            />
+                          </ListItemIcon>
+
+                          <ListItemText
+                            primary={value}
+                            primaryTypographyProps={{
+                              variant: "body2",
+                              sx: { color: theme.palette.text.primary },
+                            }}
+                          />
+                        </ListItem>
+                      ))}
                   </List>
                 </Box>
               </MainCard>
