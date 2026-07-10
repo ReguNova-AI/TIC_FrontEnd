@@ -188,7 +188,7 @@ function Payment({ isFromRestriction: isFromRestrictionProp = false }) {
                   <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
                     What's included:
                   </Typography>
-
+{/*  */}
                   {/* <List sx={{ p: 0 }}>
                     <ListItem
                       disableGutters
